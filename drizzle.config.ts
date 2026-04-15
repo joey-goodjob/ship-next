@@ -1,4 +1,7 @@
 import { defineConfig } from 'drizzle-kit';
+import { loadEnvFiles } from './src/lib/env';
+
+loadEnvFiles();
 
 const provider = process.env.DATABASE_PROVIDER || 'sqlite';
 

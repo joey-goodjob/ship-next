@@ -44,7 +44,7 @@ export function UserMenu({
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger className="w-full rounded-lg outline-none ring-sidebar-ring focus-visible:ring-2 [&>div]:w-full">
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <SidebarMenuButton size="lg" render={<div />} className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
             <Avatar className="size-8 rounded-lg">
               <AvatarImage src={image || undefined} alt={name} />
               <AvatarFallback className="rounded-lg text-xs">

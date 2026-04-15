@@ -9,16 +9,9 @@ const withNextIntl = createNextIntlPlugin({
 });
 
 const nextConfig: NextConfig = {
+  output: process.env.DOCKER ? 'standalone' : undefined,
   reactStrictMode: false,
   pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
-  serverExternalPackages: [
-    '@libsql/client',
-    'drizzle-orm',
-    'better-auth',
-    'mysql2',
-    'postgres',
-    'stripe',
-  ],
 };
 
 export default withNextIntl(withMDX(nextConfig));

@@ -108,171 +108,32 @@ Decide which modules to keep based on user's features. Default: keep all. Only r
 
 ---
 
-## Phase 1: Reconnaissance (Mode A & B only)
+## Phase 1 & 2: Landing Page Build (Mode A & B — delegate to /clone-website)
 
-**Prerequisite:** Browser MCP is required. Check for Chrome MCP, Playwright MCP, Browserbase MCP, or Puppeteer MCP. If none are available, ask the user which browser tool they have. This phase cannot proceed without browser automation.
+**When the user provides a reference URL (Mode A or B), do NOT attempt to extract CSS or assets yourself.**
 
-### 1.1 Reference Site Analysis
+Instead, after Phase 0 (project config) is complete, invoke the `/clone-website` skill with the reference URL:
 
-Navigate to the reference URL with browser MCP.
-
-**Screenshots:**
-- Full-page screenshots at desktop (1440px) and mobile (390px)
-- Save to `docs/design-references/`
-
-**Design Token Extraction:**
-
-Fonts — Inspect `<link>` tags for Google Fonts or self-hosted fonts. Check computed `font-family` on headings, body, labels. Document every family, weight, style.
-
-Colors — Extract the color palette via computed styles across the page. Run this script:
-
-```javascript
-// Run via browser MCP to extract color palette
-(function() {
-  const els = [...document.querySelectorAll('*')].slice(0, 500);
-  const colors = new Set();
-  const fonts = new Set();
-  els.forEach(el => {
-    const cs = getComputedStyle(el);
-    [cs.color, cs.backgroundColor, cs.borderColor].forEach(c => {
-      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') colors.add(c);
-    });
-    fonts.add(cs.fontFamily.split(',')[0].trim().replace(/['"]/g, ''));
-  });
-  return JSON.stringify({
-    colors: [...colors].slice(0, 30),
-    fonts: [...fonts].filter(f => f && f !== 'Times New Roman' && f !== 'serif'),
-  }, null, 2);
-})();
+```
+/clone-website <reference-url>
 ```
 
-**Layout Structure — Map every section from top to bottom:**
+The `clone-website` skill handles the entire pixel-perfect cloning pipeline:
+- Browser automation for CSS extraction, screenshots, and interaction discovery
+- Asset downloading (images, videos, SVGs, fonts)
+- Component specification files
+- Parallel builder agent dispatch
+- Visual QA diff
 
-```javascript
-// Run via browser MCP to extract page sections
-(function() {
-  const body = document.body;
-  const sections = [];
-  // Get direct children or semantic sections
-  const candidates = [...body.querySelectorAll('header, nav, main, section, footer, [class*="hero"], [class*="feature"], [class*="pricing"], [class*="cta"], [class*="faq"]')];
-  candidates.forEach((el, i) => {
-    const rect = el.getBoundingClientRect();
-    const cs = getComputedStyle(el);
-    sections.push({
-      index: i,
-      tag: el.tagName.toLowerCase(),
-      classes: el.className?.toString().split(' ').slice(0, 5).join(' '),
-      top: Math.round(rect.top + window.scrollY),
-      height: Math.round(rect.height),
-      background: cs.backgroundColor,
-      display: cs.display,
-      childCount: el.children.length,
-      textPreview: el.textContent?.trim().slice(0, 100),
-    });
-  });
-  return JSON.stringify(sections, null, 2);
-})();
-```
+**For Mode A** (reference + separate content source): After `clone-website` finishes, replace the cloned text content with content from the user's content source (GitHub README, another URL, or their description). Keep the exact visual structure and styling.
 
-Document findings as a section list:
-```
-1. Header/Nav — sticky, height 64px, transparent → solid on scroll
-2. Hero — full viewport, gradient bg, heading + subtext + 2 CTAs
-3. Logos — client logo bar, grayscale
-4. Features — 3-column grid, icon + title + description cards
-5. Pricing — 3 tiers, highlight middle, toggle monthly/annual
-6. FAQ — accordion
-7. CTA — centered, gradient bg
-8. Footer — 4-column links + copyright
-```
+**For Mode B** (reference only): After `clone-website` finishes, rewrite the cloned text content to match the user's product description. Keep the exact visual structure and styling.
 
-**Interaction Sweep:**
-
-Scroll top-to-bottom slowly, observing:
-- Header behavior on scroll (shrink, bg change, shadow)
-- Elements animating into view (fade-up, slide-in)
-- Scroll-snap points
-- Parallax or scroll-driven effects
-
-Click every interactive element:
-- Tabs, pills, toggles — record content for EACH state
-- Buttons — what happens
-- Accordions — open/close behavior
-
-Hover over interactive elements:
-- Cards, buttons, links — record what changes (color, scale, shadow)
-
-### 1.2 Content Extraction
-
-**If Mode A (separate content source):**
-
-If content source is a GitHub URL:
-- Fetch the README via `https://raw.githubusercontent.com/<owner>/<repo>/main/README.md` (or master)
-- Also fetch repo metadata: name, description, stars, topics
-- Extract: product name, tagline, feature list, screenshots, code examples
-
-If content source is another URL:
-- Navigate to it with browser MCP
-- Extract all text content section by section
-- Download images
-- Structure as: hero text, features, testimonials, FAQ, etc.
-
-**If Mode B (content from reference site itself):**
-
-Extract all text from the reference site, then rewrite it:
-- Keep the structure (hero heading, feature titles, pricing tiers)
-- Replace the content to match the user's product description
-- Maintain the same tone and copywriting style
-
-### 1.3 Asset Collection
-
-Download all images and videos from the reference site:
-
-```javascript
-// Run via browser MCP to enumerate assets
-JSON.stringify({
-  images: [...document.querySelectorAll('img')].map(img => ({
-    src: img.src || img.currentSrc,
-    alt: img.alt,
-    width: img.naturalWidth,
-    height: img.naturalHeight,
-    position: getComputedStyle(img).position,
-  })),
-  videos: [...document.querySelectorAll('video')].map(v => ({
-    src: v.src || v.querySelector('source')?.src,
-    poster: v.poster,
-    autoplay: v.autoplay,
-    loop: v.loop,
-  })),
-  backgroundImages: [...document.querySelectorAll('*')].filter(el => {
-    const bg = getComputedStyle(el).backgroundImage;
-    return bg && bg !== 'none';
-  }).map(el => ({
-    url: getComputedStyle(el).backgroundImage,
-    element: el.tagName + '.' + (el.className?.toString().split(' ')[0] || ''),
-  })),
-  svgCount: document.querySelectorAll('svg').length,
-}, null, 2);
-```
-
-For Mode A/B: Download assets from the reference site to `public/images/`. For content-source images (GitHub screenshots, etc.), also download to `public/images/`.
-
-For SVG icons, extract inline SVGs as React components into `src/components/icons.tsx`.
+Then continue to Phase 3 (Dashboard Pages) and beyond.
 
 ---
 
-## Phase 2: Foundation Build (all modes)
-
-### Mode A & B:
-
-1. **Update fonts** in `src/app/layout.tsx` — configure `next/font/google` or `next/font/local` with the extracted fonts
-2. **Update `src/app/globals.css`** — replace color tokens with the reference site's palette:
-   - Map to shadcn's variables: `--background`, `--foreground`, `--primary`, `--muted`, etc.
-   - Add custom properties for colors that don't fit shadcn tokens
-   - Add keyframe animations observed on the reference site
-   - Add global patterns (smooth scroll, custom scrollbar, etc.)
-3. **Create icon components** in `src/components/icons.tsx` from extracted SVGs
-4. Verify: `pnpm build`
+## Phase 2: Foundation Build (Mode C only)
 
 ### Mode C:
 
@@ -291,73 +152,7 @@ For SVG icons, extract inline SVGs as React components into `src/components/icon
 
 ### 3.1 Landing Page (`src/app/[locale]/page.tsx`)
 
-**Mode A & B — Pixel-perfect from reference:**
-
-For each section identified in Phase 1, extract exact CSS values:
-
-```javascript
-// Per-section CSS extraction — run via browser MCP
-// Replace SELECTOR with the section's CSS selector
-(function(selector) {
-  const el = document.querySelector(selector);
-  if (!el) return JSON.stringify({ error: 'Not found: ' + selector });
-  const props = [
-    'fontSize','fontWeight','fontFamily','lineHeight','letterSpacing','color',
-    'textTransform','textDecoration','backgroundColor','background',
-    'padding','paddingTop','paddingRight','paddingBottom','paddingLeft',
-    'margin','marginTop','marginRight','marginBottom','marginLeft',
-    'width','height','maxWidth','minWidth','maxHeight','minHeight',
-    'display','flexDirection','justifyContent','alignItems','gap',
-    'gridTemplateColumns','gridTemplateRows',
-    'borderRadius','border','boxShadow','overflow',
-    'position','top','right','bottom','left','zIndex',
-    'opacity','transform','transition','cursor',
-    'objectFit','backdropFilter'
-  ];
-  function extractStyles(element) {
-    const cs = getComputedStyle(element);
-    const styles = {};
-    props.forEach(p => {
-      const v = cs[p];
-      if (v && v !== 'none' && v !== 'normal' && v !== 'auto' && v !== '0px' && v !== 'rgba(0, 0, 0, 0)') styles[p] = v;
-    });
-    return styles;
-  }
-  function walk(element, depth) {
-    if (depth > 4) return null;
-    return {
-      tag: element.tagName.toLowerCase(),
-      classes: element.className?.toString().split(' ').slice(0, 5).join(' '),
-      text: element.childNodes.length === 1 && element.childNodes[0].nodeType === 3
-        ? element.textContent.trim().slice(0, 200) : null,
-      styles: extractStyles(element),
-      images: element.tagName === 'IMG' ? { src: element.src, alt: element.alt } : null,
-      children: [...element.children].slice(0, 20).map(c => walk(c, depth + 1)).filter(Boolean),
-    };
-  }
-  return JSON.stringify(walk(el, 0), null, 2);
-})('SELECTOR');
-```
-
-Build each section as a React component in `src/components/landing/`. Use the extracted CSS values translated to Tailwind classes. Where Tailwind doesn't have an exact match, use arbitrary values: `text-[18px]`, `tracking-[-0.02em]`, `gap-[28px]`.
-
-**For multi-state sections** (tabs, carousels, scroll-driven):
-- Identify the interaction model BEFORE building (scroll-driven vs click-driven)
-- Click/scroll through each state via browser MCP
-- Extract content and styles for EVERY state
-- Implement the same interaction mechanism
-
-**Content replacement (Mode A):**
-- Keep the exact same component structure and styling
-- Replace text content with content from the content source
-- Replace images where appropriate (keep decorative/UI images, replace product screenshots)
-
-**Content rewrite (Mode B):**
-- Keep exact structure and styling
-- Rewrite text to match the user's product
-- Replace product screenshots with placeholders or user-provided images
-
-Assemble all section components in `src/app/[locale]/page.tsx` (replacing the blank default) in the same order as the reference site.
+**Mode A & B:** Already handled by `/clone-website` in Phase 1. Skip to 3.2.
 
 **Mode C — Generated from scratch:**
 
@@ -422,21 +217,9 @@ Connect landing page elements to modules:
 ## Phase 4: Responsive & Polish
 
 1. **Test at 3 viewports** — 1440px, 768px, 390px
-2. For Mode A/B: match the reference site's responsive behavior (browser MCP at each width)
+2. For Mode A/B: already handled by `/clone-website` visual QA
 3. For Mode C: ensure mobile-first responsive design
 4. **Scroll animations** — add `IntersectionObserver`-based fade-in for sections
-5. Verify: `pnpm build`
-
----
-
-## Phase 5: Visual QA (Mode A & B only)
-
-Take screenshots of your generated pages and compare with the reference site:
-
-1. Side-by-side at desktop (1440px) — section by section
-2. Side-by-side at mobile (390px)
-3. For each discrepancy: re-extract CSS from browser MCP, fix the component
-4. Test interactions: scroll behavior, hover states, tab switching, animations
 5. Verify: `pnpm build`
 
 ---
@@ -461,7 +244,7 @@ Report:
 
 ## Rules
 
-1. **Pixel-perfect for Mode A/B.** Don't approximate — extract exact CSS values. Use `text-[18px] leading-[24px]`.
+1. **Mode A/B delegates to `/clone-website`.** Don't try to extract CSS or assets yourself — the clone-website skill has a full pipeline for that. quick-start handles project config (Phase 0), then calls clone-website, then wires up dashboard/modules.
 2. **Real content, not placeholders.** Extract actual text and images. Only use placeholders if the user explicitly provides no content.
 3. **Foundation before components.** Fonts and colors in globals.css FIRST, then build sections.
 4. **Don't skip interaction extraction.** Scroll before clicking. Identify the interaction model before building.

@@ -9,17 +9,40 @@
  *   pnpm rbac:init --admin-email=admin@example.com --admin-password=your-password
  */
 
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
 import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { hashPassword } from 'better-auth/crypto';
 
+import { loadEnvFiles } from '../src/lib/env';
 import * as schema from '../src/config/db/schema';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'file:data/local.db';
-const client = createClient({ url: DATABASE_URL });
-const db = drizzle({ client });
+loadEnvFiles();
+
+// ─── Create DB connection based on provider ─────────────────────────────────
+async function createScriptDb() {
+  const provider = process.env.DATABASE_PROVIDER || 'sqlite';
+  const url = process.env.DATABASE_URL || 'file:data/local.db';
+
+  if (provider === 'postgres' || provider === 'postgresql') {
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const postgres = (await import('postgres')).default;
+    const client = postgres(url, { prepare: false, max: 1, idle_timeout: 10 });
+    return { db: drizzle({ client }) as any, close: () => client.end() };
+  }
+
+  if (provider === 'mysql') {
+    const { drizzle } = await import('drizzle-orm/mysql2');
+    const mysql = await import('mysql2/promise');
+    const connection = await mysql.createConnection(url);
+    return { db: drizzle({ client: connection }) as any, close: () => connection.end() };
+  }
+
+  // Default: SQLite / Turso via libsql
+  const { createClient } = await import('@libsql/client');
+  const { drizzle } = await import('drizzle-orm/libsql');
+  const client = createClient({ url });
+  return { db: drizzle({ client }) as any, close: () => {} };
+}
 
 const defaultPermissions = [
   // Admin access
@@ -141,144 +164,153 @@ const defaultRoles = [
 async function initializeRBAC() {
   console.log('Starting RBAC initialization...\n');
 
-  // 1. Create permissions
-  console.log('Creating permissions...');
-  const createdPermissions: Record<string, string> = {};
+  const provider = process.env.DATABASE_PROVIDER || 'sqlite';
+  console.log(`Database provider: ${provider}\n`);
 
-  for (const perm of defaultPermissions) {
-    const [existing] = await db.select().from(schema.permission).where(eq(schema.permission.code, perm.code)).limit(1);
-    if (existing) {
-      createdPermissions[perm.code] = existing.id;
-      console.log(`  [skip] ${perm.code}`);
-    } else {
-      const id = uuidv4();
-      await db.insert(schema.permission).values({ id, ...perm });
-      createdPermissions[perm.code] = id;
-      console.log(`  [new]  ${perm.code}`);
-    }
-  }
+  const { db, close } = await createScriptDb();
 
-  console.log(`\nPermissions: ${Object.keys(createdPermissions).length}\n`);
+  try {
+    // 1. Create permissions
+    console.log('Creating permissions...');
+    const createdPermissions: Record<string, string> = {};
 
-  // 2. Create roles and assign permissions
-  console.log('Creating roles...');
-  const createdRoles: Record<string, string> = {};
-
-  for (const roleData of defaultRoles) {
-    const [existingRole] = await db.select().from(schema.role).where(eq(schema.role.name, roleData.name)).limit(1);
-
-    let roleId: string;
-    if (existingRole) {
-      roleId = existingRole.id;
-      console.log(`  [skip] ${roleData.name}`);
-    } else {
-      roleId = uuidv4();
-      await db.insert(schema.role).values({
-        id: roleId,
-        name: roleData.name,
-        title: roleData.title,
-        description: roleData.description,
-        status: roleData.status,
-        sort: roleData.sort,
-      });
-      console.log(`  [new]  ${roleData.name}`);
-    }
-    createdRoles[roleData.name] = roleId;
-
-    // Clear and reassign permissions
-    await db.delete(schema.rolePermission).where(eq(schema.rolePermission.roleId, roleId));
-
-    for (const permCode of roleData.permissions) {
-      if (permCode.endsWith('.*')) {
-        const prefix = permCode.slice(0, -2);
-        const matchingPerms = Object.entries(createdPermissions)
-          .filter(([code]) => code.startsWith(prefix + '.'))
-          .map(([, id]) => id);
-        for (const permId of matchingPerms) {
-          await db.insert(schema.rolePermission).values({
-            id: uuidv4(),
-            roleId,
-            permissionId: permId,
-          });
-        }
+    for (const perm of defaultPermissions) {
+      const [existing] = await db.select().from(schema.permission).where(eq(schema.permission.code, perm.code)).limit(1);
+      if (existing) {
+        createdPermissions[perm.code] = existing.id;
+        console.log(`  [skip] ${perm.code}`);
       } else {
-        const permId = createdPermissions[permCode];
-        if (permId) {
-          await db.insert(schema.rolePermission).values({
-            id: uuidv4(),
-            roleId,
-            permissionId: permId,
-          });
-        }
+        const id = uuidv4();
+        await db.insert(schema.permission).values({ id, ...perm });
+        createdPermissions[perm.code] = id;
+        console.log(`  [new]  ${perm.code}`);
       }
     }
-    console.log(`         -> assigned ${roleData.permissions.length} permissions`);
-  }
 
-  console.log(`\nRoles: ${Object.keys(createdRoles).length}\n`);
+    console.log(`\nPermissions: ${Object.keys(createdPermissions).length}\n`);
 
-  // 3. Create admin user and/or assign super_admin role
-  const args = process.argv.slice(2);
-  const adminEmailArg = args.find((arg) => arg.startsWith('--admin-email='));
-  const adminPasswordArg = args.find((arg) => arg.startsWith('--admin-password='));
+    // 2. Create roles and assign permissions
+    console.log('Creating roles...');
+    const createdRoles: Record<string, string> = {};
 
-  if (adminEmailArg) {
-    const adminEmail = adminEmailArg.split('=')[1];
-    const adminPassword = adminPasswordArg?.split('=')[1];
+    for (const roleData of defaultRoles) {
+      const [existingRole] = await db.select().from(schema.role).where(eq(schema.role.name, roleData.name)).limit(1);
 
-    let [adminUser] = await db.select().from(schema.user).where(eq(schema.user.email, adminEmail)).limit(1);
-
-    if (!adminUser && adminPassword) {
-      // Create user + account
-      console.log(`Creating admin user: ${adminEmail}...`);
-      const userId = uuidv4();
-      const hashedPassword = await hashPassword(adminPassword);
-
-      await db.insert(schema.user).values({
-        id: userId,
-        name: 'Admin',
-        email: adminEmail,
-        emailVerified: true,
-      });
-
-      await db.insert(schema.account).values({
-        id: uuidv4(),
-        accountId: userId,
-        providerId: 'credential',
-        userId,
-        password: hashedPassword,
-      });
-
-      [adminUser] = await db.select().from(schema.user).where(eq(schema.user.id, userId)).limit(1);
-      console.log(`  Created: ${adminEmail}`);
-    } else if (!adminUser) {
-      console.log(`  User not found: ${adminEmail}`);
-      console.log('  Add --admin-password=xxx to create the user automatically.');
-    }
-
-    if (adminUser) {
-      const superAdminRoleId = createdRoles['super_admin'];
-      const [existing] = await db.select().from(schema.userRole)
-        .where(and(eq(schema.userRole.userId, adminUser.id), eq(schema.userRole.roleId, superAdminRoleId)))
-        .limit(1);
-
-      if (!existing) {
-        await db.insert(schema.userRole).values({
-          id: uuidv4(),
-          userId: adminUser.id,
-          roleId: superAdminRoleId,
+      let roleId: string;
+      if (existingRole) {
+        roleId = existingRole.id;
+        console.log(`  [skip] ${roleData.name}`);
+      } else {
+        roleId = uuidv4();
+        await db.insert(schema.role).values({
+          id: roleId,
+          name: roleData.name,
+          title: roleData.title,
+          description: roleData.description,
+          status: roleData.status,
+          sort: roleData.sort,
         });
-        console.log(`  Done: ${adminEmail} is now super_admin`);
-      } else {
-        console.log(`  Already super_admin: ${adminEmail}`);
+        console.log(`  [new]  ${roleData.name}`);
       }
-    }
-  } else {
-    console.log('To create an admin user, run:');
-    console.log('  pnpm rbac:init --admin-email=admin@example.com --admin-password=your-password');
-  }
+      createdRoles[roleData.name] = roleId;
 
-  console.log('\nRBAC initialization complete.');
+      // Clear and reassign permissions
+      await db.delete(schema.rolePermission).where(eq(schema.rolePermission.roleId, roleId));
+
+      for (const permCode of roleData.permissions) {
+        if (permCode.endsWith('.*')) {
+          const prefix = permCode.slice(0, -2);
+          const matchingPerms = Object.entries(createdPermissions)
+            .filter(([code]) => code.startsWith(prefix + '.'))
+            .map(([, id]) => id);
+          for (const permId of matchingPerms) {
+            await db.insert(schema.rolePermission).values({
+              id: uuidv4(),
+              roleId,
+              permissionId: permId,
+            });
+          }
+        } else {
+          const permId = createdPermissions[permCode];
+          if (permId) {
+            await db.insert(schema.rolePermission).values({
+              id: uuidv4(),
+              roleId,
+              permissionId: permId,
+            });
+          }
+        }
+      }
+      console.log(`         -> assigned ${roleData.permissions.length} permissions`);
+    }
+
+    console.log(`\nRoles: ${Object.keys(createdRoles).length}\n`);
+
+    // 3. Create admin user and/or assign super_admin role
+    const args = process.argv.slice(2);
+    const adminEmailArg = args.find((arg) => arg.startsWith('--admin-email='));
+    const adminPasswordArg = args.find((arg) => arg.startsWith('--admin-password='));
+
+    if (adminEmailArg) {
+      const adminEmail = adminEmailArg.split('=')[1];
+      const adminPassword = adminPasswordArg?.split('=')[1];
+
+      let [adminUser] = await db.select().from(schema.user).where(eq(schema.user.email, adminEmail)).limit(1);
+
+      if (!adminUser && adminPassword) {
+        // Create user + account
+        console.log(`Creating admin user: ${adminEmail}...`);
+        const userId = uuidv4();
+        const hashedPassword = await hashPassword(adminPassword);
+
+        await db.insert(schema.user).values({
+          id: userId,
+          name: 'Admin',
+          email: adminEmail,
+          emailVerified: true,
+        });
+
+        await db.insert(schema.account).values({
+          id: uuidv4(),
+          accountId: userId,
+          providerId: 'credential',
+          userId,
+          password: hashedPassword,
+        });
+
+        [adminUser] = await db.select().from(schema.user).where(eq(schema.user.id, userId)).limit(1);
+        console.log(`  Created: ${adminEmail}`);
+      } else if (!adminUser) {
+        console.log(`  User not found: ${adminEmail}`);
+        console.log('  Add --admin-password=xxx to create the user automatically.');
+      }
+
+      if (adminUser) {
+        const superAdminRoleId = createdRoles['super_admin'];
+        const [existing] = await db.select().from(schema.userRole)
+          .where(and(eq(schema.userRole.userId, adminUser.id), eq(schema.userRole.roleId, superAdminRoleId)))
+          .limit(1);
+
+        if (!existing) {
+          await db.insert(schema.userRole).values({
+            id: uuidv4(),
+            userId: adminUser.id,
+            roleId: superAdminRoleId,
+          });
+          console.log(`  Done: ${adminEmail} is now super_admin`);
+        } else {
+          console.log(`  Already super_admin: ${adminEmail}`);
+        }
+      }
+    } else {
+      console.log('To create an admin user, run:');
+      console.log('  pnpm rbac:init --admin-email=admin@example.com --admin-password=your-password');
+    }
+
+    console.log('\nRBAC initialization complete.');
+  } finally {
+    await close();
+  }
 }
 
 initializeRBAC().catch(console.error).finally(() => process.exit(0));
