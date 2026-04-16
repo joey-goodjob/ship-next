@@ -21,6 +21,10 @@
     "google_sign_in": "使用 Google 登录",
     "github_sign_in": "使用 GitHub 登录"
   },
+  "pricing": {
+    "get_started": "立即开始",
+    "processing": "处理中..."
+  },
   "systems": {
     "label": "切换系统",
     "admin": "管理后台",

@@ -21,6 +21,10 @@
     "google_sign_in": "Sign in with Google",
     "github_sign_in": "Sign in with GitHub"
   },
+  "pricing": {
+    "get_started": "Get Started",
+    "processing": "Processing..."
+  },
   "systems": {
     "label": "Switch System",
     "admin": "Admin",
