@@ -68,7 +68,7 @@ export function getSettingGroups(): SettingGroup[] {
 
     // AI
     { name: 'replicate', title: 'Replicate', description: 'Replicate AI API', tab: 'ai' },
-    { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image and video API', tab: 'ai' },
+    { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image, video, and Gemini chat API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
   ];
@@ -190,6 +190,8 @@ export function getSettings(): Setting[] {
 
     // ─── AI / Kie ────────────────────────────────────────────────────
     { name: 'kie_api_key', title: 'API Key', type: 'password', placeholder: 'kie_xxx', group: 'kie', tab: 'ai' },
+    { name: 'kie_chat_endpoint', title: 'Chat Endpoint', type: 'text', placeholder: 'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions', group: 'kie', tab: 'ai' },
+    { name: 'kie_chat_model', title: 'Chat Model', type: 'text', placeholder: 'gemini-2.5-flash', group: 'kie', tab: 'ai' },
 
     // ─── AI / Gemini ─────────────────────────────────────────────────
     { name: 'gemini_api_key', title: 'API Key', type: 'password', placeholder: 'xxx', group: 'gemini', tab: 'ai' },

@@ -30,3 +30,19 @@ export async function POST(
     return respErr(error?.message || 'Queue image generation failed');
   }
 }
+
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const userId = await getUserId();
+  if (!userId) return respErr('Unauthorized');
+
+  try {
+    const { id } = await params;
+    const data = await service.syncSceneImages({ userId, projectId: id });
+    return respData(data);
+  } catch (error: any) {
+    return respErr(error?.message || 'Sync image generation failed');
+  }
+}

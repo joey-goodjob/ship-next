@@ -44,6 +44,8 @@ next-env.d.ts
 /data/
 /drizzle/
 src/config/db/schema.ts
+/public/uploads/
+/public/renders/
 
 # local agent docs and workspace
 AGENTS.zh-CN.md

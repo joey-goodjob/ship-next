@@ -23,8 +23,9 @@ export async function createTask(params: {
   prompt: string;
   costCredits?: number;
   options?: any;
+  providerTaskId?: string;
 }): Promise<any> {
-  const { userId, mediaType, provider, model, prompt, costCredits, options } = params;
+  const { userId, mediaType, provider, model, prompt, costCredits, options, providerTaskId } = params;
 
   return db().transaction(async (tx: any) => {
     // 1. Insert task
@@ -36,6 +37,7 @@ export async function createTask(params: {
       model,
       prompt,
       status: AITaskStatus.PENDING,
+      taskId: providerTaskId,
       costCredits: costCredits || 0,
       options: options ? JSON.stringify(options) : undefined,
     };
@@ -77,8 +79,10 @@ export async function updateTask(params: {
   taskId: string;
   status: AITaskStatus;
   taskResult?: any;
+  providerTaskId?: string;
+  taskInfo?: any;
 }) {
-  const { taskId, status, taskResult } = params;
+  const { taskId, status, taskResult, providerTaskId, taskInfo } = params;
 
   const [task] = await db()
     .select()
@@ -90,6 +94,18 @@ export async function updateTask(params: {
 
   // Update task
   const updateData: any = { status };
+  if (providerTaskId) {
+    updateData.taskId = providerTaskId;
+  }
+  if (taskInfo) {
+    let existingInfo = {};
+    try {
+      existingInfo = task.taskInfo ? JSON.parse(task.taskInfo as string) : {};
+    } catch {
+      existingInfo = {};
+    }
+    updateData.taskInfo = JSON.stringify({ ...existingInfo, ...taskInfo });
+  }
   if (taskResult) {
     updateData.taskResult = JSON.stringify(taskResult);
   }

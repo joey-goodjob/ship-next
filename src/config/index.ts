@@ -58,6 +58,11 @@ export const envConfigs: Record<string, string> = {
   // AI
   replicate_api_token: process.env.REPLICATE_API_TOKEN ?? '',
   kie_api_key: process.env.KIE_API_KEY ?? '',
+  kie_chat_endpoint:
+    process.env.KIE_CHAT_ENDPOINT ??
+    'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions',
+  kie_chat_model: process.env.KIE_CHAT_MODEL ?? 'gemini-2.5-flash',
+  ffmpeg_path: process.env.FFMPEG_PATH ?? '/Users/joey/project/7_ffmpeg/bin/ffmpeg',
 
   // Locale
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
