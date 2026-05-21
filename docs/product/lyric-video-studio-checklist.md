@@ -11,14 +11,14 @@
 
 ## 2. 项目与音频上传
 
-- [ ] 支持上传 MP3、WAV、M4A、AAC、OGG、FLAC
-- [ ] 限制音频大小并展示清晰错误
-- [ ] 创建 lyric video project
-- [ ] 展示项目列表
-- [ ] 展示项目详情和 pipeline 状态
-- [ ] 支持音频在线播放预览
-- [ ] 上传失败时展示错误提示
-- [ ] 完成后运行 `pnpm build`
+- [x] 支持上传 MP3、WAV、M4A、AAC、OGG、FLAC
+- [x] 限制音频大小并展示清晰错误
+- [x] 创建 lyric video project
+- [x] 展示项目列表
+- [x] 展示项目详情和 pipeline 状态
+- [x] 支持音频在线播放预览
+- [x] 上传失败时展示错误提示
+- [x] 完成后运行 `pnpm build`
 
 ## 3. 歌词识别与编辑
 

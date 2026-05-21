@@ -57,3 +57,4 @@ export * from './kie';
 export * from './replicate';
 export * from './gemini';
 export * from './fal';
+export * from './yunwu';

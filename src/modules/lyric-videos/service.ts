@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { envConfigs } from '@/config';
 import { db } from '@/core/db';
-import { AIMediaType, AITaskStatus as ProviderTaskStatus, KieProvider, type AIFile } from '@/core/ai';
+import { AIMediaType, AITaskStatus as ProviderTaskStatus, KieProvider, YunwuProvider, type AIFile } from '@/core/ai';
 import {
   lyricVideoExport,
   lyricVideoLine,
@@ -288,6 +288,32 @@ Return only JSON matching the schema. Keep each lyric line concise. If exact tim
   return { raw: result.raw, lines: lines.filter((line: LyricLineInput) => line.text) };
 }
 
+async function transcribeWithYunwuWhisper(params: {
+  audioUrl: string;
+  language?: string;
+  prompt?: string;
+}) {
+  const provider = new YunwuProvider({
+    apiKey: envConfigs.yunwu_api_key,
+    baseUrl: envConfigs.yunwu_base_url,
+    transcribeModel: envConfigs.yunwu_transcribe_model,
+  });
+  const result = await provider.transcribe({
+    audioUrl: params.audioUrl,
+    language: params.language && params.language !== 'auto' ? params.language : 'zh',
+    prompt: params.prompt,
+  });
+
+  return {
+    raw: result.raw,
+    lines: result.lines.map((line) => ({
+      startMs: line.startMs,
+      endMs: line.endMs,
+      text: line.text,
+    })),
+  };
+}
+
 async function generateStoryboardWithKieGemini(params: {
   lines: any[];
   project: any;
@@ -564,21 +590,37 @@ export async function createTranscriptionDraft(params: {
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
+  const transcriptionProvider = params.rawLyrics ? 'manual' : envConfigs.yunwu_api_key ? 'yunwu' : 'kie';
+  const transcriptionModel = params.rawLyrics
+    ? 'manual-lyrics'
+    : envConfigs.yunwu_api_key
+      ? envConfigs.yunwu_transcribe_model
+      : envConfigs.kie_chat_model;
 
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: params.rawLyrics ? 'manual' : 'kie',
-    model: params.rawLyrics ? 'manual-lyrics' : envConfigs.kie_chat_model,
+    provider: transcriptionProvider,
+    model: transcriptionModel,
     prompt: project.audioUrl || project.title,
     costCredits: params.rawLyrics ? 0 : 10,
     options: { projectId: params.projectId, stage: 'lyrics_transcription' },
   });
 
   try {
+    if (!params.rawLyrics && !project.audioUrl) {
+      throw new Error('Upload audio before transcription');
+    }
+
     const result = params.rawLyrics
       ? { raw: { text: params.rawLyrics, source: 'manual' }, lines: parseLinesFromText(params.rawLyrics) }
-      : await transcribeWithKieGemini(project.audioUrl || '');
+      : envConfigs.yunwu_api_key
+        ? await transcribeWithYunwuWhisper({
+            audioUrl: project.audioUrl || '',
+            language: project.language || 'zh',
+            prompt: project.title,
+          })
+        : await transcribeWithKieGemini(project.audioUrl || '');
 
     const lines = await replaceLyrics({
       userId: params.userId,

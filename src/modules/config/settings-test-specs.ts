@@ -91,6 +91,13 @@ export const testSpecs: Record<string, TestSpec> = {
       { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '1K' },
     ],
   },
+  yunwu: {
+    group: 'yunwu',
+    fields: [
+      { name: 'language', label: 'Language', type: 'text', defaultValue: 'zh' },
+      { name: 'prompt', label: 'Prompt', type: 'text', defaultValue: 'test audio' },
+    ],
+  },
   gemini: {
     group: 'gemini',
     fields: [

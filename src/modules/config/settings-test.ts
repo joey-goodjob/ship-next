@@ -23,6 +23,7 @@ import { ReplicateProvider } from '@/core/ai/replicate';
 import { GeminiProvider } from '@/core/ai/gemini';
 import { FalProvider } from '@/core/ai/fal';
 import { KieProvider } from '@/core/ai/kie';
+import { YunwuProvider } from '@/core/ai/yunwu';
 import { AIMediaType } from '@/core/ai/types';
 import { getUniSeq } from '@/lib/hash';
 import { envConfigs } from '@/config';
@@ -56,6 +57,8 @@ export async function runTest(
         return await testReplicate(inputs, configs);
       case 'kie':
         return await testKie(inputs, configs);
+      case 'yunwu':
+        return await testYunwu(inputs, configs);
       case 'gemini':
         return await testGemini(inputs, configs);
       case 'fal':
@@ -75,6 +78,28 @@ function need(configs: Record<string, string>, keys: string[]): string | null {
 
 function successUrl(group: string) {
   return `${envConfigs.app_url}/admin/settings?test=${group}`;
+}
+
+function makeSilentWav(durationSeconds = 0.3, sampleRate = 16000) {
+  const samples = Math.max(1, Math.floor(durationSeconds * sampleRate));
+  const dataSize = samples * 2;
+  const buffer = Buffer.alloc(44 + dataSize);
+
+  buffer.write('RIFF', 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write('WAVE', 8);
+  buffer.write('fmt ', 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(sampleRate * 2, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write('data', 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  return buffer;
 }
 
 // --- Resend ---------------------------------------------------------------
@@ -385,5 +410,33 @@ async function testKie(inputs: Record<string, string>, configs: Record<string, s
     success: true,
     message: 'Kie accepted the request',
     details: { 'Task ID': result.taskId, Status: result.taskStatus },
+  };
+}
+
+async function testYunwu(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
+  const missing = need(configs, ['yunwu_api_key']);
+  if (missing) return { success: false, message: missing };
+
+  const provider = new YunwuProvider({
+    apiKey: configs.yunwu_api_key,
+    baseUrl: configs.yunwu_base_url || 'https://yunwu.ai/v1',
+    transcribeModel: configs.yunwu_transcribe_model || 'whisper-1',
+  });
+  const result = await provider.transcribeFile({
+    body: makeSilentWav(),
+    filename: 'yunwu-settings-test.wav',
+    contentType: 'audio/wav',
+    language: inputs.language || 'zh',
+    prompt: inputs.prompt || 'test audio',
+  });
+
+  return {
+    success: true,
+    message: 'Yunwu accepted the transcription request',
+    details: {
+      Model: configs.yunwu_transcribe_model || 'whisper-1',
+      Text: result.text || '(empty)',
+      Lines: String(result.lines.length),
+    },
   };
 }

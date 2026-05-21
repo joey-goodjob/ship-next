@@ -69,6 +69,7 @@ export function getSettingGroups(): SettingGroup[] {
     // AI
     { name: 'replicate', title: 'Replicate', description: 'Replicate AI API', tab: 'ai' },
     { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image, video, and Gemini chat API', tab: 'ai' },
+    { name: 'yunwu', title: 'Yunwu / Whisper', description: 'Yunwu OpenAI-compatible audio transcription API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
   ];
@@ -192,6 +193,11 @@ export function getSettings(): Setting[] {
     { name: 'kie_api_key', title: 'API Key', type: 'password', placeholder: 'kie_xxx', group: 'kie', tab: 'ai' },
     { name: 'kie_chat_endpoint', title: 'Chat Endpoint', type: 'text', placeholder: 'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions', group: 'kie', tab: 'ai' },
     { name: 'kie_chat_model', title: 'Chat Model', type: 'text', placeholder: 'gemini-2.5-flash', group: 'kie', tab: 'ai' },
+
+    // ─── AI / Yunwu ──────────────────────────────────────────────────
+    { name: 'yunwu_api_key', title: 'API Key', type: 'password', placeholder: 'sk-xxx', group: 'yunwu', tab: 'ai' },
+    { name: 'yunwu_base_url', title: 'Base URL', type: 'text', placeholder: 'https://yunwu.ai/v1', group: 'yunwu', tab: 'ai' },
+    { name: 'yunwu_transcribe_model', title: 'Transcribe Model', type: 'text', placeholder: 'whisper-1', group: 'yunwu', tab: 'ai' },
 
     // ─── AI / Gemini ─────────────────────────────────────────────────
     { name: 'gemini_api_key', title: 'API Key', type: 'password', placeholder: 'xxx', group: 'gemini', tab: 'ai' },
