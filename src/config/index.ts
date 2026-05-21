@@ -57,6 +57,7 @@ export const envConfigs: Record<string, string> = {
 
   // AI
   replicate_api_token: process.env.REPLICATE_API_TOKEN ?? '',
+  kie_api_key: process.env.KIE_API_KEY ?? '',
 
   // Locale
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',

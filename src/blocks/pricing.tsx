@@ -1,315 +1,237 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { Check, Info, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/core/i18n/navigation";
 import {
-  Folder,
-  Folders,
-  Sparkles,
-  Mail,
-  Zap,
-  Terminal,
-  Check,
-  Infinity as InfinityIcon,
-  Headphones,
-  Puzzle,
-} from "lucide-react";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-import { useRouter } from "@/core/i18n/navigation";
-import { useSession } from "@/core/auth/client";
-import {
-  PricingTable,
-  type PricingGroup,
-  type PricingPlan,
-} from "@/components/pricing-table";
-import {
-  PaymentProviderModal,
-  type PaymentProvider,
-} from "@/components/payment-provider-modal";
-
-const ALL_PROVIDERS: PaymentProvider[] = [
-  "stripe",
-  "creem",
-  "paypal",
-  "alipay",
-  "wechat",
+const FEATURES = [
+  "1080p, 24 FPS",
+  "AI lyric transcription",
+  "Audio trimmer",
+  "Watermark-free",
+  "Commercial use",
+  "Unlimited exports",
+  "Premium AI models",
+  "Upload your own images",
+  "Edit images with AI",
+  "Lip Sync",
+  "Reduced-credit actions",
+  "Adobe Premiere export",
+  "DaVinci Resolve export",
+  "Final Cut Pro export",
 ];
+
+const PLANS = [
+  { key: "free", price: "$0", credits: "150 credits one time", enabled: 3 },
+  { key: "creator", price: "$39", credits: "2,000 credits per month", enabled: 7 },
+  { key: "pro", price: "$99", credits: "6,000 credits per month", enabled: 14, popular: true },
+  { key: "ultra", price: "$149", credits: "10,000 credits per month", enabled: 14 },
+] as const;
+
+const FAQ_KEYS = ["free_preview", "credits", "static_video", "models", "rights"] as const;
+
+function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
+  const t = useTranslations("landing");
+  const popular = "popular" in plan && plan.popular;
+  const inner = (
+    <div className="h-full rounded-[22px] border border-slate-200 bg-white px-6 py-7">
+      <h3 className="text-lg font-black text-slate-800">{t(`pricing_plans.${plan.key}.name`)}</h3>
+      <div className="mt-10 flex items-end gap-2">
+        <span className="text-5xl font-black tracking-[-0.04em] text-slate-900">{plan.price}</span>
+        <span className="mb-2 font-black text-slate-500">/ month</span>
+      </div>
+      <p className="mt-2 text-sm font-semibold text-slate-500">{t(`pricing_plans.${plan.key}.note`)}</p>
+      <div className="mt-10 flex items-center gap-2 font-black">
+        {plan.credits}
+        <Info className="size-4" />
+      </div>
+      <Link
+        href="/dashboard/lyric-videos"
+        className={`mt-6 flex h-11 items-center justify-center rounded-md border text-base font-black ${
+          popular ? "border-[#fbbf24] bg-[#fbbf24] text-slate-950" : "border-slate-700 bg-white text-slate-950"
+        }`}
+      >
+        {t(`pricing_plans.${plan.key}.cta`)}
+      </Link>
+      <div className="mt-6 border-t border-slate-200 pt-5">
+        <p className="mb-4 text-xs font-black uppercase text-slate-500">Features</p>
+        <ul className="space-y-3">
+          {FEATURES.map((feature, index) => {
+            const ok = index < plan.enabled;
+            return (
+              <li key={feature} className={`flex items-center gap-2 text-sm font-semibold ${ok ? "text-slate-900" : "text-slate-400"}`}>
+                {ok ? <Check className="size-4 text-emerald-500" /> : <X className="size-4 text-red-300" />}
+                {feature}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+
+  if (!popular) return inner;
+
+  return (
+    <div className="rounded-[24px] bg-[#fbbf24] p-1">
+      <div className="pb-2 pt-1 text-center text-base font-black uppercase">Most Popular</div>
+      {inner}
+    </div>
+  );
+}
 
 export function Pricing({ title }: { title?: string } = {}) {
   const t = useTranslations("landing");
-  const router = useRouter();
-  const { data: session } = useSession();
-
-  const [configs, setConfigs] = useState<Record<string, string>>({});
-  const [modalOpen, setModalOpen] = useState(false);
-  const [pendingPlan, setPendingPlan] = useState<PricingPlan | null>(null);
-  const [loadingProvider, setLoadingProvider] = useState<PaymentProvider | null>(null);
-
-  useEffect(() => {
-    fetch("/api/config/public")
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.code === 0) setConfigs(res.data || {});
-      })
-      .catch(() => {});
-  }, []);
-
-  const enabledProviders = useMemo<PaymentProvider[]>(
-    () => ALL_PROVIDERS.filter((p) => configs[`${p}_enabled`] === "true"),
-    [configs],
-  );
-
-  const starterFeatures = [
-    { icon: Folder, label: t("pricing.feature_1_project") },
-    { icon: Sparkles, label: t("pricing.feature_5k_credits") },
-    { icon: Mail, label: t("pricing.feature_email_support") },
-  ];
-  const proFeatures = [
-    { icon: Folders, label: t("pricing.feature_unlimited_projects") },
-    { icon: Sparkles, label: t("pricing.feature_50k_credits") },
-    { icon: Zap, label: t("pricing.feature_priority_support") },
-    { icon: Terminal, label: t("pricing.feature_api_access") },
-  ];
-  const enterpriseFeatures = [
-    { icon: Check, label: t("pricing.feature_everything_pro") },
-    { icon: InfinityIcon, label: t("pricing.feature_unlimited_credits") },
-    { icon: Headphones, label: t("pricing.feature_dedicated_support") },
-    { icon: Puzzle, label: t("pricing.feature_custom_integrations") },
-  ];
-
-  const groups: PricingGroup[] = [
-    {
-      key: "monthly",
-      label: t("pricing.monthly"),
-      plans: [
-        {
-          id: "starter-monthly",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
-          price: "$9",
-          interval: "mo",
-          features: starterFeatures,
-          productId: "starter_monthly",
-          priceInCents: 900,
-          currency: "usd",
-          credits: 5000,
-          plan: { name: "Starter", interval: "month", intervalCount: 1 },
-        },
-        {
-          id: "pro-monthly",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
-          price: "$29",
-          interval: "mo",
-          featured: true,
-          badge: t("pricing.popular"),
-          features: proFeatures,
-          productId: "pro_monthly",
-          priceInCents: 2900,
-          currency: "usd",
-          credits: 50000,
-          plan: { name: "Pro", interval: "month", intervalCount: 1 },
-        },
-        {
-          id: "enterprise-monthly",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
-          price: "$99",
-          interval: "mo",
-          features: enterpriseFeatures,
-          productId: "enterprise_monthly",
-          priceInCents: 9900,
-          currency: "usd",
-          credits: 500000,
-          plan: { name: "Enterprise", interval: "month", intervalCount: 1 },
-        },
-      ],
-    },
-    {
-      key: "yearly",
-      label: t("pricing.yearly"),
-      plans: [
-        {
-          id: "starter-yearly",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
-          price: "$86",
-          originalPrice: "$108",
-          interval: "yr",
-          features: starterFeatures,
-          productId: "starter_yearly",
-          priceInCents: 8600,
-          currency: "usd",
-          credits: 60000,
-          plan: { name: "Starter", interval: "year", intervalCount: 1 },
-        },
-        {
-          id: "pro-yearly",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
-          price: "$278",
-          originalPrice: "$348",
-          interval: "yr",
-          featured: true,
-          badge: t("pricing.popular"),
-          features: proFeatures,
-          productId: "pro_yearly",
-          priceInCents: 27800,
-          currency: "usd",
-          credits: 600000,
-          plan: { name: "Pro", interval: "year", intervalCount: 1 },
-        },
-        {
-          id: "enterprise-yearly",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
-          price: "$950",
-          originalPrice: "$1,188",
-          interval: "yr",
-          features: enterpriseFeatures,
-          productId: "enterprise_yearly",
-          priceInCents: 95000,
-          currency: "usd",
-          credits: 6000000,
-          plan: { name: "Enterprise", interval: "year", intervalCount: 1 },
-        },
-      ],
-    },
-    {
-      key: "lifetime",
-      label: t("pricing.lifetime"),
-      plans: [
-        {
-          id: "starter-lifetime",
-          name: t("pricing.starter"),
-          description: t("pricing.starter_desc"),
-          price: "$149",
-          features: starterFeatures,
-          productId: "starter_lifetime",
-          priceInCents: 14900,
-          currency: "usd",
-          credits: 100000,
-          buttonText: t("pricing.buy_lifetime"),
-        },
-        {
-          id: "pro-lifetime",
-          name: t("pricing.pro"),
-          description: t("pricing.pro_desc"),
-          price: "$499",
-          features: proFeatures,
-          featured: true,
-          badge: t("pricing.best_value"),
-          productId: "pro_lifetime",
-          priceInCents: 49900,
-          currency: "usd",
-          credits: 1000000,
-          buttonText: t("pricing.buy_lifetime"),
-        },
-        {
-          id: "enterprise-lifetime",
-          name: t("pricing.enterprise"),
-          description: t("pricing.enterprise_desc"),
-          price: "$1,999",
-          features: enterpriseFeatures,
-          productId: "enterprise_lifetime",
-          priceInCents: 199900,
-          currency: "usd",
-          credits: 10000000,
-          buttonText: t("pricing.buy_lifetime"),
-        },
-      ],
-    },
-  ];
-
-  async function startCheckout(plan: PricingPlan, provider: PaymentProvider) {
-    setLoadingProvider(provider);
-    try {
-      const res = await fetch("/api/payment/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: plan.productId,
-          product_name: plan.productName || plan.name,
-          plan_name: plan.plan?.name || plan.name,
-          price: plan.priceInCents,
-          currency: plan.currency || "usd",
-          type: plan.plan ? "subscription" : "one-time",
-          description: plan.name,
-          plan: plan.plan,
-          credits: plan.credits,
-          credits_valid_days: plan.creditsValidDays,
-          payment_provider: provider,
-        }),
-      });
-      const data = await res.json();
-      if (data.code !== 0 || !data.data?.checkout_url) {
-        throw new Error(data.message || "Checkout failed");
-      }
-      window.location.href = data.data.checkout_url;
-    } catch (err: any) {
-      toast.error(err?.message || "Checkout failed");
-      setLoadingProvider(null);
-    }
-  }
-
-  async function handleCheckout(plan: PricingPlan) {
-    if (!session?.user) {
-      const redirect = encodeURIComponent(
-        typeof window !== "undefined" ? window.location.pathname : "/pricing",
-      );
-      router.push(`/sign-in?redirect=${redirect}`);
-      return;
-    }
-
-    const selectEnabled = configs.select_payment_enabled === "true";
-    const defaultProvider = (configs.default_payment_provider ||
-      enabledProviders[0] ||
-      "stripe") as PaymentProvider;
-
-    if (selectEnabled && enabledProviders.length > 1) {
-      setPendingPlan(plan);
-      setModalOpen(true);
-      return;
-    }
-
-    await startCheckout(plan, defaultProvider);
-  }
-
-  function handleProviderSelect(provider: PaymentProvider) {
-    if (!pendingPlan) return;
-    startCheckout(pendingPlan, provider);
-  }
 
   return (
-    <section id="pricing" className="px-4 py-24 sm:py-32 border-t border-border">
-      <div className="mx-auto max-w-5xl">
-        <div className="text-center mb-20">
-          <h2 className="font-serif font-normal text-4xl sm:text-5xl tracking-tight">
-            {title ?? t("pricing.title")}
-          </h2>
-          <p className="mt-5 text-muted-foreground">
-            {t("pricing.description")}
-          </p>
-        </div>
-        <PricingTable groups={groups} onCheckout={handleCheckout} />
-      </div>
+    <main className="bg-white text-slate-950">
+      <section id="pricing" className="px-5 pb-16 pt-10 sm:pb-24">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="text-center">
+            <h1 className="text-5xl font-black tracking-[-0.05em] sm:text-[58px]">
+              {title ?? t("pricing.title")}
+            </h1>
+            <p className="mt-4 text-2xl">{t("pricing.description")}</p>
+            <div className="mx-auto mt-8 inline-flex items-center gap-2 rounded-md bg-slate-100 p-1.5 text-base font-black text-slate-500">
+              <span className="rounded-md bg-white px-5 py-3 text-slate-950 shadow-sm">Monthly</span>
+              <span className="px-5 py-3">Annual</span>
+              <span className="rounded-full border border-emerald-400 px-4 py-2 text-xs uppercase text-emerald-500">Save 2 months</span>
+            </div>
+          </div>
 
-      <PaymentProviderModal
-        open={modalOpen}
-        onOpenChange={(open) => {
-          setModalOpen(open);
-          if (!open) {
-            setPendingPlan(null);
-            setLoadingProvider(null);
-          }
-        }}
-        providers={enabledProviders.length ? enabledProviders : ["stripe"]}
-        loadingProvider={loadingProvider}
-        onSelect={handleProviderSelect}
-        planName={pendingPlan?.name}
-        price={pendingPlan?.price}
-      />
-    </section>
+          <div className="mt-16 grid gap-5 lg:grid-cols-4">
+            {PLANS.map((plan) => <PlanCard key={plan.key} plan={plan} />)}
+          </div>
+
+          <div className="mt-20 rounded-[24px] border border-slate-200 bg-white p-8 lg:grid lg:grid-cols-[1fr_380px] lg:gap-10">
+            <div>
+              <h2 className="text-3xl font-black tracking-[-0.03em]">{t("credits_pack.title")}</h2>
+              <p className="mt-3 font-semibold text-slate-500">{t("credits_pack.description")}</p>
+              <div className="mt-8 grid grid-cols-2 overflow-hidden rounded-md bg-slate-100 md:grid-cols-7">
+                {["500", "1,000", "2,500", "5,000", "10,000", "20,000", "50,000"].map((value) => (
+                  <div key={value} className={`px-5 py-5 text-center ${value === "2,500" ? "bg-white shadow-md" : ""}`}>
+                    <div className="text-2xl font-black">{value}</div>
+                    <div className="mt-3 border-t pt-3 text-xl font-black text-slate-500">
+                      {value === "2,500" ? "$50" : value === "500" ? "$15" : value === "1,000" ? "$25" : value === "5,000" ? "$90" : value === "10,000" ? "$170" : value === "20,000" ? "$330" : "$800"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-8 flex items-start gap-3 text-lg font-black">
+                <Check className="mt-1 size-5" />
+                {t("credits_pack.included")}
+              </p>
+            </div>
+            <div className="mt-8 rounded-[22px] border border-slate-200 p-6 lg:mt-0">
+              <p className="font-black">One-time purchase</p>
+              <div className="mt-5 text-4xl font-black">$50</div>
+              <p className="mt-3 font-semibold text-slate-500">Instant access. No subscription required.</p>
+              <Link href="/dashboard/lyric-videos" className="mt-5 flex h-12 items-center justify-center rounded-md bg-[#fbbf24] font-black text-slate-950">
+                Continue with 2,500 credits
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-16 rounded-[24px] border border-slate-200 bg-white p-8 lg:grid lg:grid-cols-2 lg:gap-12">
+            <div>
+              <h2 className="text-3xl font-black tracking-[-0.03em]">{t("calculator.title")}</h2>
+              <div className="mt-8 space-y-8">
+                <div>
+                  <p className="font-black">1. Set Your Song Length</p>
+                  <div className="mt-5 h-1.5 rounded-full bg-slate-200">
+                    <div className="h-full w-1/4 rounded-full bg-[#fbbf24]" />
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-slate-500">03:00</p>
+                </div>
+                <div>
+                  <p className="font-black">2. Choose Backdrop Type</p>
+                  <div className="mt-3 inline-flex rounded-md bg-slate-100 p-1 font-black">
+                    <span className="rounded bg-white px-5 py-2">Static</span>
+                    <span className="px-5 py-2 text-slate-500">Animated</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-black">3. Choose Resolution</p>
+                  <div className="mt-3 inline-flex rounded-md bg-slate-100 p-1 font-black">
+                    <span className="rounded bg-white px-5 py-2">1080p</span>
+                    <span className="px-5 py-2 text-slate-500">4K</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-10 flex min-h-72 flex-col items-center justify-center border-t border-slate-200 lg:mt-0 lg:border-l lg:border-t-0">
+              <p className="font-semibold text-slate-500">Estimated Credits Needed:</p>
+              <div className="mt-6 text-5xl font-black text-[#fbbf24]">310 credits*</div>
+            </div>
+          </div>
+
+          <div className="mt-16 rounded-[24px] border border-slate-200 bg-white p-8">
+            <h2 className="text-3xl font-black tracking-[-0.03em]">Credit Info</h2>
+            {["Upload a Song and Lyric Transcription", "Generate Image", "Convert Image to Video", "Upscale to 4K"].map((group) => (
+              <div key={group} className="mt-10">
+                <h3 className="font-black">{group}</h3>
+                <div className="mt-5 divide-y divide-slate-200 border-t border-slate-200">
+                  {["Director Model", "Character Model", "Remix Model"].map((model, index) => (
+                    <div key={model} className="grid gap-3 py-4 text-sm md:grid-cols-2">
+                      <div>
+                        <p className="font-black text-slate-700">{model}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">High quality AI generation for lyric video projects</p>
+                      </div>
+                      <p className="font-semibold text-slate-700">{index === 0 ? "1 credit per second of audio" : index === 1 ? "5 credits per image" : "20 credits per generation"}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-20 grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+            <h2 className="text-4xl font-black tracking-[-0.04em]">{t("enterprise.pitch")}</h2>
+            <div className="rounded-[24px] border border-slate-200 bg-white p-6">
+              <p className="font-black">Enterprise</p>
+              <h3 className="mt-8 text-4xl font-black tracking-[-0.04em]">Get a quote</h3>
+              <Link href="/dashboard/lyric-videos" className="mt-6 flex h-12 items-center justify-center rounded-md border border-slate-700 font-black">
+                Contact Sales
+              </Link>
+              <ul className="mt-7 space-y-3 border-t pt-6 font-semibold">
+                {["Everything in Ultra", "Custom credit amounts", "API access", "Access to a professional video editor team"].map((item) => (
+                  <li key={item} className="flex gap-2"><Check className="size-5 text-emerald-500" /> {item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f4f4f5] px-5 py-24 text-center">
+        <h2 className="text-4xl font-black tracking-[-0.04em]">{t("pricing_faq.title")}</h2>
+        <p className="mt-5">{t("pricing_faq.description")}</p>
+        <Accordion className="mx-auto mt-12 max-w-[760px] overflow-hidden rounded-sm bg-white text-left shadow-sm" defaultValue={["free_preview"]}>
+          {FAQ_KEYS.map((key) => (
+            <AccordionItem key={key} value={key} className="border-slate-200">
+              <AccordionTrigger className="px-5 py-6 font-black text-slate-600 hover:no-underline">
+                {t(`faq.${key}.question`)}
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-6 font-semibold leading-8 text-slate-600">
+                {t(`faq.${key}.answer`)}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </section>
+
+      <section className="bg-gradient-to-r from-[#fff7d1] to-[#fde68a] px-5 py-20 text-center">
+        <p className="text-lg leading-9">{t("pricing_cta.copy")}</p>
+        <Link href="/dashboard/lyric-videos" className="mt-8 inline-flex h-[62px] items-center justify-center rounded-[9px] bg-[#fbbf24] px-9 text-2xl font-black uppercase text-slate-950">
+          Contact us
+        </Link>
+      </section>
+    </main>
   );
 }

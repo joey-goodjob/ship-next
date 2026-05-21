@@ -1,7 +1,6 @@
 import { Header } from "@/blocks/header";
 import { Hero } from "@/blocks/hero";
 import { Features } from "@/blocks/features";
-import { Pricing } from "@/blocks/pricing";
 import { FAQ } from "@/blocks/faq";
 import { CTA } from "@/blocks/cta";
 import { Footer } from "@/blocks/footer";
@@ -17,7 +16,6 @@ export default function HomePage() {
       <Header />
       <Hero />
       <Features />
-      <Pricing />
       <FAQ />
       <CTA />
       <Footer />

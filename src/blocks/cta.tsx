@@ -1,36 +1,26 @@
 import { Link } from "@/core/i18n/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Upload } from "lucide-react";
 
 export async function CTA() {
   const t = await getTranslations("landing");
 
   return (
-    <section className="px-4 pb-24 sm:pb-24">
-      <div className="mx-auto max-w-5xl">
-        <div className="rounded-3xl border border-dashed px-6 py-12 sm:px-10 sm:py-16 text-center">
-          <h2 className="font-serif font-medium text-4xl sm:text-5xl lg:text-5xl tracking-tight leading-[1.1] max-w-3xl mx-auto">
-            {t("cta.headline")}
-          </h2>
-          <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-            {t("cta.subheadline")}
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Link
-              href="/settings"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "gap-2 rounded-full px-8 h-12"
-              )}
-            >
-              {t("cta.button")}
-              <ArrowRight className="size-4" />
-            </Link>
-          </div>
-        </div>
-      </div>
+    <section className="bg-gradient-to-r from-[#fff7d1] to-[#fde68a] px-5 py-20 text-center text-slate-950">
+      <p className="text-lg leading-9">
+        {t("cta.line1")}
+        <br />
+        {t("cta.line2")}
+        <br />
+        {t("cta.line3")}
+      </p>
+      <Link
+        href="/dashboard/lyric-videos"
+        className="mt-8 inline-flex h-[62px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-9 text-2xl font-black uppercase text-slate-950 hover:bg-[#f59e0b]"
+      >
+        <Upload className="size-6" />
+        {t("cta.button")}
+      </Link>
     </section>
   );
 }

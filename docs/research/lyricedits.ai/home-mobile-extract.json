@@ -1,0 +1,1216 @@
+{
+  "title": "LyricEdits | AI Lyric Video Generator",
+  "url": "https://lyricedits.ai/",
+  "viewport": {
+    "width": 390,
+    "height": 1200
+  },
+  "bodyText": "Create lyric videos\nwith AI in minutes.\nFree preview · Fully customizable · No templates\nUpload your song to get an instant preview\nUpload your song\nMax 100MB · MP3, WAV, FLAC, AAC, OGG, M4A\nFree preview\n\nCreate and edit your video before purchasing. No credit card required.\n\nFully customizable\n\nChange the story, art style, fonts, scenes, and timing in our real-time editor.\n\n90+ languages\n\nOur AI will transcribe the lyrics of your song automatically.\n\nSee what you can create\nReal videos made with LyricEdits\nThe Giants Are Marching Home\nAutomatic Ape\nBubbles\nBiffy Clyro\nFilla On Ets\nFerran Saurina\nTease Her\nStrange Fiction\nÚltimo Aliento\nDaeria\nBad Chick\nThe Madpix Project\nUpload your song\nYOU ALREADY\nKNOW THIS\nFEELING.\n\nThe feeling of finishing THE SONG.\nAfter hours of composing, writing, recording, mixing, and iterating.\n\nYou’re excited to show it to the world. But you need a video.\nA music video worthy of your song.\n\nAnd suddenly, you realize:\n\n“I need a budget. I need time. I need to find people to help me.”\n\nIn that moment, you feel stuck.\n\nLyricEdits exists for that moment.\n\nIt was built by musicians, for musicians.\nWe’ve been there, we get it.\n\nOur AI helps bring your vision to life.\n\nNOT A MAGIC BUTTON\n\nThis is not a template. It’s a real music video workflow, available to every artist.\n\nAI + HUMAN CREATIVITY\n\nWe designed a tool that merges AI with human creativity. From your idea to a finished video, all in one place.\n\nCREATIVITY IS IN\nYOUR HANDS.\n\nCustomize every detail, or keep it simple and move fast.\n\nUpload your song\nThe AI Lyric Video Maker for Music\n\nLyricEdits is an AI lyric video maker designed specifically for music.\nMost AI video tools are built for ads and reels. LyricEdits is built for songs.\n\nStart with an AI-generated video, then make it yours.\n\nCustomize any detail in our real-time editor: story, characters, fonts, images, videos, colors, lyrics and pace.\n\nNo video editing experience required.\n\nLog in to access the editor\n\nHow to Make a Lyric Video with AI\nPlay\nUsed by Music Creators and Labels Worldwide\n\nArtists all over the world are already sharing their music this way.\n\n90,000+\nlyric videos created with LyricEdits\n20,000+\nmusic creators and labels using LyricEdits\n85+\nlanguages across the world\nExport to Your Favorite Editor\n\nStart in LyricEdits. Finish in the tools you already use.\n\nCreate your lyric video in minutes, then export to DaVinci Resolve, Premiere Pro, or Final Cut Pro for advanced editing.\n\nFor filmmakers\n\nTry it for free\n\nSee your video before paying anything.\nNo stress. No surprises.\n\nFree preview\nNo watermarks\nYou keep all rights\nCancel anytime\n\nUpload your song to start\n\nFAQ\n\nFeel free to contact us for any questions or doubts.\n\nWe'll be more than happy to help you!\n\nCan I post the video to YouTube or other platforms?\n\nYes! As long as you own the rights to the song or have permission from the artist, you can post the video on YouTube, Instagram, TikTok, or any other platform.\nNOTE: some platforms may require you a percentage of moving images in the video, so please check their requirements.\n\nCan I use the video for commercial purposes?\nCan I upload a song on behalf of another artist?\nHow do you generate the videos?\nWhich AI models do you use?\n\nYou've finished your song.\n\nLet people see it.\nLet people feel it.\n\nCreate your lyric video now:\n\nUPLOAD YOUR SONG\n\nMade by musicians for musicians.\n\nFollow us on\n\nAll rights reserved © 2024 - 2026\n\nRESOURCES\nHome\nPricing\nUses\nBlog\nDiscount\nCOMPANY\nAbout us\nAffiliates\nContact\nPRODUCTS\nAI Lyric Video Maker\nAI Video Creation from Lyrics\nLyric Video Creator\nLyric Video Editor\nLyric Video Generator AI\nLEGAL\nTerms of Service\nPrivacy Policy",
+  "sections": [
+    {
+      "index": 0,
+      "tag": "header",
+      "id": "",
+      "classes": "sticky top-0 bg-surface-0 dark:bg-zinc-950 z-50",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 72
+      },
+      "text": "",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "backgroundColor": "color(srgb 1 1 1)",
+        "background": "color(srgb 1 1 1) none repeat scroll 0% 0% / auto padding-box border-box",
+        "width": "390px",
+        "height": "72px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "sticky",
+        "zIndex": "50",
+        "opacity": "1",
+        "transition": "all"
+      },
+      "children": [
+        {
+          "index": 0,
+          "tag": "div",
+          "classes": "content-wrapper",
+          "text": "",
+          "styles": {
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "fontFamily": "SUSE, sans-serif",
+            "lineHeight": "24px",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+            "width": "390px",
+            "height": "72px",
+            "maxWidth": "1536px",
+            "display": "block",
+            "flexDirection": "row",
+            "border": "0px solid rgb(229, 231, 235)",
+            "position": "static",
+            "opacity": "1",
+            "transition": "all"
+          }
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "tag": "footer",
+      "id": "",
+      "classes": "pt-12 pb-10 px-5",
+      "rect": {
+        "x": 0,
+        "y": 8379,
+        "w": 390,
+        "h": 1289
+      },
+      "text": "Made by musicians for musicians. Follow us on All rights reserved © 2024 - 2026 RESOURCES Home Pricing Uses Blog Discount COMPANY About us Affiliates Contact PRODUCTS AI Lyric Video Maker AI Video Creation from Lyrics Lyric Video Creator Lyric Video Editor Lyric Video Generator AI LEGAL Terms of Service Privacy Policy",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "48px 20px 40px",
+        "width": "390px",
+        "height": "1288.5px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      },
+      "children": [
+        {
+          "index": 0,
+          "tag": "div",
+          "classes": "content-wrapper",
+          "text": "Made by musicians for musicians. Follow us on All rights reserved © 2024 - 2026 RESOURCES Home Pricing Uses Blog Discount COMPANY About us Affiliates Contact PRODUCTS AI Lyric Video Maker AI Video Creation from Lyrics Ly",
+          "styles": {
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "fontFamily": "SUSE, sans-serif",
+            "lineHeight": "24px",
+            "color": "rgb(0, 0, 0)",
+            "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+            "width": "350px",
+            "height": "1200.5px",
+            "maxWidth": "1536px",
+            "display": "block",
+            "flexDirection": "row",
+            "border": "0px solid rgb(229, 231, 235)",
+            "position": "static",
+            "opacity": "1",
+            "transition": "all"
+          }
+        }
+      ]
+    }
+  ],
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Create lyric videos\nwith AI in minutes.",
+      "styles": {
+        "fontSize": "30px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "36px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "width": "350px",
+        "height": "72px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "Upload your song to get an instant preview",
+      "styles": {
+        "fontSize": "18px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "28px",
+        "color": "rgb(51, 65, 85)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "4px 0px 0px",
+        "width": "312px",
+        "height": "56px",
+        "maxWidth": "672px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "See what you can create",
+      "styles": {
+        "fontSize": "30px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "36px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "36px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "YOU ALREADY\nKNOW THIS\nFEELING.",
+      "styles": {
+        "fontSize": "48px",
+        "fontWeight": "800",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "45.6px",
+        "letterSpacing": "-1.2px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "width": "350px",
+        "height": "136.781px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h3",
+      "text": "LyricEdits exists for that moment.",
+      "styles": {
+        "fontSize": "30px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "36px",
+        "letterSpacing": "-0.75px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "80px 0px",
+        "width": "350px",
+        "height": "72px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h3",
+      "text": "CREATIVITY IS IN\nYOUR HANDS.",
+      "styles": {
+        "fontSize": "36px",
+        "fontWeight": "800",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "45px",
+        "letterSpacing": "-0.9px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "width": "350px",
+        "height": "90px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "The AI Lyric Video Maker for Music",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "64px",
+        "display": "flex",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "Used by Music Creators and Labels Worldwide",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "64px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "Export to Your Favorite Editor",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "32px",
+        "display": "flex",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "Try it for free",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "32px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "FAQ",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "margin": "0px 0px 12px",
+        "width": "350px",
+        "height": "32px",
+        "display": "flex",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "gap": "8px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    },
+    {
+      "tag": "h2",
+      "text": "",
+      "styles": {
+        "fontSize": "16.8px",
+        "fontWeight": "600",
+        "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+        "lineHeight": "19.32px",
+        "color": "rgb(44, 47, 49)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "0px 17.6px",
+        "width": "374px",
+        "height": "19.3125px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px none rgb(44, 47, 49)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "all"
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "classes": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(100, 116, 139)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "8px 0px",
+        "width": "40px",
+        "height": "40px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "borderRadius": "50%",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "",
+      "classes": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text -mr-2",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(100, 116, 139)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "8px 0px",
+        "margin": "0px -8px 0px 0px",
+        "width": "40px",
+        "height": "40px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "borderRadius": "50%",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "",
+      "classes": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text p-button-sm",
+      "styles": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "21px",
+        "color": "rgb(100, 116, 139)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6px 10px",
+        "width": "32px",
+        "height": "32px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "borderRadius": "50%",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Log in",
+      "classes": "p-button p-component p-button-secondary p-button-sm ml-1 whitespace-nowrap",
+      "styles": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "21px",
+        "color": "rgb(71, 85, 105)",
+        "backgroundColor": "rgb(241, 245, 249)",
+        "background": "rgb(241, 245, 249) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6px 10px",
+        "margin": "0px 0px 0px 4px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(241, 245, 249)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Sign up",
+      "classes": "p-button p-component p-button-sm ml-1 whitespace-nowrap",
+      "styles": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "21px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6px 10px",
+        "margin": "0px 0px 0px 4px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Upload your song",
+      "classes": "p-button p-component p-button-lg !text-lg !px-5 sm:!text-xl sm:!py-3 sm:!px-8",
+      "styles": {
+        "fontSize": "18px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "28px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "10px 20px",
+        "width": "206.109px",
+        "height": "50px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Upload your song",
+      "classes": "p-button p-component p-button-lg !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "styles": {
+        "fontSize": "18px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "28px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "10px 24px",
+        "width": "214.109px",
+        "height": "50px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Upload your song",
+      "classes": "p-button p-component p-button-lg mt-10 !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "styles": {
+        "fontSize": "18px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "28px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "10px 24px",
+        "margin": "40px 0px 0px",
+        "width": "214.109px",
+        "height": "50px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Log in to access the editor",
+      "classes": "p-button p-component p-button-contrast p-button-text !p-0 !font-bold",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "700",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(2, 6, 23)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "width": "208.078px",
+        "height": "26px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Play",
+      "classes": "lty-playbtn",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) url(\"data:image/svg+xml;utf8,<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" viewBox=\\\"0 0 68 48\\\"><path d=\\\"M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z\\\" fill=\\\"red\\\"/><path d=\\\"M45 24 27 14v20\\\" fill=\\\"white\\\"/></svg>\") no-repeat scroll 50% 50% / 68px 48px padding-box border-box",
+        "width": "350px",
+        "height": "196.875px",
+        "display": "block",
+        "flexDirection": "row",
+        "border": "0px none rgb(0, 0, 0)",
+        "position": "absolute",
+        "zIndex": "1",
+        "opacity": "1",
+        "transition": "filter 0.1s cubic-bezier(0, 0, 0.2, 1)"
+      }
+    },
+    {
+      "text": "Upload your song to start",
+      "classes": "p-button p-component !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "styles": {
+        "fontSize": "18px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "28px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "8px 24px",
+        "width": "272.781px",
+        "height": "46px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "8px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Can I post the video to YouTube or other platforms?",
+      "classes": "p-accordionheader",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "18px",
+        "width": "314px",
+        "height": "48px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "alignItems": "center",
+        "borderRadius": "6px 6px 0px 0px",
+        "border": "0px solid rgb(226, 232, 240)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Can I use the video for commercial purposes?",
+      "classes": "p-accordionheader",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "18px",
+        "width": "314px",
+        "height": "48px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "alignItems": "center",
+        "border": "0px solid rgb(226, 232, 240)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Can I upload a song on behalf of another artist?",
+      "classes": "p-accordionheader",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "18px",
+        "width": "314px",
+        "height": "48px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "alignItems": "center",
+        "border": "0px solid rgb(226, 232, 240)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "How do you generate the videos?",
+      "classes": "p-accordionheader",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "18px",
+        "width": "314px",
+        "height": "24px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "alignItems": "center",
+        "border": "0px solid rgb(226, 232, 240)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "Which AI models do you use?",
+      "classes": "p-accordionheader",
+      "styles": {
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "24px",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "18px",
+        "width": "314px",
+        "height": "24px",
+        "display": "flex",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "alignItems": "center",
+        "borderRadius": "0px 0px 6px 6px",
+        "border": "0px solid rgb(226, 232, 240)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "UPLOAD YOUR SONG",
+      "classes": "p-button p-component p-button-primary p-button-lg mt-6 mx-auto !text-2xl !py-3 !px-6 uppercase !gap-3",
+      "styles": {
+        "fontSize": "24px",
+        "fontWeight": "400",
+        "fontFamily": "SUSE, sans-serif",
+        "lineHeight": "32px",
+        "color": "rgb(15, 23, 42)",
+        "backgroundColor": "rgb(251, 191, 36)",
+        "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "12px 24px",
+        "margin": "24px 0px 0px",
+        "width": "313.297px",
+        "height": "58px",
+        "display": "inline-flex",
+        "flexDirection": "row",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "gap": "12px",
+        "borderRadius": "6px",
+        "border": "1px solid rgb(251, 191, 36)",
+        "position": "relative",
+        "opacity": "1",
+        "transition": "background 0.2s, color 0.2s, border-color 0.2s, outline-color 0.2s, box-shadow 0.2s"
+      }
+    },
+    {
+      "text": "",
+      "classes": "cm__btn",
+      "styles": {
+        "fontSize": "13.12px",
+        "fontWeight": "600",
+        "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(39, 39, 42)",
+        "background": "rgb(39, 39, 42) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6.56px 13.12px",
+        "width": "338.812px",
+        "height": "42px",
+        "display": "block",
+        "flexDirection": "row",
+        "borderRadius": "6.4px",
+        "border": "1px solid rgb(39, 39, 42)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background-color 0.15s, border-color 0.15s, color 0.15s"
+      }
+    },
+    {
+      "text": "",
+      "classes": "cm__btn",
+      "styles": {
+        "fontSize": "13.12px",
+        "fontWeight": "600",
+        "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+        "color": "rgb(255, 255, 255)",
+        "backgroundColor": "rgb(39, 39, 42)",
+        "background": "rgb(39, 39, 42) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6.56px 13.12px",
+        "margin": "6px 0px 0px",
+        "width": "338.812px",
+        "height": "42px",
+        "display": "block",
+        "flexDirection": "row",
+        "borderRadius": "6.4px",
+        "border": "1px solid rgb(39, 39, 42)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background-color 0.15s, border-color 0.15s, color 0.15s"
+      }
+    },
+    {
+      "text": "",
+      "classes": "cm__btn cm__btn--secondary",
+      "styles": {
+        "fontSize": "13.12px",
+        "fontWeight": "600",
+        "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+        "color": "rgb(44, 47, 49)",
+        "backgroundColor": "rgb(244, 244, 245)",
+        "background": "rgb(244, 244, 245) none repeat scroll 0% 0% / auto padding-box border-box",
+        "padding": "6.56px 13.12px",
+        "width": "338.812px",
+        "height": "42px",
+        "display": "block",
+        "flexDirection": "row",
+        "borderRadius": "6.4px",
+        "border": "1px solid rgb(244, 244, 245)",
+        "position": "static",
+        "opacity": "1",
+        "transition": "background-color 0.15s, border-color 0.15s, color 0.15s"
+      }
+    }
+  ],
+  "links": [
+    {
+      "text": "",
+      "href": "https://lyricedits.ai/",
+      "classes": "router-link-active router-link-exact-active -mb-0.5"
+    },
+    {
+      "text": "Pricing",
+      "href": "https://lyricedits.ai/pricing",
+      "classes": "p-button p-component p-button-secondary p-button-rounded p-button-text p-button-sm"
+    },
+    {
+      "text": "Contact",
+      "href": "https://lyricedits.ai/contact",
+      "classes": "p-button p-component p-button-secondary p-button-rounded p-button-text p-button-sm"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=g2zst8jCPDI&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=eA-ziahg-7E&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=zYZCHpOV2a4&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=3_j7HVXjw-8&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=ydbDcrmjoSs&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "",
+      "href": "https://www.youtube.com/watch?v=ZRdqLx-4XEQ&list=PLzMj-LM1UjzKcrMF5q0Eo0o4uGHCUc1YM",
+      "classes": "block aspect-video rounded-md overflow-hidden"
+    },
+    {
+      "text": "How to Make a Lyric Video with AI",
+      "href": "https://youtube.com/watch?v=awneLue5XvE",
+      "classes": "lyt-playbtn"
+    },
+    {
+      "text": "For filmmakers",
+      "href": "https://lyricedits.ai/blog/export-import-project/",
+      "classes": "p-button p-component p-button-contrast p-button-text !p-0 !font-bold"
+    },
+    {
+      "text": "contact us",
+      "href": "https://lyricedits.ai/contact?subject=I+have+a+doubt:+",
+      "classes": "text-primary font-semibold hover:underline"
+    },
+    {
+      "text": "",
+      "href": "https://theresanaiforthat.com/ai/lyricedits/?ref=featured&v=6448643",
+      "classes": ""
+    },
+    {
+      "text": "",
+      "href": "https://discord.gg/GWSzZtsRjc",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://instagram.com/lyricedits.ai",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://tiktok.com/@lyricedits.ai",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://youtube.com/@lyriceditsai",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://facebook.com/lyriceditsai",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://x.com/lyriceditsai",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "",
+      "href": "https://www.linkedin.com/company/lyricedits",
+      "classes": "p-button p-component p-button-contrast p-button-sm !py-1 !px-2 hover:!bg-primary hover:!border-primary"
+    },
+    {
+      "text": "Home",
+      "href": "https://lyricedits.ai/",
+      "classes": "router-link-active router-link-exact-active hover:underline"
+    },
+    {
+      "text": "Pricing",
+      "href": "https://lyricedits.ai/pricing",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Uses",
+      "href": "https://lyricedits.ai/uses",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Blog",
+      "href": "https://lyricedits.ai/blog",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Discount",
+      "href": "https://lyricedits.ai/discount",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "About us",
+      "href": "https://lyricedits.ai/about-us",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Affiliates",
+      "href": "https://lyricedits.ai/affiliates",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Contact",
+      "href": "https://lyricedits.ai/contact",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "AI Lyric Video Maker",
+      "href": "https://lyricedits.ai/uses/ai-lyric-video-maker",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "AI Video Creation from Lyrics",
+      "href": "https://lyricedits.ai/uses/ai-video-creation-from-lyrics",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Lyric Video Creator",
+      "href": "https://lyricedits.ai/uses/lyric-video-creator",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Lyric Video Editor",
+      "href": "https://lyricedits.ai/uses/lyric-video-editor",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Lyric Video Generator AI",
+      "href": "https://lyricedits.ai/uses/lyric-video-generator-ai",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Terms of Service",
+      "href": "https://lyricedits.ai/terms-of-service",
+      "classes": "hover:underline"
+    },
+    {
+      "text": "Privacy Policy",
+      "href": "https://lyricedits.ai/privacy-policy",
+      "classes": "hover:underline"
+    }
+  ],
+  "images": [
+    {
+      "src": "https://lyricedits.ai/nles/premiere.svg",
+      "alt": "Adobe Premiere",
+      "width": 154,
+      "height": 150,
+      "classes": "w-[84px] lg:w-[124px] mr-1.5"
+    },
+    {
+      "src": "https://lyricedits.ai/nles/davinci-big.png",
+      "alt": "DaVinci Resolve",
+      "width": 400,
+      "height": 400,
+      "classes": "w-[108px] lg:w-[148px]"
+    },
+    {
+      "src": "https://lyricedits.ai/nles/fcpx-big.png",
+      "alt": "Final Cut Pro",
+      "width": 400,
+      "height": 400,
+      "classes": "w-[90px] lg:w-[130px]"
+    },
+    {
+      "src": "https://media.theresanaiforthat.com/featured-on-taaft.png?width=600",
+      "alt": "",
+      "width": 600,
+      "height": 125,
+      "classes": ""
+    }
+  ],
+  "videos": [
+    {
+      "src": "https://media.lyricedits.ai/featured/the-giants-are-marching-home-4k.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    },
+    {
+      "src": "https://media.lyricedits.ai/featured/bubbles-4k.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    },
+    {
+      "src": "https://media.lyricedits.ai/featured/filla-on-ets.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    },
+    {
+      "src": "https://media.lyricedits.ai/featured/tease-her-4k.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    },
+    {
+      "src": "https://media.lyricedits.ai/featured/ultimo-aliento-4k.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    },
+    {
+      "src": "https://media.lyricedits.ai/featured/bad-chick-4k.webm",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "width": 0,
+      "height": 0
+    }
+  ],
+  "colors": [
+    "rgb(0, 0, 0)",
+    "color(srgb 1 1 1)",
+    "rgb(229, 231, 235)",
+    "rgb(100, 116, 139)",
+    "rgb(71, 85, 105)",
+    "rgb(241, 245, 249)",
+    "rgb(15, 23, 42)",
+    "rgb(251, 191, 36)",
+    "color(srgb 0.984314 0.74902 0.141176)",
+    "rgb(51, 65, 85)",
+    "rgb(255, 255, 255)",
+    "rgb(226, 232, 240)",
+    "rgb(244, 244, 245)",
+    "color(srgb 0.886275 0.909804 0.941177 / 0.7)",
+    "color(srgb 0.0588235 0.0901961 0.164706)",
+    "rgb(2, 6, 23)",
+    "rgb(44, 47, 49)",
+    "rgb(94, 98, 102)",
+    "rgb(240, 244, 247) rgb(44, 47, 49) rgb(44, 47, 49)",
+    "rgb(39, 39, 42)"
+  ],
+  "fonts": [
+    "SUSE, sans-serif",
+    "primeicons",
+    "\"PingFang SC\"",
+    "\"Playwrite CU\", cursive",
+    "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\""
+  ],
+  "favicons": [
+    {
+      "href": "https://lyricedits.ai/favicon.svg",
+      "sizes": ""
+    },
+    {
+      "href": "https://lyricedits.ai/favicon.png",
+      "sizes": ""
+    },
+    {
+      "href": "https://lyricedits.ai/favicon.svg",
+      "sizes": ""
+    },
+    {
+      "href": "https://lyricedits.ai/favicon.png",
+      "sizes": ""
+    },
+    {
+      "href": "https://lyricedits.ai/favicon-dark-theme.svg",
+      "sizes": ""
+    },
+    {
+      "href": "https://lyricedits.ai/favicon-dark-theme.png",
+      "sizes": ""
+    }
+  ]
+}

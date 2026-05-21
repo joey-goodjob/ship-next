@@ -523,3 +523,138 @@ export type NewChatMessage = typeof chatMessage.$inferInsert;
 
 // ─── Custom tables ───────────────────────────────────────────────────────────
 // Add your own tables below this line.
+
+// ─── Lyric Video Projects ───────────────────────────────────────────────────
+
+export const lyricVideoProject = table(
+  'lyric_video_project',
+  {
+    id: varchar191('id').primaryKey(),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    title: varchar191('title').notNull(),
+    status: varchar191('status').notNull().default('draft'),
+    audioUrl: text('audio_url'),
+    audioFilename: varchar191('audio_filename'),
+    audioDurationMs: int('audio_duration_ms').notNull().default(0),
+    language: varchar191('language').notNull().default('auto'),
+    storyPrompt: longtext('story_prompt').notNull(),
+    palette: varchar191('palette').notNull().default('cinematic'),
+    artStyle: varchar191('art_style').notNull().default('cinematic illustration'),
+    aspectRatio: varchar191('aspect_ratio').notNull().default('16:9'),
+    resolution: varchar191('resolution').notNull().default('1080p'),
+    lyricsStatus: varchar191('lyrics_status').notNull().default('empty'),
+    scenesStatus: varchar191('scenes_status').notNull().default('empty'),
+    renderStatus: varchar191('render_status').notNull().default('empty'),
+    renderUrl: text('render_url'),
+    renderTaskId: varchar191('render_task_id'),
+    previewConfig: longtext('preview_config'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deletedAt: timestamp('deleted_at'),
+  },
+  (t) => [
+    index('idx_lyric_video_project_user').on(t.userId, t.createdAt),
+    index('idx_lyric_video_project_status').on(t.status),
+  ]
+);
+
+export const lyricVideoLine = table(
+  'lyric_video_line',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sort: int('sort').notNull().default(0),
+    startMs: int('start_ms').notNull().default(0),
+    endMs: int('end_ms').notNull().default(0),
+    text: text('text').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_line_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_line_user').on(t.userId),
+  ]
+);
+
+export const lyricVideoScene = table(
+  'lyric_video_scene',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sort: int('sort').notNull().default(0),
+    startMs: int('start_ms').notNull().default(0),
+    endMs: int('end_ms').notNull().default(0),
+    prompt: longtext('prompt').notNull(),
+    motionPrompt: longtext('motion_prompt').notNull(),
+    imageUrl: text('image_url'),
+    imageTaskId: varchar191('image_task_id'),
+    status: varchar191('status').notNull().default('draft'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_scene_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_scene_status').on(t.status),
+  ]
+);
+
+export const lyricVideoExport = table(
+  'lyric_video_export',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    status: varchar191('status').notNull().default('pending'),
+    format: varchar191('format').notNull().default('mp4'),
+    resolution: varchar191('resolution').notNull().default('1080p'),
+    aspectRatio: varchar191('aspect_ratio').notNull().default('16:9'),
+    videoUrl: text('video_url'),
+    taskId: varchar191('task_id'),
+    error: text('error'),
+    settings: longtext('settings'),
+    costCredits: int('cost_credits').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_export_project').on(t.projectId, t.createdAt),
+    index('idx_lyric_video_export_user').on(t.userId, t.status),
+  ]
+);
+
+export type LyricVideoProject = typeof lyricVideoProject.$inferSelect;
+export type NewLyricVideoProject = typeof lyricVideoProject.$inferInsert;
+export type LyricVideoLine = typeof lyricVideoLine.$inferSelect;
+export type NewLyricVideoLine = typeof lyricVideoLine.$inferInsert;
+export type LyricVideoScene = typeof lyricVideoScene.$inferSelect;
+export type NewLyricVideoScene = typeof lyricVideoScene.$inferInsert;
+export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
+export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;

@@ -2,7 +2,7 @@
 
 import { Link } from "@/core/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -29,11 +29,17 @@ export function SiteHeader({
   const user = session?.user;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-transparent bg-white/95 text-slate-950 backdrop-blur-sm">
+      <div className="mx-auto flex h-[72px] max-w-[1400px] items-center justify-between px-5 sm:px-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center">
-          <span className="font-serif italic text-lg">{envConfigs.app_name}</span>
+        <Link href="/" className="flex items-center gap-2">
+          <span className="relative flex size-6 items-center justify-center rounded-full border-[3px] border-slate-950">
+            <span className="absolute -right-1 top-0 size-3 rounded-sm bg-[#fbbf24]" />
+            <span className="relative size-2 rounded-full bg-white" />
+          </span>
+          <span className="text-[26px] font-extrabold tracking-tight">
+            Lyric<span className="text-[#fbbf24]">Video AI</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -44,7 +50,7 @@ export function SiteHeader({
               href={link.href}
               target={link.external ? "_blank" : undefined}
               rel={link.external ? "noopener noreferrer" : undefined}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950"
             >
               {link.label}
             </a>
@@ -63,11 +69,11 @@ export function SiteHeader({
             />
           ) : (
             <Link
-              href="/settings"
-              className={cn(buttonVariants(), "gap-1.5")}
+              href="/dashboard/lyric-videos"
+              className={cn(buttonVariants(), "h-10 gap-2 rounded-[10px] bg-[#fbbf24] px-5 font-bold text-slate-950 hover:bg-[#f59e0b]")}
             >
               {t("nav.get_started")}
-              <ArrowRight className="size-4" />
+              <Sparkles className="size-4" />
             </Link>
           )}
         </div>
@@ -91,7 +97,7 @@ export function SiteHeader({
                 href={link.href}
                 target={link.external ? "_blank" : undefined}
                 rel={link.external ? "noopener noreferrer" : undefined}
-                className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="rounded-md px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}
@@ -110,8 +116,8 @@ export function SiteHeader({
               />
             ) : (
               <Link
-                href="/settings"
-                className={cn(buttonVariants(), "gap-1.5")}
+                href="/dashboard/lyric-videos"
+                className={cn(buttonVariants(), "gap-1.5 bg-[#fbbf24] text-slate-950 hover:bg-[#f59e0b]")}
                 onClick={() => setMobileOpen(false)}
               >
                 {t("nav.get_started")}

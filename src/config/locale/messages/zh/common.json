@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "我的应用",
-    "description": "快速构建你的 SaaS"
+    "title": "LyricVideo AI",
+    "description": "几分钟内把歌曲制作成静态 AI 歌词视频"
   },
   "sign": {
     "sign_in_title": "登录",
@@ -88,7 +88,7 @@
     "apikeys": "API 密钥",
     "profile": "个人资料",
     "sign_in": "登录",
-    "get_started": "开始使用",
+    "get_started": "开始制作",
     "theme_light": "浅色模式",
     "theme_dark": "深色模式",
     "theme_system": "跟随系统"

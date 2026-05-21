@@ -647,3 +647,146 @@ export type InviteCode = typeof inviteCode.$inferSelect;
 export type NewInviteCode = typeof inviteCode.$inferInsert;
 export type UserInvite = typeof userInvite.$inferSelect;
 export type NewUserInvite = typeof userInvite.$inferInsert;
+
+// ─── Lyric Video Projects ───────────────────────────────────────────────────
+
+export const lyricVideoProject = table(
+  'lyric_video_project',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    status: text('status').notNull().default('draft'),
+    audioUrl: text('audio_url'),
+    audioFilename: text('audio_filename'),
+    audioDurationMs: integer('audio_duration_ms').notNull().default(0),
+    language: text('language').notNull().default('auto'),
+    storyPrompt: text('story_prompt').notNull().default(''),
+    palette: text('palette').notNull().default('cinematic'),
+    artStyle: text('art_style').notNull().default('cinematic illustration'),
+    aspectRatio: text('aspect_ratio').notNull().default('16:9'),
+    resolution: text('resolution').notNull().default('1080p'),
+    lyricsStatus: text('lyrics_status').notNull().default('empty'),
+    scenesStatus: text('scenes_status').notNull().default('empty'),
+    renderStatus: text('render_status').notNull().default('empty'),
+    renderUrl: text('render_url'),
+    renderTaskId: text('render_task_id'),
+    previewConfig: text('preview_config'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
+  },
+  (t) => [
+    index('idx_lyric_video_project_user').on(t.userId, t.createdAt),
+    index('idx_lyric_video_project_status').on(t.status),
+  ]
+);
+
+export const lyricVideoLine = table(
+  'lyric_video_line',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sort: integer('sort').notNull().default(0),
+    startMs: integer('start_ms').notNull().default(0),
+    endMs: integer('end_ms').notNull().default(0),
+    text: text('text').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_line_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_line_user').on(t.userId),
+  ]
+);
+
+export const lyricVideoScene = table(
+  'lyric_video_scene',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sort: integer('sort').notNull().default(0),
+    startMs: integer('start_ms').notNull().default(0),
+    endMs: integer('end_ms').notNull().default(0),
+    prompt: text('prompt').notNull(),
+    motionPrompt: text('motion_prompt').notNull().default(''),
+    imageUrl: text('image_url'),
+    imageTaskId: text('image_task_id'),
+    status: text('status').notNull().default('draft'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_scene_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_scene_status').on(t.status),
+  ]
+);
+
+export const lyricVideoExport = table(
+  'lyric_video_export',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    status: text('status').notNull().default('pending'),
+    format: text('format').notNull().default('mp4'),
+    resolution: text('resolution').notNull().default('1080p'),
+    aspectRatio: text('aspect_ratio').notNull().default('16:9'),
+    videoUrl: text('video_url'),
+    taskId: text('task_id'),
+    error: text('error'),
+    settings: text('settings'),
+    costCredits: integer('cost_credits').notNull().default(0),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_export_project').on(t.projectId, t.createdAt),
+    index('idx_lyric_video_export_user').on(t.userId, t.status),
+  ]
+);
+
+export type LyricVideoProject = typeof lyricVideoProject.$inferSelect;
+export type NewLyricVideoProject = typeof lyricVideoProject.$inferInsert;
+export type LyricVideoLine = typeof lyricVideoLine.$inferSelect;
+export type NewLyricVideoLine = typeof lyricVideoLine.$inferInsert;
+export type LyricVideoScene = typeof lyricVideoScene.$inferSelect;
+export type NewLyricVideoScene = typeof lyricVideoScene.$inferInsert;
+export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
+export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;

@@ -82,6 +82,15 @@ export const testSpecs: Record<string, TestSpec> = {
       { name: 'prompt', label: 'Prompt', type: 'textarea', defaultValue: 'a small red cube, product photography', required: true },
     ],
   },
+  kie: {
+    group: 'kie',
+    fields: [
+      { name: 'model', label: 'Model', type: 'text', defaultValue: 'flux-kontext-pro', required: true },
+      { name: 'prompt', label: 'Prompt', type: 'textarea', defaultValue: 'cinematic lyric video still, musician under stage lights, no text', required: true },
+      { name: 'aspect_ratio', label: 'Aspect ratio', type: 'text', defaultValue: '16:9' },
+      { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '1K' },
+    ],
+  },
   gemini: {
     group: 'gemini',
     fields: [

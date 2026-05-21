@@ -68,6 +68,7 @@ export function getSettingGroups(): SettingGroup[] {
 
     // AI
     { name: 'replicate', title: 'Replicate', description: 'Replicate AI API', tab: 'ai' },
+    { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image and video API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
   ];
@@ -186,6 +187,9 @@ export function getSettings(): Setting[] {
 
     // ─── AI / Replicate ──────────────────────────────────────────────
     { name: 'replicate_api_token', title: 'API Token', type: 'password', placeholder: 'r8_xxx', group: 'replicate', tab: 'ai' },
+
+    // ─── AI / Kie ────────────────────────────────────────────────────
+    { name: 'kie_api_key', title: 'API Key', type: 'password', placeholder: 'kie_xxx', group: 'kie', tab: 'ai' },
 
     // ─── AI / Gemini ─────────────────────────────────────────────────
     { name: 'gemini_api_key', title: 'API Key', type: 'password', placeholder: 'xxx', group: 'gemini', tab: 'ai' },

@@ -37,6 +37,7 @@ export async function createTask(params: {
       prompt,
       status: AITaskStatus.PENDING,
       costCredits: costCredits || 0,
+      options: options ? JSON.stringify(options) : undefined,
     };
 
     const [task] = await tx.insert(aiTask).values(taskData).returning();

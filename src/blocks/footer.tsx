@@ -29,15 +29,15 @@ export async function Footer() {
     {
       title: t("footer.feature"),
       links: [
-        { label: t("footer.settings"), href: "/settings", external: true},
-        { label: t("footer.admin"), href: "/admin", external: true },
+        { label: t("footer.home"), href: "/" },
+        { label: t("footer.pricing"), href: "/pricing" },
       ],
     },
     {
       title: t("footer.resources"),
       links: [
-        { label: t("footer.docs"), href: "/docs", external: true },
-        { label: t("footer.github"), href: "https://github.com", external: true },
+        { label: t("footer.dashboard"), href: "/dashboard/lyric-videos" },
+        { label: t("footer.settings"), href: "/settings" },
       ],
     },
     {

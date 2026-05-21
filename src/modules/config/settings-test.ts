@@ -22,6 +22,7 @@ import { S3Provider } from '@/core/storage/s3';
 import { ReplicateProvider } from '@/core/ai/replicate';
 import { GeminiProvider } from '@/core/ai/gemini';
 import { FalProvider } from '@/core/ai/fal';
+import { KieProvider } from '@/core/ai/kie';
 import { AIMediaType } from '@/core/ai/types';
 import { getUniSeq } from '@/lib/hash';
 import { envConfigs } from '@/config';
@@ -53,6 +54,8 @@ export async function runTest(
         return await testR2(inputs, configs);
       case 'replicate':
         return await testReplicate(inputs, configs);
+      case 'kie':
+        return await testKie(inputs, configs);
       case 'gemini':
         return await testGemini(inputs, configs);
       case 'fal':
@@ -358,6 +361,29 @@ async function testFal(inputs: Record<string, string>, configs: Record<string, s
   return {
     success: true,
     message: 'Fal accepted the request',
+    details: { 'Task ID': result.taskId, Status: result.taskStatus },
+  };
+}
+
+async function testKie(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
+  const missing = need(configs, ['kie_api_key']);
+  if (missing) return { success: false, message: missing };
+
+  const provider = new KieProvider({ apiKey: configs.kie_api_key });
+  const result = await provider.generate({
+    params: {
+      mediaType: AIMediaType.IMAGE,
+      model: inputs.model,
+      prompt: inputs.prompt,
+      options: {
+        aspect_ratio: inputs.aspect_ratio || '16:9',
+        resolution: inputs.resolution || '1K',
+      },
+    },
+  });
+  return {
+    success: true,
+    message: 'Kie accepted the request',
     details: { 'Task ID': result.taskId, Status: result.taskStatus },
   };
 }

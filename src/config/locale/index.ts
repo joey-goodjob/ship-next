@@ -18,4 +18,5 @@ export const localeMessagesPaths = [
   'settings',
   'admin',
   'landing',
+  'dashboard',
 ];

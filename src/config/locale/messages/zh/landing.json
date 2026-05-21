@@ -1,114 +1,151 @@
 {
   "nav": {
     "features": "功能",
-    "pricing": "价格"
+    "workflow": "流程",
+    "pricing": "价格",
+    "contact": "联系"
   },
   "hero": {
-    "headline": "一小时上线你的 AI 产品",
-    "subheadline": "认证、支付、订阅、积分、权限、内容管理和国际化 — 全部预置就绪，直接在上面构建你的产品。",
-    "cta": "立即开始",
-    "secondary": "控制台"
-  },
-  "chips": {
-    "auth": "身份认证",
-    "payment": "支付系统",
-    "subscription": "订阅管理",
-    "credits": "积分系统",
-    "rbac": "权限管理",
-    "i18n": "国际化",
-    "cms": "内容管理",
-    "apikeys": "API 密钥"
-  },
-  "features": {
-    "title": "开箱即用的完整功能",
-    "description": "预置的业务逻辑，让你专注于产品本身。",
-    "auth": {
-      "title": "身份认证",
-      "description": "邮箱密码、Google、GitHub OAuth 登录，开箱即用，自带会话管理和账号关联。"
-    },
-    "payment": {
-      "title": "支付系统",
-      "description": "Stripe、PayPal、支付宝、微信支付 — 结账、订阅、Webhook 和订单管理。"
-    },
-    "rbac": {
-      "title": "角色与权限",
-      "description": "细粒度的 RBAC 权限控制，支持通配符匹配。完整的管理后台管理用户、角色和权限。"
-    },
-    "i18n": {
-      "title": "国际化",
-      "description": "内置中英文支持，路由感知语言切换，轻松扩展更多语言。"
-    },
-    "cms": {
-      "title": "内容管理",
-      "description": "分类和文章的完整 CRUD，支持状态管理和管理后台 — 快速搭建博客或文档。"
-    },
-    "credits": {
-      "title": "积分系统",
-      "description": "FIFO 消费、过期控制、注册自动发放和撤销 — 为按量计费做好准备。"
+    "headline_start": "用 AI 制作歌词视频",
+    "headline_accent": "只需几分钟。",
+    "subheadline": "免费预览 · 完全可自定义 · 不套模板",
+    "upload_title": "上传歌曲，立即获得视频预览",
+    "cta": "上传你的歌曲",
+    "file_note": "最大 100MB · 支持 MP3、WAV、FLAC、AAC、OGG、M4A",
+    "benefits": {
+      "free_preview": {
+        "title": "免费预览",
+        "description": "购买前就能创建和编辑视频，无需信用卡。"
+      },
+      "customizable": {
+        "title": "完全可自定义",
+        "description": "在编辑器里修改故事、风格、字体、场景和时间。"
+      },
+      "languages": {
+        "title": "90+ 语言",
+        "description": "AI 自动为全球歌曲准备歌词转写。"
+      }
     }
+  },
+  "featured": {
+    "title": "看看你能创作什么",
+    "description": "用 LyricVideo AI 制作的真实视频"
+  },
+  "story": {
+    "title": "你一定懂这种感觉。",
+    "p1": "歌曲终于完成了。你花了很多时间作曲、写词、录音、混音和修改。",
+    "p2": "你迫不及待想把它展示给世界。但你还需要一个视频，一个配得上这首歌的视频。",
+    "quote": "我需要预算，需要时间，还需要找人帮我。",
+    "p3": "就在那一刻，你被卡住了。",
+    "exists": "LyricVideo AI 就是为这一刻而存在。",
+    "solution_left_1": "它由音乐人打造，也为音乐人而生。我们经历过，所以懂你。",
+    "solution_left_2": "我们的 AI 帮你把视觉想法变成作品，而不是把歌曲塞进模板。",
+    "not_magic": {
+      "title": "不是魔法按钮",
+      "description": "这是一个真实的歌词视频工作流，每位音乐人都可以使用。"
+    },
+    "human": {
+      "title": "AI + 人类创造力",
+      "description": "把 AI 和你的创作方向结合起来，从想法到成片都在一个地方完成。"
+    }
+  },
+  "creativity": {
+    "title": "创意掌握在",
+    "accent": "你手里。",
+    "description": "每个细节都能改，也可以保持简单快速发布。"
+  },
+  "maker": {
+    "title": "为音乐而生的 AI 歌词视频工具",
+    "p1": "LyricVideo AI 是专门为音乐设计的 AI 歌词视频工具。大多数 AI 视频工具是为广告和短视频做的，而它是为歌曲做的。",
+    "p2": "从歌词和歌曲开始，然后用故事提示词、场景、颜色、字体和图片把它变成你的作品。",
+    "p3": "不需要视频剪辑经验。",
+    "link": "登录进入编辑器"
+  },
+  "stats": {
+    "title": "被全球音乐创作者和团队使用",
+    "description": "越来越多音乐人正在用这种方式发布作品。"
+  },
+  "export": {
+    "title": "导出到你熟悉的编辑器",
+    "description": "从 LyricVideo AI 开始，再进入你已经熟悉的工具。几分钟内完成歌词视频，之后还可以继续高级剪辑。",
+    "link": "给视频创作者"
+  },
+  "try_free": {
+    "title": "免费试用",
+    "description": "付款前先看视频效果。没有压力，没有意外。",
+    "preview": "免费预览",
+    "watermark": "无水印",
+    "rights": "版权归你",
+    "cancel": "随时取消",
+    "button": "上传歌曲开始"
   },
   "pricing": {
     "title": "价格",
-    "description": "选择适合你的方案。",
-    "monthly": "月付",
-    "yearly": "年付",
-    "lifetime": "买断",
-    "popular": "热门",
-    "best_value": "超值",
-    "buy_lifetime": "一次买断",
-    "starter": "入门版",
-    "starter_desc": "适合个人用户",
-    "pro": "专业版",
-    "pro_desc": "适合成长型团队",
-    "enterprise": "企业版",
-    "enterprise_desc": "适合大型组织",
-    "feature_1_project": "1 个项目",
-    "feature_5k_credits": "5,000 积分",
-    "feature_email_support": "邮件支持",
-    "feature_unlimited_projects": "无限项目",
-    "feature_50k_credits": "50,000 积分",
-    "feature_priority_support": "优先支持",
-    "feature_api_access": "API 访问",
-    "feature_everything_pro": "包含专业版全部功能",
-    "feature_unlimited_credits": "无限积分",
-    "feature_dedicated_support": "专属支持",
-    "feature_custom_integrations": "定制集成"
+    "description": "选择最适合你的方案"
+  },
+  "pricing_plans": {
+    "free": { "name": "免费版", "note": "无需信用卡", "cta": "获取免费版" },
+    "creator": { "name": "创作者", "note": "按月计费", "cta": "获取创作者版" },
+    "pro": { "name": "Pro", "note": "按月计费", "cta": "获取 Pro" },
+    "ultra": { "name": "Ultra", "note": "按月计费", "cta": "获取 Ultra" }
+  },
+  "credits_pack": {
+    "title": "随时加购积分",
+    "description": "适合完成单个项目。长期创作时订阅方案更划算。",
+    "included": "包含无水印导出和商业使用权"
+  },
+  "calculator": {
+    "title": "我需要多少积分？"
+  },
+  "enterprise": {
+    "pitch": "用惊艳的歌词视频扩大你的作品影响力"
+  },
+  "pricing_faq": {
+    "title": "常见问题",
+    "description": "有任何问题都可以联系我们。"
+  },
+  "pricing_cta": {
+    "copy": "你的歌已经完成了。让大家看见它，感受到它。还有疑问吗？"
   },
   "faq": {
-    "title": "常见问题",
-    "description": "开始之前你可能想了解的一切。",
-    "stack": {
-      "question": "用的是什么技术栈？",
-      "answer": "Next.js 16（App Router）、React 19、TypeScript 严格模式、Tailwind CSS 4、shadcn/ui、Drizzle ORM 和 better-auth。所有业务逻辑都内置在代码里——支付、邮件、存储、AI 都不依赖外部包。"
+    "title": "FAQ",
+    "description": "如果有任何问题，欢迎联系我们。我们很乐意帮你。",
+    "rights": {
+      "question": "我可以把视频发布到 YouTube 或其他平台吗？",
+      "answer": "可以。只要你拥有歌曲版权或得到授权，就可以发布到 YouTube、Instagram、TikTok 或其他平台。"
     },
-    "payment": {
-      "question": "支持哪些支付方式？",
-      "answer": "开箱即用支持 Stripe、PayPal、Creem、支付宝和微信支付。通过 PaymentManager 抽象层，只需实现一个接口就能接入新的支付渠道。"
+    "free_preview": {
+      "question": "有免费试用吗？",
+      "answer": "有。注册后可以获得免费积分来创建和预览视频。导出视频时可以升级或购买积分。"
     },
-    "database": {
-      "question": "支持哪些数据库？",
-      "answer": "Drizzle ORM 支持 PostgreSQL、MySQL、SQLite、Turso 和 Cloudflare D1。只需修改 .env 中的 DATABASE_PROVIDER——schema 模板和 drizzle 配置会自动适配。"
+    "models": {
+      "question": "你们使用哪些 AI 模型？",
+      "answer": "工作流采用可替换 provider。视觉生成优先兼容 Kie，转写、分镜和渲染都保留替换空间。"
     },
-    "customize": {
-      "question": "落地页可以自定义到什么程度？",
-      "answer": "src/blocks/ 下的 section 都是示例内容，本来就是要每个项目自己重写的。src/components/ 里才是长期沉淀的基础组件——换品牌只动 blocks 和翻译，底层架构不变。"
+    "static_video": {
+      "question": "视频是怎么生成的？",
+      "answer": "MVP 会基于歌词、场景图片、字幕样式和音频时间生成静态歌词视频。图生视频和 lip sync 是后续升级。"
     },
-    "license": {
-      "question": "可以用于商业项目吗？",
-      "answer": "可以。ShipAny Next 就是为生产级 SaaS 打造的。克隆之后代码归你——没有按用户数收费，也不依赖我们的任何基础设施。"
+    "credits": {
+      "question": "我可以额外购买积分吗？",
+      "answer": "可以。你可以随时购买积分包，用于转写、图片生成和导出任务。"
     }
   },
   "cta": {
-    "headline": "准备好构建你的 SaaS 了吗？",
-    "subheadline": "别再从零搭建认证、支付和权限系统了。用 ShipAny Next 起步，专注打造真正让产品与众不同的东西。",
-    "button": "免费开始使用"
+    "line1": "你的歌已经完成了。",
+    "line2": "让大家看见它，感受到它。",
+    "line3": "现在创建你的歌词视频：",
+    "button": "上传你的歌曲"
   },
   "footer": {
-    "tagline": "极速发布你的 AI 产品",
-    "feature": "功能",
+    "tagline": "由音乐人打造，为音乐人而生。",
+    "feature": "资源",
     "product": "产品",
-    "resources": "资源",
+    "resources": "公司",
     "legal": "法律信息",
+    "home": "首页",
+    "pricing": "价格",
+    "dashboard": "AI 歌词视频工具",
     "privacy": "隐私政策",
     "terms": "服务条款",
     "settings": "设置",

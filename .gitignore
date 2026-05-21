@@ -45,5 +45,10 @@ next-env.d.ts
 /drizzle/
 src/config/db/schema.ts
 
+# local agent docs and workspace
+AGENTS.zh-CN.md
+.agents/
+README.md
+
 # npm (project uses pnpm)
 package-lock.json

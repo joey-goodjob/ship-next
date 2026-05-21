@@ -1,114 +1,151 @@
 {
   "nav": {
     "features": "Features",
-    "pricing": "Pricing"
+    "workflow": "Workflow",
+    "pricing": "Pricing",
+    "contact": "Contact"
   },
   "hero": {
-    "headline": "The headless engine for your next SaaS.",
-    "subheadline": "Auth, payments, subscriptions, credits, RBAC, CMS, and i18n — all pre-wired. Just build your product on top.",
-    "cta": "Get Started",
-    "secondary": "Dashboard"
-  },
-  "chips": {
-    "auth": "Authentication",
-    "payment": "Payments",
-    "subscription": "Subscriptions",
-    "credits": "Credits",
-    "rbac": "RBAC",
-    "i18n": "i18n",
-    "cms": "CMS",
-    "apikeys": "API Keys"
-  },
-  "features": {
-    "title": "Everything you need to ship",
-    "description": "Pre-wired business logic so you can focus on building your product.",
-    "auth": {
-      "title": "Authentication",
-      "description": "Email/password, Google, and GitHub OAuth — ready out of the box with session management and account linking."
-    },
-    "payment": {
-      "title": "Payments",
-      "description": "Stripe, PayPal, Alipay, WeChat Pay — checkout, subscriptions, webhooks, and order management."
-    },
-    "rbac": {
-      "title": "Roles & Permissions",
-      "description": "Fine-grained RBAC with wildcard matching. Full admin panel for managing users, roles, and permissions."
-    },
-    "i18n": {
-      "title": "Internationalization",
-      "description": "English and Chinese built-in with locale-aware routing. Easy to extend with additional languages."
-    },
-    "cms": {
-      "title": "Content Management",
-      "description": "Categories and posts with full CRUD, status management, and admin panel — build your blog or docs."
-    },
-    "credits": {
-      "title": "Credit System",
-      "description": "FIFO consumption, expiration, auto-grant on signup, and revocation — ready for usage-based billing."
+    "headline_start": "Create lyric videos with AI",
+    "headline_accent": "in minutes.",
+    "subheadline": "Free preview · Fully customizable · No templates",
+    "upload_title": "Upload your song to get an instant preview",
+    "cta": "Upload your song",
+    "file_note": "Max 100MB · Formats: MP3, WAV, FLAC, AAC, OGG, M4A",
+    "benefits": {
+      "free_preview": {
+        "title": "Free preview",
+        "description": "Create and edit your video before purchasing. No credit card required."
+      },
+      "customizable": {
+        "title": "Fully customizable",
+        "description": "Change the story, art style, fonts, scenes, and timing in the editor."
+      },
+      "languages": {
+        "title": "90+ languages",
+        "description": "AI transcription prepares lyrics automatically for songs around the world."
+      }
     }
+  },
+  "featured": {
+    "title": "See what you can create",
+    "description": "Real videos made with LyricVideo AI"
+  },
+  "story": {
+    "title": "You already know this feeling.",
+    "p1": "The feeling of finishing the song. After hours of composing, writing, recording, mixing, and iterating.",
+    "p2": "You are excited to show it to the world. But you need a video. A music video worthy of your song.",
+    "quote": "I need a budget. I need time. I need to find people to help me.",
+    "p3": "In that moment, you feel stuck.",
+    "exists": "LyricVideo AI exists for that moment.",
+    "solution_left_1": "It was built by musicians, for musicians. We have been there, and we get it.",
+    "solution_left_2": "Our AI helps bring your vision to life without turning your song into a template.",
+    "not_magic": {
+      "title": "Not a magic button",
+      "description": "This is a real lyric video workflow, available to every artist."
+    },
+    "human": {
+      "title": "AI + human creativity",
+      "description": "Merge AI with your creative direction: from idea to finished video in one place."
+    }
+  },
+  "creativity": {
+    "title": "Creativity is in",
+    "accent": "your hands.",
+    "description": "Customize every detail, or keep it simple and move fast."
+  },
+  "maker": {
+    "title": "The AI Lyric Video Maker for Music",
+    "p1": "LyricVideo AI is an AI lyric video maker designed specifically for music. Most AI video tools are built for ads and reels. This is built for songs.",
+    "p2": "Start with lyrics and a song, then make it yours with story prompts, scenes, colors, fonts, and images.",
+    "p3": "No video editing experience required.",
+    "link": "Log in to access the editor"
+  },
+  "stats": {
+    "title": "Used by Music Creators and Labels Worldwide",
+    "description": "Artists all over the world are already sharing their music this way."
+  },
+  "export": {
+    "title": "Export to Your Favorite Editor",
+    "description": "Start in LyricVideo AI. Finish in the tools you already use. Create your lyric video in minutes, then export for advanced editing later.",
+    "link": "For filmmakers"
+  },
+  "try_free": {
+    "title": "Try it for free",
+    "description": "See your video before paying anything. No stress. No surprises.",
+    "preview": "Free preview",
+    "watermark": "No watermarks",
+    "rights": "You keep all rights",
+    "cancel": "Cancel anytime",
+    "button": "Upload your song to start"
   },
   "pricing": {
     "title": "Pricing",
-    "description": "Choose the plan that works for you.",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "lifetime": "Lifetime",
-    "popular": "Popular",
-    "best_value": "Best value",
-    "buy_lifetime": "Buy once",
-    "starter": "Starter",
-    "starter_desc": "For individuals",
-    "pro": "Pro",
-    "pro_desc": "For growing teams",
-    "enterprise": "Enterprise",
-    "enterprise_desc": "For large organizations",
-    "feature_1_project": "1 project",
-    "feature_5k_credits": "5,000 credits",
-    "feature_email_support": "Email support",
-    "feature_unlimited_projects": "Unlimited projects",
-    "feature_50k_credits": "50,000 credits",
-    "feature_priority_support": "Priority support",
-    "feature_api_access": "API access",
-    "feature_everything_pro": "Everything in Pro",
-    "feature_unlimited_credits": "Unlimited credits",
-    "feature_dedicated_support": "Dedicated support",
-    "feature_custom_integrations": "Custom integrations"
+    "description": "Choose the best plan for you"
+  },
+  "pricing_plans": {
+    "free": { "name": "Free", "note": "No credit card required", "cta": "Get Free" },
+    "creator": { "name": "Creator", "note": "Billed monthly", "cta": "Get Creator" },
+    "pro": { "name": "Pro", "note": "Billed monthly", "cta": "Get Pro" },
+    "ultra": { "name": "Ultra", "note": "Billed monthly", "cta": "Get Ultra" }
+  },
+  "credits_pack": {
+    "title": "Add Credits Anytime",
+    "description": "Best for finishing a single project. Plans are more cost-effective for ongoing creation.",
+    "included": "Watermark-free exports and commercial use included"
+  },
+  "calculator": {
+    "title": "How many credits do I need?"
+  },
+  "enterprise": {
+    "pitch": "Scale your roster's reach with stunning lyric videos"
+  },
+  "pricing_faq": {
+    "title": "Frequently Asked Questions",
+    "description": "Feel free to contact us for any questions or doubts."
+  },
+  "pricing_cta": {
+    "copy": "You've finished your song. Let people see it. Let people feel it. Do you have any doubts?"
   },
   "faq": {
-    "title": "Frequently asked questions",
-    "description": "Everything you need to know before getting started.",
-    "stack": {
-      "question": "What's the tech stack?",
-      "answer": "Next.js 16 with the App Router, React 19, TypeScript strict mode, Tailwind CSS 4, shadcn/ui, Drizzle ORM, and better-auth. Every piece of business logic is inlined — no external packages for payment, email, storage, or AI."
+    "title": "FAQ",
+    "description": "Feel free to contact us for any questions or doubts. We'll be more than happy to help you!",
+    "rights": {
+      "question": "Can I post the video to YouTube or other platforms?",
+      "answer": "Yes. As long as you own the rights to the song or have permission from the artist, you can post the video on YouTube, Instagram, TikTok, or any other platform."
     },
-    "payment": {
-      "question": "Which payment providers are supported?",
-      "answer": "Stripe, PayPal, Creem, Alipay, and WeChat Pay out of the box. The PaymentManager abstraction makes it straightforward to add more providers by implementing a single interface."
+    "free_preview": {
+      "question": "Is there a free trial?",
+      "answer": "Yes. When you sign up, you get free credits to create and preview videos. To export your video, you can upgrade or buy credits."
     },
-    "database": {
-      "question": "Which databases can I use?",
-      "answer": "Drizzle ORM handles PostgreSQL, MySQL, SQLite, Turso, and Cloudflare D1. Switch providers by editing DATABASE_PROVIDER in your .env — the schema templates and drizzle config adapt automatically."
+    "models": {
+      "question": "Which AI models do you use?",
+      "answer": "The workflow is provider-ready. Kie is the preferred visual generation path, while transcription, storyboard, and rendering stay replaceable."
     },
-    "customize": {
-      "question": "How customizable is the landing page?",
-      "answer": "The src/blocks/ directory ships with demo sections — they're designed to be rewritten per project. The durable primitives live in src/components/, so your rebrand touches blocks and translations, not the chassis."
+    "static_video": {
+      "question": "How do you generate the videos?",
+      "answer": "The MVP creates static lyric videos from lyrics, scene images, subtitle styling, and audio timing. Image-to-video and lip sync are later upgrades."
     },
-    "license": {
-      "question": "Can I use this for commercial projects?",
-      "answer": "Yes. ShipAny Next is built for shipping production SaaS products. You own the code after cloning — no per-seat fees, no runtime dependencies on our infrastructure."
+    "credits": {
+      "question": "Can I purchase additional credits?",
+      "answer": "Yes. You can buy credit packs at any time and use them for transcription, images, and export jobs."
     }
   },
   "cta": {
-    "headline": "Ready to ship your SaaS?",
-    "subheadline": "Stop wiring auth, payments, and RBAC from scratch. Start with ShipAny Next and build what actually makes your product unique.",
-    "button": "Get started for free"
+    "line1": "You've finished your song.",
+    "line2": "Let people see it. Let people feel it.",
+    "line3": "Create your lyric video now:",
+    "button": "Upload your song"
   },
   "footer": {
-    "tagline": "Ship faster, iterate smarter.",
-    "feature": "Feature",
-    "product": "Product",
-    "resources": "Resources",
+    "tagline": "Made by musicians for musicians.",
+    "feature": "Resources",
+    "product": "Products",
+    "resources": "Company",
     "legal": "Legal",
+    "home": "Home",
+    "pricing": "Pricing",
+    "dashboard": "AI Lyric Video Maker",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "settings": "Settings",
