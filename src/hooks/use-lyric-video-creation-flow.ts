@@ -41,7 +41,8 @@ export type LyricVideoCreationStage =
   | "uploading"
   | "waiting-auth"
   | "creating"
-  | "transcribing"
+  | "recognizing"
+  | "organizing"
   | "redirecting"
   | "failed";
 
@@ -131,8 +132,15 @@ export function useLyricVideoCreationFlow() {
         }),
       });
 
-      setStage("transcribing");
-      await requestJson(`/api/lyric-videos/${project.id}/transcribe`, {
+      setStage("recognizing");
+      await requestJson(`/api/lyric-videos/${project.id}/asr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      setStage("organizing");
+      await requestJson(`/api/lyric-videos/${project.id}/lyrics/normalize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

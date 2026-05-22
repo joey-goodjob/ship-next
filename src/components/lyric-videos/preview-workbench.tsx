@@ -142,6 +142,12 @@ type StoryGenerationResponse = {
   taskId: string;
 };
 
+type LyricsNormalizeResponse = {
+  lines: LyricLine[];
+  project: LyricVideoProject;
+  taskId: string;
+};
+
 type EditorContextValue = {
   projectId: string;
   appName: string;
@@ -258,9 +264,10 @@ function getAspectRatio(aspectRatio?: string) {
 
 function projectIsProcessing(project: LyricVideoProject | null) {
   if (!project) return false;
+  const activeStatuses = ["processing", "asr_processing", "normalizing"];
   return (
     ["queued", "running", "waiting_provider"].includes(project.generationStatus || "") ||
-    [project.lyricsStatus, project.scenesStatus, project.renderStatus].some((status) => status === "processing")
+    [project.lyricsStatus, project.scenesStatus, project.renderStatus].some((status) => activeStatuses.includes(status || ""))
   );
 }
 
@@ -376,7 +383,7 @@ function EditorProvider({
       hasAudio &&
       lines.length === 0 &&
       !preparingAudio &&
-      !["processing", "ready", "failed"].includes(project.lyricsStatus || "") &&
+      !["processing", "asr_processing", "normalizing", "ready", "failed"].includes(project.lyricsStatus || "") &&
       autoTranscribeProjectRef.current !== project.id;
     if (!shouldAutoTranscribe) return;
 
@@ -388,13 +395,13 @@ function EditorProvider({
       previous
         ? {
             ...previous,
-            lyricsStatus: "processing",
-            pipelineStage: "transcription_processing",
+            lyricsStatus: "asr_processing",
+            pipelineStage: "asr_processing",
             pipelineError: null,
           }
         : previous,
     );
-    console.info("[lyric-video] auto transcription started from preview", {
+    console.info("[lyric-video] auto ASR started from preview", {
       projectId: project.id,
       audioUrl: project.audioUrl,
       originalAudioUrl: project.originalAudioUrl,
@@ -403,26 +410,44 @@ function EditorProvider({
       trimEndMs: project.trimEndMs,
     });
 
-    requestJson<LyricLine[]>(`/api/lyric-videos/${project.id}/transcribe`, {
+    requestJson(`/api/lyric-videos/${project.id}/asr`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     })
-      .then(async (savedLines) => {
-        console.info("[lyric-video] auto transcription completed from preview", {
+      .then(async () => {
+        setProject((previous) =>
+          previous
+            ? {
+                ...previous,
+                lyricsStatus: "normalizing",
+                pipelineStage: "lyrics_normalizing",
+                pipelineError: null,
+              }
+            : previous,
+        );
+        console.info("[lyric-video] auto ASR completed from preview", {
           projectId: project.id,
-          lineCount: savedLines?.length || 0,
-          firstLine: savedLines?.[0],
         });
-        setLinesState(savedLines || []);
+        const normalized = await requestJson<LyricsNormalizeResponse>(`/api/lyric-videos/${project.id}/lyrics/normalize`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        console.info("[lyric-video] lyrics normalization completed from preview", {
+          projectId: project.id,
+          lineCount: normalized.lines?.length || 0,
+          firstLine: normalized.lines?.[0],
+        });
+        setLinesState(normalized.lines || []);
         setLyricsDirty(false);
         setCurrentTimeState(0);
         await refresh();
         setSaveStatus("saved");
-        toast.success("Lyrics generated from the selected audio clip");
+        toast.success("Lyrics organized from the selected audio clip");
       })
       .catch(async (err: any) => {
-        console.error("[lyric-video] auto transcription failed from preview", err);
+        console.error("[lyric-video] auto lyrics flow failed from preview", err);
         setSaveStatus("failed");
         await refresh();
         toast.error(err?.message || "Generate lyrics failed");
@@ -560,25 +585,31 @@ function EditorProvider({
         }),
       });
 
-      console.info("[lyric-video] requesting transcription", { projectId });
-      const savedLines = await requestJson<LyricLine[]>(`/api/lyric-videos/${projectId}/transcribe`, {
+      console.info("[lyric-video] requesting ASR", { projectId });
+      await requestJson(`/api/lyric-videos/${projectId}/asr`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      console.info("[lyric-video] transcription completed", {
+      console.info("[lyric-video] requesting lyrics normalization", { projectId });
+      const normalized = await requestJson<LyricsNormalizeResponse>(`/api/lyric-videos/${projectId}/lyrics/normalize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      console.info("[lyric-video] lyrics normalization completed", {
         projectId,
-        lineCount: savedLines?.length || 0,
-        firstLine: savedLines?.[0],
+        lineCount: normalized.lines?.length || 0,
+        firstLine: normalized.lines?.[0],
       });
 
-      setLinesState(savedLines || []);
+      setLinesState(normalized.lines || []);
       setLyricsDirty(false);
       setCurrentTimeState(0);
       setActiveTab("lyrics");
       await refresh();
       setSaveStatus("saved");
-      toast.success("Lyrics generated from the selected audio clip");
+      toast.success("Lyrics organized from the selected audio clip");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");

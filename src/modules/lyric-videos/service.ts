@@ -41,6 +41,13 @@ type StoryboardScene = {
   linkedLineIds?: string[];
 };
 
+type AsrDraftResult = {
+  raw: any;
+  rawText: string;
+  rawSegments: LyricLineInput[];
+  words: LyricWordInput[];
+};
+
 const GENERATION_STAGES = [
   'audio_prepare',
   'asr_words',
@@ -121,6 +128,48 @@ function parseJsonField<T>(value: unknown, fallback: T): T {
 function sceneTextFromLineIds(linkedLineIds: string[], lines: any[]) {
   const linked = lines.filter((line) => linkedLineIds.includes(line.id));
   return linked.map((line) => line.text).filter(Boolean).join(' ');
+}
+
+function asrSnapshot(params: {
+  provider: string;
+  model: string;
+  result: AsrDraftResult;
+}) {
+  return {
+    provider: params.provider,
+    model: params.model,
+    rawText: params.result.rawText,
+    rawSegments: params.result.rawSegments,
+    words: params.result.words,
+    raw: params.result.raw,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function readAsrSnapshot(project: any) {
+  const parsed = parseJson<any>(project.transcriptionRaw, {});
+  const rawText = String(parsed.rawText || parsed.text || parsed.raw?.text || '').trim();
+  const rawSegments = Array.isArray(parsed.rawSegments)
+    ? parsed.rawSegments
+    : Array.isArray(parsed.segments)
+      ? parsed.segments
+      : Array.isArray(parsed.raw?.segments)
+        ? parsed.raw.segments
+        : [];
+
+  return {
+    rawText,
+    rawSegments: rawSegments
+      .map((segment: any, index: number) => ({
+        startMs: Math.max(0, Number(segment.startMs) || Number(segment.start) * 1000 || index * 4000),
+        endMs: Math.max(
+          Number(segment.startMs) || Number(segment.start) * 1000 || index * 4000,
+          Number(segment.endMs) || Number(segment.end) * 1000 || index * 4000 + 3500
+        ),
+        text: String(segment.text || '').trim(),
+      }))
+      .filter((segment: LyricLineInput) => segment.text),
+  };
 }
 
 function parseLinesFromText(text: string): LyricLineInput[] {
@@ -283,8 +332,8 @@ async function prepareAudioClipForTranscription(params: { userId: string; projec
     await db()
       .update(lyricVideoProject)
       .set({
-        lyricsStatus: 'processing',
-        pipelineStage: 'transcription_processing',
+        lyricsStatus: 'asr_processing',
+        pipelineStage: 'asr_processing',
         pipelineError: null,
       })
       .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)));
@@ -317,7 +366,7 @@ async function prepareAudioClipForTranscription(params: { userId: string; projec
   await db()
     .update(lyricVideoProject)
     .set({
-      lyricsStatus: 'processing',
+      lyricsStatus: 'asr_processing',
       pipelineStage: 'audio_processing',
       pipelineError: null,
     })
@@ -370,8 +419,8 @@ async function prepareAudioClipForTranscription(params: { userId: string; projec
         trimEndMs: clip.endMs,
         processedAudioUrl: saved.url,
         processedAudioStorageKey: saved.storageKey,
-        lyricsStatus: 'processing',
-        pipelineStage: 'transcription_processing',
+        lyricsStatus: 'asr_processing',
+        pipelineStage: 'asr_processing',
         pipelineError: null,
       })
       .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)))
@@ -600,6 +649,79 @@ ${lyrics}`;
 
   const result = await callKieGeminiChat({ text: prompt });
   return result.content.replace(/^["']|["']$/g, '').trim();
+}
+
+async function normalizeLyricsWithKieGemini(params: {
+  words: any[];
+  rawText: string;
+  rawSegments: LyricLineInput[];
+  project: any;
+}) {
+  if (!envConfigs.kie_api_key) {
+    throw new Error('KIE_API_KEY is required for lyrics normalization');
+  }
+
+  const timedWords = params.words
+    .map((word, index) => `${index}. [${word.startMs}-${word.endMs}ms] ${word.word}`)
+    .join('\n');
+  const timedSegments = params.rawSegments
+    .map((segment, index) => `${index + 1}. [${segment.startMs}-${segment.endMs}ms] ${segment.text}`)
+    .join('\n');
+
+  const prompt = `Clean and organize an ASR transcript into lyric lines for a lyric video.
+Return only JSON matching the schema. Preserve the original lyric language and repeated chorus lines.
+Use the timed words as the source of truth for timestamps. If words are missing, use ASR segments/raw transcript.
+Make each line readable as a lyric phrase, not too long. Keep punctuation natural.
+
+Project title: ${params.project.title}
+Language hint: ${params.project.language || 'auto'}
+
+Timed words:
+${timedWords || '(none)'}
+
+ASR segments:
+${timedSegments || '(none)'}
+
+Raw transcript:
+${params.rawText || '(none)'}`;
+
+  const result = await callKieGeminiChat({
+    text: prompt,
+    responseFormat: {
+      type: 'json_schema',
+      properties: {
+        lines: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              startMs: { type: 'integer' },
+              endMs: { type: 'integer' },
+              text: { type: 'string' },
+              wordStartIndex: { type: 'integer' },
+              wordEndIndex: { type: 'integer' },
+            },
+            required: ['startMs', 'endMs', 'text'],
+          },
+        },
+      },
+    },
+  });
+
+  const parsed = parseJson<any>(result.content, {});
+  const candidateLines = Array.isArray(parsed) ? parsed : parsed.lines;
+  if (!Array.isArray(candidateLines)) return [];
+
+  return candidateLines
+    .map((line: any, index: number) => ({
+      startMs: Math.max(0, Number(line.startMs) || index * 4000),
+      endMs: Math.max(Number(line.startMs) || index * 4000, Number(line.endMs) || index * 4000 + 3500),
+      text: String(line.text || '').trim(),
+      wordStartIndex: Number.isFinite(Number(line.wordStartIndex)) ? Number(line.wordStartIndex) : undefined,
+      wordEndIndex: Number.isFinite(Number(line.wordEndIndex)) ? Number(line.wordEndIndex) : undefined,
+      source: 'llm_normalized',
+    }))
+    .filter((line: LyricLineInput) => line.text);
 }
 
 function buildHeuristicStoryboard(params: { lines: any[]; project: any; storyPrompt?: string }) {
@@ -1035,6 +1157,110 @@ export async function removeProject(params: { userId: string; id: string }) {
     .where(and(eq(lyricVideoProject.id, params.id), eq(lyricVideoProject.userId, params.userId)));
 }
 
+export async function runAsr(params: {
+  userId: string;
+  projectId: string;
+}) {
+  const project = await getProject({ userId: params.userId, id: params.projectId });
+  if (!project) throw new Error('Project not found');
+  if (!(project.originalAudioUrl || project.audioUrl)) throw new Error('Upload audio before ASR');
+
+  const configs = await getAllConfigs();
+  const provider = configs.groq_api_key ? 'groq' : 'kie';
+  const model = configs.groq_api_key ? configs.groq_transcribe_model : configs.kie_chat_model;
+  const task = await createTask({
+    userId: params.userId,
+    mediaType: 'text',
+    provider,
+    model,
+    prompt: project.audioUrl || project.title,
+    costCredits: 10,
+    options: { projectId: params.projectId, stage: 'asr' },
+  });
+
+  try {
+    await db()
+      .update(lyricVideoProject)
+      .set({ lyricsStatus: 'asr_processing', pipelineStage: 'asr_processing', pipelineError: null })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+    const transcriptionProject = await prepareAudioClipForTranscription({
+      userId: params.userId,
+      project,
+    });
+    const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
+    const result = configs.groq_api_key
+      ? await transcribeWithGroqWhisper({
+          audioUrl: transcriptionAudioUrl || '',
+          configs,
+          language: project.language || 'auto',
+          prompt: project.title,
+        })
+      : await transcribeWithKieGemini(transcriptionAudioUrl || '');
+    const asrResult: AsrDraftResult = {
+      raw: result.raw,
+      rawText: String((result as any).text || result.lines.map((line: LyricLineInput) => line.text).join('\n')).trim(),
+      rawSegments: result.lines,
+      words: result.words || [],
+    };
+
+    const snapshot = asrSnapshot({ provider, model, result: asrResult });
+    const wordValues = asrResult.words
+      .map((word, index) => ({
+        id: getUuid(),
+        projectId: params.projectId,
+        userId: params.userId,
+        sort: index,
+        word: word.word.trim(),
+        startMs: Math.max(0, word.startMs || 0),
+        endMs: Math.max(word.startMs || 0, word.endMs || 0),
+        confidence: word.confidence,
+      }))
+      .filter((word) => word.word);
+
+    await db().transaction(async (tx: any) => {
+      await tx
+        .delete(lyricVideoWord)
+        .where(and(eq(lyricVideoWord.projectId, params.projectId), eq(lyricVideoWord.userId, params.userId)));
+      await tx
+        .delete(lyricVideoLine)
+        .where(and(eq(lyricVideoLine.projectId, params.projectId), eq(lyricVideoLine.userId, params.userId)));
+      if (wordValues.length > 0) {
+        await tx.insert(lyricVideoWord).values(wordValues);
+      }
+      await tx
+        .update(lyricVideoProject)
+        .set({
+          transcriptionRaw: safeJson(snapshot),
+          lyricsStatus: 'asr_ready',
+          scenesStatus: 'empty',
+          pipelineStage: 'asr_ready',
+          pipelineError: null,
+        })
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    });
+
+    await updateTask({ taskId: task.id, status: AITaskStatus.SUCCESS, taskResult: snapshot });
+    const updated = await getProject({ userId: params.userId, id: params.projectId });
+    return {
+      words: wordValues,
+      rawText: asrResult.rawText,
+      rawSegments: asrResult.rawSegments,
+      project: updated,
+      taskId: task.id,
+    };
+  } catch (error: any) {
+    await Promise.all([
+      updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
+      db()
+        .update(lyricVideoProject)
+        .set({ lyricsStatus: 'failed', pipelineStage: 'asr_failed', pipelineError: error?.message || 'ASR failed' })
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+    ]);
+    throw error;
+  }
+}
+
 export async function replaceLyrics(params: {
   userId: string;
   projectId: string;
@@ -1126,6 +1352,89 @@ export async function replaceLyrics(params: {
   });
 }
 
+export async function normalizeLyrics(params: {
+  userId: string;
+  projectId: string;
+}) {
+  const project = await getProject({ userId: params.userId, id: params.projectId });
+  if (!project) throw new Error('Project not found');
+
+  const [words, asr] = await Promise.all([
+    db()
+      .select()
+      .from(lyricVideoWord)
+      .where(and(eq(lyricVideoWord.projectId, params.projectId), eq(lyricVideoWord.userId, params.userId)))
+      .orderBy(lyricVideoWord.sort),
+    Promise.resolve(readAsrSnapshot(project)),
+  ]);
+
+  if (words.length === 0 && !asr.rawText && asr.rawSegments.length === 0) {
+    throw new Error('Run ASR before organizing lyrics');
+  }
+
+  const task = await createTask({
+    userId: params.userId,
+    mediaType: 'text',
+    provider: 'kie',
+    model: envConfigs.kie_chat_model,
+    prompt: [
+      `title: ${project.title}`,
+      `rawText: ${asr.rawText}`,
+      `words: ${words.map((word: any) => word.word).join(' ')}`,
+    ].join('\n\n'),
+    costCredits: 0,
+    options: { projectId: params.projectId, stage: 'lyrics_normalize' },
+  });
+
+  try {
+    await db()
+      .update(lyricVideoProject)
+      .set({ lyricsStatus: 'normalizing', pipelineStage: 'lyrics_normalizing', pipelineError: null })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+    const normalizedLines = await normalizeLyricsWithKieGemini({
+      words,
+      rawText: asr.rawText,
+      rawSegments: asr.rawSegments,
+      project,
+    });
+
+    if (normalizedLines.length === 0) {
+      throw new Error('Lyrics normalization returned no lines');
+    }
+
+    const lines = await replaceLyrics({
+      userId: params.userId,
+      projectId: params.projectId,
+      lines: normalizedLines,
+      words,
+      source: 'llm_normalized',
+    });
+    const updated = await getProject({ userId: params.userId, id: params.projectId });
+
+    await updateTask({
+      taskId: task.id,
+      status: AITaskStatus.SUCCESS,
+      taskResult: { lines },
+    });
+
+    return { lines, project: updated, taskId: task.id };
+  } catch (error: any) {
+    await Promise.all([
+      updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
+      db()
+        .update(lyricVideoProject)
+        .set({
+          lyricsStatus: 'failed',
+          pipelineStage: 'lyrics_normalize_failed',
+          pipelineError: error?.message || 'Organize lyrics failed',
+        })
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+    ]);
+    throw error;
+  }
+}
+
 export async function createTranscriptionDraft(params: {
   userId: string;
   projectId: string;
@@ -1133,107 +1442,20 @@ export async function createTranscriptionDraft(params: {
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
-  const configs = await getAllConfigs();
-  const transcriptionProvider = params.rawLyrics ? 'manual' : configs.groq_api_key ? 'groq' : 'kie';
-  const transcriptionModel = params.rawLyrics
-    ? 'manual-lyrics'
-    : configs.groq_api_key
-      ? configs.groq_transcribe_model
-      : configs.kie_chat_model;
-
-  const task = await createTask({
-    userId: params.userId,
-    mediaType: 'text',
-    provider: transcriptionProvider,
-    model: transcriptionModel,
-    prompt: project.audioUrl || project.title,
-    costCredits: params.rawLyrics ? 0 : 10,
-    options: { projectId: params.projectId, stage: 'lyrics_transcription' },
-  });
-
-  try {
-    console.info('[lyric-video] transcription draft started', {
-      projectId: params.projectId,
-      provider: transcriptionProvider,
-      model: transcriptionModel,
-      hasRawLyrics: Boolean(params.rawLyrics),
-      originalAudioUrl: project.originalAudioUrl,
-      audioUrl: project.audioUrl,
-      processedAudioUrl: project.processedAudioUrl,
-      trimStartMs: project.trimStartMs,
-      trimEndMs: project.trimEndMs,
-    });
-    if (!params.rawLyrics && !(project.originalAudioUrl || project.audioUrl)) {
-      throw new Error('Upload audio before transcription');
-    }
-    const transcriptionProject = params.rawLyrics
-      ? project
-      : await prepareAudioClipForTranscription({
-          userId: params.userId,
-          project,
-        });
-    const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
-    console.info('[lyric-video] transcription audio selected', {
-      projectId: params.projectId,
-      transcriptionAudioUrl,
-      audioDurationMs: transcriptionProject.audioDurationMs,
-      trimStartMs: transcriptionProject.trimStartMs,
-      trimEndMs: transcriptionProject.trimEndMs,
-    });
-
-    const result = params.rawLyrics
-      ? { raw: { text: params.rawLyrics, source: 'manual' }, lines: parseLinesFromText(params.rawLyrics), words: [] }
-      : configs.groq_api_key
-        ? await transcribeWithGroqWhisper({
-            audioUrl: transcriptionAudioUrl || '',
-            configs,
-            language: project.language || 'auto',
-            prompt: project.title,
-          })
-        : await transcribeWithKieGemini(transcriptionAudioUrl || '');
-
+  if (params.rawLyrics) {
     const lines = await replaceLyrics({
       userId: params.userId,
       projectId: params.projectId,
-      lines: result.lines,
-      words: result.words,
-      source: params.rawLyrics ? 'manual' : 'asr',
-    });
-
-    await Promise.all([
-      updateTask({ taskId: task.id, status: AITaskStatus.SUCCESS, taskResult: result.raw }),
-      db()
-        .update(lyricVideoProject)
-        .set({
-          transcriptionRaw: safeJson(result.raw),
-          lyricsStatus: 'ready',
-          pipelineStage: 'lyrics_ready',
-          pipelineError: null,
-        })
-        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
-    ]);
-
-    console.info('[lyric-video] transcription draft succeeded', {
-      projectId: params.projectId,
-      lineCount: lines.length,
-      wordCount: result.words?.length || 0,
-      firstLine: lines[0],
+      lines: parseLinesFromText(params.rawLyrics),
+      words: [],
+      source: 'manual',
     });
     return lines;
-  } catch (error: any) {
-    console.error('[lyric-video] transcription draft failed', {
-      projectId: params.projectId,
-      error: error?.message || error,
-    });
-    await Promise.all([
-      updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
-      db()
-        .update(lyricVideoProject)
-        .set({ lyricsStatus: 'failed', pipelineStage: 'transcription_failed', pipelineError: error?.message || 'Transcription failed' })
-        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
-    ]);
-    throw error;
   }
+
+  await runAsr({ userId: params.userId, projectId: params.projectId });
+  const normalized = await normalizeLyrics({ userId: params.userId, projectId: params.projectId });
+  return normalized.lines;
 }
 
 export async function generateStoryboard(params: {
