@@ -15,7 +15,7 @@ export async function CTA() {
         {t("cta.line3")}
       </p>
       <Link
-        href="/dashboard/lyric-videos/upload"
+        href="/#create"
         className="mt-8 inline-flex h-[62px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-9 text-2xl font-black uppercase text-slate-950 hover:bg-[#f59e0b]"
       >
         <Upload className="size-6" />

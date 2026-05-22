@@ -69,7 +69,7 @@ export function SiteHeader({
             />
           ) : (
             <Link
-              href="/dashboard/lyric-videos/upload"
+              href="/#create"
               className={cn(buttonVariants(), "h-10 gap-2 rounded-[10px] bg-[#fbbf24] px-5 font-bold text-slate-950 hover:bg-[#f59e0b]")}
             >
               {t("nav.get_started")}
@@ -116,7 +116,7 @@ export function SiteHeader({
               />
             ) : (
               <Link
-                href="/dashboard/lyric-videos/upload"
+                href="/#create"
                 className={cn(buttonVariants(), "gap-1.5 bg-[#fbbf24] text-slate-950 hover:bg-[#f59e0b]")}
                 onClick={() => setMobileOpen(false)}
               >

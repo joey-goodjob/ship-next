@@ -52,7 +52,7 @@ function PlanCard({ plan }: { plan: (typeof PLANS)[number] }) {
         <Info className="size-4" />
       </div>
       <Link
-        href="/dashboard/lyric-videos"
+        href="/#create"
         className={`mt-6 flex h-11 items-center justify-center rounded-md border text-base font-black ${
           popular ? "border-[#fbbf24] bg-[#fbbf24] text-slate-950" : "border-slate-700 bg-white text-slate-950"
         }`}
@@ -132,7 +132,7 @@ export function Pricing({ title }: { title?: string } = {}) {
               <p className="font-black">One-time purchase</p>
               <div className="mt-5 text-4xl font-black">$50</div>
               <p className="mt-3 font-semibold text-slate-500">Instant access. No subscription required.</p>
-              <Link href="/dashboard/lyric-videos" className="mt-5 flex h-12 items-center justify-center rounded-md bg-[#fbbf24] font-black text-slate-950">
+              <Link href="/#create" className="mt-5 flex h-12 items-center justify-center rounded-md bg-[#fbbf24] font-black text-slate-950">
                 Continue with 2,500 credits
               </Link>
             </div>
@@ -196,7 +196,7 @@ export function Pricing({ title }: { title?: string } = {}) {
             <div className="rounded-[24px] border border-slate-200 bg-white p-6">
               <p className="font-black">Enterprise</p>
               <h3 className="mt-8 text-4xl font-black tracking-[-0.04em]">Get a quote</h3>
-              <Link href="/dashboard/lyric-videos" className="mt-6 flex h-12 items-center justify-center rounded-md border border-slate-700 font-black">
+              <Link href="/#create" className="mt-6 flex h-12 items-center justify-center rounded-md border border-slate-700 font-black">
                 Contact Sales
               </Link>
               <ul className="mt-7 space-y-3 border-t pt-6 font-semibold">
@@ -228,7 +228,7 @@ export function Pricing({ title }: { title?: string } = {}) {
 
       <section className="bg-gradient-to-r from-[#fff7d1] to-[#fde68a] px-5 py-20 text-center">
         <p className="text-lg leading-9">{t("pricing_cta.copy")}</p>
-        <Link href="/dashboard/lyric-videos" className="mt-8 inline-flex h-[62px] items-center justify-center rounded-[9px] bg-[#fbbf24] px-9 text-2xl font-black uppercase text-slate-950">
+        <Link href="/#create" className="mt-8 inline-flex h-[62px] items-center justify-center rounded-[9px] bg-[#fbbf24] px-9 text-2xl font-black uppercase text-slate-950">
           Contact us
         </Link>
       </section>

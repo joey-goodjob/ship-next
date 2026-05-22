@@ -1,6 +1,7 @@
 import { Link } from "@/core/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Languages, MonitorPlay, SlidersHorizontal, Upload } from "lucide-react";
+import { LyricVideoHomeTool } from "@/components/lyric-video-home-tool";
 
 const VIDEO_EXAMPLES = [
   ["The Giants Are Marching Home", "Automatic Ape", "https://media.lyricedits.ai/featured/the-giants-are-marching-home-4k.webm"],
@@ -26,7 +27,7 @@ export async function Hero() {
             {t("hero.subheadline")}
           </p>
 
-          <div className="mx-auto mt-9 rounded-md border border-slate-200 bg-white px-5 py-8 shadow-[0_1px_0_rgba(15,23,42,0.02)] sm:px-10">
+          <div className="mx-auto mt-9">
             <h2 className="text-xl font-bold text-slate-600">{t("hero.upload_title")}</h2>
             <div className="mx-auto my-7 flex h-8 items-center justify-center gap-1 text-[#fbbf24]">
               {Array.from({ length: 18 }).map((_, index) => (
@@ -37,16 +38,7 @@ export async function Hero() {
                 />
               ))}
             </div>
-            <Link
-              href="/dashboard/lyric-videos/upload"
-              className="inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 transition-colors hover:bg-[#f59e0b]"
-            >
-              <Upload className="size-5" />
-              {t("hero.cta")}
-            </Link>
-            <p className="mt-4 text-xs font-semibold text-slate-500">
-              {t("hero.file_note")}
-            </p>
+            <LyricVideoHomeTool />
           </div>
 
           <div className="mx-auto mt-12 grid max-w-[1040px] gap-8 text-left md:grid-cols-3">
@@ -97,7 +89,7 @@ export async function Hero() {
 
           <div className="mt-20 text-center">
             <Link
-              href="/dashboard/lyric-videos/upload"
+              href="/#create"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]"
             >
               <Upload className="size-5" />

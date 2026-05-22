@@ -1,11 +1,10 @@
-import { envConfigs } from "@/config";
-import { PreviewWorkbench } from "./preview-workbench";
+import { redirect } from "@/core/i18n/navigation";
 
-export default async function LyricVideoPreviewPage({
+export default async function LegacyLyricVideoPreviewPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
-  return <PreviewWorkbench projectId={id} appName={envConfigs.app_name} />;
+  const { locale, id } = await params;
+  redirect({ href: `/lyric-videos/${id}/preview`, locale });
 }

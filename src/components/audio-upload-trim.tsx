@@ -37,6 +37,8 @@ export interface AudioUploadTrimProps {
   acceptedFormats?: string[];
   creditsPerSecond?: number;
   creditCost?: number;
+  showCredits?: boolean;
+  compact?: boolean;
   showBack?: boolean;
   backLabel?: string;
   generateLabel?: string;
@@ -259,6 +261,8 @@ export function AudioUploadTrim({
   acceptedFormats = DEFAULT_FORMATS,
   creditsPerSecond = 1,
   creditCost,
+  showCredits = true,
+  compact = false,
   showBack = true,
   backLabel = "Back to Videos",
   generateLabel,
@@ -281,7 +285,7 @@ export function AudioUploadTrim({
   const [generateStatus, setGenerateStatus] = useState<"idle" | "working" | "success">("idle");
   const [waveformPeaks, setWaveformPeaks] = useState<number[]>(fallbackPeaks("empty"));
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [creditBalanceLoading, setCreditBalanceLoading] = useState(true);
+  const [creditBalanceLoading, setCreditBalanceLoading] = useState(showCredits);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationRef = useRef<number | null>(null);
@@ -289,14 +293,21 @@ export function AudioUploadTrim({
   const durationSeconds = secondsFromMs(audioDurationMs);
   const selectedDuration = Math.max(0, endSeconds - startSeconds);
   const requiredCredits = Math.max(1, creditCost ?? Math.ceil((selectedDuration || durationSeconds || 1) * creditsPerSecond));
-  const hasEnoughCredits = creditBalance === null || creditBalance >= requiredCredits;
+  const hasEnoughCredits = !showCredits || creditBalance === null || creditBalance >= requiredCredits;
   const tickLabels = useMemo(() => {
     const total = durationSeconds || 0;
     return [0, total * 0.25, total * 0.5, total * 0.75, total].map((value) => formatClock(value));
   }, [durationSeconds]);
 
   useEffect(() => {
+    if (!showCredits) {
+      setCreditBalance(null);
+      setCreditBalanceLoading(false);
+      return;
+    }
+
     let mounted = true;
+    setCreditBalanceLoading(true);
     fetch("/api/credits")
       .then((response) => response.json())
       .then((body: CreditsResponse) => {
@@ -313,7 +324,7 @@ export function AudioUploadTrim({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [showCredits]);
 
   useEffect(() => {
     return () => {
@@ -499,7 +510,7 @@ export function AudioUploadTrim({
   const isGenerated = generateStatus === "success";
 
   return (
-    <main className="mx-auto min-h-[660px] w-full max-w-[1240px] px-8 py-10">
+    <main className={compact ? "mx-auto w-full max-w-[960px] px-0 py-0" : "mx-auto min-h-[660px] w-full max-w-[1240px] px-8 py-10"}>
       {showBack ? (
         <button
           type="button"
@@ -520,7 +531,7 @@ export function AudioUploadTrim({
       />
 
       {!audioFile ? (
-        <section className="mx-auto mt-7 max-w-[860px] text-center">
+        <section className={compact ? "mx-auto max-w-[860px] text-center" : "mx-auto mt-7 max-w-[860px] text-center"}>
           <div
             role="button"
             tabIndex={0}
@@ -541,14 +552,14 @@ export function AudioUploadTrim({
               setIsDraggingAudio(false);
             }}
             onDrop={handleAudioDrop}
-            className={`flex min-h-[236px] cursor-pointer flex-col items-center justify-center rounded-md border bg-white px-6 py-8 transition-colors ${
+            className={`flex ${compact ? "min-h-[210px]" : "min-h-[236px]"} cursor-pointer flex-col items-center justify-center rounded-md border bg-white px-6 py-8 transition-colors ${
               isDraggingAudio ? "border-[#fbbf24] bg-[#fbbf24]/5" : "border-slate-200 hover:border-[#fbbf24]"
             }`}
           >
-            <div className="flex size-28 items-center justify-center rounded-full border-2 border-slate-200">
-              <CloudUpload className="size-9 text-slate-700" />
+            <div className={`${compact ? "size-20" : "size-28"} flex items-center justify-center rounded-full border-2 border-slate-200`}>
+              <CloudUpload className={`${compact ? "size-7" : "size-9"} text-slate-700`} />
             </div>
-            <p className="mt-8 text-base text-slate-700">
+            <p className={`${compact ? "mt-5" : "mt-8"} text-base text-slate-700`}>
               Drag and drop your <Music className="mx-1 inline size-5 fill-slate-700" />
               <span className="font-black">Audio file</span> here or{" "}
               <span className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1 font-semibold">
@@ -568,7 +579,7 @@ export function AudioUploadTrim({
           </Button>
         </section>
       ) : (
-        <section className="mx-auto mt-5 max-w-[860px] text-center">
+        <section className={compact ? "mx-auto max-w-[860px] text-center" : "mx-auto mt-5 max-w-[860px] text-center"}>
           <div className="rounded-md border border-slate-200 bg-white px-5 py-7">
             {isGenerated && (
               <div className="mx-auto mb-7 flex size-28 items-center justify-center rounded-full border-2 border-emerald-300 text-emerald-400">
@@ -613,23 +624,27 @@ export function AudioUploadTrim({
             {durationStatus === "error" && <p className="mt-6 text-sm font-semibold text-red-500">Unable to read duration</p>}
             {durationStatus === "ready" && (
               <>
-                <div className="mt-7 text-base font-medium leading-7 text-slate-600">
-                  <p>You have {creditBalanceLoading ? "..." : (creditBalance ?? 0)} credits in your balance,</p>
-                  <p>
-                    but the audio you uploaded requires <span className="font-black text-slate-800">{requiredCredits} credits</span>
-                  </p>
-                  {!hasEnoughCredits && (
-                    <Button className="mt-3 h-9 rounded-md bg-[#fbbf24] px-5 font-bold text-slate-950 hover:bg-[#f59e0b]">
-                      Add Credits
-                    </Button>
-                  )}
-                </div>
-                <div className="mt-9 grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-slate-500">
-                  <div className="h-px bg-slate-200" />
-                  <span className="font-semibold">OR</span>
-                  <div className="h-px bg-slate-200" />
-                </div>
-                <p className="mt-9 text-sm font-medium text-slate-500">(Optional) You can trim the audio to create a video for just a part of the song:</p>
+                {showCredits ? (
+                  <>
+                    <div className="mt-7 text-base font-medium leading-7 text-slate-600">
+                      <p>You have {creditBalanceLoading ? "..." : (creditBalance ?? 0)} credits in your balance,</p>
+                      <p>
+                        but the audio you uploaded requires <span className="font-black text-slate-800">{requiredCredits} credits</span>
+                      </p>
+                      {!hasEnoughCredits && (
+                        <Button className="mt-3 h-9 rounded-md bg-[#fbbf24] px-5 font-bold text-slate-950 hover:bg-[#f59e0b]">
+                          Add Credits
+                        </Button>
+                      )}
+                    </div>
+                    <div className="mt-9 grid grid-cols-[1fr_auto_1fr] items-center gap-5 text-slate-500">
+                      <div className="h-px bg-slate-200" />
+                      <span className="font-semibold">OR</span>
+                      <div className="h-px bg-slate-200" />
+                    </div>
+                  </>
+                ) : null}
+                <p className={`${showCredits ? "mt-9" : "mt-7"} text-sm font-medium text-slate-500`}>(Optional) You can trim the audio to create a video for just a part of the song:</p>
                 <div className="mt-5 flex justify-center gap-2">
                   <label className="text-left text-xs font-black text-slate-600">
                     Start Time

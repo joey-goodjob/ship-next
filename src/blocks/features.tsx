@@ -55,7 +55,7 @@ export async function Features() {
               {t("creativity.title")} <span className="text-[#fbbf24]">{t("creativity.accent")}</span>
             </h3>
             <p className="mt-8 text-lg font-semibold text-slate-500">{t("creativity.description")}</p>
-            <Link href="/dashboard/lyric-videos/upload" className="mt-8 inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]">
+            <Link href="/#create" className="mt-8 inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]">
               <Upload className="size-5" />
               {t("hero.cta")}
             </Link>
@@ -75,7 +75,7 @@ export async function Features() {
               <p>{t("maker.p2")}</p>
               <p>{t("maker.p3")}</p>
             </div>
-            <Link href="/dashboard/lyric-videos" className="mt-6 inline-flex items-center gap-2 border-b border-slate-950 text-base font-bold">
+            <Link href="/#create" className="mt-6 inline-flex items-center gap-2 border-b border-slate-950 text-base font-bold">
               {t("maker.link")} <span>→</span>
             </Link>
           </div>
@@ -154,7 +154,7 @@ export async function Features() {
             </div>
           ))}
         </div>
-        <Link href="/dashboard/lyric-videos/upload" className="mt-12 inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]">
+        <Link href="/#create" className="mt-12 inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]">
           <Upload className="size-5" />
           {t("try_free.button")}
         </Link>
