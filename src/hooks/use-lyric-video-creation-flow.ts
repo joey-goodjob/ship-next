@@ -43,6 +43,7 @@ export type LyricVideoCreationStage =
   | "creating"
   | "recognizing"
   | "organizing"
+  | "story"
   | "redirecting"
   | "failed";
 
@@ -141,6 +142,13 @@ export function useLyricVideoCreationFlow() {
 
       setStage("organizing");
       await requestJson(`/api/lyric-videos/${project.id}/lyrics/normalize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      setStage("story");
+      await requestJson(`/api/lyric-videos/${project.id}/story`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

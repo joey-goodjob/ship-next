@@ -319,6 +319,7 @@ function EditorProvider({
   const lastFrameAtRef = useRef<number | null>(null);
   const saveTimerRef = useRef<number | null>(null);
   const autoTranscribeProjectRef = useRef<string | null>(null);
+  const autoStoryProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
 
   const totalDuration = useMemo(() => {
@@ -442,9 +443,22 @@ function EditorProvider({
         setLinesState(normalized.lines || []);
         setLyricsDirty(false);
         setCurrentTimeState(0);
+        let storyCreated = false;
+        try {
+          const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          setProject(story.project || { ...project, storyPrompt: story.storyPrompt });
+          autoStoryProjectRef.current = project.id;
+          storyCreated = true;
+        } catch (storyError: any) {
+          toast.error(storyError?.message || "Generate story failed");
+        }
         await refresh();
         setSaveStatus("saved");
-        toast.success("Lyrics organized from the selected audio clip");
+        toast.success(storyCreated ? "Lyrics and story are ready" : "Lyrics organized");
       })
       .catch(async (err: any) => {
         console.error("[lyric-video] auto lyrics flow failed from preview", err);
@@ -456,6 +470,35 @@ function EditorProvider({
         setPreparingAudio(false);
       });
   }, [lines.length, preparingAudio, project, refresh]);
+
+  useEffect(() => {
+    const shouldCreateStory =
+      project &&
+      lines.length > 0 &&
+      !creatingStory &&
+      !(project.storyPrompt || "").trim() &&
+      autoStoryProjectRef.current !== project.id;
+    if (!shouldCreateStory) return;
+
+    autoStoryProjectRef.current = project.id;
+    setCreatingStory(true);
+    requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    })
+      .then((data) => {
+        setProject((previous) => data.project || (previous ? { ...previous, storyPrompt: data.storyPrompt } : previous));
+        setSaveStatus("saved");
+        toast.success("Story created");
+      })
+      .catch((err: any) => {
+        toast.error(err?.message || "Generate story failed");
+      })
+      .finally(() => {
+        setCreatingStory(false);
+      });
+  }, [creatingStory, lines.length, project]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -607,9 +650,22 @@ function EditorProvider({
       setLyricsDirty(false);
       setCurrentTimeState(0);
       setActiveTab("lyrics");
+      let storyCreated = false;
+      try {
+        const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${projectId}/story`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        setProject((previous) => story.project || (previous ? { ...previous, storyPrompt: story.storyPrompt } : previous));
+        autoStoryProjectRef.current = projectId;
+        storyCreated = true;
+      } catch (storyError: any) {
+        toast.error(storyError?.message || "Generate story failed");
+      }
       await refresh();
       setSaveStatus("saved");
-      toast.success("Lyrics organized from the selected audio clip");
+      toast.success(storyCreated ? "Lyrics and story are ready" : "Lyrics organized");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");

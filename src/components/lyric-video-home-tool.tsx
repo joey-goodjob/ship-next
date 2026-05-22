@@ -31,6 +31,7 @@ function stageLabel(stage: string) {
   if (stage === "creating") return "Creating your lyric video project...";
   if (stage === "recognizing") return "Recognizing audio...";
   if (stage === "organizing") return "Organizing lyrics...";
+  if (stage === "story") return "Creating story...";
   if (stage === "redirecting") return "Opening the preview editor...";
   return "Preparing your preview...";
 }
@@ -171,7 +172,7 @@ export function LyricVideoHomeTool() {
             <Loader2 className="mx-auto size-8 animate-spin text-[#fbbf24]" />
             <p className="mt-4 text-base font-black text-slate-950">{stageLabel(stage)}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-              Stay here for a moment. We will open the preview as soon as the lyrics are organized.
+              Stay here for a moment. We will open the preview as soon as the story is ready.
             </p>
           </div>
         </div>
