@@ -576,6 +576,32 @@ ${lyrics}`;
     .filter((scene: StoryboardScene) => scene.prompt);
 }
 
+async function generateStoryPromptWithKieGemini(params: {
+  lines: any[];
+  project: any;
+}) {
+  const lyrics = params.lines
+    .map((line, index) => `${index + 1}. ${line.text}`)
+    .join('\n');
+  const prompt = `Write an English visual story prompt for a lyric video.
+Use the lyrics, title, style, palette, and format to create a cinematic concept that an image/storyboard generator can follow.
+Return only the story text, no markdown, no headings, no bullet points.
+Length: 120-180 English words.
+Requirements: consistent characters and setting, clear visual arc from beginning to ending, recurring motifs, emotionally matched to the lyrics, no text, no typography, no subtitles in the images.
+
+Project title: ${params.project.title}
+Lyrics language: ${params.project.language || 'auto'}
+Art style: ${params.project.artStyle}
+Palette: ${params.project.palette}
+Aspect ratio: ${params.project.aspectRatio}
+
+Lyrics:
+${lyrics}`;
+
+  const result = await callKieGeminiChat({ text: prompt });
+  return result.content.replace(/^["']|["']$/g, '').trim();
+}
+
 function buildHeuristicStoryboard(params: { lines: any[]; project: any; storyPrompt?: string }) {
   const sceneSize = 2;
   const scenes: StoryboardScene[] = [];
@@ -1251,6 +1277,65 @@ export async function generateStoryboard(params: {
     return inserted;
   } catch (error: any) {
     await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
+    throw error;
+  }
+}
+
+export async function generateStoryPrompt(params: {
+  userId: string;
+  projectId: string;
+}) {
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  if (!details) throw new Error('Project not found');
+  if (details.lines.length === 0) throw new Error('Generate lyrics before creating a story');
+
+  const task = await createTask({
+    userId: params.userId,
+    mediaType: 'text',
+    provider: 'kie',
+    model: envConfigs.kie_chat_model,
+    prompt: [
+      `title: ${details.project.title}`,
+      `style: ${details.project.artStyle}`,
+      `palette: ${details.project.palette}`,
+      `lyrics: ${details.lines.map((line: any) => line.text).join('\n')}`,
+    ].join('\n\n'),
+    costCredits: 0,
+    options: { projectId: params.projectId, stage: 'story_prompt' },
+  });
+
+  try {
+    const storyPrompt = await generateStoryPromptWithKieGemini({
+      lines: details.lines,
+      project: details.project,
+    });
+
+    if (!storyPrompt) {
+      throw new Error('Story generation returned empty content');
+    }
+
+    const [project] = await db()
+      .update(lyricVideoProject)
+      .set({
+        storyPrompt,
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)))
+      .returning();
+
+    await updateTask({
+      taskId: task.id,
+      status: AITaskStatus.SUCCESS,
+      taskResult: { storyPrompt },
+    });
+
+    return { storyPrompt, project, taskId: task.id };
+  } catch (error: any) {
+    await updateTask({
+      taskId: task.id,
+      status: AITaskStatus.FAILED,
+      taskResult: { error: error?.message || 'Generate story failed' },
+    });
     throw error;
   }
 }

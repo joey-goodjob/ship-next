@@ -136,6 +136,12 @@ type UploadAudioResponse = {
   deduped?: boolean;
 };
 
+type StoryGenerationResponse = {
+  storyPrompt: string;
+  project: LyricVideoProject;
+  taskId: string;
+};
+
 type EditorContextValue = {
   projectId: string;
   appName: string;
@@ -157,6 +163,7 @@ type EditorContextValue = {
   lyricsDirty: boolean;
   exporting: boolean;
   preparingAudio: boolean;
+  creatingStory: boolean;
   setCurrentTime: (time: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setActiveTab: (tab: PanelTab) => void;
@@ -169,6 +176,7 @@ type EditorContextValue = {
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) => Promise<void>;
+  createStory: () => Promise<void>;
   saveLyrics: () => Promise<void>;
   queueExport: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -299,6 +307,7 @@ function EditorProvider({
   const [lyricsDirty, setLyricsDirty] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [preparingAudio, setPreparingAudio] = useState(false);
+  const [creatingStory, setCreatingStory] = useState(false);
   const frameRef = useRef<number | null>(null);
   const lastFrameAtRef = useRef<number | null>(null);
   const saveTimerRef = useRef<number | null>(null);
@@ -580,6 +589,36 @@ function EditorProvider({
     }
   }
 
+  async function createStory() {
+    if (creatingStory) return;
+    if (!project) {
+      toast.error("Project unavailable");
+      return;
+    }
+    if (lines.length === 0) {
+      toast.error("Generate lyrics before creating a story");
+      return;
+    }
+
+    setCreatingStory(true);
+    setSaveStatus("saving");
+    try {
+      const data = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setProject(data.project || { ...project, storyPrompt: data.storyPrompt });
+      setSaveStatus("saved");
+      toast.success("Story created");
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Generate story failed");
+    } finally {
+      setCreatingStory(false);
+    }
+  }
+
   async function saveLyrics() {
     try {
       setSaveStatus("saving");
@@ -645,6 +684,7 @@ function EditorProvider({
       lyricsDirty,
       exporting,
       preparingAudio,
+      creatingStory,
       setCurrentTime,
       setIsPlaying,
       setActiveTab,
@@ -652,6 +692,7 @@ function EditorProvider({
       updateProjectField,
       setLines,
       uploadAndTranscribe,
+      createStory,
       saveLyrics,
       queueExport,
       refresh,
@@ -662,6 +703,7 @@ function EditorProvider({
       currentLine,
       currentScene,
       currentTime,
+      creatingStory,
       exporting,
       exports,
       latestExport,
@@ -847,7 +889,7 @@ function SidePanel({ width }: { width: number }) {
 }
 
 function CustomizePanel() {
-  const { latestExport, project, updateProjectField } = useEditor();
+  const { createStory, creatingStory, latestExport, project, updateProjectField } = useEditor();
   if (!project) return <PanelEmpty title="Project unavailable" description="Refresh the page or open a project from the library." />;
 
   return (
@@ -871,10 +913,12 @@ function CustomizePanel() {
         action={
           <button
             type="button"
+            onClick={createStory}
+            disabled={creatingStory}
             className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[10px] text-[13px] font-[700] text-[#334155] hover:bg-[#F8F9FA]"
           >
-            <Wand2 className="h-[14px] w-[14px]" />
-            Create new story
+            {creatingStory ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Wand2 className="h-[14px] w-[14px]" />}
+            {creatingStory ? "Creating..." : "Create new story"}
           </button>
         }
         helper="Describe the story of your video. Include acts, characters, locations, and visual details."
