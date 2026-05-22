@@ -1,153 +1,248 @@
 "use client";
 
-import { CircleHelp, DollarSign, Music, Sun, User } from "lucide-react";
-import { toast } from "sonner";
-import { AudioUploadTrim } from "@/components/audio-upload-trim";
-import { useRouter } from "@/core/i18n/navigation";
+import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
+import { useTranslations } from "next-intl";
+import { CalendarClock, Film, Loader2, Music2, Plus, Search, Sparkles } from "lucide-react";
+import { Link, useRouter } from "@/core/i18n/navigation";
+import { cn } from "@/lib/utils";
 
-function titleFromFile(file: File) {
-  return file.name.replace(/\.[^.]+$/, "");
+type LyricVideoProject = {
+  id: string;
+  title: string;
+  status: string;
+  audioFilename?: string | null;
+  audioDurationMs?: number | null;
+  pipelineStage: string;
+  lyricsStatus: string;
+  scenesStatus: string;
+  renderStatus: string;
+  aspectRatio: string;
+  resolution: string;
+  updatedAt?: string | Date;
+  createdAt?: string | Date;
+};
+
+type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data?: T;
+};
+
+async function readApi<T>(url: string, init?: RequestInit) {
+  const response = await fetch(url, init);
+  const body = (await response.json().catch(() => ({}))) as ApiResponse<T>;
+  if (!response.ok || body.code !== 0) {
+    throw new Error(body.message || "Request failed");
+  }
+  return body.data as T;
 }
 
-async function api(path: string, init?: RequestInit) {
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers || {}),
-    },
-  });
-  const json = await response.json();
-  if (json.code !== 0) throw new Error(json.message || "Request failed");
-  return json.data;
+function formatDuration(ms?: number | null) {
+  const totalSeconds = Math.max(0, Math.round((ms || 0) / 1000));
+  if (!totalSeconds) return "--:--";
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-async function uploadAudio(file: File) {
-  const form = new FormData();
-  form.append("file", file);
-  const response = await fetch("/api/storage/upload-audio", {
-    method: "POST",
-    body: form,
-  });
-  const json = await response.json();
-  if (json.code !== 0) throw new Error(json.message || "Upload failed");
-  return json.data as { url: string; key: string; filename: string; size: number };
+function formatDate(value?: string | Date) {
+  if (!value) return "Never";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Never";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
-function SiteChrome() {
+function statusTone(status: string) {
+  if (status === "ready" || status === "success") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "processing" || status === "generating") return "border-amber-200 bg-amber-50 text-amber-700";
+  if (status === "failed") return "border-red-200 bg-red-50 text-red-700";
+  return "border-zinc-200 bg-zinc-50 text-zinc-600";
+}
+
+function ProjectStatus({ label, value }: { label: string; value: string }) {
   return (
-    <header className="flex h-16 items-center justify-end border-b border-slate-100 px-6 text-sm text-slate-600">
-      <nav className="flex items-center gap-5">
-        <span className="rounded-full bg-[#fbbf24] px-4 py-2 font-semibold text-slate-950">Videos</span>
-        <a href="#" className="font-medium hover:text-slate-950">Gallery</a>
-        <DollarSign className="size-4" />
-        <User className="size-4" />
-        <CircleHelp className="size-4" />
-        <Sun className="size-4" />
-      </nav>
-    </header>
-  );
-}
-
-function Footer() {
-  const columns = [
-    { title: "RESOURCES", links: ["Home", "Pricing", "Uses", "Blog", "Discount"] },
-    { title: "COMPANY", links: ["About us", "Affiliates", "Contact"] },
-    {
-      title: "PRODUCTS",
-      links: [
-        "AI Lyric Video Maker",
-        "AI Video Creation from Lyrics",
-        "Lyric Video Creator",
-        "Lyric Video Editor",
-        "Lyric Video Generator AI",
-      ],
-    },
-    { title: "LEGAL", links: ["Terms of Service", "Privacy Policy"] },
-  ];
-
-  return (
-    <footer className="mx-auto mt-28 w-full max-w-[1280px] px-8 pb-16 text-slate-950">
-      <p className="text-center font-serif text-3xl italic tracking-tight">Made by musicians for musicians.</p>
-      <div className="mx-auto mt-9 h-px w-32 bg-slate-200" />
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1.4fr_1fr]">
-        <div>
-          <div className="flex items-center gap-3 text-4xl font-black tracking-tight">
-            <span className="flex size-9 items-center justify-center rounded-full border-4 border-slate-950 text-[#fbbf24]">
-              <Music className="size-5" />
-            </span>
-            <span>
-              Lyric<span className="text-[#fbbf24]">Edits</span>
-            </span>
-          </div>
-          <p className="mt-9 text-lg font-black">Follow us on</p>
-          <div className="mt-4 flex gap-2">
-            {["dc", "ig", "tk", "yt", "fb", "x", "in"].map((item) => (
-              <span key={item} className="flex size-9 items-center justify-center rounded-md bg-slate-950 text-xs font-bold text-white">
-                {item}
-              </span>
-            ))}
-          </div>
-          <p className="mt-9 text-sm font-medium text-slate-500">All rights reserved © 2024 - 2026</p>
-        </div>
-        {columns.map((column) => (
-          <div key={column.title}>
-            <h3 className="font-black">{column.title}</h3>
-            <ul className="mt-5 space-y-4 text-base font-medium">
-              {column.links.map((link) => (
-                <li key={link}>{link}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </footer>
+    <span className={cn("inline-flex h-6 items-center rounded-full border px-2 text-xs font-semibold", statusTone(value))}>
+      {label}: {value}
+    </span>
   );
 }
 
 export default function LyricVideosPage() {
+  const t = useTranslations("dashboard.lyric_videos");
   const router = useRouter();
+  const [projects, setProjects] = useState<LyricVideoProject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [title, setTitle] = useState("");
 
-  async function handleGenerate(
-    file: File,
-    startSeconds: number,
-    endSeconds: number,
-    options: { useEntireAudio: boolean; durationSeconds: number },
-  ) {
+  async function loadProjects() {
+    setLoading(true);
+    setError("");
     try {
-      const uploaded = await uploadAudio(file);
-      const project = await api("/api/lyric-videos", {
+      const data = await readApi<LyricVideoProject[]>("/api/lyric-videos");
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setError(err?.message || t("failed"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const filteredProjects = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return projects;
+    return projects.filter((project) => {
+      return [project.title, project.audioFilename, project.pipelineStage, project.status]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle));
+    });
+  }, [projects, query]);
+
+  async function createProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanTitle = title.trim();
+    if (!cleanTitle || creating) return;
+
+    setCreating(true);
+    setError("");
+    try {
+      const project = await readApi<LyricVideoProject>("/api/lyric-videos", {
         method: "POST",
-        body: JSON.stringify({
-          title: titleFromFile(file),
-          audioUrl: uploaded.url,
-          audioStorageKey: uploaded.key,
-          audioFilename: uploaded.filename,
-          audioDurationMs: Math.max(0, Math.round(options.durationSeconds * 1000)),
-          previewConfig: {
-            trim: {
-              startSeconds,
-              endSeconds,
-              useEntireAudio: options.useEntireAudio,
-            },
-          },
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: cleanTitle }),
       });
-      toast.success("Uploaded. Opening preview workspace...");
-      window.setTimeout(() => {
-        router.push(`/dashboard/lyric-videos/${project.id}/preview`);
-      }, 1000);
-    } catch (error: any) {
-      toast.error(error.message || "Create failed");
-      throw error;
+      setTitle("");
+      router.push(`/dashboard/lyric-videos/${project.id}/preview`);
+    } catch (err: any) {
+      setError(err?.message || t("failed"));
+    } finally {
+      setCreating(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-white text-slate-800">
-      <SiteChrome />
-      <AudioUploadTrim onGenerate={handleGenerate} />
-      <Footer />
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
+      <section className="flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-2xl">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            <Sparkles className="size-3.5" />
+            {t("workspace_badge")}
+          </div>
+          <h1 className="text-2xl font-bold tracking-normal text-foreground">{t("title")}</h1>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("description")}</p>
+        </div>
+
+        <form onSubmit={createProject} className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[420px] sm:flex-row">
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder={t("project_title_placeholder")}
+            className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+          <button
+            type="submit"
+            disabled={creating || !title.trim()}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#F5A623] px-4 text-sm font-bold text-white transition hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {creating ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+            {creating ? t("creating") : t("new_project")}
+          </button>
+        </form>
+      </section>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t("search_placeholder")}
+            className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={loadProjects}
+          className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-semibold text-foreground transition hover:bg-accent"
+        >
+          {t("refresh")}
+        </button>
+      </div>
+
+      {error ? (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</div>
+      ) : null}
+
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="h-52 animate-pulse rounded-lg border border-border bg-muted/50" />
+          ))}
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 px-6 text-center">
+          <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-amber-50 text-[#F5A623]">
+            <Film className="size-7" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground">{t("empty")}</h2>
+          <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">{t("empty_description")}</p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filteredProjects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/dashboard/lyric-videos/${project.id}/preview`}
+              className="group flex min-h-52 flex-col justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
+            >
+              <div>
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-700">
+                      <Music2 className="size-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="truncate text-base font-bold text-foreground">{project.title}</h2>
+                      <p className="mt-1 truncate text-xs text-muted-foreground">
+                        {project.audioFilename || t("draft_audio")}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-[#F5A623]">
+                    {project.aspectRatio}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <ProjectStatus label={t("lyrics")} value={project.lyricsStatus} />
+                  <ProjectStatus label={t("scenes")} value={project.scenesStatus} />
+                  <ProjectStatus label={t("exports")} value={project.renderStatus} />
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarClock className="size-3.5" />
+                  {formatDate(project.updatedAt || project.createdAt)}
+                </span>
+                <span className="font-mono">{formatDuration(project.audioDurationMs)}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

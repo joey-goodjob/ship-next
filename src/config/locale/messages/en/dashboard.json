@@ -9,6 +9,7 @@
   "lyric_videos": {
     "title": "Lyric Videos",
     "description": "Create static AI lyric videos from songs, lyrics, scenes, and generated artwork.",
+    "workspace_badge": "AI video workspace",
     "new_project": "New project",
     "project_title": "Project title",
     "project_title_placeholder": "Midnight chorus",
@@ -19,6 +20,10 @@
     "create": "Create",
     "creating": "Creating...",
     "empty": "No lyric video projects yet.",
+    "empty_description": "Create a project, add lyrics, generate scenes, and open the editor workspace to preview and export.",
+    "search_placeholder": "Search projects...",
+    "refresh": "Refresh",
+    "draft_audio": "Draft project",
     "open": "Open",
     "status": "Status",
     "lyrics": "Lyrics",

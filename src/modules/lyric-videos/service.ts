@@ -248,6 +248,157 @@ async function saveGeneratedFile(params: {
   return { url, storageKey: params.key };
 }
 
+function hasAudioInputPatch(data: Record<string, unknown>) {
+  return [
+    'audioUrl',
+    'audioStorageKey',
+    'originalAudioUrl',
+    'originalAudioStorageKey',
+    'audioDurationMs',
+    'trimStartMs',
+    'trimEndMs',
+  ].some((key) => Object.prototype.hasOwnProperty.call(data, key));
+}
+
+function normalizeClipMs(params: { startMs?: unknown; endMs?: unknown; durationMs?: unknown }) {
+  const sourceDurationMs = Math.max(0, Math.round(Number(params.durationMs) || 0));
+  const maxStartMs = sourceDurationMs > 1000 ? sourceDurationMs - 1000 : Number.POSITIVE_INFINITY;
+  const startMs = Math.max(0, Math.min(Math.round(Number(params.startMs) || 0), maxStartMs));
+  const requestedEndMs = Math.max(startMs + 1000, Math.round(Number(params.endMs) || sourceDurationMs || startMs + 1000));
+  const endMs = sourceDurationMs > 0 ? Math.min(requestedEndMs, sourceDurationMs) : requestedEndMs;
+  return {
+    startMs,
+    endMs: Math.max(startMs + 1000, endMs),
+    durationMs: Math.max(1000, Math.max(startMs + 1000, endMs) - startMs),
+  };
+}
+
+async function prepareAudioClipForTranscription(params: { userId: string; project: any }) {
+  const existingProcessedUrl = params.project.processedAudioUrl || '';
+  if (existingProcessedUrl && params.project.audioUrl === existingProcessedUrl) {
+    console.info('[lyric-video] reusing existing processed audio', {
+      projectId: params.project.id,
+      processedAudioUrl: existingProcessedUrl,
+    });
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        lyricsStatus: 'processing',
+        pipelineStage: 'transcription_processing',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)));
+    return params.project;
+  }
+
+  const originalAudioUrl = params.project.originalAudioUrl || params.project.audioUrl;
+  if (!originalAudioUrl) throw new Error('Upload audio before transcription');
+
+  const clip = normalizeClipMs({
+    startMs: params.project.trimStartMs,
+    endMs: params.project.trimEndMs,
+    durationMs: params.project.audioDurationMs,
+  });
+  const clipId = getUuid();
+  const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-audio', `${params.project.id}-${clipId}`);
+  const inputPath = path.join(tmpDir, 'source-audio');
+  const outputPath = path.join(tmpDir, 'processed.mp3');
+  console.info('[lyric-video] preparing audio clip', {
+    projectId: params.project.id,
+    originalAudioUrl,
+    sourceDurationMs: params.project.audioDurationMs,
+    trimStartMs: clip.startMs,
+    trimEndMs: clip.endMs,
+    clipDurationMs: clip.durationMs,
+    ffmpegPath: envConfigs.ffmpeg_path || 'ffmpeg',
+    tmpDir,
+  });
+
+  await db()
+    .update(lyricVideoProject)
+    .set({
+      lyricsStatus: 'processing',
+      pipelineStage: 'audio_processing',
+      pipelineError: null,
+    })
+    .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)));
+
+  try {
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(inputPath, await fetchBytes(originalAudioUrl));
+    console.info('[lyric-video] running ffmpeg trim', {
+      projectId: params.project.id,
+      args: ['-ss', String(clip.startMs / 1000), '-i', inputPath, '-t', String(clip.durationMs / 1000), outputPath],
+    });
+    await execFileAsync(envConfigs.ffmpeg_path || 'ffmpeg', [
+      '-y',
+      '-ss',
+      String(clip.startMs / 1000),
+      '-i',
+      inputPath,
+      '-t',
+      String(clip.durationMs / 1000),
+      '-vn',
+      '-acodec',
+      'libmp3lame',
+      '-b:a',
+      '192k',
+      outputPath,
+    ]);
+
+    const saved = await saveGeneratedFile({
+      body: await readFile(outputPath),
+      key: `processed-audio/${params.project.id}-${clipId}.mp3`,
+      contentType: 'audio/mpeg',
+      localDir: 'processed-audio',
+    });
+    console.info('[lyric-video] processed audio saved', {
+      projectId: params.project.id,
+      processedAudioUrl: saved.url,
+      processedAudioStorageKey: saved.storageKey,
+    });
+
+    const [updated] = await db()
+      .update(lyricVideoProject)
+      .set({
+        audioUrl: saved.url,
+        audioStorageKey: saved.storageKey,
+        originalAudioUrl,
+        originalAudioStorageKey: params.project.originalAudioStorageKey || params.project.audioStorageKey,
+        audioDurationMs: clip.durationMs,
+        trimStartMs: clip.startMs,
+        trimEndMs: clip.endMs,
+        processedAudioUrl: saved.url,
+        processedAudioStorageKey: saved.storageKey,
+        lyricsStatus: 'processing',
+        pipelineStage: 'transcription_processing',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)))
+      .returning();
+
+    return updated || {
+      ...params.project,
+      audioUrl: saved.url,
+      audioStorageKey: saved.storageKey,
+      originalAudioUrl,
+      audioDurationMs: clip.durationMs,
+      trimStartMs: clip.startMs,
+      trimEndMs: clip.endMs,
+      processedAudioUrl: saved.url,
+      processedAudioStorageKey: saved.storageKey,
+    };
+  } catch (error: any) {
+    console.error('[lyric-video] audio trim failed', {
+      projectId: params.project.id,
+      error: error?.message || error,
+    });
+    throw new Error(error?.message ? `Audio trim failed: ${error.message}` : 'Audio trim failed');
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+}
+
 async function saveAIProviderFiles(files: AIFile[]) {
   if (!isStorageConfigured()) return undefined;
 
@@ -669,6 +820,17 @@ export async function updateProject(params: {
   if (params.data.previewConfig) {
     updateData.previewConfig = safeJson(params.data.previewConfig);
   }
+  if (hasAudioInputPatch(updateData)) {
+    updateData.originalAudioUrl = updateData.originalAudioUrl || updateData.audioUrl || project.originalAudioUrl || project.audioUrl;
+    updateData.originalAudioStorageKey =
+      updateData.originalAudioStorageKey || updateData.audioStorageKey || project.originalAudioStorageKey || project.audioStorageKey;
+    updateData.processedAudioUrl = null;
+    updateData.processedAudioStorageKey = null;
+    updateData.lyricsStatus = 'empty';
+    updateData.scenesStatus = 'empty';
+    updateData.pipelineStage = updateData.audioUrl || updateData.originalAudioUrl ? 'uploaded' : 'draft';
+    updateData.pipelineError = null;
+  }
 
   const [updated] = await db()
     .update(lyricVideoProject)
@@ -964,20 +1126,45 @@ export async function createTranscriptionDraft(params: {
   });
 
   try {
-    if (!params.rawLyrics && !project.audioUrl) {
+    console.info('[lyric-video] transcription draft started', {
+      projectId: params.projectId,
+      provider: transcriptionProvider,
+      model: transcriptionModel,
+      hasRawLyrics: Boolean(params.rawLyrics),
+      originalAudioUrl: project.originalAudioUrl,
+      audioUrl: project.audioUrl,
+      processedAudioUrl: project.processedAudioUrl,
+      trimStartMs: project.trimStartMs,
+      trimEndMs: project.trimEndMs,
+    });
+    if (!params.rawLyrics && !(project.originalAudioUrl || project.audioUrl)) {
       throw new Error('Upload audio before transcription');
     }
+    const transcriptionProject = params.rawLyrics
+      ? project
+      : await prepareAudioClipForTranscription({
+          userId: params.userId,
+          project,
+        });
+    const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
+    console.info('[lyric-video] transcription audio selected', {
+      projectId: params.projectId,
+      transcriptionAudioUrl,
+      audioDurationMs: transcriptionProject.audioDurationMs,
+      trimStartMs: transcriptionProject.trimStartMs,
+      trimEndMs: transcriptionProject.trimEndMs,
+    });
 
     const result = params.rawLyrics
       ? { raw: { text: params.rawLyrics, source: 'manual' }, lines: parseLinesFromText(params.rawLyrics), words: [] }
       : configs.groq_api_key
         ? await transcribeWithGroqWhisper({
-            audioUrl: project.audioUrl || '',
+            audioUrl: transcriptionAudioUrl || '',
             configs,
             language: project.language || 'auto',
             prompt: project.title,
           })
-        : await transcribeWithKieGemini(project.audioUrl || '');
+        : await transcribeWithKieGemini(transcriptionAudioUrl || '');
 
     const lines = await replaceLyrics({
       userId: params.userId,
@@ -1000,8 +1187,18 @@ export async function createTranscriptionDraft(params: {
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
     ]);
 
+    console.info('[lyric-video] transcription draft succeeded', {
+      projectId: params.projectId,
+      lineCount: lines.length,
+      wordCount: result.words?.length || 0,
+      firstLine: lines[0],
+    });
     return lines;
   } catch (error: any) {
+    console.error('[lyric-video] transcription draft failed', {
+      projectId: params.projectId,
+      error: error?.message || error,
+    });
     await Promise.all([
       updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
       db()

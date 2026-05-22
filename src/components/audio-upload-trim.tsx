@@ -19,16 +19,30 @@ import { Button } from "@/components/ui/button";
 
 const DEFAULT_MAX_FILE_SIZE = 100 * 1024 * 1024;
 const DEFAULT_FORMATS = ["mp3", "wav", "flac", "aac", "ogg", "m4a"];
-const CREDIT_BALANCE = 150;
 const WAVEFORM_BUCKETS = 180;
 const WAVEFORM_WIDTH = 1000;
 const WAVEFORM_HEIGHT = 96;
 const MIN_TRIM_SECONDS = 1;
 
+type CreditsResponse = {
+  code: number;
+  message: string;
+  data?: {
+    balance?: number;
+  };
+};
+
 export interface AudioUploadTrimProps {
   maxFileSize?: number;
   acceptedFormats?: string[];
   creditsPerSecond?: number;
+  creditCost?: number;
+  showBack?: boolean;
+  backLabel?: string;
+  generateLabel?: string;
+  workingLabel?: string;
+  successLabel?: string;
+  maxFileSizeLabel?: string;
   onBack?: () => void;
   onGenerate?: (
     file: File,
@@ -244,6 +258,13 @@ export function AudioUploadTrim({
   maxFileSize = DEFAULT_MAX_FILE_SIZE,
   acceptedFormats = DEFAULT_FORMATS,
   creditsPerSecond = 1,
+  creditCost,
+  showBack = true,
+  backLabel = "Back to Videos",
+  generateLabel,
+  workingLabel = "Uploading...",
+  successLabel = "Uploaded",
+  maxFileSizeLabel = "100MB",
   onBack,
   onGenerate,
 }: AudioUploadTrimProps) {
@@ -259,18 +280,40 @@ export function AudioUploadTrim({
   const [currentTime, setCurrentTime] = useState(0);
   const [generateStatus, setGenerateStatus] = useState<"idle" | "working" | "success">("idle");
   const [waveformPeaks, setWaveformPeaks] = useState<number[]>(fallbackPeaks("empty"));
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [creditBalanceLoading, setCreditBalanceLoading] = useState(true);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const animationRef = useRef<number | null>(null);
 
   const durationSeconds = secondsFromMs(audioDurationMs);
   const selectedDuration = Math.max(0, endSeconds - startSeconds);
-  const requiredCredits = Math.max(1, Math.ceil((selectedDuration || durationSeconds || 1) * creditsPerSecond));
-  const hasEnoughCredits = CREDIT_BALANCE >= requiredCredits;
+  const requiredCredits = Math.max(1, creditCost ?? Math.ceil((selectedDuration || durationSeconds || 1) * creditsPerSecond));
+  const hasEnoughCredits = creditBalance === null || creditBalance >= requiredCredits;
   const tickLabels = useMemo(() => {
     const total = durationSeconds || 0;
     return [0, total * 0.25, total * 0.5, total * 0.75, total].map((value) => formatClock(value));
   }, [durationSeconds]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/credits")
+      .then((response) => response.json())
+      .then((body: CreditsResponse) => {
+        if (!mounted) return;
+        const balance = Number(body?.data?.balance);
+        setCreditBalance(Number.isFinite(balance) ? balance : 0);
+      })
+      .catch(() => {
+        if (mounted) setCreditBalance(0);
+      })
+      .finally(() => {
+        if (mounted) setCreditBalanceLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -335,7 +378,7 @@ export function AudioUploadTrim({
       return;
     }
     if (file.size > maxFileSize) {
-      toast.error("Audio file exceeds the 100MB limit");
+      toast.error(`Audio file exceeds the ${maxFileSizeLabel} limit`);
       return;
     }
 
@@ -438,13 +481,17 @@ export function AudioUploadTrim({
       toast.error("Choose an audio file first");
       return;
     }
+    if (!hasEnoughCredits) {
+      toast.error("Insufficient credits");
+      return;
+    }
     setGenerateStatus("working");
     try {
       await onGenerate?.(audioFile, startSeconds, endSeconds, { useEntireAudio, durationSeconds });
       setGenerateStatus("success");
-    } catch (error) {
+    } catch (error: any) {
       setGenerateStatus("idle");
-      throw error;
+      toast.error(error?.message || "Upload failed");
     }
   }
 
@@ -453,14 +500,16 @@ export function AudioUploadTrim({
 
   return (
     <main className="mx-auto min-h-[660px] w-full max-w-[1240px] px-8 py-10">
-      <button
-        type="button"
-        onClick={onBack || clearAudioFile}
-        className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-950"
-      >
-        <ArrowLeft className="size-4" />
-        Back to Videos
-      </button>
+      {showBack ? (
+        <button
+          type="button"
+          onClick={onBack || clearAudioFile}
+          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-950"
+        >
+          <ArrowLeft className="size-4" />
+          {backLabel}
+        </button>
+      ) : null}
 
       <input
         ref={audioInputRef}
@@ -507,7 +556,7 @@ export function AudioUploadTrim({
                 Browse
               </span>
             </p>
-            <p className="mt-2 text-sm font-medium text-slate-500">Max 100MB · Formats: MP3, WAV, FLAC, AAC, OGG, M4A</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">Max {maxFileSizeLabel} · Formats: MP3, WAV, FLAC, AAC, OGG, M4A</p>
           </div>
           <Button
             type="button"
@@ -565,7 +614,7 @@ export function AudioUploadTrim({
             {durationStatus === "ready" && (
               <>
                 <div className="mt-7 text-base font-medium leading-7 text-slate-600">
-                  <p>You have {CREDIT_BALANCE} credits in your balance,</p>
+                  <p>You have {creditBalanceLoading ? "..." : (creditBalance ?? 0)} credits in your balance,</p>
                   <p>
                     but the audio you uploaded requires <span className="font-black text-slate-800">{requiredCredits} credits</span>
                   </p>
@@ -692,14 +741,14 @@ export function AudioUploadTrim({
 
           <Button
             type="button"
-            onClick={generatePreview}
-            disabled={isGenerating || isGenerated || durationStatus !== "ready"}
+                onClick={generatePreview}
+            disabled={isGenerating || isGenerated || durationStatus !== "ready" || !hasEnoughCredits}
             className="mt-5 h-12 gap-2 rounded-md bg-[#fbbf24] px-6 text-base font-black text-slate-950 hover:bg-[#f59e0b]"
           >
             {isGenerating && <span className="size-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />}
             {isGenerated && <Check className="size-5" />}
             {!isGenerating && !isGenerated && <Sparkles className="size-5" />}
-            {isGenerating ? "Uploading..." : isGenerated ? "Uploaded" : `Generate Preview (${requiredCredits} credits)`}
+            {isGenerating ? workingLabel : isGenerated ? successLabel : generateLabel || `Generate Preview (${requiredCredits} credits)`}
           </Button>
           <Button type="button" variant="outline" className="mt-3 block h-11 w-[270px] justify-self-center text-base font-bold" onClick={clearAudioFile}>
             Upload another file

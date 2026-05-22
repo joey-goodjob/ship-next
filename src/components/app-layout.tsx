@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "@/core/auth/client";
-import { useRouter } from "@/core/i18n/navigation";
+import { usePathname, useRouter } from "@/core/i18n/navigation";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -10,7 +10,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 
 export function AppLayout({
   children,
@@ -37,6 +36,7 @@ export function AppLayout({
 }) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
@@ -44,7 +44,8 @@ export function AppLayout({
 
     if (!session?.user) {
       setAuthorized(false);
-      router.push("/sign-in");
+      const callbackUrl = `${pathname}${window.location.search}`;
+      router.push(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       return;
     }
 
@@ -66,7 +67,7 @@ export function AppLayout({
       .catch(() => {
         router.push(unauthorizedRedirect);
       });
-  }, [isPending, session, router, requirePermission, unauthorizedRedirect]);
+  }, [isPending, session, router, requirePermission, unauthorizedRedirect, pathname]);
 
   if (isPending || !authorized || !session?.user) {
     return (

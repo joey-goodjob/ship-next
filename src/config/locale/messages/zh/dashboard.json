@@ -9,6 +9,7 @@
   "lyric_videos": {
     "title": "歌词视频",
     "description": "把歌曲、歌词、分镜和 AI 图片组合成可导出的静态歌词视频。",
+    "workspace_badge": "AI 视频工作台",
     "new_project": "新建项目",
     "project_title": "项目标题",
     "project_title_placeholder": "午夜副歌",
@@ -19,6 +20,10 @@
     "create": "创建",
     "creating": "创建中...",
     "empty": "还没有歌词视频项目。",
+    "empty_description": "创建项目后可以添加歌词、生成分镜，并进入编辑工作台预览和导出。",
+    "search_placeholder": "搜索项目...",
+    "refresh": "刷新",
+    "draft_audio": "草稿项目",
     "open": "打开",
     "status": "状态",
     "lyrics": "歌词",

@@ -38,7 +38,7 @@ export async function Hero() {
               ))}
             </div>
             <Link
-              href="/dashboard/lyric-videos"
+              href="/dashboard/lyric-videos/upload"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 transition-colors hover:bg-[#f59e0b]"
             >
               <Upload className="size-5" />
@@ -97,7 +97,7 @@ export async function Hero() {
 
           <div className="mt-20 text-center">
             <Link
-              href="/dashboard/lyric-videos"
+              href="/dashboard/lyric-videos/upload"
               className="inline-flex h-[54px] items-center justify-center gap-3 rounded-[9px] bg-[#fbbf24] px-8 text-xl font-extrabold text-slate-950 hover:bg-[#f59e0b]"
             >
               <Upload className="size-5" />
