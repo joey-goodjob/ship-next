@@ -62,9 +62,9 @@ export const envConfigs: Record<string, string> = {
     process.env.KIE_CHAT_ENDPOINT ??
     'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions',
   kie_chat_model: process.env.KIE_CHAT_MODEL ?? 'gemini-2.5-flash',
-  yunwu_api_key: process.env.YUNWU_API_KEY ?? '',
-  yunwu_base_url: process.env.YUNWU_BASE_URL ?? 'https://yunwu.ai/v1',
-  yunwu_transcribe_model: process.env.YUNWU_TRANSCRIBE_MODEL ?? 'whisper-1',
+  groq_api_key: process.env.GROQ_API_KEY ?? '',
+  groq_base_url: process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
+  groq_transcribe_model: process.env.GROQ_TRANSCRIBE_MODEL ?? 'whisper-large-v3-turbo',
   ffmpeg_path: process.env.FFMPEG_PATH ?? '/Users/joey/project/7_ffmpeg/bin/ffmpeg',
 
   // Locale

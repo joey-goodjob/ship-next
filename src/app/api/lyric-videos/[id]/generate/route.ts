@@ -9,30 +9,25 @@ async function getUserId() {
   return session?.user?.id;
 }
 
-export async function PATCH(
+export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string; sceneId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
   if (!userId) return respErr('Unauthorized');
 
   try {
-    const { id, sceneId } = await params;
-    const body = await req.json();
-    const data = await service.updateScene({
+    const { id } = await params;
+    const body = await req.json().catch(() => ({}));
+    const idempotencyKey = req.headers.get('idempotency-key') || body.idempotencyKey;
+    const data = await service.startGenerationRun({
       userId,
       projectId: id,
-      sceneId,
-      text: body.text,
-      prompt: body.prompt,
-      negativePrompt: body.negativePrompt,
-      motionPrompt: body.motionPrompt,
-      castIds: body.castIds,
-      styleOverrides: body.styleOverrides,
-      timelineConfig: body.timelineConfig,
+      idempotencyKey,
+      input: body,
     });
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Update scene failed');
+    return respErr(error?.message || 'Start generation failed');
   }
 }

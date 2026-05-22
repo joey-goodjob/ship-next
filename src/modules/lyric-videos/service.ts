@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -5,16 +6,21 @@ import { promisify } from 'node:util';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { envConfigs } from '@/config';
 import { db } from '@/core/db';
-import { AIMediaType, AITaskStatus as ProviderTaskStatus, KieProvider, YunwuProvider, type AIFile } from '@/core/ai';
+import { AIMediaType, AITaskStatus as ProviderTaskStatus, GroqProvider, KieProvider, type AIFile } from '@/core/ai';
 import {
+  lyricVideoCastMember,
   lyricVideoExport,
+  lyricVideoGenerationRun,
+  lyricVideoGenerationStep,
   lyricVideoLine,
   lyricVideoProject,
   lyricVideoScene,
+  lyricVideoWord,
   type NewLyricVideoProject,
 } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
+import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 
 const execFileAsync = promisify(execFile);
@@ -35,19 +41,46 @@ type StoryboardScene = {
   linkedLineIds?: string[];
 };
 
+const GENERATION_STAGES = [
+  'audio_prepare',
+  'asr_words',
+  'scene_segmentation',
+  'prompt_generation',
+  'image_generation',
+  'finalize_project',
+] as const;
+
+const ACTIVE_RUN_STATUSES = ['queued', 'running', 'waiting_provider'] as const;
+
 export type LyricLineInput = {
   id?: string;
   startMs?: number;
   endMs?: number;
   text: string;
+  source?: string;
+  wordStartIndex?: number;
+  wordEndIndex?: number;
+  confidence?: number;
+};
+
+export type LyricWordInput = {
+  word: string;
+  startMs?: number;
+  endMs?: number;
+  confidence?: number;
 };
 
 export type SceneInput = {
   id?: string;
   startMs?: number;
   endMs?: number;
+  text?: string;
   prompt: string;
+  negativePrompt?: string;
   linkedLineIds?: string[];
+  castIds?: string[];
+  styleOverrides?: unknown;
+  timelineConfig?: unknown;
   motionPrompt?: string;
   imageUrl?: string;
 };
@@ -67,6 +100,27 @@ function parseJson<T>(value: unknown, fallback: T): T {
 
 function normalizeTitle(title?: string) {
   return title?.trim() || 'Untitled lyric video';
+}
+
+function normalizePercent(value: number) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function requestHash(value: unknown) {
+  return createHash('sha256').update(safeJson(value)).digest('hex');
+}
+
+function isActiveRunStatus(status?: string | null) {
+  return ACTIVE_RUN_STATUSES.includes(status as any);
+}
+
+function parseJsonField<T>(value: unknown, fallback: T): T {
+  return parseJson<T>(value, fallback);
+}
+
+function sceneTextFromLineIds(linkedLineIds: string[], lines: any[]) {
+  const linked = lines.filter((line) => linkedLineIds.includes(line.id));
+  return linked.map((line) => line.text).filter(Boolean).join(' ');
 }
 
 function parseLinesFromText(text: string): LyricLineInput[] {
@@ -285,27 +339,29 @@ Return only JSON matching the schema. Keep each lyric line concise. If exact tim
       }))
     : parseLinesFromText(result.content);
 
-  return { raw: result.raw, lines: lines.filter((line: LyricLineInput) => line.text) };
+  return { raw: result.raw, lines: lines.filter((line: LyricLineInput) => line.text), words: [] };
 }
 
-async function transcribeWithYunwuWhisper(params: {
+async function transcribeWithGroqWhisper(params: {
   audioUrl: string;
+  configs: Record<string, string>;
   language?: string;
   prompt?: string;
 }) {
-  const provider = new YunwuProvider({
-    apiKey: envConfigs.yunwu_api_key,
-    baseUrl: envConfigs.yunwu_base_url,
-    transcribeModel: envConfigs.yunwu_transcribe_model,
+  const provider = new GroqProvider({
+    apiKey: params.configs.groq_api_key,
+    baseUrl: params.configs.groq_base_url,
+    transcribeModel: params.configs.groq_transcribe_model,
   });
   const result = await provider.transcribe({
     audioUrl: params.audioUrl,
-    language: params.language && params.language !== 'auto' ? params.language : 'zh',
+    language: params.language && params.language !== 'auto' ? params.language : undefined,
     prompt: params.prompt,
   });
 
   return {
     raw: result.raw,
+    words: result.words,
     lines: result.lines.map((line) => ({
       startMs: line.startMs,
       endMs: line.endMs,
@@ -410,8 +466,17 @@ export async function createProject(params: {
   title?: string;
   audioUrl?: string;
   audioStorageKey?: string;
+  originalAudioUrl?: string;
+  originalAudioStorageKey?: string;
   audioFilename?: string;
   audioDurationMs?: number;
+  audioMimeType?: string;
+  audioSizeBytes?: number;
+  audioChecksum?: string;
+  trimStartMs?: number;
+  trimEndMs?: number;
+  processedAudioUrl?: string;
+  processedAudioStorageKey?: string;
   language?: string;
   storyPrompt?: string;
   palette?: string;
@@ -426,8 +491,17 @@ export async function createProject(params: {
     status: 'draft',
     audioUrl: params.audioUrl,
     audioStorageKey: params.audioStorageKey,
+    originalAudioUrl: params.originalAudioUrl || params.audioUrl,
+    originalAudioStorageKey: params.originalAudioStorageKey || params.audioStorageKey,
     audioFilename: params.audioFilename,
     audioDurationMs: params.audioDurationMs || 0,
+    audioMimeType: params.audioMimeType,
+    audioSizeBytes: params.audioSizeBytes || 0,
+    audioChecksum: params.audioChecksum,
+    trimStartMs: Math.max(0, params.trimStartMs || 0),
+    trimEndMs: Math.max(0, params.trimEndMs || params.audioDurationMs || 0),
+    processedAudioUrl: params.processedAudioUrl || params.audioUrl,
+    processedAudioStorageKey: params.processedAudioStorageKey || params.audioStorageKey,
     language: params.language || 'auto',
     storyPrompt: params.storyPrompt || '',
     palette: params.palette || 'cinematic',
@@ -437,6 +511,8 @@ export async function createProject(params: {
     lyricsStatus: 'empty',
     scenesStatus: 'empty',
     renderStatus: 'empty',
+    generationStatus: 'idle',
+    generationProgress: 0,
     pipelineStage: params.audioUrl ? 'uploaded' : 'draft',
     previewConfig: safeJson(LYRIC_VIDEO_DEFAULT_STYLE),
   };
@@ -473,7 +549,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
   const project = await getProject(params);
   if (!project) return null;
 
-  const [lines, scenes, exports] = await Promise.all([
+  const [lines, scenes, exports, words, cast, runs] = await Promise.all([
     db()
       .select()
       .from(lyricVideoLine)
@@ -489,9 +565,74 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       .from(lyricVideoExport)
       .where(and(eq(lyricVideoExport.projectId, params.id), eq(lyricVideoExport.userId, params.userId)))
       .orderBy(desc(lyricVideoExport.createdAt)),
+    db()
+      .select()
+      .from(lyricVideoWord)
+      .where(and(eq(lyricVideoWord.projectId, params.id), eq(lyricVideoWord.userId, params.userId)))
+      .orderBy(lyricVideoWord.sort),
+    db()
+      .select()
+      .from(lyricVideoCastMember)
+      .where(
+        and(
+          eq(lyricVideoCastMember.projectId, params.id),
+          eq(lyricVideoCastMember.userId, params.userId),
+          isNull(lyricVideoCastMember.deletedAt)
+        )
+      )
+      .orderBy(lyricVideoCastMember.sort),
+    db()
+      .select()
+      .from(lyricVideoGenerationRun)
+      .where(and(eq(lyricVideoGenerationRun.projectId, params.id), eq(lyricVideoGenerationRun.userId, params.userId)))
+      .orderBy(desc(lyricVideoGenerationRun.createdAt))
+      .limit(1),
   ]);
 
-  return { project, lines, scenes, exports };
+  const generationRun = runs[0] || null;
+  const generationSteps = generationRun
+    ? await db()
+        .select()
+        .from(lyricVideoGenerationStep)
+        .where(and(eq(lyricVideoGenerationStep.runId, generationRun.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+        .orderBy(lyricVideoGenerationStep.sort)
+    : [];
+
+  const normalizedProject = {
+    ...project,
+    previewConfig: parseJsonField(project.previewConfig, LYRIC_VIDEO_DEFAULT_STYLE),
+  };
+
+  const normalizedLines = lines.map((line: any) => ({
+    ...line,
+    words: words.filter((word: any) => word.lineId === line.id),
+  }));
+
+  const normalizedScenes = scenes.map((scene: any) => {
+    const linkedLineIds = parseJsonField<string[]>(scene.linkedLineIds, []);
+    const text = scene.text || sceneTextFromLineIds(linkedLineIds, lines);
+    return {
+      ...scene,
+      text,
+      linkedLineIds,
+      lyricLineIds: linkedLineIds,
+      castIds: parseJsonField<string[]>(scene.castIds, []),
+      styleOverrides: parseJsonField<Record<string, unknown>>(scene.styleOverrides, {}),
+      timelineConfig: parseJsonField<Record<string, unknown>>(scene.timelineConfig, {}),
+      generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
+    };
+  });
+
+  return {
+    project: normalizedProject,
+    generationRun,
+    generationSteps,
+    words,
+    lines: normalizedLines,
+    scenes: normalizedScenes,
+    cast,
+    exports,
+  };
 }
 
 export async function updateProject(params: {
@@ -501,8 +642,17 @@ export async function updateProject(params: {
     title: string;
     audioUrl: string;
     audioStorageKey: string;
+    originalAudioUrl: string;
+    originalAudioStorageKey: string;
     audioFilename: string;
     audioDurationMs: number;
+    audioMimeType: string;
+    audioSizeBytes: number;
+    audioChecksum: string;
+    trimStartMs: number;
+    trimEndMs: number;
+    processedAudioUrl: string;
+    processedAudioStorageKey: string;
     language: string;
     storyPrompt: string;
     palette: string;
@@ -529,6 +679,167 @@ export async function updateProject(params: {
   return updated;
 }
 
+export async function startGenerationRun(params: {
+  userId: string;
+  projectId: string;
+  idempotencyKey?: string;
+  input?: unknown;
+}) {
+  const project = await getProject({ userId: params.userId, id: params.projectId });
+  if (!project) throw new Error('Project not found');
+
+  if (project.activeRunId && isActiveRunStatus(project.generationStatus)) {
+    const [activeRun] = await db()
+      .select()
+      .from(lyricVideoGenerationRun)
+      .where(and(eq(lyricVideoGenerationRun.id, project.activeRunId), eq(lyricVideoGenerationRun.userId, params.userId)))
+      .limit(1);
+    if (activeRun && isActiveRunStatus(activeRun.status)) {
+      const steps = await listGenerationSteps({ userId: params.userId, runId: activeRun.id });
+      return { run: activeRun, steps, reused: true };
+    }
+  }
+
+  const inputSnapshot = {
+    projectId: params.projectId,
+    title: project.title,
+    audioUrl: project.audioUrl,
+    originalAudioUrl: project.originalAudioUrl || project.audioUrl,
+    trimStartMs: project.trimStartMs || 0,
+    trimEndMs: project.trimEndMs || project.audioDurationMs || 0,
+    audioDurationMs: project.audioDurationMs || 0,
+    storyPrompt: project.storyPrompt,
+    artStyle: project.artStyle,
+    palette: project.palette,
+    aspectRatio: project.aspectRatio,
+    resolution: project.resolution,
+    request: params.input || {},
+  };
+
+  return db().transaction(async (tx: any) => {
+    const now = new Date();
+    const [run] = await tx
+      .insert(lyricVideoGenerationRun)
+      .values({
+        id: getUuid(),
+        projectId: params.projectId,
+        userId: params.userId,
+        status: 'queued',
+        currentStage: GENERATION_STAGES[0],
+        progressPercent: 0,
+        totalSteps: GENERATION_STAGES.length,
+        completedSteps: 0,
+        failedSteps: 0,
+        idempotencyKey: params.idempotencyKey,
+        requestHash: requestHash(inputSnapshot),
+        inputSnapshot: safeJson(inputSnapshot),
+        startedAt: now,
+      })
+      .returning();
+
+    const steps = await tx
+      .insert(lyricVideoGenerationStep)
+      .values(
+        GENERATION_STAGES.map((stage, index) => ({
+          id: getUuid(),
+          runId: run.id,
+          projectId: params.projectId,
+          userId: params.userId,
+          stage,
+          status: index === 0 ? 'queued' : 'pending',
+          sort: index,
+          progressPercent: 0,
+          maxAttempts: stage === 'image_generation' ? 2 : 3,
+          inputJson: index === 0 ? safeJson(inputSnapshot) : undefined,
+        }))
+      )
+      .returning();
+
+    await tx
+      .update(lyricVideoProject)
+      .set({
+        activeRunId: run.id,
+        generationStatus: 'queued',
+        generationProgress: 0,
+        pipelineStage: 'generation_queued',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+    return { run, steps, reused: false };
+  });
+}
+
+export async function getGenerationRun(params: { userId: string; projectId: string; runId: string }) {
+  const [run] = await db()
+    .select()
+    .from(lyricVideoGenerationRun)
+    .where(
+      and(
+        eq(lyricVideoGenerationRun.id, params.runId),
+        eq(lyricVideoGenerationRun.projectId, params.projectId),
+        eq(lyricVideoGenerationRun.userId, params.userId)
+      )
+    )
+    .limit(1);
+  if (!run) return null;
+  const steps = await listGenerationSteps({ userId: params.userId, runId: run.id });
+  return { run, steps };
+}
+
+export async function listGenerationSteps(params: { userId: string; runId: string }) {
+  return db()
+    .select()
+    .from(lyricVideoGenerationStep)
+    .where(and(eq(lyricVideoGenerationStep.runId, params.runId), eq(lyricVideoGenerationStep.userId, params.userId)))
+    .orderBy(lyricVideoGenerationStep.sort);
+}
+
+export async function retryGenerationRun(params: { userId: string; projectId: string; runId: string }) {
+  const data = await getGenerationRun(params);
+  if (!data) throw new Error('Generation run not found');
+  const retrySteps = data.steps.filter((step: any) => ['failed', 'canceled'].includes(step.status));
+  if (retrySteps.length === 0) return data;
+
+  await db().transaction(async (tx: any) => {
+    for (const step of retrySteps) {
+      await tx
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'queued',
+          errorCode: null,
+          errorMessage: null,
+          nextRetryAt: null,
+          attemptCount: step.attemptCount || 0,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, step.id), eq(lyricVideoGenerationStep.userId, params.userId)));
+    }
+
+    await tx
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'queued',
+        currentStage: retrySteps[0].stage,
+        failedSteps: 0,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId)));
+
+    await tx
+      .update(lyricVideoProject)
+      .set({
+        activeRunId: params.runId,
+        generationStatus: 'queued',
+        pipelineStage: 'generation_retry_queued',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+  });
+
+  return getGenerationRun(params);
+}
+
 export async function removeProject(params: { userId: string; id: string }) {
   await db()
     .update(lyricVideoProject)
@@ -540,6 +851,9 @@ export async function replaceLyrics(params: {
   userId: string;
   projectId: string;
   lines: LyricLineInput[];
+  words?: LyricWordInput[];
+  runId?: string;
+  source?: string;
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
@@ -549,10 +863,27 @@ export async function replaceLyrics(params: {
       text: line.text.trim(),
       startMs: Math.max(0, line.startMs || 0),
       endMs: Math.max(line.startMs || 0, line.endMs || 0),
+      source: line.source || params.source || 'manual',
+      wordStartIndex: line.wordStartIndex,
+      wordEndIndex: line.wordEndIndex,
+      confidence: line.confidence,
     }))
     .filter((line) => line.text);
 
+  const cleanWords = (params.words || [])
+    .map((word) => ({
+      word: word.word.trim(),
+      startMs: Math.max(0, word.startMs || 0),
+      endMs: Math.max(word.startMs || 0, word.endMs || 0),
+      confidence: word.confidence,
+    }))
+    .filter((word) => word.word);
+
   return db().transaction(async (tx: any) => {
+    await tx
+      .delete(lyricVideoWord)
+      .where(and(eq(lyricVideoWord.projectId, params.projectId), eq(lyricVideoWord.userId, params.userId)));
+
     await tx
       .delete(lyricVideoLine)
       .where(and(eq(lyricVideoLine.projectId, params.projectId), eq(lyricVideoLine.userId, params.userId)));
@@ -565,9 +896,33 @@ export async function replaceLyrics(params: {
       startMs: line.startMs,
       endMs: line.endMs || line.startMs + 3500,
       text: line.text,
+      runId: params.runId,
+      source: line.source,
+      wordStartIndex: line.wordStartIndex,
+      wordEndIndex: line.wordEndIndex,
+      confidence: line.confidence,
     }));
 
     const inserted = values.length > 0 ? await tx.insert(lyricVideoLine).values(values).returning() : [];
+
+    if (cleanWords.length > 0) {
+      const wordValues = cleanWords.map((word, index) => {
+        const line = inserted.find((item: any) => word.startMs >= item.startMs && word.endMs <= item.endMs);
+        return {
+          id: getUuid(),
+          projectId: params.projectId,
+          userId: params.userId,
+          runId: params.runId,
+          lineId: line?.id,
+          sort: index,
+          word: word.word,
+          startMs: word.startMs,
+          endMs: word.endMs || word.startMs + 1,
+          confidence: word.confidence,
+        };
+      });
+      await tx.insert(lyricVideoWord).values(wordValues);
+    }
 
     await tx
       .update(lyricVideoProject)
@@ -590,12 +945,13 @@ export async function createTranscriptionDraft(params: {
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
-  const transcriptionProvider = params.rawLyrics ? 'manual' : envConfigs.yunwu_api_key ? 'yunwu' : 'kie';
+  const configs = await getAllConfigs();
+  const transcriptionProvider = params.rawLyrics ? 'manual' : configs.groq_api_key ? 'groq' : 'kie';
   const transcriptionModel = params.rawLyrics
     ? 'manual-lyrics'
-    : envConfigs.yunwu_api_key
-      ? envConfigs.yunwu_transcribe_model
-      : envConfigs.kie_chat_model;
+    : configs.groq_api_key
+      ? configs.groq_transcribe_model
+      : configs.kie_chat_model;
 
   const task = await createTask({
     userId: params.userId,
@@ -613,11 +969,12 @@ export async function createTranscriptionDraft(params: {
     }
 
     const result = params.rawLyrics
-      ? { raw: { text: params.rawLyrics, source: 'manual' }, lines: parseLinesFromText(params.rawLyrics) }
-      : envConfigs.yunwu_api_key
-        ? await transcribeWithYunwuWhisper({
+      ? { raw: { text: params.rawLyrics, source: 'manual' }, lines: parseLinesFromText(params.rawLyrics), words: [] }
+      : configs.groq_api_key
+        ? await transcribeWithGroqWhisper({
             audioUrl: project.audioUrl || '',
-            language: project.language || 'zh',
+            configs,
+            language: project.language || 'auto',
             prompt: project.title,
           })
         : await transcribeWithKieGemini(project.audioUrl || '');
@@ -626,6 +983,8 @@ export async function createTranscriptionDraft(params: {
       userId: params.userId,
       projectId: params.projectId,
       lines: result.lines,
+      words: result.words,
+      source: params.rawLyrics ? 'manual' : 'asr',
     });
 
     await Promise.all([
@@ -703,14 +1062,25 @@ export async function replaceScenes(params: {
   userId: string;
   projectId: string;
   scenes: SceneInput[];
+  runId?: string;
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
+  const existingLines = await db()
+    .select()
+    .from(lyricVideoLine)
+    .where(and(eq(lyricVideoLine.projectId, params.projectId), eq(lyricVideoLine.userId, params.userId)))
+    .orderBy(lyricVideoLine.sort);
 
   const cleanScenes = params.scenes
     .map((scene) => ({
+      text: scene.text?.trim() || sceneTextFromLineIds(scene.linkedLineIds || [], existingLines),
       prompt: scene.prompt.trim(),
+      negativePrompt: scene.negativePrompt?.trim() || '',
       linkedLineIds: scene.linkedLineIds || [],
+      castIds: scene.castIds || [],
+      styleOverrides: scene.styleOverrides || {},
+      timelineConfig: scene.timelineConfig || {},
       motionPrompt: scene.motionPrompt?.trim() || '',
       imageUrl: scene.imageUrl,
       startMs: Math.max(0, scene.startMs || 0),
@@ -730,10 +1100,17 @@ export async function replaceScenes(params: {
       sort: index,
       startMs: scene.startMs,
       endMs: scene.endMs || scene.startMs + 8000,
+      runId: params.runId,
+      text: scene.text,
       prompt: scene.prompt,
+      negativePrompt: scene.negativePrompt,
       linkedLineIds: safeJson(scene.linkedLineIds),
+      castIds: safeJson(scene.castIds),
+      styleOverrides: safeJson(scene.styleOverrides),
+      timelineConfig: safeJson(scene.timelineConfig),
       motionPrompt: scene.motionPrompt,
       imageUrl: scene.imageUrl,
+      imagePromptSnapshot: scene.prompt,
       status: scene.imageUrl ? 'success' : 'draft',
     }));
 
@@ -752,12 +1129,22 @@ export async function updateScene(params: {
   userId: string;
   projectId: string;
   sceneId: string;
+  text?: string;
   prompt?: string;
+  negativePrompt?: string;
   motionPrompt?: string;
+  castIds?: string[];
+  styleOverrides?: unknown;
+  timelineConfig?: unknown;
 }) {
   const updateData: any = {};
+  if (typeof params.text === 'string') updateData.text = params.text.trim();
   if (typeof params.prompt === 'string') updateData.prompt = params.prompt.trim();
+  if (typeof params.negativePrompt === 'string') updateData.negativePrompt = params.negativePrompt.trim();
   if (typeof params.motionPrompt === 'string') updateData.motionPrompt = params.motionPrompt.trim();
+  if (params.castIds) updateData.castIds = safeJson(params.castIds);
+  if (params.styleOverrides) updateData.styleOverrides = safeJson(params.styleOverrides);
+  if (params.timelineConfig) updateData.timelineConfig = safeJson(params.timelineConfig);
   updateData.status = 'draft';
   updateData.error = null;
 
@@ -834,6 +1221,11 @@ export async function queueSceneImages(params: {
           imageTaskId: task.id,
           providerTaskId: result.taskId,
           status: 'processing',
+          attemptCount: (scene.attemptCount || 0) + 1,
+          lastAttemptAt: new Date(),
+          failureCode: null,
+          imageModel: params.model || 'flux-kontext-pro',
+          imagePromptSnapshot: scene.prompt,
           generationParams: safeJson({ model: params.model || 'flux-kontext-pro' }),
           error: null,
         })
@@ -844,7 +1236,14 @@ export async function queueSceneImages(params: {
       await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
       const [updated] = await db()
         .update(lyricVideoScene)
-        .set({ imageTaskId: task.id, status: 'failed', error: error?.message || 'Image generation failed' })
+        .set({
+          imageTaskId: task.id,
+          status: 'failed',
+          attemptCount: (scene.attemptCount || 0) + 1,
+          lastAttemptAt: new Date(),
+          failureCode: 'queue_failed',
+          error: error?.message || 'Image generation failed',
+        })
         .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
         .returning();
       queued.push(updated);
@@ -853,7 +1252,13 @@ export async function queueSceneImages(params: {
 
   await db()
     .update(lyricVideoProject)
-    .set({ scenesStatus: 'processing', pipelineStage: 'images_processing', pipelineError: null })
+    .set({
+      scenesStatus: 'processing',
+      pipelineStage: 'images_processing',
+      generationStatus: 'waiting_provider',
+      generationProgress: 80,
+      pipelineError: null,
+    })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
   return queued;
@@ -873,7 +1278,13 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
         const [updated] = await db()
           .update(lyricVideoScene)
-          .set({ imageUrl, status: imageUrl ? 'success' : 'failed', error: imageUrl ? null : 'No image URL returned' })
+          .set({
+            imageUrl,
+            status: imageUrl ? 'success' : 'failed',
+            completedAt: imageUrl ? new Date() : null,
+            failureCode: imageUrl ? null : 'missing_image_url',
+            error: imageUrl ? null : 'No image URL returned',
+          })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
           .returning();
         if (scene.imageTaskId) {
@@ -889,7 +1300,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         const message = result.taskInfo?.errorMessage || 'Image generation failed';
         const [updated] = await db()
           .update(lyricVideoScene)
-          .set({ status: 'failed', error: message })
+          .set({ status: 'failed', failureCode: 'provider_failed', error: message })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
           .returning();
         if (scene.imageTaskId) {
@@ -900,7 +1311,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     } catch (error: any) {
       const [updated] = await db()
         .update(lyricVideoScene)
-        .set({ status: 'failed', error: error?.message || 'Image sync failed' })
+        .set({ status: 'failed', failureCode: 'sync_failed', error: error?.message || 'Image sync failed' })
         .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
         .returning();
       synced.push(updated);
@@ -909,10 +1320,29 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
 
   const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
   const allDone = refreshed?.scenes.length && refreshed.scenes.every((scene: any) => scene.status === 'success');
+  const hasFailures = refreshed?.scenes.some((scene: any) => scene.status === 'failed');
   if (allDone) {
     await db()
       .update(lyricVideoProject)
-      .set({ scenesStatus: 'ready', pipelineStage: 'images_ready', pipelineError: null })
+      .set({
+        scenesStatus: 'ready',
+        pipelineStage: 'images_ready',
+        generationStatus: 'success',
+        generationProgress: 100,
+        lastGeneratedAt: new Date(),
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+  } else if (hasFailures) {
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'partial_success',
+        pipelineStage: 'images_partial_success',
+        generationStatus: 'partial_success',
+        generationProgress: 90,
+        pipelineError: 'Some scene images failed',
+      })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   }
 

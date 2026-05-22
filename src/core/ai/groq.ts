@@ -2,25 +2,32 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { AIConfigs } from './types';
 
-export type YunwuTranscriptionLine = {
+export type GroqTranscriptionLine = {
   startMs: number;
   endMs: number;
   text: string;
 };
 
-export type YunwuTranscriptionResult = {
-  raw: any;
-  text: string;
-  lines: YunwuTranscriptionLine[];
+export type GroqTranscriptionWord = {
+  word: string;
+  startMs: number;
+  endMs: number;
 };
 
-export type YunwuTranscribeParams = {
+export type GroqTranscriptionResult = {
+  raw: any;
+  text: string;
+  lines: GroqTranscriptionLine[];
+  words: GroqTranscriptionWord[];
+};
+
+export type GroqTranscribeParams = {
   audioUrl: string;
   language?: string;
   prompt?: string;
 };
 
-export type YunwuTranscribeFileParams = {
+export type GroqTranscribeFileParams = {
   body: Buffer | Uint8Array;
   filename?: string;
   contentType?: string;
@@ -28,18 +35,20 @@ export type YunwuTranscribeFileParams = {
   prompt?: string;
 };
 
-export interface YunwuConfigs extends AIConfigs {
+export interface GroqConfigs extends AIConfigs {
   apiKey: string;
   baseUrl?: string;
   transcribeModel?: string;
 }
+
+const MAX_TRANSCRIBE_BYTES = 25 * 1024 * 1024;
 
 function secondsToMs(value: unknown) {
   const num = Number(value || 0);
   return Math.max(0, Math.round(num * 1000));
 }
 
-function parseLinesFromText(text: string): YunwuTranscriptionLine[] {
+function parseLinesFromText(text: string): GroqTranscriptionLine[] {
   return text
     .split('\n')
     .map((line) => line.trim())
@@ -90,18 +99,18 @@ async function fetchBytes(audioUrl: string) {
 }
 
 /**
- * Yunwu OpenAI-compatible audio transcription provider.
- * @docs https://yunwu.apifox.cn/api-311993207
+ * Groq OpenAI-compatible audio transcription provider.
+ * @docs https://console.groq.com/docs/api-reference
  */
-export class YunwuProvider {
-  readonly name = 'yunwu';
-  configs: YunwuConfigs;
+export class GroqProvider {
+  readonly name = 'groq';
+  configs: GroqConfigs;
 
-  constructor(configs: YunwuConfigs) {
+  constructor(configs: GroqConfigs) {
     this.configs = configs;
   }
 
-  async transcribe(params: YunwuTranscribeParams): Promise<YunwuTranscriptionResult> {
+  async transcribe(params: GroqTranscribeParams): Promise<GroqTranscriptionResult> {
     const filename = filenameFromUrl(params.audioUrl);
     const body = await fetchBytes(params.audioUrl);
     return this.transcribeFile({
@@ -113,21 +122,26 @@ export class YunwuProvider {
     });
   }
 
-  async transcribeFile(params: YunwuTranscribeFileParams): Promise<YunwuTranscriptionResult> {
+  async transcribeFile(params: GroqTranscribeFileParams): Promise<GroqTranscriptionResult> {
     if (!this.configs.apiKey) {
-      throw new Error('YUNWU_API_KEY is required for Yunwu transcription');
+      throw new Error('GROQ_API_KEY is required for Groq transcription');
     }
 
     const filename = params.filename || 'audio.mp3';
-    const model = this.configs.transcribeModel || 'whisper-1';
-    const baseUrl = (this.configs.baseUrl || 'https://yunwu.ai/v1').replace(/\/$/, '');
-    const formData = new FormData();
+    const model = this.configs.transcribeModel || 'whisper-large-v3-turbo';
+    const baseUrl = (this.configs.baseUrl || 'https://api.groq.com/openai/v1').replace(/\/$/, '');
     const bytes = new Uint8Array(params.body);
+    if (bytes.byteLength > MAX_TRANSCRIBE_BYTES) {
+      throw new Error('Audio file exceeds the 25MB transcription limit. Please trim or compress it before generating lyrics.');
+    }
 
+    const formData = new FormData();
     formData.append('file', new Blob([bytes], { type: params.contentType || contentTypeFromFilename(filename) }), filename);
     formData.append('model', model);
-    formData.append('language', params.language || 'zh');
+    if (params.language) formData.append('language', params.language);
     formData.append('response_format', 'verbose_json');
+    formData.append('timestamp_granularities[]', 'word');
+    formData.append('timestamp_granularities[]', 'segment');
     formData.append('temperature', '0');
     if (params.prompt) formData.append('prompt', params.prompt);
 
@@ -141,11 +155,24 @@ export class YunwuProvider {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`Yunwu transcription failed: ${response.status} ${text}`);
+      throw new Error(`Groq transcription failed: ${response.status} ${text}`);
     }
 
     const raw = await response.json();
     const text = String(raw.text || '').trim();
+    const rawWords = Array.isArray(raw.words) ? raw.words : [];
+    const words = rawWords
+      .map((word: any) => {
+        const startMs = secondsToMs(word.start);
+        const endMs = Math.max(startMs + 1, secondsToMs(word.end));
+        return {
+          word: String(word.word || '').trim(),
+          startMs,
+          endMs,
+        };
+      })
+      .filter((word: GroqTranscriptionWord) => word.word);
+
     const segments = Array.isArray(raw.segments) ? raw.segments : [];
     const lines = segments
       .map((segment: any, index: number) => {
@@ -157,12 +184,13 @@ export class YunwuProvider {
           text: String(segment.text || '').trim(),
         };
       })
-      .filter((line: YunwuTranscriptionLine) => line.text);
+      .filter((line: GroqTranscriptionLine) => line.text);
 
     return {
       raw,
       text,
       lines: lines.length > 0 ? lines : parseLinesFromText(text),
+      words,
     };
   }
 }

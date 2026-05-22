@@ -9,7 +9,7 @@ async function getUserId() {
   return session?.user?.id;
 }
 
-export async function PATCH(
+export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string; sceneId: string }> }
 ) {
@@ -18,21 +18,15 @@ export async function PATCH(
 
   try {
     const { id, sceneId } = await params;
-    const body = await req.json();
-    const data = await service.updateScene({
+    const body = await req.json().catch(() => ({}));
+    const data = await service.queueSceneImages({
       userId,
       projectId: id,
       sceneId,
-      text: body.text,
-      prompt: body.prompt,
-      negativePrompt: body.negativePrompt,
-      motionPrompt: body.motionPrompt,
-      castIds: body.castIds,
-      styleOverrides: body.styleOverrides,
-      timelineConfig: body.timelineConfig,
+      model: body.model,
     });
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Update scene failed');
+    return respErr(error?.message || 'Retry scene image failed');
   }
 }

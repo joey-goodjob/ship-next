@@ -537,11 +537,24 @@ export const lyricVideoProject = table(
     status: varchar191('status').notNull().default('draft'),
     audioUrl: text('audio_url'),
     audioStorageKey: varchar191('audio_storage_key'),
+    originalAudioUrl: text('original_audio_url'),
+    originalAudioStorageKey: varchar191('original_audio_storage_key'),
     audioFilename: varchar191('audio_filename'),
     audioDurationMs: int('audio_duration_ms').notNull().default(0),
+    audioMimeType: varchar191('audio_mime_type'),
+    audioSizeBytes: int('audio_size_bytes').notNull().default(0),
+    audioChecksum: varchar191('audio_checksum'),
+    trimStartMs: int('trim_start_ms').notNull().default(0),
+    trimEndMs: int('trim_end_ms').notNull().default(0),
+    processedAudioUrl: text('processed_audio_url'),
+    processedAudioStorageKey: varchar191('processed_audio_storage_key'),
     transcriptionRaw: longtext('transcription_raw'),
     pipelineStage: varchar191('pipeline_stage').notNull().default('draft'),
     pipelineError: text('pipeline_error'),
+    activeRunId: varchar191('active_run_id'),
+    generationStatus: varchar191('generation_status').notNull().default('idle'),
+    generationProgress: int('generation_progress').notNull().default(0),
+    lastGeneratedAt: timestamp('last_generated_at'),
     language: varchar191('language').notNull().default('auto'),
     storyPrompt: longtext('story_prompt').notNull(),
     palette: varchar191('palette').notNull().default('cinematic'),
@@ -567,6 +580,88 @@ export const lyricVideoProject = table(
   ]
 );
 
+export const lyricVideoGenerationRun = table(
+  'lyric_video_generation_run',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    status: varchar191('status').notNull().default('queued'),
+    currentStage: varchar191('current_stage').notNull().default('audio_prepare'),
+    progressPercent: int('progress_percent').notNull().default(0),
+    totalSteps: int('total_steps').notNull().default(0),
+    completedSteps: int('completed_steps').notNull().default(0),
+    failedSteps: int('failed_steps').notNull().default(0),
+    idempotencyKey: varchar191('idempotency_key'),
+    requestHash: varchar191('request_hash'),
+    inputSnapshot: longtext('input_snapshot'),
+    outputSnapshot: longtext('output_snapshot'),
+    errorCode: varchar191('error_code'),
+    errorMessage: text('error_message'),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+    canceledAt: timestamp('canceled_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_run_project').on(t.projectId, t.createdAt),
+    index('idx_lyric_video_run_user_status').on(t.userId, t.status),
+    index('idx_lyric_video_run_idempotency').on(t.projectId, t.idempotencyKey),
+  ]
+);
+
+export const lyricVideoGenerationStep = table(
+  'lyric_video_generation_step',
+  {
+    id: varchar191('id').primaryKey(),
+    runId: varchar191('run_id')
+      .notNull()
+      .references(() => lyricVideoGenerationRun.id, { onDelete: 'cascade' }),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    stage: varchar191('stage').notNull(),
+    status: varchar191('status').notNull().default('queued'),
+    sort: int('sort').notNull().default(0),
+    progressPercent: int('progress_percent').notNull().default(0),
+    attemptCount: int('attempt_count').notNull().default(0),
+    maxAttempts: int('max_attempts').notNull().default(3),
+    provider: varchar191('provider'),
+    model: varchar191('model'),
+    providerTaskId: varchar191('provider_task_id'),
+    inputJson: longtext('input_json'),
+    outputJson: longtext('output_json'),
+    errorCode: varchar191('error_code'),
+    errorMessage: text('error_message'),
+    lockedAt: timestamp('locked_at'),
+    lockedBy: varchar191('locked_by'),
+    nextRetryAt: timestamp('next_retry_at'),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_step_run').on(t.runId, t.sort),
+    index('idx_lyric_video_step_stage_status').on(t.stage, t.status),
+    index('idx_lyric_video_step_retry').on(t.status, t.nextRetryAt),
+  ]
+);
+
 export const lyricVideoLine = table(
   'lyric_video_line',
   {
@@ -581,6 +676,12 @@ export const lyricVideoLine = table(
     startMs: int('start_ms').notNull().default(0),
     endMs: int('end_ms').notNull().default(0),
     text: text('text').notNull(),
+    runId: varchar191('run_id').references(() => lyricVideoGenerationRun.id, { onDelete: 'set null' }),
+    source: varchar191('source').notNull().default('manual'),
+    wordStartIndex: int('word_start_index'),
+    wordEndIndex: int('word_end_index'),
+    confidence: int('confidence'),
+    editedAt: timestamp('edited_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
@@ -590,6 +691,37 @@ export const lyricVideoLine = table(
   (t) => [
     index('idx_lyric_video_line_project').on(t.projectId, t.sort),
     index('idx_lyric_video_line_user').on(t.userId),
+  ]
+);
+
+export const lyricVideoWord = table(
+  'lyric_video_word',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    runId: varchar191('run_id').references(() => lyricVideoGenerationRun.id, { onDelete: 'set null' }),
+    lineId: varchar191('line_id').references(() => lyricVideoLine.id, { onDelete: 'set null' }),
+    sceneId: varchar191('scene_id'),
+    sort: int('sort').notNull().default(0),
+    word: varchar191('word').notNull(),
+    startMs: int('start_ms').notNull().default(0),
+    endMs: int('end_ms').notNull().default(0),
+    confidence: int('confidence'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_word_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_word_line').on(t.lineId, t.sort),
+    index('idx_lyric_video_word_run').on(t.runId),
   ]
 );
 
@@ -606,13 +738,27 @@ export const lyricVideoScene = table(
     sort: int('sort').notNull().default(0),
     startMs: int('start_ms').notNull().default(0),
     endMs: int('end_ms').notNull().default(0),
+    runId: varchar191('run_id').references(() => lyricVideoGenerationRun.id, { onDelete: 'set null' }),
+    text: text('text'),
     prompt: longtext('prompt').notNull(),
+    negativePrompt: longtext('negative_prompt'),
     linkedLineIds: text('linked_line_ids'),
+    castIds: text('cast_ids'),
+    styleOverrides: longtext('style_overrides'),
+    timelineConfig: longtext('timeline_config'),
     motionPrompt: longtext('motion_prompt').notNull(),
     imageUrl: text('image_url'),
     imageTaskId: varchar191('image_task_id'),
     providerTaskId: varchar191('provider_task_id'),
     generationParams: longtext('generation_params'),
+    attemptCount: int('attempt_count').notNull().default(0),
+    lastAttemptAt: timestamp('last_attempt_at'),
+    nextRetryAt: timestamp('next_retry_at'),
+    completedAt: timestamp('completed_at'),
+    failureCode: varchar191('failure_code'),
+    imageModel: varchar191('image_model'),
+    imageSeed: varchar191('image_seed'),
+    imagePromptSnapshot: longtext('image_prompt_snapshot'),
     error: text('error'),
     status: varchar191('status').notNull().default('draft'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -624,6 +770,36 @@ export const lyricVideoScene = table(
   (t) => [
     index('idx_lyric_video_scene_project').on(t.projectId, t.sort),
     index('idx_lyric_video_scene_status').on(t.status),
+  ]
+);
+
+export const lyricVideoCastMember = table(
+  'lyric_video_cast_member',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    name: varchar191('name').notNull(),
+    role: varchar191('role').notNull().default(''),
+    description: text('description').notNull(),
+    promptFragment: longtext('prompt_fragment').notNull(),
+    referenceImageUrl: text('reference_image_url'),
+    status: varchar191('status').notNull().default('active'),
+    sort: int('sort').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    deletedAt: timestamp('deleted_at'),
+  },
+  (t) => [
+    index('idx_lyric_video_cast_project').on(t.projectId, t.sort),
+    index('idx_lyric_video_cast_user').on(t.userId, t.status),
   ]
 );
 
@@ -661,9 +837,17 @@ export const lyricVideoExport = table(
 
 export type LyricVideoProject = typeof lyricVideoProject.$inferSelect;
 export type NewLyricVideoProject = typeof lyricVideoProject.$inferInsert;
+export type LyricVideoGenerationRun = typeof lyricVideoGenerationRun.$inferSelect;
+export type NewLyricVideoGenerationRun = typeof lyricVideoGenerationRun.$inferInsert;
+export type LyricVideoGenerationStep = typeof lyricVideoGenerationStep.$inferSelect;
+export type NewLyricVideoGenerationStep = typeof lyricVideoGenerationStep.$inferInsert;
 export type LyricVideoLine = typeof lyricVideoLine.$inferSelect;
 export type NewLyricVideoLine = typeof lyricVideoLine.$inferInsert;
+export type LyricVideoWord = typeof lyricVideoWord.$inferSelect;
+export type NewLyricVideoWord = typeof lyricVideoWord.$inferInsert;
 export type LyricVideoScene = typeof lyricVideoScene.$inferSelect;
 export type NewLyricVideoScene = typeof lyricVideoScene.$inferInsert;
+export type LyricVideoCastMember = typeof lyricVideoCastMember.$inferSelect;
+export type NewLyricVideoCastMember = typeof lyricVideoCastMember.$inferInsert;
 export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
 export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;

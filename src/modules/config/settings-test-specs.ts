@@ -91,10 +91,10 @@ export const testSpecs: Record<string, TestSpec> = {
       { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '1K' },
     ],
   },
-  yunwu: {
-    group: 'yunwu',
+  groq: {
+    group: 'groq',
     fields: [
-      { name: 'language', label: 'Language', type: 'text', defaultValue: 'zh' },
+      { name: 'language', label: 'Language', type: 'text', placeholder: 'Leave empty for auto-detect' },
       { name: 'prompt', label: 'Prompt', type: 'text', defaultValue: 'test audio' },
     ],
   },

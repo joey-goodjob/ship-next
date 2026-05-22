@@ -23,7 +23,7 @@ import { ReplicateProvider } from '@/core/ai/replicate';
 import { GeminiProvider } from '@/core/ai/gemini';
 import { FalProvider } from '@/core/ai/fal';
 import { KieProvider } from '@/core/ai/kie';
-import { YunwuProvider } from '@/core/ai/yunwu';
+import { GroqProvider } from '@/core/ai/groq';
 import { AIMediaType } from '@/core/ai/types';
 import { getUniSeq } from '@/lib/hash';
 import { envConfigs } from '@/config';
@@ -57,8 +57,8 @@ export async function runTest(
         return await testReplicate(inputs, configs);
       case 'kie':
         return await testKie(inputs, configs);
-      case 'yunwu':
-        return await testYunwu(inputs, configs);
+      case 'groq':
+        return await testGroq(inputs, configs);
       case 'gemini':
         return await testGemini(inputs, configs);
       case 'fal':
@@ -413,30 +413,31 @@ async function testKie(inputs: Record<string, string>, configs: Record<string, s
   };
 }
 
-async function testYunwu(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
-  const missing = need(configs, ['yunwu_api_key']);
+async function testGroq(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
+  const missing = need(configs, ['groq_api_key']);
   if (missing) return { success: false, message: missing };
 
-  const provider = new YunwuProvider({
-    apiKey: configs.yunwu_api_key,
-    baseUrl: configs.yunwu_base_url || 'https://yunwu.ai/v1',
-    transcribeModel: configs.yunwu_transcribe_model || 'whisper-1',
+  const provider = new GroqProvider({
+    apiKey: configs.groq_api_key,
+    baseUrl: configs.groq_base_url || 'https://api.groq.com/openai/v1',
+    transcribeModel: configs.groq_transcribe_model || 'whisper-large-v3-turbo',
   });
   const result = await provider.transcribeFile({
     body: makeSilentWav(),
-    filename: 'yunwu-settings-test.wav',
+    filename: 'groq-settings-test.wav',
     contentType: 'audio/wav',
-    language: inputs.language || 'zh',
+    language: inputs.language || undefined,
     prompt: inputs.prompt || 'test audio',
   });
 
   return {
     success: true,
-    message: 'Yunwu accepted the transcription request',
+    message: 'Groq accepted the transcription request',
     details: {
-      Model: configs.yunwu_transcribe_model || 'whisper-1',
+      Model: configs.groq_transcribe_model || 'whisper-large-v3-turbo',
       Text: result.text || '(empty)',
       Lines: String(result.lines.length),
+      Words: String(result.words.length),
     },
   };
 }
