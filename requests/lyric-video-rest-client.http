@@ -1,0 +1,101 @@
+@baseUrl = http://localhost:3000
+
+# 先在浏览器登录 localhost:3000，然后把已登录请求里的 Cookie 粘贴到这里。
+# 获取方式：Chrome DevTools -> Network -> 任意 /api 请求 -> Request Headers -> Cookie。
+@cookie = paste_your_logged_in_cookie_here
+
+# 改成你本机要测试的 MP3 文件路径。
+@audioFile = /Users/joey/Downloads/30s.mp3
+@audioFilename = 30s.mp3
+@audioMimeType = audio/mpeg
+@audioDurationMs = 30000
+
+# 可选：如果你想直接复测某个已有项目，把项目 id 粘贴到这里。
+@projectId = paste_existing_project_id_here
+
+### 0. 查看歌词视频项目列表
+GET {{baseUrl}}/api/lyric-videos
+Cookie: {{cookie}}
+
+### 1. 上传 MP3
+# @name uploadAudio
+POST {{baseUrl}}/api/storage/upload-audio
+Content-Type: multipart/form-data; boundary=----lyricVideoBoundary
+
+------lyricVideoBoundary
+Content-Disposition: form-data; name="file"; filename="{{audioFilename}}"
+Content-Type: {{audioMimeType}}
+
+< {{audioFile}}
+------lyricVideoBoundary--
+
+### 2. 用上传结果创建歌词视频项目
+# @name createProject
+POST {{baseUrl}}/api/lyric-videos
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{
+  "title": "REST Client Test - {{audioFilename}}",
+  "audioUrl": "{{uploadAudio.response.body.$.data.url}}",
+  "audioStorageKey": "{{uploadAudio.response.body.$.data.key}}",
+  "originalAudioUrl": "{{uploadAudio.response.body.$.data.url}}",
+  "originalAudioStorageKey": "{{uploadAudio.response.body.$.data.key}}",
+  "audioFilename": "{{uploadAudio.response.body.$.data.filename}}",
+  "audioDurationMs": {{audioDurationMs}},
+  "audioMimeType": "{{audioMimeType}}",
+  "audioSizeBytes": {{uploadAudio.response.body.$.data.size}},
+  "trimStartMs": 0,
+  "trimEndMs": {{audioDurationMs}}
+}
+
+### 3. 跑 ASR + 本机 Librosa 分析
+# @name runAsr
+POST {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/asr
+Cookie: {{cookie}}
+
+### 3b. 对已有项目重新跑 ASR + Librosa
+POST {{baseUrl}}/api/lyric-videos/{{projectId}}/asr
+Cookie: {{cookie}}
+
+### 4. 查看刚创建的项目详情
+# @name getCreatedProject
+GET {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}
+Cookie: {{cookie}}
+
+### 4b. 查看已有项目详情
+GET {{baseUrl}}/api/lyric-videos/{{projectId}}
+Cookie: {{cookie}}
+
+### 5. 根据 ASR 结果整理歌词行
+# @name normalizeLyrics
+POST {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/lyrics/normalize
+Cookie: {{cookie}}
+
+### 6. 生成 Story Prompt
+# @name generateStory
+POST {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/story
+Cookie: {{cookie}}
+
+### 7. 使用歌词 + 音频分析生成分镜
+# @name generateStoryboard
+POST {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/storyboard
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{}
+
+### 8. 创建分镜并排队生成缺失的场景图片
+# @name generateVisuals
+POST {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/visuals
+Content-Type: application/json
+Cookie: {{cookie}}
+
+{
+  "regenerateStoryboard": false,
+  "regenerateImages": false
+}
+
+### 9. 轮询场景图片生成状态
+GET {{baseUrl}}/api/lyric-videos/{{createProject.response.body.$.data.id}}/images
+Cookie: {{cookie}}

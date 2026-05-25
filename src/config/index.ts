@@ -62,6 +62,14 @@ export const envConfigs: Record<string, string> = {
     process.env.KIE_CHAT_ENDPOINT ??
     'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions',
   kie_chat_model: process.env.KIE_CHAT_MODEL ?? 'gemini-2.5-flash',
+  kie_claude_endpoint:
+    process.env.KIE_CLAUDE_ENDPOINT ??
+    'https://api.kie.ai/claude/v1/messages',
+  kie_claude_model: process.env.KIE_CLAUDE_MODEL ?? 'claude-sonnet-4-5',
+  kie_codex_endpoint:
+    process.env.KIE_CODEX_ENDPOINT ??
+    'https://api.kie.ai/codex/v1/responses',
+  kie_codex_model: process.env.KIE_CODEX_MODEL ?? 'gpt-5-4',
   groq_api_key: process.env.GROQ_API_KEY ?? '',
   groq_base_url: process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
   groq_transcribe_model: process.env.GROQ_TRANSCRIBE_MODEL ?? 'whisper-large-v3-turbo',

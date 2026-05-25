@@ -1,0 +1,90 @@
+@baseUrl = http://localhost:3000
+
+# 改成你本机要测试的 MP3 文件路径。
+@audioFile = /Users/joey/Downloads/30s.mp3
+@audioFilename = 30s.mp3
+@audioMimeType = audio/mpeg
+
+### 第一层测试：MP3 -> Whisper + Librosa -> JSON
+# 这个接口不需要登录，不写数据库，只在开发环境可用。
+# @name debugAnalyzeLyricVideoAudio
+POST {{baseUrl}}/api/debug/lyric-videos/analyze
+Content-Type: multipart/form-data; boundary=----lyricVideoDebugBoundary
+
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="file"; filename="{{audioFilename}}"
+Content-Type: {{audioMimeType}}
+
+< {{audioFile}}
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="language"
+
+auto
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="prompt"
+
+{{audioFilename}}
+------lyricVideoDebugBoundary--
+
+### 第二步 Prompt 1：Claude Opus 4.5 歌曲理解
+# 先点击上面的 analyze 请求，等它返回 preprocess。
+# 然后再点击下面任意一个 LLM 请求，REST Client 会把上一个请求的 data.preprocess 传给模型。
+# 这个接口不需要登录，不写数据库，只在开发环境可用。
+# @name debugAnalyzeSongWithOpus
+POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
+Content-Type: application/json
+
+{
+  "provider": "kie_claude",
+  "model": "claude-opus-4-5",
+  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+}
+
+### 第二步 LLM 测试：Claude Opus / Claude 其他版本
+# 想测 opus4.6 / opus4.7 这类模型时，只改 model 这一行。
+# # @name debugAnalyzeSongWithClaudeCustom
+# POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
+# Content-Type: application/json
+
+# {
+#   "provider": "kie_claude",
+#   "model": "claude-opus-4-5",
+#   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+# }
+
+# ### 第二步 LLM 测试：GPT / Codex 系列
+# # 想测 gpt-5-5 这类模型时，只改 model 这一行；模型名必须是 Kie 文档实际支持的名字。
+# # @name debugAnalyzeSongWithCodex
+# POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
+# Content-Type: application/json
+
+# {
+#   "provider": "kie_codex",
+#   "model": "gpt-5-4",
+#   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+# }
+
+# ### 第二步 LLM 测试：Gemini 系列
+# # 想测其他 Gemini chat 模型时，只改 model 这一行。
+# # @name debugAnalyzeSongWithGemini
+# # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
+# # Content-Type: application/json
+
+# # {
+# #   "provider": "kie_gemini",
+# #   "model": "gemini-3.1-pro",
+# #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+# # }
+
+### 第三步 Prompt 2：Claude Opus 4.5 分镜 + 图片/视频 Prompt
+# 先跑第一层 analyze，再跑第二步 Prompt 1，然后跑这里。
+# 这个接口不需要登录，不写数据库，只返回 scenes JSON。
+# @name debugGenerateStoryboardScenesWithOpus
+POST {{baseUrl}}/api/debug/lyric-videos/llm/storyboard-scenes
+Content-Type: application/json
+
+{
+  "model": "claude-opus-4-5",
+  "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
+  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+}

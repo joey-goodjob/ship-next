@@ -48,6 +48,114 @@ type AsrDraftResult = {
   words: LyricWordInput[];
 };
 
+type AudioAnalysisSegment = {
+  startMs: number;
+  endMs: number;
+  durationMs: number;
+  avgEnergy: number;
+};
+
+type AudioAnalysisRmsPoint = {
+  startMs: number;
+  endMs: number;
+  rms: number;
+};
+
+type AudioAnalysisResult = {
+  durationSec: number;
+  sampleRate: number;
+  bpm: number;
+  key: string;
+  beatTimesMs: number[];
+  segmentBoundariesMs: number[];
+  rmsBySecond?: AudioAnalysisRmsPoint[];
+  segments: AudioAnalysisSegment[];
+};
+
+type PreprocessLyricLine = {
+  id: string;
+  startMs: number;
+  endMs: number;
+  text: string;
+  wordStartIndex?: number;
+  wordEndIndex?: number;
+};
+
+type PreprocessEnergySegment = AudioAnalysisSegment & {
+  energyLevel: 'low' | 'medium' | 'high';
+};
+
+type PreprocessScene = {
+  sceneId: string;
+  startMs: number;
+  endMs: number;
+  durationMs: number;
+  linkedLineIds: string[];
+  lyricsText: string;
+  avgEnergy: number;
+  energyLevel: 'low' | 'medium' | 'high';
+  beatCount: number;
+  cutReason: 'vocal_gap' | 'target_duration' | 'max_duration' | 'final';
+};
+
+type LyricVideoPreprocessResult = {
+  track: {
+    durationMs: number;
+    bpm?: number;
+    key?: string;
+  };
+  lyrics: PreprocessLyricLine[];
+  vocalGaps: Array<{
+    startMs: number;
+    endMs: number;
+    durationMs: number;
+    fromLineId: string;
+    toLineId: string;
+  }>;
+  energySegments: PreprocessEnergySegment[];
+  scenes: PreprocessScene[];
+};
+
+type LyricVideoLlmPreprocessResult = {
+  song: string;
+  duration_s: number;
+  bpm?: number;
+  key?: string;
+  lines: Array<{
+    start_s: number;
+    end_s: number;
+    text: string;
+  }>;
+  energy_per_second: number[];
+};
+
+type LyricVideoSongAnalysisResult = {
+  theme: string;
+  characters: Array<{
+    id: string;
+    description: string;
+  }>;
+  emotion_arc: Array<{
+    time_range: string;
+    emotion: string;
+    intensity: number;
+  }>;
+  visual_style: string;
+  color_palette: string[];
+  notes: string;
+};
+
+type LyricVideoPromptSceneResult = {
+  scene_id: number;
+  start_s: number;
+  end_s: number;
+  lyrics_summary: string;
+  image_prompt: string;
+  video_prompt: string;
+};
+
+type DebugSongAnalysisProvider = 'kie_claude' | 'kie_codex' | 'kie_gemini';
+
 const GENERATION_STAGES = [
   'audio_prepare',
   'asr_words',
@@ -105,6 +213,61 @@ function parseJson<T>(value: unknown, fallback: T): T {
   }
 }
 
+function chatContentToText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((part) => {
+        if (typeof part === 'string') return part;
+        if (part && typeof part === 'object' && 'text' in part) return String((part as any).text || '');
+        if (part && typeof part === 'object' && 'content' in part) return chatContentToText((part as any).content);
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+  if (value && typeof value === 'object') return JSON.stringify(value);
+  return '';
+}
+
+function parseJsonLoose<T>(value: unknown, fallback: T): T {
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value as T;
+  if (Array.isArray(value)) return value as T;
+
+  const text = chatContentToText(value).trim();
+  if (!text) return fallback;
+
+  const candidates = [text];
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced?.[1]) candidates.push(fenced[1].trim());
+
+  const objectStart = text.indexOf('{');
+  const objectEnd = text.lastIndexOf('}');
+  if (objectStart >= 0 && objectEnd > objectStart) {
+    candidates.push(text.slice(objectStart, objectEnd + 1));
+  }
+
+  const arrayStart = text.indexOf('[');
+  const arrayEnd = text.lastIndexOf(']');
+  if (arrayStart >= 0 && arrayEnd > arrayStart) {
+    candidates.push(text.slice(arrayStart, arrayEnd + 1));
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate) as T;
+    } catch {
+      // Try the next likely JSON shape.
+    }
+  }
+
+  return fallback;
+}
+
+function previewText(value: unknown, maxLength = 1200) {
+  return chatContentToText(value).replace(/\s+/g, ' ').trim().slice(0, maxLength);
+}
+
 function normalizeTitle(title?: string) {
   return title?.trim() || 'Untitled lyric video';
 }
@@ -134,6 +297,8 @@ function asrSnapshot(params: {
   provider: string;
   model: string;
   result: AsrDraftResult;
+  audioAnalysis?: AudioAnalysisResult;
+  audioAnalysisError?: string;
 }) {
   return {
     provider: params.provider,
@@ -142,6 +307,8 @@ function asrSnapshot(params: {
     rawSegments: params.result.rawSegments,
     words: params.result.words,
     raw: params.result.raw,
+    audioAnalysis: params.audioAnalysis,
+    audioAnalysisError: params.audioAnalysisError,
     createdAt: new Date().toISOString(),
   };
 }
@@ -159,6 +326,8 @@ function readAsrSnapshot(project: any) {
 
   return {
     rawText,
+    audioAnalysis: parsed.audioAnalysis as AudioAnalysisResult | undefined,
+    audioAnalysisError: typeof parsed.audioAnalysisError === 'string' ? parsed.audioAnalysisError : undefined,
     rawSegments: rawSegments
       .map((segment: any, index: number) => ({
         startMs: Math.max(0, Number(segment.startMs) || Number(segment.start) * 1000 || index * 4000),
@@ -169,6 +338,290 @@ function readAsrSnapshot(project: any) {
         text: String(segment.text || '').trim(),
       }))
       .filter((segment: LyricLineInput) => segment.text),
+  };
+}
+
+function readAudioAnalysis(project: any): AudioAnalysisResult | undefined {
+  const parsed = parseJson<any>(project?.transcriptionRaw, {});
+  if (!parsed.audioAnalysis || typeof parsed.audioAnalysis !== 'object') return undefined;
+  return parsed.audioAnalysis as AudioAnalysisResult;
+}
+
+function audioAnalysisPromptSummary(project: any) {
+  const analysis = readAudioAnalysis(project);
+  if (!analysis) return '';
+
+  const segments = (analysis.segments || [])
+    .slice(0, 8)
+    .map(
+      (segment, index) =>
+        `${index + 1}. ${segment.startMs}-${segment.endMs}ms energy=${Number(segment.avgEnergy || 0).toFixed(5)}`
+    )
+    .join('\n');
+
+  const beats = (analysis.beatTimesMs || [])
+    .slice(0, 16)
+    .map((time) => `${time}ms`)
+    .join(', ');
+
+  return [
+    `Audio analysis: BPM ${analysis.bpm || 'unknown'}, key ${analysis.key || 'unknown'}, duration ${analysis.durationSec || 0}s.`,
+    beats ? `Early beat times: ${beats}.` : '',
+    segments ? `Energy segments:\n${segments}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
+function energyLevelForValue(value: number, min: number, max: number): 'low' | 'medium' | 'high' {
+  if (!Number.isFinite(value) || max <= min) return 'medium';
+  const normalized = (value - min) / (max - min);
+  if (normalized < 0.34) return 'low';
+  if (normalized < 0.67) return 'medium';
+  return 'high';
+}
+
+function normalizePreprocessLyrics(params: {
+  rawText?: string;
+  rawSegments?: any[];
+  words?: any[];
+}): PreprocessLyricLine[] {
+  const candidateSegments = Array.isArray(params.rawSegments) ? params.rawSegments : [];
+  const lines =
+    candidateSegments.length > 0
+      ? candidateSegments
+          .map((segment, index) => {
+            const startMs =
+              segment.startMs !== undefined
+                ? Math.max(0, Math.round(Number(segment.startMs) || 0))
+                : secondsToMs(segment.start ?? index * 4);
+            const endMs =
+              segment.endMs !== undefined
+                ? Math.max(startMs + 500, Math.round(Number(segment.endMs) || 0))
+                : Math.max(startMs + 500, secondsToMs(segment.end ?? index * 4 + 3.5));
+            return {
+              id: segment.id || `line_${index + 1}`,
+              startMs,
+              endMs,
+              text: String(segment.text || '').trim(),
+              wordStartIndex: Number.isFinite(Number(segment.wordStartIndex)) ? Number(segment.wordStartIndex) : undefined,
+              wordEndIndex: Number.isFinite(Number(segment.wordEndIndex)) ? Number(segment.wordEndIndex) : undefined,
+            };
+          })
+          .filter((line) => line.text)
+      : parseLinesFromText(params.rawText || '').map((line, index) => ({
+          id: `line_${index + 1}`,
+          startMs: line.startMs || index * 4000,
+          endMs: line.endMs || index * 4000 + 3500,
+          text: line.text,
+        }));
+
+  return lines
+    .sort((a, b) => a.startMs - b.startMs)
+    .map((line, index) => ({
+      ...line,
+      id: line.id || `line_${index + 1}`,
+      endMs: Math.max(line.startMs + 500, line.endMs),
+    }));
+}
+
+function buildEnergySegments(audioAnalysis?: AudioAnalysisResult): PreprocessEnergySegment[] {
+  const segments = (audioAnalysis?.segments || []).filter((segment) => segment.endMs > segment.startMs);
+  if (segments.length === 0) return [];
+
+  const values = segments.map((segment) => Number(segment.avgEnergy) || 0);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return segments.map((segment) => ({
+    ...segment,
+    energyLevel: energyLevelForValue(Number(segment.avgEnergy) || 0, min, max),
+  }));
+}
+
+function findEnergyForRange(
+  startMs: number,
+  endMs: number,
+  energySegments: PreprocessEnergySegment[]
+): { avgEnergy: number; energyLevel: 'low' | 'medium' | 'high' } {
+  const overlaps = energySegments
+    .map((segment) => {
+      const overlapMs = Math.max(0, Math.min(endMs, segment.endMs) - Math.max(startMs, segment.startMs));
+      return { segment, overlapMs };
+    })
+    .filter((item) => item.overlapMs > 0);
+
+  if (overlaps.length === 0) return { avgEnergy: 0, energyLevel: 'medium' };
+
+  const totalMs = overlaps.reduce((sum, item) => sum + item.overlapMs, 0);
+  const avgEnergy = overlaps.reduce((sum, item) => sum + item.overlapMs * item.segment.avgEnergy, 0) / Math.max(1, totalMs);
+  const strongest = overlaps.sort((a, b) => b.overlapMs - a.overlapMs)[0]?.segment;
+  return {
+    avgEnergy: Number(avgEnergy.toFixed(6)),
+    energyLevel: strongest?.energyLevel || 'medium',
+  };
+}
+
+function countBeatsInRange(startMs: number, endMs: number, beatTimesMs?: number[]) {
+  return (beatTimesMs || []).filter((time) => time >= startMs && time < endMs).length;
+}
+
+function mergeShortScenes(scenes: PreprocessScene[], minSceneMs: number, maxScenes: number) {
+  const merged: PreprocessScene[] = [];
+  for (const scene of scenes) {
+    const previous = merged[merged.length - 1];
+    if (previous && (scene.durationMs < minSceneMs || merged.length >= maxScenes)) {
+      previous.endMs = scene.endMs;
+      previous.durationMs = previous.endMs - previous.startMs;
+      previous.linkedLineIds = [...previous.linkedLineIds, ...scene.linkedLineIds];
+      previous.lyricsText = [previous.lyricsText, scene.lyricsText].filter(Boolean).join(' ');
+      previous.beatCount += scene.beatCount;
+      previous.cutReason = scene.cutReason;
+    } else {
+      merged.push({ ...scene });
+    }
+  }
+  return merged.map((scene, index) => ({ ...scene, sceneId: `scene_${index + 1}` }));
+}
+
+export function preprocessLyricVideoAnalysis(params: {
+  transcription?: {
+    rawText?: string;
+    rawSegments?: any[];
+    words?: any[];
+  };
+  audioAnalysis?: AudioAnalysisResult;
+}): LyricVideoPreprocessResult {
+  const lyrics = normalizePreprocessLyrics({
+    rawText: params.transcription?.rawText,
+    rawSegments: params.transcription?.rawSegments,
+    words: params.transcription?.words,
+  });
+  if (lyrics.length === 0) throw new Error('No lyric lines available for preprocessing');
+
+  const energySegments = buildEnergySegments(params.audioAnalysis);
+  const durationMs = Math.max(
+    Math.round((params.audioAnalysis?.durationSec || 0) * 1000),
+    ...lyrics.map((line) => line.endMs)
+  );
+  const vocalGaps = lyrics
+    .slice(0, -1)
+    .map((line, index) => {
+      const nextLine = lyrics[index + 1];
+      return {
+        startMs: line.endMs,
+        endMs: nextLine.startMs,
+        durationMs: Math.max(0, nextLine.startMs - line.endMs),
+        fromLineId: line.id,
+        toLineId: nextLine.id,
+      };
+    })
+    .filter((gap) => gap.durationMs > 0);
+
+  const targetSceneCount = Math.max(3, Math.min(8, Math.ceil(durationMs / 8000)));
+  const minSceneMs = 2000;
+  const targetSceneMs = Math.max(4000, Math.min(10000, Math.ceil(durationMs / targetSceneCount)));
+  const maxSceneMs = Math.max(10000, targetSceneMs + 3000);
+  const scenes: PreprocessScene[] = [];
+  let currentLines: PreprocessLyricLine[] = [];
+  let currentStartMs = lyrics[0].startMs;
+
+  const flushScene = (endMs: number, cutReason: PreprocessScene['cutReason']) => {
+    if (currentLines.length === 0) return;
+    const safeEndMs = Math.max(currentStartMs + 500, endMs);
+    const energy = findEnergyForRange(currentStartMs, safeEndMs, energySegments);
+    scenes.push({
+      sceneId: `scene_${scenes.length + 1}`,
+      startMs: currentStartMs,
+      endMs: safeEndMs,
+      durationMs: safeEndMs - currentStartMs,
+      linkedLineIds: currentLines.map((line) => line.id),
+      lyricsText: currentLines.map((line) => line.text).join(' '),
+      avgEnergy: energy.avgEnergy,
+      energyLevel: energy.energyLevel,
+      beatCount: countBeatsInRange(currentStartMs, safeEndMs, params.audioAnalysis?.beatTimesMs),
+      cutReason,
+    });
+    currentLines = [];
+  };
+
+  for (let index = 0; index < lyrics.length; index += 1) {
+    const line = lyrics[index];
+    if (currentLines.length === 0) currentStartMs = line.startMs;
+    currentLines.push(line);
+
+    const nextLine = lyrics[index + 1];
+    const sceneDurationMs = line.endMs - currentStartMs;
+    const gapToNextMs = nextLine ? Math.max(0, nextLine.startMs - line.endMs) : 0;
+    const hasEnoughScenesLeft = scenes.length + 1 < targetSceneCount;
+    const shouldCutOnVocalGap = hasEnoughScenesLeft && gapToNextMs >= 1000 && sceneDurationMs >= 4000;
+    const shouldCutOnTarget = hasEnoughScenesLeft && sceneDurationMs >= targetSceneMs;
+    const shouldCutOnMax = sceneDurationMs >= maxSceneMs;
+
+    if (!nextLine) {
+      flushScene(line.endMs, 'final');
+    } else if (shouldCutOnVocalGap) {
+      flushScene(line.endMs, 'vocal_gap');
+    } else if (shouldCutOnMax) {
+      flushScene(line.endMs, 'max_duration');
+    } else if (shouldCutOnTarget) {
+      flushScene(line.endMs, 'target_duration');
+    }
+  }
+
+  const mergedScenes = mergeShortScenes(scenes, minSceneMs, 8);
+  return {
+    track: {
+      durationMs,
+      bpm: params.audioAnalysis?.bpm,
+      key: params.audioAnalysis?.key,
+    },
+    lyrics,
+    vocalGaps,
+    energySegments,
+    scenes: mergedScenes,
+  };
+}
+
+function secondsFromMs(ms: number) {
+  return Number((Math.max(0, ms) / 1000).toFixed(3));
+}
+
+function titleFromFilename(filename?: string) {
+  return (filename || 'Untitled song').replace(/\.[^/.]+$/, '').trim() || 'Untitled song';
+}
+
+export function preprocessLyricVideoForLlm(params: {
+  song?: string;
+  transcription?: {
+    rawText?: string;
+    rawSegments?: any[];
+    words?: any[];
+  };
+  audioAnalysis?: AudioAnalysisResult;
+}): LyricVideoLlmPreprocessResult {
+  const lyrics = normalizePreprocessLyrics({
+    rawText: params.transcription?.rawText,
+    rawSegments: params.transcription?.rawSegments,
+    words: params.transcription?.words,
+  });
+  if (lyrics.length === 0) throw new Error('No lyric lines available for preprocessing');
+
+  const durationMs = Math.max(
+    Math.round((params.audioAnalysis?.durationSec || 0) * 1000),
+    ...lyrics.map((line) => line.endMs)
+  );
+
+  return {
+    song: params.song || 'Untitled song',
+    duration_s: Number((durationMs / 1000).toFixed(3)),
+    bpm: params.audioAnalysis?.bpm,
+    key: params.audioAnalysis?.key,
+    lines: lyrics.map((line) => ({
+      start_s: secondsFromMs(line.startMs),
+      end_s: secondsFromMs(line.endMs),
+      text: line.text,
+    })),
+    energy_per_second: (params.audioAnalysis?.rmsBySecond || []).map((point) => Number(point.rms || 0)),
   };
 }
 
@@ -448,6 +901,47 @@ async function prepareAudioClipForTranscription(params: { userId: string; projec
   }
 }
 
+async function analyzeAudioWithLibrosa(params: {
+  projectId: string;
+  audioUrl?: string | null;
+}): Promise<{ audioAnalysis?: AudioAnalysisResult; audioAnalysisError?: string }> {
+  if (!params.audioUrl) return { audioAnalysisError: 'No audio URL available for analysis' };
+
+  const analysisId = getUuid();
+  const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-audio-analysis', `${params.projectId}-${analysisId}`);
+  const inputPath = path.join(tmpDir, 'audio');
+
+  try {
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(inputPath, await fetchBytes(params.audioUrl));
+    return { audioAnalysis: await runLibrosaAnalysisForLocalFile(inputPath) };
+  } catch (error: any) {
+    const message = [error?.message, error?.stderr || error?.stdout]
+      .filter(Boolean)
+      .join('\n')
+      .trim();
+    console.warn('[lyric-video] audio analysis failed', {
+      projectId: params.projectId,
+      error: message || error,
+    });
+    return { audioAnalysisError: message || 'Audio analysis failed' };
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+}
+
+async function runLibrosaAnalysisForLocalFile(inputPath: string): Promise<AudioAnalysisResult> {
+  const scriptPath = path.join(process.cwd(), 'scripts', 'analyze_audio.py');
+  const pythonPath = process.env.LYRIC_VIDEO_PYTHON_PATH || 'python3';
+  const { stdout } = (await execFileAsync(pythonPath, [scriptPath, '--input', inputPath], {
+    cwd: process.cwd(),
+    timeout: 120_000,
+    maxBuffer: 10 * 1024 * 1024,
+  })) as { stdout: string; stderr: string };
+
+  return JSON.parse(stdout) as AudioAnalysisResult;
+}
+
 async function saveAIProviderFiles(files: AIFile[]) {
   if (!isStorageConfigured()) return undefined;
 
@@ -470,9 +964,18 @@ async function callKieGeminiChat(params: {
   text: string;
   mediaUrl?: string;
   responseFormat?: any;
+  model?: string;
 }) {
-  if (!envConfigs.kie_api_key) {
-    throw new Error('KIE_API_KEY is required for Kie Gemini chat');
+  const configs = await getAllConfigs();
+  const apiKey = configs.kie_api_key;
+  const model = params.model || configs.kie_chat_model || 'gemini-2.5-flash';
+  const endpoint =
+    params.model && /^gemini-[a-z0-9.-]+$/i.test(params.model)
+      ? `https://api.kie.ai/${params.model}/v1/chat/completions`
+      : configs.kie_chat_endpoint || 'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions';
+
+  if (!apiKey) {
+    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
   }
 
   const content: any[] = [{ type: 'text', text: params.text }];
@@ -480,18 +983,24 @@ async function callKieGeminiChat(params: {
     content.push({ type: 'image_url', image_url: { url: params.mediaUrl } });
   }
 
-  const response = await fetch(envConfigs.kie_chat_endpoint, {
+  const requestBody: Record<string, unknown> = {
+    model,
+    stream: false,
+    messages: [{ role: 'user', content }],
+    response_format: params.responseFormat,
+  };
+  if (model === 'gemini-3.1-pro') {
+    requestBody.include_thoughts = false;
+    requestBody.reasoning_effort = 'high';
+  }
+
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${envConfigs.kie_api_key}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: envConfigs.kie_chat_model,
-      stream: false,
-      messages: [{ role: 'user', content }],
-      response_format: params.responseFormat,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
@@ -500,8 +1009,308 @@ async function callKieGeminiChat(params: {
   }
 
   const data = await response.json();
-  const contentText = data.choices?.[0]?.message?.content || '';
-  return { raw: data, content: contentText };
+  const contentText = chatContentToText(data.choices?.[0]?.message?.content || '');
+  return { model: data.model || model, raw: data, content: contentText };
+}
+
+async function callKieClaudeMessages(params: {
+  text: string;
+  model?: string;
+  maxTokens?: number;
+  thinkingFlag?: boolean;
+}) {
+  const configs = await getAllConfigs();
+  const apiKey = configs.kie_api_key;
+  const endpoint = configs.kie_claude_endpoint || 'https://api.kie.ai/claude/v1/messages';
+  const model = params.model || configs.kie_claude_model || 'claude-sonnet-4-5';
+
+  if (!apiKey) {
+    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: params.text }],
+      stream: false,
+      thinkingFlag: params.thinkingFlag ?? true,
+      max_tokens: params.maxTokens ?? 4096,
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Kie Claude messages failed: ${response.status} ${text}`);
+  }
+
+  const data = await response.json();
+  return {
+    model: data.model || model,
+    raw: data,
+    content: chatContentToText(data.content || ''),
+  };
+}
+
+async function callKieCodexResponses(params: {
+  text: string;
+  model?: string;
+  reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh';
+}) {
+  const configs = await getAllConfigs();
+  const apiKey = configs.kie_api_key;
+  const endpoint = configs.kie_codex_endpoint || 'https://api.kie.ai/codex/v1/responses';
+  const model = params.model || configs.kie_codex_model || 'gpt-5-4';
+
+  if (!apiKey) {
+    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      stream: false,
+      input: [
+        {
+          role: 'user',
+          content: [{ type: 'input_text', text: params.text }],
+        },
+      ],
+      reasoning: { effort: params.reasoningEffort || 'medium' },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Kie Codex responses failed: ${response.status} ${text}`);
+  }
+
+  const data = await response.json();
+  return {
+    model: data.model || model,
+    raw: data,
+    content: chatContentToText(data.output_text || data.output || data.content || ''),
+  };
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item || '').trim()).filter(Boolean);
+}
+
+function normalizeIntensity(value: unknown) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0.5;
+  return Math.max(0, Math.min(1, Number(num.toFixed(2))));
+}
+
+function normalizeSongAnalysis(
+  parsed: any
+): LyricVideoSongAnalysisResult {
+  const characters = Array.isArray(parsed?.characters) ? parsed.characters : [];
+  const emotionArc = Array.isArray(parsed?.emotion_arc) ? parsed.emotion_arc : [];
+  return {
+    theme: String(parsed?.theme || '').trim(),
+    characters: characters
+      .map((item: any, index: number) => ({
+        id: String(item?.id || `char_${index + 1}`).trim(),
+        description: String(item?.description || '').trim(),
+      }))
+      .filter((item: LyricVideoSongAnalysisResult['characters'][number]) => item.description),
+    emotion_arc: emotionArc
+      .map((item: any) => ({
+        time_range: String(item?.time_range || '').trim(),
+        emotion: String(item?.emotion || '').trim(),
+        intensity: normalizeIntensity(item?.intensity),
+      }))
+      .filter((item: LyricVideoSongAnalysisResult['emotion_arc'][number]) => item.time_range && item.emotion),
+    visual_style: String(parsed?.visual_style || '').trim(),
+    color_palette: stringArray(parsed?.color_palette).slice(0, 5),
+    notes: String(parsed?.notes || '').trim(),
+  };
+}
+
+function buildSongAnalysisPrompt(preprocess: LyricVideoLlmPreprocessResult) {
+  return `你是一位音乐视觉化导演。根据以下歌曲数据，分析这首歌并输出创意方向。
+
+## 歌曲数据
+${JSON.stringify(preprocess)}
+
+## 你的任务
+分析歌词含义、情绪走向和能量变化，输出以下 JSON（不要输出其他内容）：
+
+{
+  "theme": "一句话概括这首歌的核心主题",
+  "characters": [
+    {
+      "id": "char_1",
+      "description": "主角的外貌、穿着、气质（用于后续生图保持一致）"
+    }
+  ],
+  "emotion_arc": [
+    {
+      "time_range": "0s-29s",
+      "emotion": "当前段落的情绪关键词",
+      "intensity": 0.4
+    }
+  ],
+  "visual_style": "整体画面风格（如：电影感写实 / 日系动画 / 赛博朋克等）",
+  "color_palette": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"],
+  "notes": "任何影响视觉的补充说明（如季节、光线、年代感）"
+}
+
+## 要求
+- emotion_arc 要覆盖整首歌，按歌词内容和 energy_per_second 的变化来划分段落
+- intensity 范围 0-1，要参考 energy_per_second 数据
+- characters 描述要具体到可以直接用于 AI 生图
+- color_palette 要与歌曲情绪和 visual_style 匹配
+- 只输出 JSON，不要解释`;
+}
+
+export async function analyzeSongWithKieForDebug(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  provider?: DebugSongAnalysisProvider;
+  model?: string;
+}) {
+  const provider = params.provider || 'kie_claude';
+  if (!['kie_claude', 'kie_codex', 'kie_gemini'].includes(provider)) {
+    throw new Error(`Unsupported LLM provider: ${provider}`);
+  }
+  if (!params.preprocess || !Array.isArray(params.preprocess.lines) || params.preprocess.lines.length === 0) {
+    throw new Error('preprocess.lines is required for song analysis');
+  }
+
+  const prompt = buildSongAnalysisPrompt(params.preprocess);
+  const result =
+    provider === 'kie_codex'
+      ? await callKieCodexResponses({ text: prompt, model: params.model })
+      : provider === 'kie_gemini'
+        ? await callKieGeminiChat({ text: prompt, model: params.model })
+        : await callKieClaudeMessages({ text: prompt, model: params.model, thinkingFlag: true, maxTokens: 4096 });
+
+  const parsed = parseJsonLoose<any>(result.content, {});
+  return {
+    provider,
+    model: params.model || result.model,
+    actualModel: result.model,
+    songAnalysis: normalizeSongAnalysis(parsed),
+    rawText: result.content,
+    raw: result.raw,
+  };
+}
+
+export async function analyzeSongWithKieClaudeForDebug(preprocess: LyricVideoLlmPreprocessResult) {
+  return analyzeSongWithKieForDebug({ preprocess, provider: 'kie_claude' });
+}
+
+function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[] {
+  const scenes = Array.isArray(parsed?.scenes) ? parsed.scenes : Array.isArray(parsed) ? parsed : [];
+  return scenes
+    .map((scene: any, index: number) => {
+      const start = Number(scene?.start_s ?? scene?.start ?? 0);
+      const end = Number(scene?.end_s ?? scene?.end ?? start + 10);
+      return {
+        scene_id: Number(scene?.scene_id || scene?.id || index + 1),
+        start_s: Number.isFinite(start) ? Math.max(0, Number(start.toFixed(3))) : 0,
+        end_s: Number.isFinite(end) ? Math.max(0, Number(end.toFixed(3))) : 0,
+        lyrics_summary: String(scene?.lyrics_summary || '').trim(),
+        image_prompt: String(scene?.image_prompt || '').trim(),
+        video_prompt: String(scene?.video_prompt || '').trim(),
+      };
+    })
+    .filter((scene: LyricVideoPromptSceneResult) => scene.end_s > scene.start_s && scene.image_prompt && scene.video_prompt)
+    .slice(0, 8)
+    .map((scene: LyricVideoPromptSceneResult, index: number) => ({
+      ...scene,
+      scene_id: index + 1,
+    }));
+}
+
+function buildStoryboardScenesPrompt(params: {
+  songAnalysis: LyricVideoSongAnalysisResult;
+  preprocess: LyricVideoLlmPreprocessResult;
+}) {
+  const bpm = Number(params.preprocess.bpm || 0);
+  const beatSeconds = bpm > 0 ? Number((60 / bpm).toFixed(2)) : undefined;
+  const bpmText = bpm > 0 ? `${bpm}${beatSeconds ? ` (约每拍 ${beatSeconds}s)` : ''}` : 'unknown';
+
+  return `你是一位音乐 MV 分镜师。根据以下歌曲理解和歌词时间线，为这首歌设计 4-8 个视觉分镜。
+
+## 歌曲理解
+${JSON.stringify(params.songAnalysis)}
+
+## 歌词时间线
+${JSON.stringify(params.preprocess.lines || [])}
+
+## 你的任务
+将歌词按叙事节奏合并为 4-8 个 scene，每个 scene 输出以下 JSON：
+
+{
+  "scenes": [
+    {
+      "scene_id": 1,
+      "start_s": 0,
+      "end_s": 29,
+      "lyrics_summary": "这个场景涵盖的歌词概要",
+      "image_prompt": "用英文写的静态画面描述，包含人物外貌、动作、环境、光线、色调、构图，风格与 visual_style 一致，适用于 Midjourney/Flux 出图",
+      "video_prompt": "用英文写的运动描述，包含镜头运动（推/拉/摇/跟）、主体运动、特效（风/尘/光粒子），节奏需匹配 BPM=${bpm || 'unknown'}"
+    }
+  ]
+}
+
+## 要求
+- 合并相邻歌词行为一个 scene，每个 scene 时长建议 10-30s
+- image_prompt 必须包含 characters 中定义的人物外貌描述，保持一致性
+- image_prompt 用英文，适合直接喂给 Midjourney/Flux
+- video_prompt 用英文，适合喂给 Kling 首尾帧模式
+- video_prompt 中的运动节奏要匹配 BPM ${bpmText}
+- color_palette 中的颜色要体现在画面描述中
+- emotion_arc 的 intensity 越高，画面运动幅度越大
+- 只输出 JSON，不要解释`;
+}
+
+export async function generateStoryboardScenesWithKieForDebug(params: {
+  songAnalysis: LyricVideoSongAnalysisResult;
+  preprocess: LyricVideoLlmPreprocessResult;
+  model?: string;
+}) {
+  if (!params.songAnalysis || typeof params.songAnalysis !== 'object') {
+    throw new Error('songAnalysis is required for Prompt 2');
+  }
+  if (!params.preprocess || !Array.isArray(params.preprocess.lines) || params.preprocess.lines.length === 0) {
+    throw new Error('preprocess.lines is required for Prompt 2');
+  }
+
+  const model = params.model || 'claude-opus-4-5';
+  const prompt = buildStoryboardScenesPrompt({
+    songAnalysis: params.songAnalysis,
+    preprocess: params.preprocess,
+  });
+  const result = await callKieClaudeMessages({
+    text: prompt,
+    model,
+    thinkingFlag: true,
+    maxTokens: 4096,
+  });
+  const parsed = parseJsonLoose<any>(result.content, {});
+
+  return {
+    provider: 'kie_claude',
+    model,
+    actualModel: result.model,
+    scenes: normalizePromptScenes(parsed),
+    rawText: result.content,
+    raw: result.raw,
+  };
 }
 
 async function transcribeWithKieGemini(audioUrl: string) {
@@ -530,7 +1339,7 @@ async function transcribeWithKieGemini(audioUrl: string) {
 Return only JSON matching the schema. Keep each lyric line concise. If exact timing is uncertain, estimate line timings in order.`,
   });
 
-  const parsed = parseJson<any>(result.content, {});
+  const parsed = parseJsonLoose<any>(result.content, {});
   const lines = Array.isArray(parsed.lines)
     ? parsed.lines.map((line: any, index: number) => ({
         startMs: Math.max(0, Number(line.startMs) || index * 4000),
@@ -576,14 +1385,17 @@ async function generateStoryboardWithKieGemini(params: {
   storyPrompt?: string;
 }): Promise<StoryboardScene[]> {
   const fallback = buildHeuristicStoryboard(params);
-  if (!envConfigs.kie_api_key) return fallback;
+  const configs = await getAllConfigs();
+  if (!configs.kie_api_key) return fallback;
 
   const lyrics = params.lines
     .map((line, index) => `${index + 1}. [${line.startMs}-${line.endMs}ms] ${line.text}`)
     .join('\n');
+  const audioAnalysis = audioAnalysisPromptSummary(params.project);
   const prompt = `Create a JSON array of static lyric-video visual scenes. Use 1 scene for every 1-3 lyric lines. Return only JSON.
 Each item must have: startMs, endMs, prompt, linkedLineIds.
 Style: ${params.project.artStyle}. Palette: ${params.project.palette}. Story: ${params.storyPrompt || params.project.storyPrompt || 'emotional cinematic lyric video'}.
+${audioAnalysis ? `${audioAnalysis}\nUse BPM, beat timing, and energy changes to decide scene pacing and mood intensity.` : ''}
 No text or typography in images. Keep characters and setting consistent.
 Lyrics:
 ${lyrics}`;
@@ -611,7 +1423,7 @@ ${lyrics}`;
   });
 
   const content = result.content || '{}';
-  const parsed = parseJson<any>(content, {});
+  const parsed = parseJsonLoose<any>(content, {});
   const scenes = Array.isArray(parsed) ? parsed : parsed.scenes;
   if (!Array.isArray(scenes) || scenes.length === 0) return fallback;
 
@@ -656,11 +1468,12 @@ async function normalizeLyricsWithKieGemini(params: {
   rawText: string;
   rawSegments: LyricLineInput[];
   project: any;
-}) {
-  if (!envConfigs.kie_api_key) {
-    throw new Error('KIE_API_KEY is required for lyrics normalization');
-  }
-
+}): Promise<{
+  lines: LyricLineInput[];
+  fallbackUsed: boolean;
+  fallbackSource?: string;
+  llmContentPreview?: string;
+}> {
   const timedWords = params.words
     .map((word, index) => `${index}. [${word.startMs}-${word.endMs}ms] ${word.word}`)
     .join('\n');
@@ -708,20 +1521,120 @@ ${params.rawText || '(none)'}`;
     },
   });
 
-  const parsed = parseJson<any>(result.content, {});
-  const candidateLines = Array.isArray(parsed) ? parsed : parsed.lines;
+  const parsed = parseJsonLoose<any>(result.content, {});
+  const candidateLines = pickLyricLineArray(parsed);
+  const llmContentPreview = previewText(result.content);
+
+  const llmLines = normalizeLyricLineCandidates(candidateLines, 'llm_normalized');
+  if (llmLines.length > 0) {
+    return { lines: llmLines, fallbackUsed: false, llmContentPreview };
+  }
+
+  const fallback = buildLyricsNormalizeFallback(params);
+  return {
+    lines: fallback.lines,
+    fallbackUsed: fallback.lines.length > 0,
+    fallbackSource: fallback.source,
+    llmContentPreview,
+  };
+}
+
+function pickLyricLineArray(parsed: any): any[] {
+  if (Array.isArray(parsed)) return parsed;
+  if (!parsed || typeof parsed !== 'object') return [];
+  if (Array.isArray(parsed.lines)) return parsed.lines;
+  if (Array.isArray(parsed.lyrics)) return parsed.lyrics;
+  if (Array.isArray(parsed.items)) return parsed.items;
+  return [];
+}
+
+function normalizeLyricLineCandidates(candidateLines: any[], source: string): LyricLineInput[] {
   if (!Array.isArray(candidateLines)) return [];
 
   return candidateLines
-    .map((line: any, index: number) => ({
-      startMs: Math.max(0, Number(line.startMs) || index * 4000),
-      endMs: Math.max(Number(line.startMs) || index * 4000, Number(line.endMs) || index * 4000 + 3500),
-      text: String(line.text || '').trim(),
-      wordStartIndex: Number.isFinite(Number(line.wordStartIndex)) ? Number(line.wordStartIndex) : undefined,
-      wordEndIndex: Number.isFinite(Number(line.wordEndIndex)) ? Number(line.wordEndIndex) : undefined,
-      source: 'llm_normalized',
-    }))
+    .map((line: any, index: number) => {
+      const startMs =
+        line?.startMs !== undefined
+          ? coerceTimestampMs(line.startMs, index * 4000, 'ms')
+          : coerceTimestampMs(line?.start, index * 4000, 'auto');
+      const endMs = Math.max(
+        startMs + 500,
+        line?.endMs !== undefined
+          ? coerceTimestampMs(line.endMs, startMs + 3500, 'ms')
+          : coerceTimestampMs(line?.end, startMs + 3500, 'auto')
+      );
+      return {
+        startMs,
+        endMs,
+        text: String(line?.text || line?.lyric || line?.line || '').trim(),
+        wordStartIndex: Number.isFinite(Number(line?.wordStartIndex)) ? Number(line.wordStartIndex) : undefined,
+        wordEndIndex: Number.isFinite(Number(line?.wordEndIndex)) ? Number(line.wordEndIndex) : undefined,
+        source,
+      };
+    })
     .filter((line: LyricLineInput) => line.text);
+}
+
+function coerceTimestampMs(value: unknown, fallbackMs: number, unit: 'ms' | 'auto') {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return Math.max(0, Math.round(fallbackMs));
+  if (unit === 'ms') return Math.round(num);
+  return Math.round(num < 1000 ? num * 1000 : num);
+}
+
+function buildLyricsNormalizeFallback(params: {
+  words: any[];
+  rawText: string;
+  rawSegments: LyricLineInput[];
+}) {
+  const segmentLines = normalizeLyricLineCandidates(params.rawSegments, 'asr_segment_fallback');
+  if (segmentLines.length > 0) return { lines: segmentLines, source: 'asr_segments' };
+
+  const wordLines = groupWordsIntoLyricLines(params.words);
+  if (wordLines.length > 0) return { lines: wordLines, source: 'asr_words' };
+
+  const textLines = parseLinesFromText(params.rawText).map((line) => ({ ...line, source: 'raw_text_fallback' }));
+  return { lines: textLines, source: textLines.length > 0 ? 'raw_text' : undefined };
+}
+
+function groupWordsIntoLyricLines(words: any[]): LyricLineInput[] {
+  const cleanWords = words
+    .map((word, index) => ({
+      index,
+      text: String(word.word || word.text || '').trim(),
+      startMs: Math.max(0, Number(word.startMs) || index * 500),
+      endMs: Math.max(Number(word.startMs) || index * 500, Number(word.endMs) || index * 500 + 450),
+    }))
+    .filter((word) => word.text);
+
+  const lines: LyricLineInput[] = [];
+  let group: typeof cleanWords = [];
+
+  const flush = () => {
+    if (group.length === 0) return;
+    const first = group[0];
+    const last = group[group.length - 1];
+    lines.push({
+      startMs: first.startMs,
+      endMs: Math.max(first.startMs + 500, last.endMs),
+      text: group.map((word) => word.text).join(' '),
+      wordStartIndex: first.index,
+      wordEndIndex: last.index,
+      source: 'asr_words_fallback',
+    });
+    group = [];
+  };
+
+  for (const word of cleanWords) {
+    group.push(word);
+    const first = group[0];
+    const duration = word.endMs - first.startMs;
+    const sentenceBreak = /[.!?。！？]$/.test(word.text);
+    if (sentenceBreak || group.length >= 8 || duration >= 4500) flush();
+  }
+  flush();
+
+  return lines;
 }
 
 function buildHeuristicStoryboard(params: { lines: any[]; project: any; storyPrompt?: string }) {
@@ -748,12 +1661,13 @@ function buildHeuristicStoryboard(params: { lines: any[]; project: any; storyPro
   return scenes;
 }
 
-function createKieProvider() {
-  if (!envConfigs.kie_api_key) {
-    throw new Error('KIE_API_KEY is required for image generation');
+async function createKieProvider() {
+  const configs = await getAllConfigs();
+  if (!configs.kie_api_key) {
+    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
   }
   return new KieProvider({
-    apiKey: envConfigs.kie_api_key,
+    apiKey: configs.kie_api_key,
     customStorage: isStorageConfigured(),
     saveFiles: saveAIProviderFiles,
     uuid: getUuid,
@@ -1167,7 +2081,7 @@ export async function runAsr(params: {
 
   const configs = await getAllConfigs();
   const provider = configs.groq_api_key ? 'groq' : 'kie';
-  const model = configs.groq_api_key ? configs.groq_transcribe_model : configs.kie_chat_model;
+  const model = configs.groq_api_key ? configs.groq_transcribe_model : configs.kie_chat_model || 'gemini-2.5-flash';
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
@@ -1189,14 +2103,21 @@ export async function runAsr(params: {
       project,
     });
     const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
-    const result = configs.groq_api_key
-      ? await transcribeWithGroqWhisper({
+    const transcriptionPromise = configs.groq_api_key
+      ? transcribeWithGroqWhisper({
           audioUrl: transcriptionAudioUrl || '',
           configs,
           language: project.language || 'auto',
           prompt: project.title,
         })
-      : await transcribeWithKieGemini(transcriptionAudioUrl || '');
+      : transcribeWithKieGemini(transcriptionAudioUrl || '');
+    const [result, analysisResult] = await Promise.all([
+      transcriptionPromise,
+      analyzeAudioWithLibrosa({
+        projectId: params.projectId,
+        audioUrl: transcriptionAudioUrl,
+      }),
+    ]);
     const asrResult: AsrDraftResult = {
       raw: result.raw,
       rawText: String((result as any).text || result.lines.map((line: LyricLineInput) => line.text).join('\n')).trim(),
@@ -1204,7 +2125,13 @@ export async function runAsr(params: {
       words: result.words || [],
     };
 
-    const snapshot = asrSnapshot({ provider, model, result: asrResult });
+    const snapshot = asrSnapshot({
+      provider,
+      model,
+      result: asrResult,
+      audioAnalysis: analysisResult.audioAnalysis,
+      audioAnalysisError: analysisResult.audioAnalysisError,
+    });
     const wordValues = asrResult.words
       .map((word, index) => ({
         id: getUuid(),
@@ -1246,6 +2173,8 @@ export async function runAsr(params: {
       words: wordValues,
       rawText: asrResult.rawText,
       rawSegments: asrResult.rawSegments,
+      audioAnalysis: analysisResult.audioAnalysis,
+      audioAnalysisError: analysisResult.audioAnalysisError,
       project: updated,
       taskId: task.id,
     };
@@ -1258,6 +2187,84 @@ export async function runAsr(params: {
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
     ]);
     throw error;
+  }
+}
+
+export async function analyzeUploadedAudioForDebug(params: {
+  body: Buffer | Uint8Array;
+  filename?: string;
+  contentType?: string;
+  language?: string;
+  prompt?: string;
+}) {
+  const configs = await getAllConfigs();
+  const body = Buffer.from(params.body);
+  const filename = params.filename || 'audio.mp3';
+  const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-debug', getUuid());
+  const inputPath = path.join(tmpDir, filename.replace(/[^\w.-]+/g, '_') || 'audio.mp3');
+
+  await mkdir(tmpDir, { recursive: true });
+  await writeFile(inputPath, body);
+
+  try {
+    const [transcriptionResult, analysisResult] = await Promise.allSettled([
+      configs.groq_api_key
+        ? new GroqProvider({
+            apiKey: configs.groq_api_key,
+            baseUrl: configs.groq_base_url,
+            transcribeModel: configs.groq_transcribe_model,
+          }).transcribeFile({
+            body,
+            filename,
+            contentType: params.contentType,
+            language: params.language && params.language !== 'auto' ? params.language : undefined,
+            prompt: params.prompt,
+          })
+        : Promise.reject(new Error('Groq API key is required for debug Whisper transcription')),
+      runLibrosaAnalysisForLocalFile(inputPath),
+    ]);
+
+    const transcription =
+      transcriptionResult.status === 'fulfilled'
+        ? {
+            provider: 'groq',
+            rawText: transcriptionResult.value.text,
+            rawSegments: transcriptionResult.value.lines,
+            words: transcriptionResult.value.words,
+            raw: transcriptionResult.value.raw,
+          }
+        : undefined;
+    const audioAnalysis = analysisResult.status === 'fulfilled' ? analysisResult.value : undefined;
+
+    let preprocess: LyricVideoLlmPreprocessResult | undefined;
+    let preprocessError: string | undefined;
+    try {
+      if (!transcription) {
+        throw new Error('Whisper transcription is required before preprocessing');
+      }
+      preprocess = preprocessLyricVideoForLlm({
+        song: titleFromFilename(filename),
+        transcription,
+        audioAnalysis,
+      });
+    } catch (error: any) {
+      preprocessError = error?.message || 'Preprocess failed';
+    }
+
+    return {
+      transcription,
+      transcriptionError:
+        transcriptionResult.status === 'rejected'
+          ? transcriptionResult.reason?.message || 'Whisper transcription failed'
+          : undefined,
+      audioAnalysis,
+      audioAnalysisError:
+        analysisResult.status === 'rejected' ? analysisResult.reason?.message || 'Audio analysis failed' : undefined,
+      preprocess,
+      preprocessError,
+    };
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
   }
 }
 
@@ -1358,6 +2365,7 @@ export async function normalizeLyrics(params: {
 }) {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
+  const configs = await getAllConfigs();
 
   const [words, asr] = await Promise.all([
     db()
@@ -1376,7 +2384,7 @@ export async function normalizeLyrics(params: {
     userId: params.userId,
     mediaType: 'text',
     provider: 'kie',
-    model: envConfigs.kie_chat_model,
+    model: configs.kie_chat_model || 'gemini-2.5-flash',
     prompt: [
       `title: ${project.title}`,
       `rawText: ${asr.rawText}`,
@@ -1392,30 +2400,35 @@ export async function normalizeLyrics(params: {
       .set({ lyricsStatus: 'normalizing', pipelineStage: 'lyrics_normalizing', pipelineError: null })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
-    const normalizedLines = await normalizeLyricsWithKieGemini({
+    const normalization = await normalizeLyricsWithKieGemini({
       words,
       rawText: asr.rawText,
       rawSegments: asr.rawSegments,
       project,
     });
 
-    if (normalizedLines.length === 0) {
+    if (normalization.lines.length === 0) {
       throw new Error('Lyrics normalization returned no lines');
     }
 
     const lines = await replaceLyrics({
       userId: params.userId,
       projectId: params.projectId,
-      lines: normalizedLines,
+      lines: normalization.lines,
       words,
-      source: 'llm_normalized',
+      source: normalization.fallbackUsed ? normalization.fallbackSource || 'asr_fallback' : 'llm_normalized',
     });
     const updated = await getProject({ userId: params.userId, id: params.projectId });
 
     await updateTask({
       taskId: task.id,
       status: AITaskStatus.SUCCESS,
-      taskResult: { lines },
+      taskResult: {
+        lines,
+        fallbackUsed: normalization.fallbackUsed,
+        fallbackSource: normalization.fallbackSource,
+        llmContentPreview: normalization.llmContentPreview,
+      },
     });
 
     return { lines, project: updated, taskId: task.id };
@@ -1466,14 +2479,15 @@ export async function generateStoryboard(params: {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Add lyrics before generating scenes');
+  const configs = await getAllConfigs();
 
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: envConfigs.kie_api_key ? 'kie' : 'heuristic',
-    model: envConfigs.kie_api_key ? envConfigs.kie_chat_model : 'local-storyboard',
+    provider: configs.kie_api_key ? 'kie' : 'heuristic',
+    model: configs.kie_api_key ? configs.kie_chat_model || 'gemini-2.5-flash' : 'local-storyboard',
     prompt: params.storyPrompt || details.project.storyPrompt || details.project.title,
-    costCredits: envConfigs.kie_api_key ? 15 : 0,
+    costCredits: configs.kie_api_key ? 15 : 0,
     options: { projectId: params.projectId, stage: 'storyboard' },
   });
 
@@ -1510,12 +2524,13 @@ export async function generateStoryPrompt(params: {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Generate lyrics before creating a story');
+  const configs = await getAllConfigs();
 
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
     provider: 'kie',
-    model: envConfigs.kie_chat_model,
+    model: configs.kie_chat_model || 'gemini-2.5-flash',
     prompt: [
       `title: ${details.project.title}`,
       `style: ${details.project.artStyle}`,
@@ -1671,18 +2686,28 @@ export async function queueSceneImages(params: {
   userId: string;
   projectId: string;
   sceneId?: string;
+  sceneIds?: string[];
   model?: string;
+  onlyMissing?: boolean;
+  clearExistingImages?: boolean;
 }) {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
-  const scenes = params.sceneId
-    ? details.scenes.filter((scene: any) => scene.id === params.sceneId)
-    : details.scenes;
+  let scenes = details.scenes;
+  if (params.sceneId) {
+    scenes = scenes.filter((scene: any) => scene.id === params.sceneId);
+  } else if (params.sceneIds && params.sceneIds.length > 0) {
+    const sceneIdSet = new Set(params.sceneIds);
+    scenes = scenes.filter((scene: any) => sceneIdSet.has(scene.id));
+  }
+  if (params.onlyMissing) {
+    scenes = scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
+  }
 
   if (scenes.length === 0) throw new Error('No scenes to generate');
 
-  const provider = createKieProvider();
+  const provider = await createKieProvider();
   const queued = [];
   for (const scene of scenes) {
     const task = await createTask({
@@ -1722,11 +2747,13 @@ export async function queueSceneImages(params: {
       const [updated] = await db()
         .update(lyricVideoScene)
         .set({
+          imageUrl: params.clearExistingImages ? null : scene.imageUrl,
           imageTaskId: task.id,
           providerTaskId: result.taskId,
           status: 'processing',
           attemptCount: (scene.attemptCount || 0) + 1,
           lastAttemptAt: new Date(),
+          completedAt: null,
           failureCode: null,
           imageModel: params.model || 'flux-kontext-pro',
           imagePromptSnapshot: scene.prompt,
@@ -1741,10 +2768,12 @@ export async function queueSceneImages(params: {
       const [updated] = await db()
         .update(lyricVideoScene)
         .set({
+          imageUrl: params.clearExistingImages ? null : scene.imageUrl,
           imageTaskId: task.id,
           status: 'failed',
           attemptCount: (scene.attemptCount || 0) + 1,
           lastAttemptAt: new Date(),
+          completedAt: null,
           failureCode: 'queue_failed',
           error: error?.message || 'Image generation failed',
         })
@@ -1768,10 +2797,69 @@ export async function queueSceneImages(params: {
   return queued;
 }
 
+export async function generateVisualsFromStory(params: {
+  userId: string;
+  projectId: string;
+  storyPrompt?: string;
+  model?: string;
+  regenerateStoryboard?: boolean;
+  regenerateImages?: boolean;
+}) {
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  if (!details) throw new Error('Project not found');
+  if (details.lines.length === 0) throw new Error('Generate lyrics before creating visuals');
+
+  const storyPrompt = (params.storyPrompt || details.project.storyPrompt || '').trim();
+  if (!storyPrompt) throw new Error('Create a story before creating visuals');
+
+  const shouldGenerateStoryboard = params.regenerateStoryboard || details.scenes.length === 0;
+  let scenes = details.scenes;
+  if (shouldGenerateStoryboard) {
+    scenes = await generateStoryboard({
+      userId: params.userId,
+      projectId: params.projectId,
+      storyPrompt,
+    });
+  } else if (params.storyPrompt && params.storyPrompt.trim() !== details.project.storyPrompt) {
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        storyPrompt,
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+  }
+
+  const scenesToQueue = params.regenerateImages
+    ? scenes
+    : scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
+
+  const queuedImages =
+    scenesToQueue.length > 0
+      ? await queueSceneImages({
+          userId: params.userId,
+          projectId: params.projectId,
+          sceneIds: scenesToQueue.map((scene: any) => scene.id),
+          model: params.model,
+          clearExistingImages: Boolean(params.regenerateImages),
+        })
+      : [];
+
+  const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+
+  return {
+    project: refreshed?.project || details.project,
+    scenes: refreshed?.scenes || scenes,
+    queuedImages,
+    storyPrompt,
+    generatedStoryboard: Boolean(shouldGenerateStoryboard),
+  };
+}
+
 export async function syncSceneImages(params: { userId: string; projectId: string }) {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
-  const provider = createKieProvider();
+  const provider = await createKieProvider();
   const processing = details.scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   const synced = [];
 
