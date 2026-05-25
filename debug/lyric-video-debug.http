@@ -4,9 +4,11 @@
 @audioFile = /Users/joey/Downloads/30s.mp3
 @audioFilename = 30s.mp3
 @audioMimeType = audio/mpeg
+@fixtureKey = open-sky
 
 ### 第一层测试：MP3 -> Whisper + Librosa -> JSON
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
+# cache=true 时，第一次会真实调用并保存到 debug/fixtures/{{fixtureKey}}/analyze.json；第二次直接读本地 JSON。
 # @name debugAnalyzeLyricVideoAudio
 POST {{baseUrl}}/api/debug/lyric-videos/analyze
 Content-Type: multipart/form-data; boundary=----lyricVideoDebugBoundary
@@ -24,6 +26,14 @@ auto
 Content-Disposition: form-data; name="prompt"
 
 {{audioFilename}}
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="fixtureKey"
+
+{{fixtureKey}}
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="cache"
+
+true
 ------lyricVideoDebugBoundary--
 
 ### 第二步 Prompt 1：Claude Opus 4.5 歌曲理解
@@ -35,6 +45,8 @@ POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
 Content-Type: application/json
 
 {
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
   "provider": "kie_claude",
   "model": "claude-opus-4-5",
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
@@ -47,6 +59,8 @@ Content-Type: application/json
 # Content-Type: application/json
 
 # {
+#   "fixtureKey": "{{fixtureKey}}",
+#   "cache": true,
 #   "provider": "kie_claude",
 #   "model": "claude-opus-4-5",
 #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
@@ -59,6 +73,8 @@ Content-Type: application/json
 # Content-Type: application/json
 
 # {
+#   "fixtureKey": "{{fixtureKey}}",
+#   "cache": true,
 #   "provider": "kie_codex",
 #   "model": "gpt-5-4",
 #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
@@ -71,6 +87,8 @@ Content-Type: application/json
 # # Content-Type: application/json
 
 # # {
+# #   "fixtureKey": "{{fixtureKey}}",
+# #   "cache": true,
 # #   "provider": "kie_gemini",
 # #   "model": "gemini-3.1-pro",
 # #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
@@ -84,7 +102,13 @@ POST {{baseUrl}}/api/debug/lyric-videos/llm/storyboard-scenes
 Content-Type: application/json
 
 {
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
   "model": "claude-opus-4-5",
   "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 }
+
+### 缓存说明
+# 如果想强制重新花钱刷新某一步，在对应 JSON 里加：
+# "refreshCache": true

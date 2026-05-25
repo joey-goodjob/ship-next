@@ -1,5 +1,6 @@
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
+import { debugBoolean, withDebugFixture } from '../_lib/fixtures';
 
 export const runtime = 'nodejs';
 
@@ -25,24 +26,37 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    if (!file) return respErr('No audio file provided');
-    if (!AUDIO_TYPES.has(file.type)) return respErr(`Unsupported audio type: ${file.type || 'unknown'}`);
-    if (file.size > MAX_BYTES) return respErr('Audio file exceeds the 100MB limit');
+    const fixtureKey = String(formData.get('fixtureKey') || '').trim();
+    const cache = formData.get('cache');
+    const refreshCache = formData.get('refreshCache');
+    if (!file && !(debugBoolean(cache) && fixtureKey)) return respErr('No audio file provided');
+    if (file && !AUDIO_TYPES.has(file.type)) return respErr(`Unsupported audio type: ${file.type || 'unknown'}`);
+    if (file && file.size > MAX_BYTES) return respErr('Audio file exceeds the 100MB limit');
 
-    const data = await service.analyzeUploadedAudioForDebug({
-      body: Buffer.from(await file.arrayBuffer()),
-      filename: file.name,
-      contentType: file.type || 'audio/mpeg',
-      language: String(formData.get('language') || 'auto'),
-      prompt: String(formData.get('prompt') || ''),
+    const data = await withDebugFixture({
+      fixtureKey,
+      cache,
+      refreshCache,
+      stage: 'analyze',
+      filename: 'analyze.json',
+    }, async () => {
+      if (!file) throw new Error('No audio file provided');
+      const analysis = await service.analyzeUploadedAudioForDebug({
+        body: Buffer.from(await file.arrayBuffer()),
+        filename: file.name,
+        contentType: file.type || 'audio/mpeg',
+        language: String(formData.get('language') || 'auto'),
+        prompt: String(formData.get('prompt') || ''),
+      });
+      return {
+        filename: file.name,
+        contentType: file.type,
+        size: file.size,
+        ...analysis,
+      };
     });
 
-    return respData({
-      filename: file.name,
-      contentType: file.type,
-      size: file.size,
-      ...data,
-    });
+    return respData(data);
   } catch (error: any) {
     return respErr(error?.message || 'Debug lyric video analysis failed');
   }

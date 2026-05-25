@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { getAuth } from '@/core/auth';
 import { respData, respErr, respOk } from '@/lib/resp';
+import { MOCK_LYRIC_VIDEO_PROJECT_ID, mockLyricVideoPreviewDetails } from '@/mocks/lyric-video-preview';
 import * as service from '@/modules/lyric-videos/service';
 
 async function getUserId() {
@@ -13,10 +14,14 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+  if (id === MOCK_LYRIC_VIDEO_PROJECT_ID && process.env.NODE_ENV !== 'production') {
+    return respData(mockLyricVideoPreviewDetails);
+  }
+
   const userId = await getUserId();
   if (!userId) return respErr('Unauthorized');
 
-  const { id } = await params;
   const data = await service.getProjectDetails({ userId, id });
   if (!data) return respErr('Project not found');
   return respData(data);
