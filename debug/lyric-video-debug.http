@@ -1,14 +1,19 @@
 @baseUrl = http://localhost:3000
 
 # 改成你本机要测试的 MP3 文件路径。
-@audioFile = /Users/joey/Downloads/30s.mp3
-@audioFilename = 30s.mp3
+@audioFile = /Users/joey/Music/Music/Media.localized/Music/Unknown Artist/Unknown Album/Open Sky Tonight （素材）.mp3
+@audioFilename = Open Sky Tonight （素材）.mp3
 @audioMimeType = audio/mpeg
-@fixtureKey = open-sky
+@audioLanguage = auto
+@audioPrompt =
+@transcribeModel = whisper-large-v3-turbo
+@fixtureKey = open-sky-official-like
 
-### 第一层测试：MP3 -> Whisper + Librosa -> JSON
+### 第一步：MP3 -> Whisper + Librosa analysis -> fixed lyric/instrumental scenes
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
 # cache=true 时，第一次会真实调用并保存到 debug/fixtures/{{fixtureKey}}/analyze.json；第二次直接读本地 JSON。
+# 返回 transcription、audioAnalysis、preprocess、fixedScenes。
+# 新主链路：Whisper 决定歌词分镜边界；Librosa 只提供 BPM/energy 情绪参考。
 # @name debugAnalyzeLyricVideoAudio
 POST {{baseUrl}}/api/debug/lyric-videos/analyze
 Content-Type: multipart/form-data; boundary=----lyricVideoDebugBoundary
@@ -21,11 +26,15 @@ Content-Type: {{audioMimeType}}
 ------lyricVideoDebugBoundary
 Content-Disposition: form-data; name="language"
 
-auto
+{{audioLanguage}}
 ------lyricVideoDebugBoundary
 Content-Disposition: form-data; name="prompt"
 
-{{audioFilename}}
+{{audioPrompt}}
+------lyricVideoDebugBoundary
+Content-Disposition: form-data; name="transcribeModel"
+
+{{transcribeModel}}
 ------lyricVideoDebugBoundary
 Content-Disposition: form-data; name="fixtureKey"
 
@@ -36,7 +45,7 @@ Content-Disposition: form-data; name="cache"
 true
 ------lyricVideoDebugBoundary--
 
-### 第二步 Prompt 1：Claude Opus 4.5 歌曲理解
+### 可选：Prompt 1：Claude Opus 4.5 歌曲理解
 # 先点击上面的 analyze 请求，等它返回 preprocess。
 # 然后再点击下面任意一个 LLM 请求，REST Client 会把上一个请求的 data.preprocess 传给模型。
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
@@ -52,7 +61,7 @@ Content-Type: application/json
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 }
 
-### 第二步 LLM 测试：Claude Opus / Claude 其他版本
+### 可选 LLM 测试：Claude Opus / Claude 其他版本
 # 想测 opus4.6 / opus4.7 这类模型时，只改 model 这一行。
 # # @name debugAnalyzeSongWithClaudeCustom
 # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
@@ -66,7 +75,7 @@ Content-Type: application/json
 #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 # }
 
-# ### 第二步 LLM 测试：GPT / Codex 系列
+# ### 可选 LLM 测试：GPT / Codex 系列
 # # 想测 gpt-5-5 这类模型时，只改 model 这一行；模型名必须是 Kie 文档实际支持的名字。
 # # @name debugAnalyzeSongWithCodex
 # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
@@ -80,7 +89,7 @@ Content-Type: application/json
 #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 # }
 
-# ### 第二步 LLM 测试：Gemini 系列
+# ### 可选 LLM 测试：Gemini 系列
 # # 想测其他 Gemini chat 模型时，只改 model 这一行。
 # # @name debugAnalyzeSongWithGemini
 # # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
@@ -94,9 +103,10 @@ Content-Type: application/json
 # #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 # # }
 
-### 第三步 Prompt 2：Claude Opus 4.5 分镜 + 图片/视频 Prompt
-# 先跑第一层 analyze，再跑第二步 Prompt 1，然后跑这里。
-# 这个接口不需要登录，不写数据库，只返回 scenes JSON。
+### 第二步 Prompt：固定 lyric/instrumental scenes -> image_prompt + video_prompt
+# 先跑 analyze。这里不会让 LLM 切分镜，只让它给固定 scenes 写图片和视频 prompt。
+# songAnalysis 可选；不传时使用轻量默认歌曲理解。
+# 这个接口不需要登录，不写数据库，只返回 scenes JSON；会真实调用 Claude，cache=true 可避免重复扣费。
 # @name debugGenerateStoryboardScenesWithOpus
 POST {{baseUrl}}/api/debug/lyric-videos/llm/storyboard-scenes
 Content-Type: application/json
@@ -105,8 +115,38 @@ Content-Type: application/json
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
   "model": "claude-opus-4-5",
-  "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
-  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}},
+  "audioAnalysis": {{debugAnalyzeLyricVideoAudio.response.body.$.data.audioAnalysis}}
+}
+
+### 第三步 生图：Prompt scenes -> 单张 5x5 分镜网格图
+# Kie 生图是异步的：这里只把所有 scenes 编译成一张 5x5 总图 prompt，返回 1 个 providerTaskId，不写数据库。
+# cache=true 会缓存 taskId，避免重复提交导致重复扣费。
+# 后续裁切时只需要保留前 panelCount 个格子，剩余格子按 prompt 要求应为空白。
+# @name debugQueueSceneImages
+POST {{baseUrl}}/api/debug/lyric-videos/images/queue
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "model": "gpt-image-2-text-to-image",
+  "aspectRatio": "16:9",
+  "resolution": "4K",
+  "scenes": {{debugGenerateStoryboardScenesWithOpus.response.body.$.data.scenes}}
+}
+
+### 第四步 查询生图结果：单个 providerTaskId -> 5x5 grid imageUrl
+# 如果返回 pending/processing，等一会儿重跑这个请求。
+# query 也支持缓存；如果第一次缓存到了 pending，请加 "refreshCache": true 重新查 provider。
+# @name debugQuerySceneImages
+POST {{baseUrl}}/api/debug/lyric-videos/images/query
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "taskIds": {{debugQueueSceneImages.response.body.$.data.taskIds}}
 }
 
 ### 缓存说明

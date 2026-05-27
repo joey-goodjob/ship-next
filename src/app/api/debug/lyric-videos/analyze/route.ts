@@ -47,6 +47,7 @@ export async function POST(req: Request) {
         contentType: file.type || 'audio/mpeg',
         language: String(formData.get('language') || 'auto'),
         prompt: String(formData.get('prompt') || ''),
+        transcribeModel: String(formData.get('transcribeModel') || '').trim() || undefined,
       });
       return {
         filename: file.name,

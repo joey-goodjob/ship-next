@@ -11,21 +11,22 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const model = body?.model || 'claude-opus-4-5';
+    const taskIds = Array.isArray(body?.taskIds)
+      ? body.taskIds
+      : Array.isArray(body?.providerTaskIds)
+        ? body.providerTaskIds
+        : body?.taskId
+          ? [body.taskId]
+          : [];
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,
       refreshCache: body?.refreshCache,
-      stage: 'prompt2',
-      filename: debugFixtureName('prompt2', ['kie_claude', model]),
-    }, async () => service.generateStoryboardScenesWithKieForDebug({
-        songAnalysis: body?.songAnalysis || body?.prompt1_output,
-        preprocess: body?.preprocess,
-        audioAnalysis: body?.audioAnalysis,
-        model: body?.model,
-      }));
+      stage: 'image-query',
+      filename: debugFixtureName('image-query', ['kie', taskIds.join('-')]),
+    }, async () => service.queryStoryboardSceneImagesWithKieForDebug({ taskIds }));
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Debug storyboard scenes failed');
+    return respErr(error?.message || 'Debug image generation query failed');
   }
 }

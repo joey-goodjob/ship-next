@@ -6,13 +6,16 @@ import {
   AlertCircle,
   Check,
   ChevronDown,
+  Clapperboard,
   Coins,
   Download,
   Edit3,
   Expand,
   FileText,
+  ImageIcon,
   Loader2,
   Menu,
+  MoreVertical,
   Pause,
   Play,
   RefreshCcw,
@@ -36,7 +39,7 @@ import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type SaveStatus = "idle" | "saving" | "saved" | "failed";
-type PanelTab = "customize" | "lyrics" | "cast";
+type PanelTab = "customize" | "lyrics" | "cast" | "scenes";
 
 type ApiResponse<T> = {
   code: number;
@@ -256,6 +259,10 @@ function formatMs(ms: number) {
   return formatClock(msToSeconds(ms), true);
 }
 
+function formatDurationMs(ms: number) {
+  return `${Math.max(0, ms / 1000).toFixed(2)}s`;
+}
+
 function getAspectRatio(aspectRatio?: string) {
   if (aspectRatio === "9:16") return "9 / 16";
   if (aspectRatio === "1:1") return "1 / 1";
@@ -282,7 +289,9 @@ async function requestJson<T>(url: string, init?: RequestInit) {
 
 function readStoredNumber(key: string, fallback: number) {
   if (typeof window === "undefined") return fallback;
-  const stored = Number(window.localStorage.getItem(key));
+  const raw = window.localStorage.getItem(key);
+  if (raw === null) return fallback;
+  const stored = Number(raw);
   return Number.isFinite(stored) ? stored : fallback;
 }
 
@@ -938,6 +947,7 @@ function SidePanel({ width }: { width: number }) {
     { id: "customize", label: "Customize", icon: Settings },
     { id: "lyrics", label: "Lyrics", icon: FileText },
     { id: "cast", label: "Cast", icon: Users },
+    { id: "scenes", label: "Scenes", icon: Clapperboard },
   ];
 
   return (
@@ -970,6 +980,7 @@ function SidePanel({ width }: { width: number }) {
         {activeTab === "customize" ? <CustomizePanel /> : null}
         {activeTab === "lyrics" ? <LyricsPanel /> : null}
         {activeTab === "cast" ? <CastPanel /> : null}
+        {activeTab === "scenes" ? <ScenesPanel /> : null}
       </div>
     </aside>
   );
@@ -1189,6 +1200,108 @@ function CastPanel() {
       title="Character consistency is coming soon"
       description="This first pass keeps the Cast entry lightweight while the editor focuses on project data, lyrics, scenes, preview, and export."
     />
+  );
+}
+
+function ScenesPanel() {
+  const { currentScene, scenes, setCurrentTime } = useEditor();
+
+  return (
+    <div className="flex flex-col">
+      <div className="mb-[16px] flex flex-wrap items-center justify-center gap-[8px] border-b border-[#E8E8E8] pb-[16px]">
+        <button
+          type="button"
+          disabled
+          title="Batch image generation is not wired in this preview pass."
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] opacity-70"
+        >
+          <ImageIcon className="h-[15px] w-[15px]" />
+          Batch Image Generation
+        </button>
+        <button
+          type="button"
+          disabled
+          title="Batch video generation is not wired in this preview pass."
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] opacity-70"
+        >
+          <Clapperboard className="h-[15px] w-[15px]" />
+          Batch Video Generation
+        </button>
+      </div>
+
+      {scenes.length === 0 ? (
+        <PanelEmpty
+          title="No scenes yet"
+          description="Generate a storyboard to review scene timing, imagery, and prompts here."
+        />
+      ) : (
+        <div className="flex flex-col">
+          {scenes.map((scene, index) => {
+            const active = currentScene?.id === scene.id;
+            const durationMs = Math.max(0, (scene.endMs || scene.startMs) - scene.startMs);
+            const title = scene.text?.trim() || "Instrumental";
+
+            return (
+              <div
+                key={scene.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setCurrentTime(msToSeconds(scene.startMs))}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setCurrentTime(msToSeconds(scene.startMs));
+                  }
+                }}
+                className={cn(
+                  "group flex min-h-[82px] cursor-pointer items-center gap-[12px] border-b border-[#E1E6EE] py-[10px] outline-none",
+                  active ? "bg-[#FFF8EB]" : "bg-white hover:bg-[#F8F9FA]",
+                )}
+              >
+                <div className="h-[54px] w-[92px] shrink-0 overflow-hidden rounded-[4px] bg-[#E8EEF7]">
+                  {scene.imageUrl ? (
+                    <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] font-[800] uppercase text-[#8A94A6]">
+                      {scene.status || "draft"}
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="mb-[5px] flex min-w-0 flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[#61708A]">
+                    <span>Scene {index + 1}</span>
+                    <span className="font-mono">
+                      {formatMs(scene.startMs)} - {formatMs(scene.endMs)}
+                    </span>
+                    <span className="font-mono">{formatDurationMs(durationMs)}</span>
+                  </div>
+                  <p className="line-clamp-2 text-[15px] font-[700] leading-[20px] text-[#1A1A2E]">{title}</p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-[6px]">
+                  <button
+                    type="button"
+                    onClick={(event) => event.stopPropagation()}
+                    className="h-[36px] rounded-[6px] border border-[#CAD3DF] bg-white px-[11px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA]"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={`Scene ${index + 1} more options`}
+                    className="flex h-[36px] w-[32px] items-center justify-center rounded-[6px] border border-[#CAD3DF] bg-white text-[#334155] hover:bg-[#F8F9FA]"
+                  >
+                    <MoreVertical className="h-[16px] w-[16px]" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
