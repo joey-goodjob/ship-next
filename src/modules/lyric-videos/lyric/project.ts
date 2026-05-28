@@ -1,0 +1,253 @@
+import { and, desc, eq, isNull } from 'drizzle-orm';
+import { db } from '@/core/db';
+import {
+  lyricVideoCastMember,
+  lyricVideoExport,
+  lyricVideoGenerationRun,
+  lyricVideoGenerationStep,
+  lyricVideoLine,
+  lyricVideoProject,
+  lyricVideoScene,
+  lyricVideoWord,
+  type NewLyricVideoProject,
+} from '@/config/db/schema';
+import { getUuid } from '@/lib/hash';
+import { hasAudioInputPatch } from './audio';
+import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
+import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
+
+export async function createProject(params: {
+  userId: string;
+  title?: string;
+  audioUrl?: string;
+  audioStorageKey?: string;
+  originalAudioUrl?: string;
+  originalAudioStorageKey?: string;
+  audioFilename?: string;
+  audioDurationMs?: number;
+  audioMimeType?: string;
+  audioSizeBytes?: number;
+  audioChecksum?: string;
+  trimStartMs?: number;
+  trimEndMs?: number;
+  processedAudioUrl?: string;
+  processedAudioStorageKey?: string;
+  language?: string;
+  storyPrompt?: string;
+  palette?: string;
+  artStyle?: string;
+  aspectRatio?: string;
+  resolution?: string;
+}) {
+  const data: NewLyricVideoProject = {
+    id: getUuid(),
+    userId: params.userId,
+    title: normalizeTitle(params.title || params.audioFilename),
+    status: 'draft',
+    audioUrl: params.audioUrl,
+    audioStorageKey: params.audioStorageKey,
+    originalAudioUrl: params.originalAudioUrl || params.audioUrl,
+    originalAudioStorageKey: params.originalAudioStorageKey || params.audioStorageKey,
+    audioFilename: params.audioFilename,
+    audioDurationMs: params.audioDurationMs || 0,
+    audioMimeType: params.audioMimeType,
+    audioSizeBytes: params.audioSizeBytes || 0,
+    audioChecksum: params.audioChecksum,
+    trimStartMs: Math.max(0, params.trimStartMs || 0),
+    trimEndMs: Math.max(0, params.trimEndMs || params.audioDurationMs || 0),
+    processedAudioUrl: params.processedAudioUrl || params.audioUrl,
+    processedAudioStorageKey: params.processedAudioStorageKey || params.audioStorageKey,
+    language: params.language || 'auto',
+    storyPrompt: params.storyPrompt || '',
+    palette: params.palette || 'cinematic',
+    artStyle: params.artStyle || 'cinematic illustration',
+    aspectRatio: params.aspectRatio || '16:9',
+    resolution: params.resolution || '1080p',
+    lyricsStatus: 'empty',
+    scenesStatus: 'empty',
+    renderStatus: 'empty',
+    generationStatus: 'idle',
+    generationProgress: 0,
+    pipelineStage: params.audioUrl ? 'uploaded' : 'draft',
+    previewConfig: safeJson(LYRIC_VIDEO_DEFAULT_STYLE),
+  };
+
+  const [project] = await db().insert(lyricVideoProject).values(data).returning();
+  return project;
+}
+
+export async function listProjects(userId: string) {
+  return db()
+    .select()
+    .from(lyricVideoProject)
+    .where(and(eq(lyricVideoProject.userId, userId), isNull(lyricVideoProject.deletedAt)))
+    .orderBy(desc(lyricVideoProject.createdAt));
+}
+
+export async function getProject(params: { userId: string; id: string }) {
+  const [project] = await db()
+    .select()
+    .from(lyricVideoProject)
+    .where(
+      and(
+        eq(lyricVideoProject.id, params.id),
+        eq(lyricVideoProject.userId, params.userId),
+        isNull(lyricVideoProject.deletedAt)
+      )
+    )
+    .limit(1);
+
+  return project;
+}
+
+export async function getProjectDetails(params: { userId: string; id: string }) {
+  const project = await getProject(params);
+  if (!project) return null;
+
+  const [lines, scenes, exports, words, cast, runs] = await Promise.all([
+    db()
+      .select()
+      .from(lyricVideoLine)
+      .where(and(eq(lyricVideoLine.projectId, params.id), eq(lyricVideoLine.userId, params.userId)))
+      .orderBy(lyricVideoLine.sort),
+    db()
+      .select()
+      .from(lyricVideoScene)
+      .where(and(eq(lyricVideoScene.projectId, params.id), eq(lyricVideoScene.userId, params.userId)))
+      .orderBy(lyricVideoScene.sort),
+    db()
+      .select()
+      .from(lyricVideoExport)
+      .where(and(eq(lyricVideoExport.projectId, params.id), eq(lyricVideoExport.userId, params.userId)))
+      .orderBy(desc(lyricVideoExport.createdAt)),
+    db()
+      .select()
+      .from(lyricVideoWord)
+      .where(and(eq(lyricVideoWord.projectId, params.id), eq(lyricVideoWord.userId, params.userId)))
+      .orderBy(lyricVideoWord.sort),
+    db()
+      .select()
+      .from(lyricVideoCastMember)
+      .where(
+        and(
+          eq(lyricVideoCastMember.projectId, params.id),
+          eq(lyricVideoCastMember.userId, params.userId),
+          isNull(lyricVideoCastMember.deletedAt)
+        )
+      )
+      .orderBy(lyricVideoCastMember.sort),
+    db()
+      .select()
+      .from(lyricVideoGenerationRun)
+      .where(and(eq(lyricVideoGenerationRun.projectId, params.id), eq(lyricVideoGenerationRun.userId, params.userId)))
+      .orderBy(desc(lyricVideoGenerationRun.createdAt))
+      .limit(1),
+  ]);
+
+  const generationRun = runs[0] || null;
+  const generationSteps = generationRun
+    ? await db()
+        .select()
+        .from(lyricVideoGenerationStep)
+        .where(and(eq(lyricVideoGenerationStep.runId, generationRun.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+        .orderBy(lyricVideoGenerationStep.sort)
+    : [];
+
+  const normalizedProject = {
+    ...project,
+    previewConfig: parseJsonField(project.previewConfig, LYRIC_VIDEO_DEFAULT_STYLE),
+  };
+
+  const normalizedLines = lines.map((line: any) => ({
+    ...line,
+    words: words.filter((word: any) => word.lineId === line.id),
+  }));
+
+  const normalizedScenes = scenes.map((scene: any) => {
+    const linkedLineIds = parseJsonField<string[]>(scene.linkedLineIds, []);
+    const text = scene.text || sceneTextFromLineIds(linkedLineIds, lines);
+    return {
+      ...scene,
+      text,
+      linkedLineIds,
+      lyricLineIds: linkedLineIds,
+      castIds: parseJsonField<string[]>(scene.castIds, []),
+      styleOverrides: parseJsonField<Record<string, unknown>>(scene.styleOverrides, {}),
+      timelineConfig: parseJsonField<Record<string, unknown>>(scene.timelineConfig, {}),
+      generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
+    };
+  });
+
+  return {
+    project: normalizedProject,
+    generationRun,
+    generationSteps,
+    words,
+    lines: normalizedLines,
+    scenes: normalizedScenes,
+    cast,
+    exports,
+  };
+}
+
+export async function updateProject(params: {
+  userId: string;
+  id: string;
+  data: Partial<{
+    title: string;
+    audioUrl: string;
+    audioStorageKey: string;
+    originalAudioUrl: string;
+    originalAudioStorageKey: string;
+    audioFilename: string;
+    audioDurationMs: number;
+    audioMimeType: string;
+    audioSizeBytes: number;
+    audioChecksum: string;
+    trimStartMs: number;
+    trimEndMs: number;
+    processedAudioUrl: string;
+    processedAudioStorageKey: string;
+    language: string;
+    storyPrompt: string;
+    palette: string;
+    artStyle: string;
+    aspectRatio: string;
+    resolution: string;
+    previewConfig: unknown;
+  }>;
+}) {
+  const project = await getProject({ userId: params.userId, id: params.id });
+  if (!project) throw new Error('Project not found');
+
+  const updateData: any = { ...params.data };
+  if (params.data.previewConfig) {
+    updateData.previewConfig = safeJson(params.data.previewConfig);
+  }
+  if (hasAudioInputPatch(updateData)) {
+    updateData.originalAudioUrl = updateData.originalAudioUrl || updateData.audioUrl || project.originalAudioUrl || project.audioUrl;
+    updateData.originalAudioStorageKey =
+      updateData.originalAudioStorageKey || updateData.audioStorageKey || project.originalAudioStorageKey || project.audioStorageKey;
+    updateData.processedAudioUrl = null;
+    updateData.processedAudioStorageKey = null;
+    updateData.lyricsStatus = 'empty';
+    updateData.scenesStatus = 'empty';
+    updateData.pipelineStage = updateData.audioUrl || updateData.originalAudioUrl ? 'uploaded' : 'draft';
+    updateData.pipelineError = null;
+  }
+
+  const [updated] = await db()
+    .update(lyricVideoProject)
+    .set(updateData)
+    .where(and(eq(lyricVideoProject.id, params.id), eq(lyricVideoProject.userId, params.userId)))
+    .returning();
+
+  return updated;
+}
+
+export async function removeProject(params: { userId: string; id: string }) {
+  await db()
+    .update(lyricVideoProject)
+    .set({ deletedAt: new Date(), status: 'deleted' })
+    .where(and(eq(lyricVideoProject.id, params.id), eq(lyricVideoProject.userId, params.userId)));
+}
