@@ -8,8 +8,8 @@ export const MOCK_LYRIC_VIDEO_PROJECT_ID = "__mock__";
 export const MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR =
   process.env.MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR ||
   process.env.MOCK_LYRIC_VIDEO_FIXTURE_KEY ||
-  "open-sky-official-2";
-const MOCK_LYRIC_VIDEO_PROMPT2_FILENAME = "prompt2-kie_claude-claude-opus-4-5.json";
+  "open-sky-mp3";
+const MOCK_LYRIC_VIDEO_PROMPT2_FILENAME = "prompt2-kie_claude-claude-opus-4-8.json";
 
 // 固定的 mock 元信息：这些字段用来补齐数据库记录里通常会有的 user/run/date。
 const mockDate = "2026-05-25T08:00:00.000Z";
@@ -59,6 +59,12 @@ const officialLikePrompt2BySceneId = new Map<string, Prompt2Scene>(
   }),
 );
 const officialLikeDurationMs = Math.round((Number(officialLikeAudioAnalysis.durationSec) || 0) * 1000);
+const officialLikeSongTitle = String(
+  officialLikeAnalyze.preprocess?.song || officialLikeAnalyze.filename || "Open Sky Tonight",
+)
+  .replace(/\.[^.]+$/, "")
+  .replace(/\s*（素材）\s*$/, "")
+  .trim();
 
 // 临时视觉设定：Prompt2 负责具体 image_prompt，这里只提供占位角色和配色。
 const songAnalysis = {
@@ -121,7 +127,7 @@ const officialLikeLines = (officialLikeTranscription.rawSegments || []).map((lin
   startMs: Math.max(0, Number(line.startMs) || 0),
   endMs: Math.max(Number(line.startMs) || 0, Number(line.endMs) || 0),
   text: String(line.text || ""),
-  source: line.source || "open_sky_official_like_fixture",
+  source: line.source || "open_sky_mp3_fixture",
   runId: mockRunId,
   wordStartIndex: Number.isFinite(Number(line.wordStartIndex)) ? Number(line.wordStartIndex) : null,
   wordEndIndex: Number.isFinite(Number(line.wordEndIndex)) ? Number(line.wordEndIndex) : null,
@@ -203,7 +209,7 @@ const officialLikeScenes = officialLikeFixedScenes.map((scene: any, index: numbe
     imageTaskId: `mock-image-task-${index + 1}`,
     providerTaskId: `mock-provider-image-${index + 1}`,
     generationParams: {
-      source: "open_sky_official_like_analyze_fixture",
+      source: "open_sky_mp3_analyze_fixture",
       prompt2Source: prompt2Scene ? MOCK_LYRIC_VIDEO_PROMPT2_FILENAME : null,
     },
     attemptCount: 1,
@@ -235,7 +241,7 @@ export const mockLyricVideoPreviewDetails = {
   project: {
     id: MOCK_LYRIC_VIDEO_PROJECT_ID,
     userId: mockUserId,
-    title: "Open Sky Tonight",
+    title: officialLikeSongTitle || "Open Sky Tonight",
     status: "ready",
     audioUrl: mockAudioUrl,
     audioStorageKey: "mock/audio/6a355abe9019a7a7999822233198af5ac9f9c69bbf4c2db542167b5dae0c63d8.mp3",
@@ -245,7 +251,7 @@ export const mockLyricVideoPreviewDetails = {
     audioDurationMs: officialLikeDurationMs || 30015,
     audioMimeType: officialLikeAnalyze.contentType || "audio/mpeg",
     audioSizeBytes: officialLikeAnalyze.size || 614890,
-    audioChecksum: "fixture-open-sky-official-like",
+    audioChecksum: "fixture-open-sky-mp3",
     trimStartMs: 0,
     trimEndMs: officialLikeDurationMs || 30015,
     processedAudioUrl: mockAudioUrl,
@@ -292,7 +298,7 @@ export const mockLyricVideoPreviewDetails = {
     completedSteps: 4,
     failedSteps: 0,
     idempotencyKey: "mock-preview-run",
-    requestHash: "fixture-open-sky",
+    requestHash: "fixture-open-sky-mp3",
     inputSnapshot: null,
     outputSnapshot: null,
     errorCode: null,

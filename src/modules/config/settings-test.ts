@@ -24,6 +24,7 @@ import { GeminiProvider } from '@/core/ai/gemini';
 import { FalProvider } from '@/core/ai/fal';
 import { KieProvider } from '@/core/ai/kie';
 import { GroqProvider } from '@/core/ai/groq';
+import { ElevenLabsProvider } from '@/core/ai/elevenlabs';
 import { AIMediaType } from '@/core/ai/types';
 import { getUniSeq } from '@/lib/hash';
 import { envConfigs } from '@/config';
@@ -59,6 +60,8 @@ export async function runTest(
         return await testKie(inputs, configs);
       case 'groq':
         return await testGroq(inputs, configs);
+      case 'elevenlabs':
+        return await testElevenLabs(inputs, configs);
       case 'gemini':
         return await testGemini(inputs, configs);
       case 'fal':
@@ -437,6 +440,33 @@ async function testGroq(inputs: Record<string, string>, configs: Record<string, 
       Model: 'whisper-large-v3',
       Text: result.text || '(empty)',
       Lines: String(result.lines.length),
+      Words: String(result.words.length),
+    },
+  };
+}
+
+async function testElevenLabs(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
+  const missing = need(configs, ['elevenlabs_api_key']);
+  if (missing) return { success: false, message: missing };
+
+  const model = configs.elevenlabs_stt_model || 'scribe_v2';
+  const provider = new ElevenLabsProvider({
+    apiKey: configs.elevenlabs_api_key,
+    sttModel: model,
+  });
+  const result = await provider.transcribeFile({
+    body: makeSilentWav(),
+    filename: 'elevenlabs-settings-test.wav',
+    contentType: 'audio/wav',
+    language: inputs.language || undefined,
+  });
+
+  return {
+    success: true,
+    message: 'ElevenLabs accepted the transcription request',
+    details: {
+      Model: model,
+      Text: result.text || '(empty)',
       Words: String(result.words.length),
     },
   };

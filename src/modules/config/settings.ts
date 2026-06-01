@@ -69,6 +69,7 @@ export function getSettingGroups(): SettingGroup[] {
     // AI
     { name: 'replicate', title: 'Replicate', description: 'Replicate AI API', tab: 'ai' },
     { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image, video, and Gemini chat API', tab: 'ai' },
+    { name: 'elevenlabs', title: 'ElevenLabs / Speech to Text', description: 'ElevenLabs Scribe speech-to-text API', tab: 'ai' },
     { name: 'groq', title: 'Groq / Whisper', description: 'Groq speech-to-text transcription API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
@@ -194,11 +195,15 @@ export function getSettings(): Setting[] {
     { name: 'kie_chat_endpoint', title: 'Chat Endpoint', type: 'text', placeholder: 'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions', group: 'kie', tab: 'ai' },
     { name: 'kie_chat_model', title: 'Chat Model', type: 'text', placeholder: 'gemini-2.5-flash', group: 'kie', tab: 'ai' },
     { name: 'kie_claude_endpoint', title: 'Claude Endpoint', type: 'text', placeholder: 'https://api.kie.ai/claude/v1/messages', group: 'kie', tab: 'ai' },
-    { name: 'kie_claude_model', title: 'Claude Model', type: 'text', placeholder: 'claude-opus-4-5', group: 'kie', tab: 'ai' },
+    { name: 'kie_claude_model', title: 'Claude Model', type: 'text', placeholder: 'claude-opus-4-8', group: 'kie', tab: 'ai' },
     { name: 'kie_codex_endpoint', title: 'Codex Endpoint', type: 'text', placeholder: 'https://api.kie.ai/codex/v1/responses', group: 'kie', tab: 'ai' },
     { name: 'kie_codex_model', title: 'Codex Model', type: 'text', placeholder: 'gpt-5-4', group: 'kie', tab: 'ai' },
     { name: 'kie_image_model', title: 'Image Model', type: 'text', placeholder: 'z-image', group: 'kie', tab: 'ai' },
     { name: 'kie_character_image_model', title: 'Character Image Model', type: 'text', placeholder: 'nano-banana-2', group: 'kie', tab: 'ai' },
+
+    // ─── AI / ElevenLabs ─────────────────────────────────────────────
+    { name: 'elevenlabs_api_key', title: 'API Key', type: 'password', placeholder: 'sk_xxx', group: 'elevenlabs', tab: 'ai' },
+    { name: 'elevenlabs_stt_model', title: 'Speech to Text Model', type: 'text', placeholder: 'scribe_v2', group: 'elevenlabs', tab: 'ai' },
 
     // ─── AI / Groq ───────────────────────────────────────────────────
     { name: 'groq_api_key', title: 'API Key', type: 'password', placeholder: 'gsk_xxx', group: 'groq', tab: 'ai' },

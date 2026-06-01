@@ -1,0 +1,145 @@
+{
+  "sourceFile": "/Users/joey/Music/Music/Media.localized/Music/Unknown Artist/Unknown Album/Open Sky Tonight （素材）.mp3",
+  "sourceSha256": "6a355abe9019a7a7999822233198af5ac9f9c69bbf4c2db542167b5dae0c63d8",
+  "sourceSizeBytes": 3734781,
+  "generatedAt": "2026-06-01T10:53:56.557674+00:00",
+  "tooling": {
+    "python": "3.9.6",
+    "librosa": "0.11.0",
+    "numpy": "2.0.2",
+    "script": "scripts/analyze_audio.py"
+  },
+  "analysis": {
+    "durationSec": 165.96,
+    "durationMs": 165960,
+    "sampleRate": 48000,
+    "bpm": 95.3,
+    "key": "F",
+    "beatCount": 260,
+    "first16BeatTimesMs": [
+      565,
+      1173,
+      1824,
+      2443,
+      3093,
+      3701,
+      4352,
+      4971,
+      5621,
+      6229,
+      6891,
+      7499,
+      8149,
+      8757,
+      9408,
+      10048
+    ],
+    "segmentBoundariesMs": [
+      8736,
+      121845,
+      134432,
+      164405
+    ],
+    "segments": [
+      {
+        "startMs": 0,
+        "endMs": 8736,
+        "durationMs": 8736,
+        "avgEnergy": 0.0471
+      },
+      {
+        "startMs": 8736,
+        "endMs": 121845,
+        "durationMs": 113109,
+        "avgEnergy": 0.134923
+      },
+      {
+        "startMs": 121845,
+        "endMs": 134432,
+        "durationMs": 12587,
+        "avgEnergy": 0.09907
+      },
+      {
+        "startMs": 134432,
+        "endMs": 164405,
+        "durationMs": 29973,
+        "avgEnergy": 0.164947
+      },
+      {
+        "startMs": 164405,
+        "endMs": 165960,
+        "durationMs": 1555,
+        "avgEnergy": 0.004925
+      }
+    ],
+    "rmsPointCount": 166,
+    "first10RmsBySecond": [
+      {
+        "startMs": 0,
+        "endMs": 1000,
+        "rms": 0.023142
+      },
+      {
+        "startMs": 1000,
+        "endMs": 2000,
+        "rms": 0.047197
+      },
+      {
+        "startMs": 2000,
+        "endMs": 3000,
+        "rms": 0.055821
+      },
+      {
+        "startMs": 3000,
+        "endMs": 4000,
+        "rms": 0.052955
+      },
+      {
+        "startMs": 4000,
+        "endMs": 5000,
+        "rms": 0.045928
+      },
+      {
+        "startMs": 5000,
+        "endMs": 6000,
+        "rms": 0.053634
+      },
+      {
+        "startMs": 6000,
+        "endMs": 7000,
+        "rms": 0.047095
+      },
+      {
+        "startMs": 7000,
+        "endMs": 8000,
+        "rms": 0.05187
+      },
+      {
+        "startMs": 8000,
+        "endMs": 9000,
+        "rms": 0.048961
+      },
+      {
+        "startMs": 9000,
+        "endMs": 10000,
+        "rms": 0.101041
+      }
+    ],
+    "peakRmsSecond": {
+      "startMs": 153000,
+      "endMs": 154000,
+      "rms": 0.189361
+    },
+    "lowestRmsSecond": {
+      "startMs": 165000,
+      "endMs": 165960,
+      "rms": 0.001505
+    }
+  },
+  "files": {
+    "fullCompactJson": "/Users/joey/project/6_lyricstovideo/debug/open-sky-tonight-librosa-analysis.json",
+    "fullPrettyJson": "/Users/joey/project/6_lyricstovideo/debug/open-sky-tonight-librosa-analysis.pretty.json",
+    "summaryJson": "/Users/joey/project/6_lyricstovideo/debug/open-sky-tonight-librosa-summary.json",
+    "summaryMarkdown": "/Users/joey/project/6_lyricstovideo/debug/open-sky-tonight-librosa-summary.md"
+  }
+}

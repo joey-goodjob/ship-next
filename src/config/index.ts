@@ -65,7 +65,7 @@ export const envConfigs: Record<string, string> = {
   kie_claude_endpoint:
     process.env.KIE_CLAUDE_ENDPOINT ??
     'https://api.kie.ai/claude/v1/messages',
-  kie_claude_model: process.env.KIE_CLAUDE_MODEL ?? 'claude-opus-4-5',
+  kie_claude_model: process.env.KIE_CLAUDE_MODEL ?? 'claude-opus-4-8',
   kie_codex_endpoint:
     process.env.KIE_CODEX_ENDPOINT ??
     'https://api.kie.ai/codex/v1/responses',
@@ -75,6 +75,8 @@ export const envConfigs: Record<string, string> = {
   groq_api_key: process.env.GROQ_API_KEY ?? '',
   groq_base_url: process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
   groq_transcribe_model: process.env.GROQ_TRANSCRIBE_MODEL ?? 'whisper-large-v3',
+  elevenlabs_api_key: process.env.ELEVENLABS_API_KEY ?? '',
+  elevenlabs_stt_model: process.env.ELEVENLABS_STT_MODEL ?? 'scribe_v2',
   ffmpeg_path: process.env.FFMPEG_PATH ?? '/Users/joey/project/7_ffmpeg/bin/ffmpeg',
 
   // Locale

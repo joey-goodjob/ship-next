@@ -15,8 +15,10 @@ import {
   INSTRUMENTAL_GAP_MS,
   LYRIC_VIDEO_DEFAULT_STYLE,
   type AudioAnalysisResult,
+  type FixedStoryboardPlanning,
   type FixedStoryboardSceneDraft,
   type LyricLineInput,
+  type LyricWordInput,
   type LyricVideoLlmPreprocessResult,
   type LyricVideoPreprocessResult,
   type PreprocessEnergySegment,
@@ -79,6 +81,8 @@ export function normalizeStoryboardLine(line: any, index: number) {
     startMs,
     endMs,
     text: String(line.text || '').trim(),
+    wordStartIndex: Number.isFinite(Number(line.wordStartIndex)) ? Number(line.wordStartIndex) : undefined,
+    wordEndIndex: Number.isFinite(Number(line.wordEndIndex)) ? Number(line.wordEndIndex) : undefined,
   };
 }
 
@@ -93,6 +97,7 @@ export function buildSceneTimelineConfig(scene: FixedStoryboardSceneDraft) {
     beatCount: scene.beatCount,
     prevLyric: scene.prevLyric,
     nextLyric: scene.nextLyric,
+    planning: scene.planning,
   };
 }
 
@@ -217,6 +222,431 @@ export function uniqueStrings(values: string[]) {
   return Array.from(new Set(values.map((value) => String(value || '').trim()).filter(Boolean)));
 }
 
+export const MV_LONG_SCENE_MS = 6500;
+export const MV_MOTION_SCENE_MS = 5000;
+export const MV_MIN_SCENE_MS = 1500;
+export const MV_INSTRUMENTAL_GAP_MS = 2000;
+
+type StoryboardWord = {
+  index: number;
+  word: string;
+  startMs: number;
+  endMs: number;
+};
+
+type StoryboardPlanningContext = {
+  audioAnalysis?: AudioAnalysisResult;
+  energySegments: PreprocessEnergySegment[];
+  words: StoryboardWord[];
+  medianNormalSceneMs: number;
+};
+
+export function sceneDurationMs(scene: Pick<FixedStoryboardSceneDraft, 'startMs' | 'endMs'>) {
+  return Math.max(0, scene.endMs - scene.startMs);
+}
+
+export function normalizeStoryboardWords(words?: LyricWordInput[]): StoryboardWord[] {
+  return (Array.isArray(words) ? words : [])
+    .map((word, index) => {
+      const startMs = Math.max(0, Math.round(Number(word.startMs) || 0));
+      const endMs = Math.max(startMs + 1, Math.round(Number(word.endMs) || startMs + 1));
+      return {
+        index,
+        word: String(word.word || '').trim(),
+        startMs,
+        endMs,
+      };
+    })
+    .filter((word) => word.word && word.endMs > word.startMs)
+    .sort((a, b) => a.startMs - b.startMs);
+}
+
+export function normalizeLyricFingerprint(text: string) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function repeatGroupIdForFingerprint(fingerprint: string) {
+  const slug = fingerprint.replace(/\s+/g, '_').replace(/[^a-z0-9_\u4e00-\u9fff]+/gi, '').slice(0, 72);
+  return slug ? `repeat_${slug}` : undefined;
+}
+
+export function sentenceBreakCount(text: string) {
+  return (String(text || '').match(/[.!?。！？]/g) || []).length;
+}
+
+const VOCAL_MONTAGE_WORDS = new Set(['oh', 'ooh', 'oooh', 'ah', 'aah', 'la', 'na', 'hey', 'yeah', 'yea', 'whoa', 'woah', 'hmm', 'mm', 'mmm', 'uh', 'ha']);
+
+export function isVocalMontageText(text: string) {
+  const tokens = String(text || '')
+    .split(/\s+/)
+    .map((token) => token.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''))
+    .filter(Boolean);
+  return tokens.length > 0 && tokens.every((token) => VOCAL_MONTAGE_WORDS.has(token));
+}
+
+function wordsForScene(scene: FixedStoryboardSceneDraft, words: StoryboardWord[]) {
+  if (scene.kind !== 'lyric' || words.length === 0) return [];
+  const startMs = scene.startMs;
+  const endMs = scene.endMs;
+  return words.filter((word) => word.endMs > startMs && word.startMs < endMs);
+}
+
+function cleanSceneTextFromWords(words: StoryboardWord[]) {
+  return words
+    .map((word) => word.word)
+    .join(' ')
+    .replace(/\s+([,.!?;:。！？])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sentenceWordGroups(words: StoryboardWord[]) {
+  const groups: StoryboardWord[][] = [];
+  let group: StoryboardWord[] = [];
+  for (const word of words) {
+    group.push(word);
+    if (/[.!?。！？]$/.test(word.word.trim())) {
+      groups.push(group);
+      group = [];
+    }
+  }
+  if (group.length > 0) groups.push(group);
+  return groups.filter((item) => item.length > 0);
+}
+
+function wordGroupDuration(group: StoryboardWord[]) {
+  if (group.length === 0) return 0;
+  return group[group.length - 1].endMs - group[0].startMs;
+}
+
+function splitWordGroupByDuration(group: StoryboardWord[], targetCount: number) {
+  if (group.length <= 1 || targetCount <= 1) return [group];
+  const startMs = group[0].startMs;
+  const endMs = group[group.length - 1].endMs;
+  const cuts: number[] = [];
+
+  for (let cut = 1; cut < targetCount; cut += 1) {
+    const targetMs = startMs + ((endMs - startMs) * cut) / targetCount;
+    let bestIndex = -1;
+    let bestScore = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < group.length - 1; index += 1) {
+      if (cuts.includes(index)) continue;
+      const currentStart = cuts.length === 0 ? 0 : cuts[cuts.length - 1] + 1;
+      const leftDuration = group[index].endMs - group[currentStart].startMs;
+      const rightDuration = group[group.length - 1].endMs - group[index + 1].startMs;
+      if (leftDuration < MV_MIN_SCENE_MS || rightDuration < MV_MIN_SCENE_MS) continue;
+      const nextGap = group[index + 1].startMs - group[index].endMs;
+      const punctuationBonus = /[,;:，；：]$/.test(group[index].word) ? 500 : 0;
+      const gapBonus = nextGap >= 500 ? 400 : 0;
+      const score = Math.abs(group[index].endMs - targetMs) - punctuationBonus - gapBonus;
+      if (score < bestScore) {
+        bestIndex = index;
+        bestScore = score;
+      }
+    }
+    if (bestIndex >= 0) cuts.push(bestIndex);
+  }
+
+  if (cuts.length === 0) return [group];
+  cuts.sort((a, b) => a - b);
+  const groups: StoryboardWord[][] = [];
+  let startIndex = 0;
+  for (const cutIndex of cuts) {
+    groups.push(group.slice(startIndex, cutIndex + 1));
+    startIndex = cutIndex + 1;
+  }
+  groups.push(group.slice(startIndex));
+  return groups.filter((item) => item.length > 0);
+}
+
+function energyForSceneRange(startMs: number, endMs: number, context: StoryboardPlanningContext) {
+  return findEnergyForRange(startMs, endMs, context.energySegments);
+}
+
+function createSceneFromRange(params: {
+  scene: FixedStoryboardSceneDraft;
+  startMs: number;
+  endMs: number;
+  text: string;
+  context: StoryboardPlanningContext;
+  shotType?: StoryboardShotType;
+  planning?: Partial<FixedStoryboardPlanning>;
+}) {
+  const energy = energyForSceneRange(params.startMs, params.endMs, params.context);
+  return {
+    ...params.scene,
+    shotType: params.shotType || params.scene.shotType,
+    startMs: params.startMs,
+    endMs: Math.max(params.startMs + 500, params.endMs),
+    text: params.text || params.scene.text,
+    energyLevel: energy.energyLevel,
+    avgEnergy: energy.avgEnergy,
+    beatCount: countBeatsInRange(params.startMs, params.endMs, params.context.audioAnalysis?.beatTimesMs),
+    planning: {
+      ...params.scene.planning,
+      ...params.planning,
+    } as FixedStoryboardPlanning,
+  } satisfies FixedStoryboardSceneDraft;
+}
+
+function splitLyricScene(scene: FixedStoryboardSceneDraft, context: StoryboardPlanningContext) {
+  const durationMs = sceneDurationMs(scene);
+  const sceneWords = wordsForScene(scene, context.words);
+  if (sceneWords.length === 0) return [scene];
+
+  const sentenceGroups = sentenceWordGroups(sceneWords);
+  const groups = sentenceBreakCount(scene.text) > 1 && sentenceGroups.length > 1 ? sentenceGroups : [sceneWords];
+  const targetMs = Math.max(3000, Math.min(MV_LONG_SCENE_MS, context.medianNormalSceneMs));
+  const finalGroups = groups.flatMap((group) => {
+    if (wordGroupDuration(group) <= MV_LONG_SCENE_MS) return [group];
+    return splitWordGroupByDuration(group, Math.max(2, Math.ceil(wordGroupDuration(group) / targetMs)));
+  });
+
+  if (finalGroups.length <= 1 && durationMs <= MV_LONG_SCENE_MS) return [scene];
+  const splitCount = finalGroups.length;
+  return finalGroups.map((group, index) => {
+    const text = cleanSceneTextFromWords(group);
+    return createSceneFromRange({
+      scene,
+      startMs: group[0].startMs,
+      endMs: group[group.length - 1].endMs,
+      text,
+      context,
+      shotType: pickLyricShotType(text, index),
+      planning: {
+        sourceLineId: scene.linkedLineIds[0],
+        splitIndex: index + 1,
+        splitCount,
+        focusText: text,
+        isVocalMontage: false,
+      },
+    });
+  });
+}
+
+function pickBeatCuts(startMs: number, endMs: number, splitCount: number, beatTimesMs?: number[]) {
+  const beats = (beatTimesMs || []).filter((time) => time > startMs + 300 && time < endMs - 300);
+  const cuts: number[] = [];
+  for (let cut = 1; cut < splitCount; cut += 1) {
+    const targetMs = startMs + ((endMs - startMs) * cut) / splitCount;
+    const beat = beats
+      .filter((time) => !cuts.includes(time))
+      .sort((a, b) => Math.abs(a - targetMs) - Math.abs(b - targetMs))[0];
+    cuts.push(beat || Math.round(targetMs));
+  }
+  return cuts.sort((a, b) => a - b);
+}
+
+function splitBeatScene(scene: FixedStoryboardSceneDraft, context: StoryboardPlanningContext, isVocalMontage: boolean) {
+  const durationMs = sceneDurationMs(scene);
+  if (durationMs <= MV_LONG_SCENE_MS) return [scene];
+  const targetMs = Math.max(2500, Math.min(3500, context.medianNormalSceneMs));
+  const splitCount = Math.max(2, Math.ceil(durationMs / targetMs));
+  const cuts = pickBeatCuts(scene.startMs, scene.endMs, splitCount, context.audioAnalysis?.beatTimesMs);
+  const ranges = [scene.startMs, ...cuts, scene.endMs];
+
+  return ranges.slice(0, -1).map((startMs, index) => createSceneFromRange({
+    scene,
+    startMs,
+    endMs: ranges[index + 1],
+    text: scene.text,
+    context,
+    shotType: scene.kind === 'instrumental' ? pickInstrumentalShotType(startMs, ranges[index + 1], index) : scene.shotType,
+    planning: {
+      sourceLineId: scene.linkedLineIds[0],
+      splitIndex: index + 1,
+      splitCount,
+      focusText: scene.text,
+      isVocalMontage,
+    },
+  }));
+}
+
+function medianNormalSceneMs(scenes: FixedStoryboardSceneDraft[]) {
+  const durations = scenes
+    .filter((scene) => scene.kind === 'lyric')
+    .map(sceneDurationMs)
+    .filter((duration) => duration >= MV_MIN_SCENE_MS && duration <= MV_LONG_SCENE_MS)
+    .sort((a, b) => a - b);
+  if (durations.length === 0) return 3500;
+  return durations[Math.floor(durations.length / 2)] || 3500;
+}
+
+function mergeAdjacentRepeatedScenes(scenes: FixedStoryboardSceneDraft[], context: StoryboardPlanningContext) {
+  const merged: FixedStoryboardSceneDraft[] = [];
+  for (const scene of scenes) {
+    const previous = merged[merged.length - 1];
+    const sameText = previous && scene.kind === 'lyric' && previous.kind === 'lyric'
+      && !previous.planning?.isVocalMontage
+      && !scene.planning?.isVocalMontage
+      && normalizeLyricFingerprint(previous.text) === normalizeLyricFingerprint(scene.text);
+    const shortRepeat = sameText && sceneDurationMs(previous) <= 3000 && sceneDurationMs(scene) <= 3000;
+    if (previous && shortRepeat) {
+      merged[merged.length - 1] = createSceneFromRange({
+        scene: mergeFixedStoryboardScenes(previous, scene),
+        startMs: previous.startMs,
+        endMs: scene.endMs,
+        text: [previous.text, scene.text].filter(Boolean).join(' '),
+        context,
+        planning: {
+          sourceLineId: previous.linkedLineIds[0] || scene.linkedLineIds[0],
+          focusText: [previous.text, scene.text].filter(Boolean).join(' '),
+          isVocalMontage: false,
+        },
+      });
+    } else {
+      merged.push(scene);
+    }
+  }
+  return merged;
+}
+
+function mergeTinyScenes(scenes: FixedStoryboardSceneDraft[], context: StoryboardPlanningContext) {
+  const merged = [...scenes];
+  let index = 0;
+  while (index < merged.length) {
+    const scene = merged[index];
+    if (sceneDurationMs(scene) >= MV_MIN_SCENE_MS || merged.length <= 1) {
+      index += 1;
+      continue;
+    }
+
+    const previous = merged[index - 1];
+    const next = merged[index + 1];
+    if (!previous && !next) {
+      index += 1;
+      continue;
+    }
+
+    const gapToPrevious = previous ? Math.max(0, scene.startMs - previous.endMs) : Number.POSITIVE_INFINITY;
+    const gapToNext = next ? Math.max(0, next.startMs - scene.endMs) : Number.POSITIVE_INFINITY;
+    const shouldPreferNextSplitFragment = next
+      && scene.planning?.sourceLineId
+      && scene.planning.sourceLineId === next.planning?.sourceLineId
+      && sceneDurationMs(next) < MV_MIN_SCENE_MS;
+    if (next && shouldPreferNextSplitFragment) {
+      merged[index] = createSceneFromRange({
+        scene: mergeFixedStoryboardScenes(scene, next),
+        startMs: scene.startMs,
+        endMs: next.endMs,
+        text: [scene.text, next.text].filter((text) => text && text !== '[intro]' && text !== '[interlude]' && text !== '[outro]').join(' ') || next.text,
+        context,
+        planning: {
+          sourceLineId: scene.planning?.sourceLineId || next.planning?.sourceLineId,
+          focusText: [scene.text, next.text].filter(Boolean).join(' '),
+          isVocalMontage: Boolean(scene.planning?.isVocalMontage || next.planning?.isVocalMontage),
+        },
+      });
+      merged.splice(index + 1, 1);
+    } else if (previous && (!next || gapToPrevious <= gapToNext)) {
+      merged[index - 1] = createSceneFromRange({
+        scene: mergeFixedStoryboardScenes(previous, scene),
+        startMs: previous.startMs,
+        endMs: scene.endMs,
+        text: [previous.text, scene.text].filter((text) => text && text !== '[intro]' && text !== '[interlude]' && text !== '[outro]').join(' ') || previous.text,
+        context,
+      });
+      merged.splice(index, 1);
+      index = Math.max(0, index - 1);
+    } else if (next) {
+      merged[index] = createSceneFromRange({
+        scene: mergeFixedStoryboardScenes(scene, next),
+        startMs: scene.startMs,
+        endMs: next.endMs,
+        text: [scene.text, next.text].filter((text) => text && text !== '[intro]' && text !== '[interlude]' && text !== '[outro]').join(' ') || next.text,
+        context,
+      });
+      merged.splice(index + 1, 1);
+    } else {
+      index += 1;
+    }
+  }
+  return merged;
+}
+
+function applyPlanningTags(scenes: FixedStoryboardSceneDraft[], context: StoryboardPlanningContext) {
+  const fingerprints = scenes.map((scene) => scene.kind === 'lyric' ? normalizeLyricFingerprint(scene.text) : '');
+  const repeatCounts = new Map<string, number>();
+  for (const fingerprint of fingerprints) {
+    if (!fingerprint) continue;
+    repeatCounts.set(fingerprint, (repeatCounts.get(fingerprint) || 0) + 1);
+  }
+  const repeatSeen = new Map<string, number>();
+  const shortCutoff = Math.min(MV_MIN_SCENE_MS, Math.max(1000, context.medianNormalSceneMs * 0.4));
+  const longCutoff = Math.min(MV_LONG_SCENE_MS, Math.max(MV_MOTION_SCENE_MS, context.medianNormalSceneMs * 1.4));
+
+  return scenes.map((scene, index) => {
+    const duration = sceneDurationMs(scene);
+    const energy = energyForSceneRange(scene.startMs, scene.endMs, context);
+    const fingerprint = fingerprints[index];
+    const repeatTotal = fingerprint ? repeatCounts.get(fingerprint) || 0 : 0;
+    const repeatIndex = repeatTotal > 1 ? (repeatSeen.get(fingerprint) || 0) + 1 : undefined;
+    if (repeatIndex) repeatSeen.set(fingerprint, repeatIndex);
+    const repeatGroupId = repeatTotal > 1 ? repeatGroupIdForFingerprint(fingerprint) : undefined;
+    const durationClass: FixedStoryboardPlanning['durationClass'] =
+      duration < shortCutoff ? 'short' : duration > longCutoff ? 'long' : 'normal';
+
+    return {
+      ...scene,
+      energyLevel: energy.energyLevel,
+      avgEnergy: energy.avgEnergy,
+      beatCount: countBeatsInRange(scene.startMs, scene.endMs, context.audioAnalysis?.beatTimesMs),
+      prevLyric: scenes.slice(0, index).reverse().find((item) => item.kind === 'lyric')?.text,
+      nextLyric: scenes.slice(index + 1).find((item) => item.kind === 'lyric')?.text,
+      planning: {
+        durationClass,
+        needsMotion: duration >= MV_MOTION_SCENE_MS && duration <= MV_LONG_SCENE_MS,
+        isVocalMontage: Boolean(scene.planning?.isVocalMontage),
+        energy: energy.avgEnergy,
+        sourceLineId: scene.planning?.sourceLineId || scene.linkedLineIds[0],
+        splitIndex: scene.planning?.splitIndex,
+        splitCount: scene.planning?.splitCount,
+        repeatGroupId,
+        repeatIndex,
+        repeatTotal: repeatTotal > 1 ? repeatTotal : undefined,
+        focusText: scene.planning?.focusText || (scene.kind === 'lyric' ? scene.text : undefined),
+      },
+    } satisfies FixedStoryboardSceneDraft;
+  });
+}
+
+export function planFixedStoryboardScenes(
+  scenes: FixedStoryboardSceneDraft[],
+  params: {
+    audioAnalysis?: AudioAnalysisResult;
+    words?: LyricWordInput[];
+  } = {}
+) {
+  const energySegments = buildEnergySegments(params.audioAnalysis);
+  const context: StoryboardPlanningContext = {
+    audioAnalysis: params.audioAnalysis,
+    energySegments,
+    words: normalizeStoryboardWords(params.words),
+    medianNormalSceneMs: medianNormalSceneMs(scenes),
+  };
+
+  const splitScenes = scenes.flatMap((scene) => {
+    const duration = sceneDurationMs(scene);
+    const vocalMontage = scene.kind === 'lyric' && isVocalMontageText(scene.text);
+    if ((scene.kind === 'instrumental' || vocalMontage) && duration > MV_LONG_SCENE_MS) {
+      return splitBeatScene(scene, context, vocalMontage);
+    }
+    if (scene.kind === 'lyric' && (duration > MV_LONG_SCENE_MS || sentenceBreakCount(scene.text) > 1)) {
+      return splitLyricScene(scene, context);
+    }
+    return [scene];
+  });
+  const repeatedMerged = mergeAdjacentRepeatedScenes(splitScenes, context);
+  const tinyMerged = mergeTinyScenes(repeatedMerged, context);
+  const planned = applyPlanningTags(tinyMerged, context);
+  balanceStoryboardShotTypes(planned);
+  return renumberFixedStoryboardScenes(planned);
+}
+
 export function mergedEnergyLevel(a: FixedStoryboardSceneDraft, b: FixedStoryboardSceneDraft): FixedStoryboardSceneDraft['energyLevel'] {
   if (a.energyLevel === 'high' || b.energyLevel === 'high') return 'high';
   if (a.energyLevel === 'medium' || b.energyLevel === 'medium') return 'medium';
@@ -298,6 +728,7 @@ export function limitFixedStoryboardScenes(
 export function buildFixedStoryboardSceneDrafts(params: {
   lines: any[];
   audioAnalysis?: AudioAnalysisResult;
+  words?: LyricWordInput[];
 }): FixedStoryboardSceneDraft[] {
   const lines = params.lines
     .map(normalizeStoryboardLine)
@@ -305,11 +736,16 @@ export function buildFixedStoryboardSceneDrafts(params: {
     .sort((a, b) => a.startMs - b.startMs);
   const energySegments = buildEnergySegments(params.audioAnalysis);
   const scenes: FixedStoryboardSceneDraft[] = [];
+  const trackEndMs = Math.max(
+    Math.round((params.audioAnalysis?.durationSec || 0) * 1000),
+    ...lines.map((line) => line.endMs),
+    0
+  );
 
   const makeEnergy = (startMs: number, endMs: number) => findEnergyForRange(startMs, endMs, energySegments);
 
   const firstLine = lines[0];
-  if (firstLine && firstLine.startMs >= INSTRUMENTAL_GAP_MS) {
+  if (firstLine && firstLine.startMs >= MV_INSTRUMENTAL_GAP_MS) {
     const introEnergy = makeEnergy(0, firstLine.startMs);
     scenes.push({
       sceneId: 'instrumental_0',
@@ -317,7 +753,7 @@ export function buildFixedStoryboardSceneDrafts(params: {
       shotType: pickInstrumentalShotType(0, firstLine.startMs, 0),
       startMs: 0,
       endMs: firstLine.startMs,
-      text: 'Instrumental',
+      text: '[intro]',
       linkedLineIds: [],
       energyLevel: introEnergy.energyLevel,
       avgEnergy: introEnergy.avgEnergy,
@@ -352,7 +788,7 @@ export function buildFixedStoryboardSceneDrafts(params: {
     });
 
     const gapMs = next ? next.startMs - line.endMs : 0;
-    if (next && gapMs >= INSTRUMENTAL_GAP_MS) {
+    if (next && gapMs >= MV_INSTRUMENTAL_GAP_MS) {
       const instrumentalEnergy = makeEnergy(line.endMs, next.startMs);
       scenes.push({
         sceneId: `instrumental_${index + 1}`,
@@ -360,7 +796,7 @@ export function buildFixedStoryboardSceneDrafts(params: {
         shotType: pickInstrumentalShotType(line.endMs, next.startMs, index),
         startMs: line.endMs,
         endMs: next.startMs,
-        text: 'Instrumental',
+        text: '[interlude]',
         linkedLineIds: [],
         energyLevel: instrumentalEnergy.energyLevel,
         avgEnergy: instrumentalEnergy.avgEnergy,
@@ -373,8 +809,31 @@ export function buildFixedStoryboardSceneDrafts(params: {
     }
   }
 
+  const lastLine = lines[lines.length - 1];
+  if (lastLine && trackEndMs - lastLine.endMs >= MV_INSTRUMENTAL_GAP_MS) {
+    const outroEnergy = makeEnergy(lastLine.endMs, trackEndMs);
+    scenes.push({
+      sceneId: `instrumental_${lines.length}`,
+      kind: 'instrumental',
+      shotType: pickInstrumentalShotType(lastLine.endMs, trackEndMs, lines.length),
+      startMs: lastLine.endMs,
+      endMs: trackEndMs,
+      text: '[outro]',
+      linkedLineIds: [],
+      energyLevel: outroEnergy.energyLevel,
+      avgEnergy: outroEnergy.avgEnergy,
+      beatCount: countBeatsInRange(lastLine.endMs, trackEndMs, params.audioAnalysis?.beatTimesMs),
+      bpm: params.audioAnalysis?.bpm,
+      key: params.audioAnalysis?.key,
+      prevLyric: lastLine.text,
+    });
+  }
+
   balanceStoryboardShotTypes(scenes);
-  return scenes;
+  return planFixedStoryboardScenes(scenes, {
+    audioAnalysis: params.audioAnalysis,
+    words: params.words,
+  });
 }
 
 function isStoryboardShotType(value: unknown): value is StoryboardShotType {
@@ -432,12 +891,21 @@ export function buildFixedStoryboardSceneDraftsFromPersistedScenes(params: {
         key: params.audioAnalysis?.key,
         prevLyric: previousLine?.text,
         nextLyric: nextLine?.text,
+        planning: timelineConfig.planning && typeof timelineConfig.planning === 'object'
+          ? timelineConfig.planning as FixedStoryboardPlanning
+          : undefined,
       } satisfies FixedStoryboardSceneDraft;
     })
     .filter((scene) => scene.endMs > scene.startMs);
 
-  balanceStoryboardShotTypes(drafts);
-  return drafts;
+  const planned = applyPlanningTags(drafts, {
+    audioAnalysis: params.audioAnalysis,
+    energySegments,
+    words: [],
+    medianNormalSceneMs: medianNormalSceneMs(drafts),
+  });
+  balanceStoryboardShotTypes(planned);
+  return planned;
 }
 
 export async function replaceLyricsSceneSkeleton(params: {
@@ -452,6 +920,7 @@ export async function replaceLyricsSceneSkeleton(params: {
   const fixedScenes = buildFixedStoryboardSceneDrafts({
     lines: details.lines,
     audioAnalysis,
+    words: details.words,
   });
   const scenes: SceneInput[] = fixedScenes.map((scene) => ({
     startMs: scene.startMs,

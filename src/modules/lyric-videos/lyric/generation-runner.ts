@@ -5,17 +5,15 @@ import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
 import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './audio';
-import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, refineAsrSegmentsWithWords, transcribeWithGroqWhisper } from './asr';
+import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
 import { isActiveRunStatus, requestHash, safeJson } from './json';
 import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, generateStoryboardScenesWithKieClaude } from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
-import { buildFixedStoryboardSceneDrafts, limitFixedStoryboardScenes, preprocessLyricVideoForLlm, replaceScenes } from './storyboard';
+import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm, replaceScenes } from './storyboard';
 import {
-  DEFAULT_MAX_STORYBOARD_SCENES,
   DEFAULT_SONG_ANALYSIS_MODEL,
   DEFAULT_STORYBOARD_MODEL,
-  DEFAULT_TRANSCRIBE_MODEL,
   GENERATION_STAGES,
   type AsrDraftResult,
   type GenerationStage,
@@ -24,12 +22,10 @@ import {
 
 export function generationOptions(input: unknown) {
   const body = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
-  const maxScenes = Number(body.maxScenes || DEFAULT_MAX_STORYBOARD_SCENES);
   return {
-    transcribeModel: DEFAULT_TRANSCRIBE_MODEL,
+    transcribeModel: String(body.transcribeModel || 'scribe_v2'),
     songAnalysisModel: String(body.songAnalysisModel || DEFAULT_SONG_ANALYSIS_MODEL),
     storyboardModel: String(body.storyboardModel || DEFAULT_STORYBOARD_MODEL),
-    maxScenes: Number.isFinite(maxScenes) ? Math.max(1, Math.min(DEFAULT_MAX_STORYBOARD_SCENES, Math.floor(maxScenes))) : DEFAULT_MAX_STORYBOARD_SCENES,
   };
 }
 
@@ -332,8 +328,8 @@ export async function executeGenerationRun(params: {
     if (!(params.project.originalAudioUrl || params.project.audioUrl)) {
       throw new Error('Upload audio before generation');
     }
-    if (!configs.groq_api_key) {
-      throw new Error('Groq API key is required for Whisper transcription');
+    if (!configs.elevenlabs_api_key) {
+      throw new Error('ELEVENLABS_API_KEY is required for ElevenLabs transcription');
     }
     const transcriptionProject = await prepareAudioClipForTranscription({
       userId: params.userId,
@@ -367,7 +363,7 @@ export async function executeGenerationRun(params: {
       },
     });
     const [result, analysisResult] = await Promise.all([
-      transcribeWithGroqWhisper({
+      transcribeWithElevenLabs({
         audioUrl: transcriptionAudioUrl || '',
         configs,
         language: transcriptionProject.language || 'auto',
@@ -384,17 +380,18 @@ export async function executeGenerationRun(params: {
       words: result.words || [],
     });
     const cleanedWords = cleanAsrWordsForLyrics(result.words || []);
+    const lyricLines = refinedLines.length > 0 ? refinedLines : groupWordsIntoLyricLines(cleanedWords);
     const asrResult: AsrDraftResult = {
       raw: result.raw,
-      rawText: String((result as any).text || refinedLines.map((line: LyricLineInput) => line.text).join('\n')).trim(),
-      rawSegments: refinedLines,
+      rawText: String((result as any).text || lyricLines.map((line: LyricLineInput) => line.text).join('\n')).trim(),
+      rawSegments: lyricLines,
       words: cleanedWords,
     };
     if (asrResult.rawSegments.length === 0) {
-      throw new Error('Whisper transcription returned no lyric segments');
+      throw new Error('ElevenLabs transcription returned no lyric segments');
     }
     const snapshot = asrSnapshot({
-      provider: 'groq',
+      provider: 'elevenlabs',
       model: options.transcribeModel,
       result: asrResult,
       audioAnalysis: analysisResult.audioAnalysis,
@@ -427,7 +424,7 @@ export async function executeGenerationRun(params: {
       step: currentStep,
       progress: 45,
       output: {
-        provider: 'groq',
+        provider: 'elevenlabs',
         model: options.transcribeModel,
         lineCount: detailsAfterLyrics.lines.length,
         wordCount: detailsAfterLyrics.words.length,
@@ -469,13 +466,11 @@ export async function executeGenerationRun(params: {
     });
 
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
-    const fixedScenes = limitFixedStoryboardScenes(
-      buildFixedStoryboardSceneDrafts({
-        lines: detailsAfterLyrics.lines,
-        audioAnalysis: analysisResult.audioAnalysis,
-      }),
-      options.maxScenes
-    );
+    const fixedScenes = buildFixedStoryboardSceneDrafts({
+      lines: detailsAfterLyrics.lines,
+      audioAnalysis: analysisResult.audioAnalysis,
+      words: detailsAfterLyrics.words,
+    });
     logLyricStage('generation-run', 'asr-timing-summary', {
       projectId: params.projectId,
       userId: params.userId,
@@ -495,7 +490,6 @@ export async function executeGenerationRun(params: {
       progress: 75,
       input: {
         model: options.storyboardModel,
-        maxScenes: options.maxScenes,
         fixedScenes,
         songAnalysis: songAnalysisResult.songAnalysis,
       },
@@ -542,7 +536,6 @@ export async function executeGenerationRun(params: {
       lineCount: lines.length,
       wordCount: detailsAfterLyrics.words.length,
       sceneCount: scenes.length,
-      maxScenes: options.maxScenes,
       durationMs: Date.now() - startedAt,
       projectStatus: {
         lyricsStatus: 'ready',

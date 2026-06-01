@@ -2,7 +2,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { and, eq } from 'drizzle-orm';
 import { db } from '@/core/db';
-import { GroqProvider } from '@/core/ai';
+import { ElevenLabsProvider, GroqProvider } from '@/core/ai';
 import { lyricVideoLine, lyricVideoProject, lyricVideoWord } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
@@ -31,7 +31,7 @@ import {
  * 这个文件负责“音频 -> 原始转写 -> 清洗后的逐词/逐句歌词 -> 可编辑歌词行”的主流程。
  *
  * 核心数据流：
- * 1. runAsr 读取项目音频，优先用 Groq Whisper，有配置时走 Groq，没有时走 Kie Gemini。
+ * 1. runAsr 读取项目音频，使用 ElevenLabs Scribe v2 生成逐词时间轴。
  * 2. 转写结果会被 normalize/clean/refine 这一组函数清洗，去掉广告、网址、纯数字等脏词，并把过长句子切成更适合歌词视频展示的短句。
  * 3. asrSnapshot 把原始转写、清洗后的行、逐词时间轴、音频节奏分析一起保存到 project.transcriptionRaw。
  * 4. replaceLyrics 直接把 ASR 行和逐词结果写成可编辑歌词，并更新项目状态。
@@ -191,8 +191,24 @@ export function normalizeAsrSegment(segment: any, index: number): LyricLineInput
  */
 export function normalizeAsrWord(word: any, index: number) {
   const text = String(word?.word || word?.text || '').trim();
-  const startMs = Math.max(0, Math.round(Number(word?.startMs) || Number(word?.start) * 1000 || index * 500));
-  const rawEndMs = Math.max(startMs + 1, Math.round(Number(word?.endMs) || Number(word?.end) * 1000 || startMs + 450));
+  const rawStart =
+    word?.startMs !== undefined && word?.startMs !== null
+      ? Number(word.startMs)
+      : word?.start !== undefined && word?.start !== null
+        ? Number(word.start) * 1000
+        : word?.start_time !== undefined && word?.start_time !== null
+          ? Number(word.start_time) * 1000
+          : index * 500;
+  const startMs = Math.max(0, Math.round(Number.isFinite(rawStart) ? rawStart : index * 500));
+  const rawEnd =
+    word?.endMs !== undefined && word?.endMs !== null
+      ? Number(word.endMs)
+      : word?.end !== undefined && word?.end !== null
+        ? Number(word.end) * 1000
+        : word?.end_time !== undefined && word?.end_time !== null
+          ? Number(word.end_time) * 1000
+          : startMs + 450;
+  const rawEndMs = Math.max(startMs + 1, Math.round(Number.isFinite(rawEnd) ? rawEnd : startMs + 450));
   return { index, word: text, startMs, endMs: rawEndMs, confidence: word?.confidence };
 }
 
@@ -263,6 +279,11 @@ export function isAsrSeparatorToken(text: string) {
   return /^[()[\]{}（）【】]+$/.test(text);
 }
 
+export function isAsrEventToken(text: string) {
+  const clean = text.trim();
+  return /^\[[^\]]+\]$/.test(clean) || /^\([^)]+\)$/.test(clean);
+}
+
 /**
  * 判断一个 ASR word 是否应该丢弃。
  * 典型脏数据包括：空词、网址、纯括号、纯数字、类似 A.B. 的频道/署名残留，
@@ -272,6 +293,7 @@ export function isDirtyAsrWord(word: { word: string; startMs: number; endMs: num
   const text = word.word.trim();
   const durationMs = word.endMs - word.startMs;
   if (!text) return true;
+  if (isAsrEventToken(text)) return true;
   if (/https?:\/\/|www\.|\.com\b|\.tv\b/i.test(text)) return true;
   if (isAsrSeparatorToken(text)) return true;
   if (/^\d+(?:[.,]\d+)?$/.test(text)) return true;
@@ -318,6 +340,102 @@ export function isDirtyAsrLineText(text: string) {
   if (/^\d+(?:[.,]\d+)?$/.test(clean)) return true;
   if (/^[A-Za-z]\.[A-Za-z]\.?$/.test(clean)) return true;
   return false;
+}
+
+export const MIN_LYRIC_LINE_DURATION_MS = 1500;
+const VOCALIZATION_WORDS = new Set(['oh', 'ooh', 'oooh', 'ah', 'aah', 'la', 'na', 'hey', 'yeah', 'yea', 'whoa', 'woah', 'hmm', 'mm', 'mmm', 'uh', 'ha']);
+
+export function isSentenceBreakWord(text: string) {
+  return /[.!?。！？]$/.test(text.trim());
+}
+
+export function isVocalizationLine(text: string) {
+  const tokens = String(text || '')
+    .split(/\s+/)
+    .map((token) => compactAsrText(token))
+    .filter(Boolean);
+  return tokens.length > 0 && tokens.length <= 10 && tokens.every((token) => VOCALIZATION_WORDS.has(token));
+}
+
+export function mergeLyricLines(a: LyricLineInput, b: LyricLineInput, source = 'asr_words_merged'): LyricLineInput {
+  const startMs = Math.min(a.startMs || 0, b.startMs || 0);
+  const endMs = Math.max(a.endMs || startMs, b.endMs || startMs);
+  const wordStartIndex = [a.wordStartIndex, b.wordStartIndex]
+    .filter((value): value is number => Number.isFinite(Number(value)))
+    .sort((x, y) => x - y)[0];
+  const wordEndIndex = [a.wordEndIndex, b.wordEndIndex]
+    .filter((value): value is number => Number.isFinite(Number(value)))
+    .sort((x, y) => y - x)[0];
+
+  return {
+    startMs,
+    endMs: Math.max(startMs + 500, endMs),
+    text: cleanLineText([a.text, b.text].filter(Boolean).join(' ')),
+    wordStartIndex,
+    wordEndIndex,
+    source,
+  };
+}
+
+export function mergeShortAndVocalizationLines(lines: LyricLineInput[], minDurationMs = MIN_LYRIC_LINE_DURATION_MS) {
+  const sorted = [...lines]
+    .filter((line) => line.text && !isDirtyAsrLineText(line.text))
+    .sort((a, b) => (a.startMs || 0) - (b.startMs || 0));
+
+  const vocalMerged: LyricLineInput[] = [];
+  for (const line of sorted) {
+    const previous = vocalMerged[vocalMerged.length - 1];
+    if (previous && isVocalizationLine(previous.text) && isVocalizationLine(line.text)) {
+      vocalMerged[vocalMerged.length - 1] = mergeLyricLines(previous, line, 'asr_vocalization_merged');
+    } else {
+      vocalMerged.push(line);
+    }
+  }
+
+  const merged = [...vocalMerged];
+  let index = 0;
+  while (index < merged.length) {
+    const line = merged[index];
+    const durationMs = Math.max(0, Number(line.endMs || 0) - Number(line.startMs || 0));
+    if (durationMs >= minDurationMs || merged.length <= 1) {
+      index += 1;
+      continue;
+    }
+
+    const previous = merged[index - 1];
+    const next = merged[index + 1];
+    if (!previous && !next) {
+      index += 1;
+      continue;
+    }
+
+    const gapToPrevious = previous ? Math.max(0, Number(line.startMs || 0) - Number(previous.endMs || 0)) : Number.POSITIVE_INFINITY;
+    const gapToNext = next ? Math.max(0, Number(next.startMs || 0) - Number(line.endMs || 0)) : Number.POSITIVE_INFINITY;
+    if (previous && (!next || gapToPrevious <= gapToNext)) {
+      merged[index - 1] = mergeLyricLines(previous, line);
+      merged.splice(index, 1);
+      index = Math.max(0, index - 1);
+    } else if (next) {
+      merged[index] = mergeLyricLines(line, next);
+      merged.splice(index + 1, 1);
+    } else {
+      index += 1;
+    }
+  }
+
+  return merged.map((line, lineIndex) => {
+    const next = merged[lineIndex + 1];
+    const startMs = Math.max(0, Number(line.startMs || 0));
+    const nextStartMs = next ? Math.max(0, Number(next.startMs || 0)) : Number.POSITIVE_INFINITY;
+    const naturalEndMs = Math.max(startMs + 500, Number(line.endMs || startMs + 500));
+    const endMs = nextStartMs > startMs ? Math.min(naturalEndMs, nextStartMs) : naturalEndMs;
+    return {
+      ...line,
+      id: `line_${lineIndex + 1}`,
+      startMs,
+      endMs,
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -420,6 +538,11 @@ export function refineAsrSegmentsWithWords(params: {
     .map(normalizeAsrSegment)
     .filter((line) => line.text && !isDirtyAsrLineText(line.text));
   const words = normalizeAndRepairAsrWords(params.words || []);
+  const usableWords = words.filter((word) => !isDirtyAsrWord(word));
+  const hasWordSentenceBreaks = usableWords.some((word) => isSentenceBreakWord(word.word));
+  if (usableWords.length > 0 && (segments.length === 0 || hasWordSentenceBreaks)) {
+    return groupWordsIntoLyricLines(usableWords);
+  }
   if (segments.length === 0) return groupWordsIntoLyricLines(cleanAsrWordsForLyrics(words));
 
   const refined = segments
@@ -704,6 +827,39 @@ export async function transcribeWithGroqWhisper(params: {
   };
 }
 
+/**
+ * 使用 ElevenLabs Scribe v2 做 ASR。
+ * 这个路径是歌词视频主流程的默认转写入口，依赖 words 时间轴来生成歌词行和分镜草稿。
+ */
+export async function transcribeWithElevenLabs(params: {
+  audioUrl: string;
+  configs: Record<string, string>;
+  language?: string;
+  prompt?: string;
+  transcribeModel?: string;
+}) {
+  const provider = new ElevenLabsProvider({
+    apiKey: params.configs.elevenlabs_api_key,
+    sttModel: params.transcribeModel || params.configs.elevenlabs_stt_model || 'scribe_v2',
+  });
+  const result = await provider.transcribe({
+    audioUrl: params.audioUrl,
+    language: params.language && params.language !== 'auto' ? params.language : undefined,
+    prompt: params.prompt,
+  });
+
+  return {
+    raw: result.raw,
+    text: result.text,
+    words: result.words,
+    lines: result.lines.map((line) => ({
+      startMs: line.startMs,
+      endMs: line.endMs,
+      text: line.text,
+    })),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Lyrics persistence helpers
 // 这一组函数把 ASR 结果稳定落成可编辑歌词，不再调用 LLM 改写时间轴。
@@ -731,18 +887,23 @@ function findLineForWordByTime(word: { startMs: number; endMs: number }, lines: 
 
 /**
  * 只靠 word 时间轴重新组织歌词行。
- * 用于没有 segment 的场景；规则很保守：遇到句末标点、8 个词、
- * 或当前组超过 4.5 秒就换行，保证生成的字幕不会太长。
+ * ElevenLabs 的 segment 边界经常落在半句话中间，所以这里主要信任逐词标点；
+ * 只有一句话本身过长时才用时长兜底切开。
  */
 export function groupWordsIntoLyricLines(words: any[]): LyricLineInput[] {
   const cleanWords = words
-    .map((word, index) => ({
-      index,
-      text: String(word.word || word.text || '').trim(),
-      startMs: Math.max(0, Number(word.startMs) || index * 500),
-      endMs: Math.max(Number(word.startMs) || index * 500, Number(word.endMs) || index * 500 + 450),
-    }))
-    .filter((word) => word.text);
+    .map((word, index) => {
+      const start = Number(word.startMs);
+      const startMs = Math.max(0, Number.isFinite(start) ? start : index * 500);
+      const end = Number(word.endMs);
+      return {
+        index: Number.isFinite(Number(word.index)) ? Number(word.index) : index,
+        text: String(word.word || word.text || '').trim(),
+        startMs,
+        endMs: Math.max(startMs + 1, Number.isFinite(end) ? end : startMs + 450),
+      };
+    })
+    .filter((word) => word.text && !isDirtyAsrWord({ word: word.text, startMs: word.startMs, endMs: word.endMs }));
 
   const lines: LyricLineInput[] = [];
   let group: typeof cleanWords = [];
@@ -754,10 +915,10 @@ export function groupWordsIntoLyricLines(words: any[]): LyricLineInput[] {
     lines.push({
       startMs: first.startMs,
       endMs: Math.max(first.startMs + 500, last.endMs),
-      text: group.map((word) => word.text).join(' '),
+      text: cleanLineText(group.map((word) => word.text).join(' ')),
       wordStartIndex: first.index,
       wordEndIndex: last.index,
-      source: 'asr_words_fallback',
+      source: 'asr_words_sentence',
     });
     group = [];
   };
@@ -766,12 +927,11 @@ export function groupWordsIntoLyricLines(words: any[]): LyricLineInput[] {
     group.push(word);
     const first = group[0];
     const duration = word.endMs - first.startMs;
-    const sentenceBreak = /[.!?。！？]$/.test(word.text);
-    if (sentenceBreak || group.length >= 8 || duration >= 4500) flush();
+    if (isSentenceBreakWord(word.text) || duration >= ASR_LONG_SEGMENT_MS) flush();
   }
   flush();
 
-  return lines;
+  return mergeShortAndVocalizationLines(lines);
 }
 
 // ---------------------------------------------------------------------------
@@ -799,8 +959,8 @@ export async function runAsr(params: {
   if (!(project.originalAudioUrl || project.audioUrl)) throw new Error('Upload audio before ASR');
 
   const configs = await getAllConfigs();
-  const provider = configs.groq_api_key ? 'groq' : 'kie';
-  const model = configs.groq_api_key ? DEFAULT_TRANSCRIBE_MODEL : configs.kie_chat_model || 'gemini-2.5-flash';
+  const provider = 'elevenlabs';
+  const model = configs.elevenlabs_stt_model || 'scribe_v2';
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
@@ -831,15 +991,16 @@ export async function runAsr(params: {
       project,
     });
     const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
-    const transcriptionPromise = configs.groq_api_key
-      ? transcribeWithGroqWhisper({
-          audioUrl: transcriptionAudioUrl || '',
-          configs,
-          language: project.language || 'auto',
-          prompt: project.title,
-          transcribeModel: DEFAULT_TRANSCRIBE_MODEL,
-        })
-      : transcribeWithKieGemini(transcriptionAudioUrl || '');
+    if (!configs.elevenlabs_api_key) {
+      throw new Error('ELEVENLABS_API_KEY is required for ElevenLabs transcription');
+    }
+    const transcriptionPromise = transcribeWithElevenLabs({
+      audioUrl: transcriptionAudioUrl || '',
+      configs,
+      language: project.language || 'auto',
+      prompt: project.title,
+      transcribeModel: model,
+    });
     const [result, analysisResult] = await Promise.all([
       transcriptionPromise,
       analyzeAudioWithLibrosa({
@@ -1055,7 +1216,7 @@ export async function replaceLyrics(params: {
 /**
  * 创建歌词草稿。
  * 如果用户提供 rawLyrics，就直接按换行切成手动歌词并入库；
- * 如果没有提供 rawLyrics，就跑 ASR 并直接返回 Whisper 生成的歌词行。
+ * 如果没有提供 rawLyrics，就跑 ASR 并直接返回 ElevenLabs 生成的歌词行。
  */
 export async function createTranscriptionDraft(params: {
   userId: string;

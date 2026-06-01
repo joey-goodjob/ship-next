@@ -417,14 +417,15 @@ export async function analyzeSongWithKieForDebug(params: {
       ? await callKieCodexResponses({ text: prompt, model: params.model })
       : provider === 'kie_gemini'
         ? await callKieGeminiChat({ text: prompt, model: params.model })
-        : await callKieClaudeMessages({ text: prompt, model: params.model, thinkingFlag: true, maxTokens: 4096 });
+        : await callKieClaudeMessages({ text: prompt, model: params.model, thinkingFlag: false, maxTokens: 8192 });
+  const songAnalysis = normalizeSongAnalysis(parseJsonLoose<any>(result.content, {}));
+  assertUsableSongAnalysis(songAnalysis);
 
-  const parsed = parseJsonLoose<any>(result.content, {});
   return {
     provider,
     model: params.model || result.model,
     actualModel: result.model,
-    songAnalysis: normalizeSongAnalysis(parsed),
+    songAnalysis,
     rawText: result.content,
     raw: result.raw,
   };
@@ -486,6 +487,7 @@ export function buildStoryboardScenesPrompt(params: {
     bpm: scene.bpm,
     prevLyric: scene.prevLyric,
     nextLyric: scene.nextLyric,
+    planning: scene.planning,
   }));
 
   return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
@@ -516,6 +518,10 @@ ${JSON.stringify(fixedScenes)}
 - 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
 - lyric scene 根据 text 的歌词语义设计画面
 - instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
+- planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
+- planning.needsMotion=true 时，video_prompt 必须有明确可见的镜头运动或主体运动
+- planning.isVocalMontage=true 时，image_prompt/video_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
+- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
 - shotType=character_shot：image_prompt 必须出现既定主角，保持人物外貌一致，写清人物动作/情绪/环境/光线/构图
 - shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、鞋、口袋、尘土、火光、道路纹理等；不要出现完整人物、不要露脸、不要新增角色
 - shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
@@ -555,6 +561,7 @@ export function buildDebugStoryboardScenesPrompt(params: {
     bpm: scene.bpm,
     prevLyric: scene.prevLyric,
     nextLyric: scene.nextLyric,
+    planning: scene.planning,
   }));
 
   return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
@@ -587,6 +594,10 @@ ${JSON.stringify(fixedScenes)}
 - 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
 - lyric scene 根据 text 的歌词语义设计画面
 - instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
+- planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
+- planning.needsMotion=true 时，video_prompt 必须有明确可见的镜头运动或主体运动
+- planning.isVocalMontage=true 时，image_prompt/video_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
+- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
 
 ### shotType 规则
 - shotType=character_shot：image_prompt 必须出现既定主角，保持人物外貌一致，写清人物动作/情绪/环境/光线/构图
@@ -625,13 +636,14 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
   songAnalysis?: LyricVideoSongAnalysisResult;
   preprocess: LyricVideoLlmPreprocessResult;
   audioAnalysis?: AudioAnalysisResult;
+  fixedScenes?: FixedStoryboardSceneDraft[];
   model?: string;
 }) {
   if (!params.preprocess || !Array.isArray(params.preprocess.lines) || params.preprocess.lines.length === 0) {
     throw new Error('preprocess.lines is required for Prompt 2');
   }
 
-  const model = params.model || 'claude-opus-4-5';
+  const model = params.model || 'claude-opus-4-8';
   const songAnalysis = params.songAnalysis && typeof params.songAnalysis === 'object'
     ? params.songAnalysis
     : normalizeSongAnalysis({
@@ -640,15 +652,17 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
         notes: 'Generate consistent scene prompts from fixed Whisper lyric scenes.',
       });
   const audioAnalysis = params.audioAnalysis || audioAnalysisFromLlmPreprocess(params.preprocess);
-  const fixedScenes = buildFixedStoryboardSceneDrafts({
-    lines: params.preprocess.lines.map((line, index) => ({
-      id: `line_${index + 1}`,
-      startMs: Math.round(line.start_s * 1000),
-      endMs: Math.round(line.end_s * 1000),
-      text: line.text,
-    })),
-    audioAnalysis,
-  });
+  const fixedScenes = Array.isArray(params.fixedScenes) && params.fixedScenes.length > 0
+    ? params.fixedScenes
+    : buildFixedStoryboardSceneDrafts({
+        lines: params.preprocess.lines.map((line, index) => ({
+          id: `line_${index + 1}`,
+          startMs: Math.round(line.start_s * 1000),
+          endMs: Math.round(line.end_s * 1000),
+          text: line.text,
+        })),
+        audioAnalysis,
+      });
   const prompt = buildDebugStoryboardScenesPrompt({
     songAnalysis,
     scenes: fixedScenes,
@@ -656,8 +670,8 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
   const result = await callKieClaudeMessages({
     text: prompt,
     model,
-    thinkingFlag: true,
-    maxTokens: 4096,
+    thinkingFlag: false,
+    maxTokens: 12000,
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));
@@ -723,8 +737,8 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   const result = await callKieClaudeMessages({
     text: prompt,
     model,
-    thinkingFlag: true,
-    maxTokens: 4096,
+    thinkingFlag: false,
+    maxTokens: 12000,
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));

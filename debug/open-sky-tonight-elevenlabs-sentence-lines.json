@@ -1,0 +1,309 @@
+{
+  "input": "debug/open-sky-tonight-elevenlabs-export.json",
+  "provider": "elevenlabs",
+  "model": "scribe_v2",
+  "wordCount": 251,
+  "lineCount": 30,
+  "lines": [
+    {
+      "index": 1,
+      "startMs": 9380,
+      "endMs": 13780,
+      "startSec": 9.38,
+      "endSec": 13.78,
+      "durationSec": 4.4,
+      "text": "Morning on my face, dust on my shoes.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 2,
+      "startMs": 14640,
+      "endMs": 18460,
+      "startSec": 14.64,
+      "endSec": 18.46,
+      "durationSec": 3.82,
+      "text": "I left the old road for something new.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 3,
+      "startMs": 19480,
+      "endMs": 24060,
+      "startSec": 19.48,
+      "endSec": 24.06,
+      "durationSec": 4.58,
+      "text": "Pocket full of sparks, heart in drive.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 4,
+      "startMs": 24880,
+      "endMs": 29260,
+      "startSec": 24.88,
+      "endSec": 29.26,
+      "durationSec": 4.38,
+      "text": "I've been waiting on this to feel alive.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 5,
+      "startMs": 30940,
+      "endMs": 34880,
+      "startSec": 30.94,
+      "endSec": 34.88,
+      "durationSec": 3.94,
+      "text": "I can see it now, right beyond the bend.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 6,
+      "startMs": 36000,
+      "endMs": 40099,
+      "startSec": 36,
+      "endSec": 40.1,
+      "durationSec": 4.1,
+      "text": "Every little break leads me back again.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 7,
+      "startMs": 40980,
+      "endMs": 46310,
+      "startSec": 40.98,
+      "endSec": 46.31,
+      "durationSec": 5.33,
+      "text": "Open sky tonight, I'm running to my dreams.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 8,
+      "startMs": 46420,
+      "endMs": 52620,
+      "startSec": 46.42,
+      "endSec": 52.62,
+      "durationSec": 6.2,
+      "text": "Open sky tonight, nothing's as it seems. I'm free, I'm free.",
+      "source": "asr_words_merged"
+    },
+    {
+      "index": 9,
+      "startMs": 53560,
+      "endMs": 55440,
+      "startSec": 53.56,
+      "endSec": 55.44,
+      "durationSec": 1.88,
+      "text": "Watch me rise again.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 10,
+      "startMs": 56240,
+      "endMs": 60900,
+      "startSec": 56.24,
+      "endSec": 60.9,
+      "durationSec": 4.66,
+      "text": "Open sky tonight, I'm moving forward.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 11,
+      "startMs": 62400,
+      "endMs": 66520,
+      "startSec": 62.4,
+      "endSec": 66.52,
+      "durationSec": 4.12,
+      "text": "Found a little fire underneath my fear.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 12,
+      "startMs": 67140,
+      "endMs": 71040,
+      "startSec": 67.14,
+      "endSec": 71.04,
+      "durationSec": 3.9,
+      "text": "Took the long way out, but I made it here.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 13,
+      "startMs": 71600,
+      "endMs": 75020,
+      "startSec": 71.6,
+      "endSec": 75.02,
+      "durationSec": 3.42,
+      "text": "Every scar I wore turned into gold.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 14,
+      "startMs": 75360,
+      "endMs": 80520,
+      "startSec": 75.36,
+      "endSec": 80.52,
+      "durationSec": 5.16,
+      "text": "Now I'm stepping light with a story to hold.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 15,
+      "startMs": 81480,
+      "endMs": 86420,
+      "startSec": 81.48,
+      "endSec": 86.42,
+      "durationSec": 4.94,
+      "text": "I can feel it now. I can feel it now. Pulling in my chest. Pulling in my chest.",
+      "source": "asr_words_merged"
+    },
+    {
+      "index": 16,
+      "startMs": 86600,
+      "endMs": 91440,
+      "startSec": 86.6,
+      "endSec": 91.44,
+      "durationSec": 4.84,
+      "text": "Every little loss made me ready for the next.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 17,
+      "startMs": 91580,
+      "endMs": 96880,
+      "startSec": 91.58,
+      "endSec": 96.88,
+      "durationSec": 5.3,
+      "text": "Open sky tonight, I'm running to my dreams.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 18,
+      "startMs": 96920,
+      "endMs": 103300,
+      "startSec": 96.92,
+      "endSec": 103.3,
+      "durationSec": 6.38,
+      "text": "Open sky tonight, nothing's as it seems. I'm free, I'm free.",
+      "source": "asr_words_merged"
+    },
+    {
+      "index": 19,
+      "startMs": 104100,
+      "endMs": 106660,
+      "startSec": 104.1,
+      "endSec": 106.66,
+      "durationSec": 2.56,
+      "text": "Watch me rise again.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 20,
+      "startMs": 106760,
+      "endMs": 111280,
+      "startSec": 106.76,
+      "endSec": 111.28,
+      "durationSec": 4.52,
+      "text": "Open sky tonight, I'm moving forward.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 21,
+      "startMs": 111400,
+      "endMs": 113820,
+      "startSec": 111.4,
+      "endSec": 113.82,
+      "durationSec": 2.42,
+      "text": "If the road bends hard, I bend with it too.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 22,
+      "startMs": 113960,
+      "endMs": 116480,
+      "startSec": 113.96,
+      "endSec": 116.48,
+      "durationSec": 2.52,
+      "text": "I was never made to stay stuck in the blue.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 23,
+      "startMs": 116720,
+      "endMs": 118880,
+      "startSec": 116.72,
+      "endSec": 118.88,
+      "durationSec": 2.16,
+      "text": "Hands up to the dawn, I'm coming through.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 24,
+      "startMs": 119000,
+      "endMs": 123960,
+      "startSec": 119,
+      "endSec": 123.96,
+      "durationSec": 4.96,
+      "text": "No fear, no chains, just the line I choose.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 25,
+      "startMs": 124420,
+      "endMs": 129680,
+      "startSec": 124.42,
+      "endSec": 129.68,
+      "durationSec": 5.26,
+      "text": "Open sky tonight, I'm running to my dreams.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 26,
+      "startMs": 129780,
+      "endMs": 136720,
+      "startSec": 129.78,
+      "endSec": 136.72,
+      "durationSec": 6.94,
+      "text": "Open sky tonight, nothing's as it seems. I'm free, I'm free. I'm free.",
+      "source": "asr_words_merged"
+    },
+    {
+      "index": 27,
+      "startMs": 136940,
+      "endMs": 139440,
+      "startSec": 136.94,
+      "endSec": 139.44,
+      "durationSec": 2.5,
+      "text": "Watch me rise again.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 28,
+      "startMs": 139580,
+      "endMs": 144200,
+      "startSec": 139.58,
+      "endSec": 144.2,
+      "durationSec": 4.62,
+      "text": "Open sky tonight, I'm moving forward.",
+      "source": "asr_words_sentence"
+    },
+    {
+      "index": 29,
+      "startMs": 144520,
+      "endMs": 155090,
+      "startSec": 144.52,
+      "endSec": 155.09,
+      "durationSec": 10.57,
+      "text": "Oh, oh, oh. Oh, oh, oh. Oh, oh, oh. Oh, oh, oh.",
+      "source": "asr_vocalization_merged"
+    },
+    {
+      "index": 30,
+      "startMs": 155090,
+      "endMs": 160940,
+      "startSec": 155.09,
+      "endSec": 160.94,
+      "durationSec": 5.85,
+      "text": "Open sky tonight, I'm moving forward.",
+      "source": "asr_words_sentence"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const model = body?.model || 'claude-opus-4-5';
+    const model = body?.model || 'claude-opus-4-8';
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
         songAnalysis: body?.songAnalysis || body?.prompt1_output,
         preprocess: body?.preprocess,
         audioAnalysis: body?.audioAnalysis,
+        fixedScenes: body?.fixedScenes,
         model: body?.model,
       }));
     return respData(data);

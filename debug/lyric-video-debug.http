@@ -1,19 +1,20 @@
 @baseUrl = http://localhost:3000
 
 # 改成你本机要测试的 MP3 文件路径。
-@audioFile = /Users/joey/Documents/Codex/2026-05-29/demucs-demucs-text-song-mp3-text/outputs/open_sky_demucs/htdemucs/Open Sky Tonight （素材）/vocals.wav
-@audioFilename = vocals.wav
-@audioMimeType = audio/wav
+@audioFile = /Users/joey/Music/Music/Media.localized/Music/Unknown Artist/Unknown Album/Open Sky Tonight （素材）.mp3
+@audioFilename = Open Sky Tonight （素材）.mp3
+@audioMimeType = audio/mpeg
 @audioLanguage = auto
 @audioPrompt =
-@transcribeModel = whisper-large-v3
-@fixtureKey = open-sky-vocals
+@transcribeModel = scribe_v2
+@fixtureKey = open-sky-mp3
+@claudeOpusVersion = 4-6
 
-### 第一步：MP3 -> Whisper + Librosa analysis -> fixed lyric/instrumental scenes
+### 第一步：MP3 -> ElevenLabs Scribe v2 + Librosa analysis -> fixed lyric/instrumental scenes
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
 # cache=true 时，第一次会真实调用并保存到 debug/fixtures/{{fixtureKey}}/analyze.json；第二次直接读本地 JSON。
 # 返回 transcription、audioAnalysis、preprocess、fixedScenes。
-# 新主链路：Whisper 决定歌词分镜边界；Librosa 只提供 BPM/energy 情绪参考。
+# 新主链路：ElevenLabs words 时间轴决定歌词分镜边界；Librosa 同步提供 BPM/energy 情绪参考。
 # @name debugAnalyzeLyricVideoAudio
 POST {{baseUrl}}/api/debug/lyric-videos/analyze
 Content-Type: multipart/form-data; boundary=----lyricVideoDebugBoundary
@@ -45,7 +46,7 @@ Content-Disposition: form-data; name="cache"
 true
 ------lyricVideoDebugBoundary--
 
-### 可选：Prompt 1：Claude Opus 4.5 歌曲理解
+### 可选：Prompt 1：Claude Opus 歌曲理解
 # 先点击上面的 analyze 请求，等它返回 preprocess。
 # 然后再点击下面任意一个 LLM 请求，REST Client 会把上一个请求的 data.preprocess 传给模型。
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
@@ -57,12 +58,12 @@ Content-Type: application/json
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
   "provider": "kie_claude",
-  "model": "claude-opus-4-5",
+  "model": "claude-opus-{{claudeOpusVersion}}",
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 }
 
 ### 可选 LLM 测试：Claude Opus / Claude 其他版本
-# 想测 opus4.6 / opus4.7 这类模型时，只改 model 这一行。
+# 想测 opus 4.6 / 4.7 / 4.8 时，只改顶部 claudeOpusVersion 这一行，例如 4-6、4-7、4-8。
 # # @name debugAnalyzeSongWithClaudeCustom
 # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
 # Content-Type: application/json
@@ -71,7 +72,7 @@ Content-Type: application/json
 #   "fixtureKey": "{{fixtureKey}}",
 #   "cache": true,
 #   "provider": "kie_claude",
-#   "model": "claude-opus-4-5",
+#   "model": "claude-opus-{{claudeOpusVersion}}",
 #   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
 # }
 
@@ -114,10 +115,11 @@ Content-Type: application/json
 {
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
-  "model": "claude-opus-4-5",
+  "model": "claude-opus-{{claudeOpusVersion}}",
   "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}},
-  "audioAnalysis": {{debugAnalyzeLyricVideoAudio.response.body.$.data.audioAnalysis}}
+  "audioAnalysis": {{debugAnalyzeLyricVideoAudio.response.body.$.data.audioAnalysis}},
+  "fixedScenes": {{debugAnalyzeLyricVideoAudio.response.body.$.data.fixedScenes}}
 }
 
 ### 第三步 生图：Prompt scenes -> 单张 5x5 分镜网格图

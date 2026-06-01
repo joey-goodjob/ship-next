@@ -173,8 +173,8 @@ export const GENERATION_STAGES = [
 
 export const ACTIVE_RUN_STATUSES = ['queued', 'running', 'waiting_provider'] as const;
 export const DEFAULT_TRANSCRIBE_MODEL = 'whisper-large-v3';
-export const DEFAULT_SONG_ANALYSIS_MODEL = 'claude-opus-4-5';
-export const DEFAULT_STORYBOARD_MODEL = 'claude-opus-4-5';
+export const DEFAULT_SONG_ANALYSIS_MODEL = 'claude-opus-4-8';
+export const DEFAULT_STORYBOARD_MODEL = 'claude-opus-4-8';
 export const DEFAULT_MAX_STORYBOARD_SCENES = 16;
 export const INSTRUMENTAL_GAP_MS = 1000;
 export const ASR_LONG_SEGMENT_MS = 8000;
@@ -185,6 +185,20 @@ export const ASR_MAX_WORDS_PER_LINE = 10;
 export type GenerationStage = (typeof GENERATION_STAGES)[number];
 
 export type StoryboardShotType = 'character_shot' | 'insert_shot' | 'landscape_shot';
+
+export type FixedStoryboardPlanning = {
+  durationClass: 'short' | 'normal' | 'long';
+  needsMotion: boolean;
+  isVocalMontage: boolean;
+  energy: number;
+  sourceLineId?: string;
+  splitIndex?: number;
+  splitCount?: number;
+  repeatGroupId?: string;
+  repeatIndex?: number;
+  repeatTotal?: number;
+  focusText?: string;
+};
 
 export type FixedStoryboardSceneDraft = {
   dbId?: string;
@@ -202,6 +216,7 @@ export type FixedStoryboardSceneDraft = {
   key?: string;
   prevLyric?: string;
   nextLyric?: string;
+  planning?: FixedStoryboardPlanning;
 };
 
 export type LyricLineInput = {

@@ -14,6 +14,8 @@ function resolveKieImageModel(configs: Record<string, string>, model?: string) {
   return model || configs.kie_image_model || KIE_Z_IMAGE_MODEL;
 }
 
+export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
+
 export async function queueSceneImages(params: {
   userId: string;
   projectId: string;
@@ -35,6 +37,9 @@ export async function queueSceneImages(params: {
   }
   if (params.onlyMissing) {
     scenes = scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
+  }
+  if (!params.sceneId && !(params.sceneIds && params.sceneIds.length > 0)) {
+    scenes = scenes.slice(0, DEFAULT_SCENE_IMAGE_BATCH_LIMIT);
   }
 
   if (scenes.length === 0) throw new Error('No scenes to generate');

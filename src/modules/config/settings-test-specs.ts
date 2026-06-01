@@ -98,6 +98,12 @@ export const testSpecs: Record<string, TestSpec> = {
       { name: 'prompt', label: 'Prompt', type: 'text', defaultValue: 'test audio' },
     ],
   },
+  elevenlabs: {
+    group: 'elevenlabs',
+    fields: [
+      { name: 'language', label: 'Language', type: 'text', placeholder: 'Leave empty for auto-detect' },
+    ],
+  },
   gemini: {
     group: 'gemini',
     fields: [

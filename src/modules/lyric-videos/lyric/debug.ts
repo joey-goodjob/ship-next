@@ -1,15 +1,14 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { GroqProvider, AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL, KieProvider } from '@/core/ai';
+import { ElevenLabsProvider, AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL, KieProvider } from '@/core/ai';
 import { getUuid } from '@/lib/hash';
 import { getAllConfigs } from '@/modules/config/service';
 import { isStorageConfigured } from '@/modules/storage/service';
-import { asrTimingDebugSummary, cleanAsrWordsForLyrics, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
+import { asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
 import { runLibrosaAnalysisForLocalFile, saveAIProviderFiles } from './audio';
 import { parseJsonField } from './json';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm } from './storyboard';
 import {
-  DEFAULT_TRANSCRIBE_MODEL,
   type AudioAnalysisResult,
   type DebugImageSceneInput,
   type FixedStoryboardSceneDraft,
@@ -209,34 +208,37 @@ export async function analyzeUploadedAudioForDebug(params: {
 
   try {
     const [transcriptionResult, analysisResult] = await Promise.allSettled([
-	      configs.groq_api_key
-	        ? new GroqProvider({
-	            apiKey: configs.groq_api_key,
-	            baseUrl: configs.groq_base_url,
-	            transcribeModel: DEFAULT_TRANSCRIBE_MODEL,
-	          }).transcribeFile({
+      configs.elevenlabs_api_key
+        ? new ElevenLabsProvider({
+            apiKey: configs.elevenlabs_api_key,
+            sttModel: params.transcribeModel || configs.elevenlabs_stt_model || 'scribe_v2',
+          }).transcribeFile({
             body,
             filename,
             contentType: params.contentType,
             language: params.language && params.language !== 'auto' ? params.language : undefined,
             prompt: params.prompt,
           })
-        : Promise.reject(new Error('Groq API key is required for debug Whisper transcription')),
+        : Promise.reject(new Error('ELEVENLABS_API_KEY is required for debug ElevenLabs transcription')),
       runLibrosaAnalysisForLocalFile(inputPath),
     ]);
 
     const transcription =
       transcriptionResult.status === 'fulfilled'
-        ? {
-            provider: 'groq',
-            rawText: transcriptionResult.value.text,
-            rawSegments: refineAsrSegmentsWithWords({
+        ? (() => {
+            const words = cleanAsrWordsForLyrics(transcriptionResult.value.words);
+            const refinedSegments = refineAsrSegmentsWithWords({
               segments: transcriptionResult.value.lines,
-              words: transcriptionResult.value.words,
-            }),
-            words: cleanAsrWordsForLyrics(transcriptionResult.value.words),
-            raw: transcriptionResult.value.raw,
-          }
+              words,
+            });
+            return {
+              provider: 'elevenlabs',
+              rawText: transcriptionResult.value.text,
+              rawSegments: refinedSegments.length > 0 ? refinedSegments : groupWordsIntoLyricLines(words),
+              words,
+              raw: transcriptionResult.value.raw,
+            };
+          })()
         : undefined;
     const audioAnalysis = analysisResult.status === 'fulfilled' ? analysisResult.value : undefined;
 
@@ -245,7 +247,7 @@ export async function analyzeUploadedAudioForDebug(params: {
     let preprocessError: string | undefined;
     try {
       if (!transcription) {
-        throw new Error('Whisper transcription is required before preprocessing');
+        throw new Error('ElevenLabs transcription is required before preprocessing');
       }
       preprocess = preprocessLyricVideoForLlm({
         song: titleFromFilename(filename),
@@ -260,6 +262,7 @@ export async function analyzeUploadedAudioForDebug(params: {
           text: line.text,
         })),
         audioAnalysis,
+        words: transcription.words,
       });
     } catch (error: any) {
       preprocessError = error?.message || 'Preprocess failed';
@@ -281,7 +284,7 @@ export async function analyzeUploadedAudioForDebug(params: {
       transcription,
       transcriptionError:
         transcriptionResult.status === 'rejected'
-          ? transcriptionResult.reason?.message || 'Whisper transcription failed'
+          ? transcriptionResult.reason?.message || 'ElevenLabs transcription failed'
           : undefined,
       audioAnalysis,
       audioAnalysisError:

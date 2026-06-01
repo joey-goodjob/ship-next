@@ -595,7 +595,7 @@ function EditorProvider({
     requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ maxScenes: 16 }),
+      body: JSON.stringify({}),
     })
       .then(async (generated) => {
         console.info("[lyric-video] auto generation completed from preview", {
@@ -888,7 +888,7 @@ function EditorProvider({
       const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maxScenes: 16 }),
+        body: JSON.stringify({}),
       });
       console.info("[lyric-video] one-click LLM storyboard generation completed", {
         projectId,
@@ -1778,7 +1778,7 @@ function LyricsPanel() {
           <FileText className="mb-3 size-8 text-[#F5A623]" />
           <p className="text-[14px] font-[800] text-[#1A1A2E]">No lyrics yet</p>
           <p className="mt-2 max-w-sm text-[13px] font-[500] leading-6 text-[#667085]">
-            Upload an audio clip first, then Groq will generate timed lyrics here.
+            Upload an audio clip first, then ElevenLabs will generate timed lyrics here.
           </p>
         </div>
       ) : null}
