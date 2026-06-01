@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
 import { lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { createKieProvider } from './llm';
@@ -37,24 +38,56 @@ export async function queueSceneImages(params: {
   }
 
   if (scenes.length === 0) throw new Error('No scenes to generate');
+  const scenesMissingPrompts = scenes.filter((scene: any) => !String(scene.prompt || '').trim());
+  if (scenesMissingPrompts.length > 0) {
+    throw new Error('Generate storyboard prompts before creating scene images');
+  }
 
   const configs = await getAllConfigs();
-  const model = resolveKieImageModel(configs, params.model);
+  const defaultModel = resolveKieImageModel(configs, params.model);
+  const characterImageModel = configs.kie_character_image_model || 'nano-banana-2';
   const provider = await createKieProvider();
   const queued = [];
+  logLyricStage('scene-images', 'queue-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    model: defaultModel,
+    sceneCount: scenes.length,
+    sceneIds: scenes.map((scene: any) => scene.id),
+    clearExistingImages: params.clearExistingImages,
+  });
   for (const scene of scenes) {
+    const sceneCastIds = Array.isArray(scene.castIds) ? scene.castIds : [];
+    const boundCast =
+      sceneCastIds.length > 0
+        ? details.cast.find((member: any) => sceneCastIds.includes(member.id) && member.referenceImageUrl)
+        : details.cast.find((member: any) => member.status === 'active' && member.referenceImageUrl);
+    const referenceImageUrl = boundCast?.referenceImageUrl || '';
+    const model = referenceImageUrl ? characterImageModel : defaultModel;
+    const imageOptions: Record<string, unknown> = {
+      aspect_ratio: details.project.aspectRatio,
+      resolution: details.project.resolution,
+    };
+    if (referenceImageUrl) {
+      imageOptions.image_input = [referenceImageUrl];
+      imageOptions.output_format = 'jpg';
+    }
+    const prompt = referenceImageUrl && boundCast?.promptFragment
+      ? `${scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
+      : scene.prompt;
+
     const task = await createTask({
       userId: params.userId,
       mediaType: 'image',
       provider: 'kie',
       model,
-      prompt: scene.prompt,
+      prompt,
       costCredits: 5,
       options: {
         projectId: params.projectId,
         sceneId: scene.id,
-        aspect_ratio: details.project.aspectRatio,
-        resolution: details.project.resolution,
+        ...imageOptions,
+        castId: boundCast?.id,
       },
     });
 
@@ -63,11 +96,8 @@ export async function queueSceneImages(params: {
         params: {
           mediaType: AIMediaType.IMAGE,
           model,
-          prompt: scene.prompt,
-          options: {
-            aspect_ratio: details.project.aspectRatio,
-            resolution: details.project.resolution,
-          },
+          prompt,
+          options: imageOptions,
         },
       });
       await updateTask({
@@ -89,14 +119,32 @@ export async function queueSceneImages(params: {
           completedAt: null,
           failureCode: null,
           imageModel: model,
-          imagePromptSnapshot: scene.prompt,
-          generationParams: safeJson({ model }),
+          imagePromptSnapshot: prompt,
+          generationParams: safeJson({ model, castId: boundCast?.id, referenceImageUrl }),
           error: null,
         })
         .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
         .returning();
       queued.push(updated);
+      logLyricStage('scene-images', 'scene-queued', {
+        projectId: params.projectId,
+        userId: params.userId,
+        sceneId: updated.id,
+        taskId: task.id,
+        providerTaskId: result.taskId,
+        status: updated.status,
+        hasImageUrl: Boolean(updated.imageUrl),
+        promptLength: prompt.length,
+        castId: boundCast?.id,
+        hasReferenceImage: Boolean(referenceImageUrl),
+      });
     } catch (error: any) {
+      logLyricStageError('scene-images', 'scene-queue-fail', error, {
+        projectId: params.projectId,
+        userId: params.userId,
+        sceneId: scene.id,
+        taskId: task.id,
+      });
       await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
       const [updated] = await db()
         .update(lyricVideoScene)
@@ -127,6 +175,20 @@ export async function queueSceneImages(params: {
     })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
+  logLyricStage('scene-images', 'queue-complete', {
+    projectId: params.projectId,
+    userId: params.userId,
+    queuedCount: queued.length,
+    scenes: queued.map((scene: any) => ({
+      id: scene.id,
+      status: scene.status,
+      providerTaskId: scene.providerTaskId,
+      hasImageUrl: Boolean(scene.imageUrl),
+    })),
+    pipelineStage: 'images_processing',
+    generationStatus: 'waiting_provider',
+  });
+
   return queued;
 }
 
@@ -145,7 +207,10 @@ export async function generateVisualsFromStory(params: {
   const storyPrompt = (params.storyPrompt || details.project.storyPrompt || '').trim();
   if (!storyPrompt) throw new Error('Create a story before creating visuals');
 
-  const shouldGenerateStoryboard = params.regenerateStoryboard || details.scenes.length === 0;
+  const shouldGenerateStoryboard =
+    params.regenerateStoryboard ||
+    details.scenes.length === 0 ||
+    details.scenes.some((scene: any) => scene.status === 'lyrics_draft' || !String(scene.prompt || '').trim());
   let scenes = details.scenes;
   if (shouldGenerateStoryboard) {
     scenes = await generateStoryboard({
@@ -195,6 +260,12 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
   const provider = await createKieProvider();
   const processing = details.scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   const synced = [];
+  logLyricStage('scene-images', 'sync-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    processingCount: processing.length,
+    sceneIds: processing.map((scene: any) => scene.id),
+  });
 
   for (const scene of processing) {
     try {
@@ -221,6 +292,15 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           });
         }
         synced.push(updated);
+        logLyricStage('scene-images', 'scene-synced', {
+          projectId: params.projectId,
+          userId: params.userId,
+          sceneId: updated.id,
+          providerTaskId: scene.providerTaskId,
+          providerStatus: result.taskStatus,
+          status: updated.status,
+          hasImageUrl: Boolean(updated.imageUrl),
+        });
       } else if (result.taskStatus === ProviderTaskStatus.FAILED) {
         const message = result.taskInfo?.errorMessage || 'Image generation failed';
         const [updated] = await db()
@@ -232,8 +312,23 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           await updateTask({ taskId: scene.imageTaskId, status: AITaskStatus.FAILED, taskResult: result.taskResult });
         }
         synced.push(updated);
+        logLyricStage('scene-images', 'scene-synced', {
+          projectId: params.projectId,
+          userId: params.userId,
+          sceneId: updated.id,
+          providerTaskId: scene.providerTaskId,
+          providerStatus: result.taskStatus,
+          status: updated.status,
+          hasImageUrl: Boolean(updated.imageUrl),
+        });
       }
     } catch (error: any) {
+      logLyricStageError('scene-images', 'scene-sync-fail', error, {
+        projectId: params.projectId,
+        userId: params.userId,
+        sceneId: scene.id,
+        providerTaskId: scene.providerTaskId,
+      });
       const [updated] = await db()
         .update(lyricVideoScene)
         .set({ status: 'failed', failureCode: 'sync_failed', error: error?.message || 'Image sync failed' })
@@ -270,6 +365,20 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   }
+
+  logLyricStage('scene-images', 'sync-complete', {
+    projectId: params.projectId,
+    userId: params.userId,
+    syncedCount: synced.length,
+    allDone: Boolean(allDone),
+    hasFailures: Boolean(hasFailures),
+    scenes: synced.map((scene: any) => ({
+      id: scene.id,
+      status: scene.status,
+      providerTaskId: scene.providerTaskId,
+      hasImageUrl: Boolean(scene.imageUrl),
+    })),
+  });
 
   return synced;
 }

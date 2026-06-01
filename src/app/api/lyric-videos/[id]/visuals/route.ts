@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { getAuth } from '@/core/auth';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
 
@@ -16,9 +17,18 @@ export async function POST(
   const userId = await getUserId();
   if (!userId) return respErr('Unauthorized');
 
+  const startedAt = Date.now();
+  const { id } = await params;
   try {
-    const { id } = await params;
     const body = await req.json().catch(() => ({}));
+    logLyricStage('visuals', 'route-start', {
+      userId,
+      projectId: id,
+      hasStoryPrompt: typeof body.storyPrompt === 'string' && Boolean(body.storyPrompt.trim()),
+      model: body.model,
+      regenerateStoryboard: Boolean(body.regenerateStoryboard),
+      regenerateImages: Boolean(body.regenerateImages),
+    });
     const data = await service.generateVisualsFromStory({
       userId,
       projectId: id,
@@ -27,8 +37,22 @@ export async function POST(
       regenerateStoryboard: Boolean(body.regenerateStoryboard),
       regenerateImages: Boolean(body.regenerateImages),
     });
+    logLyricStage('visuals', 'route-success', {
+      durationMs: Date.now() - startedAt,
+      projectId: id,
+      generatedStoryboard: data.generatedStoryboard,
+      sceneCount: data.scenes?.length || 0,
+      queuedImagesCount: data.queuedImages?.length || 0,
+      storyPromptLength: data.storyPrompt?.length || 0,
+      pipelineStage: data.project?.pipelineStage,
+      scenesStatus: data.project?.scenesStatus,
+    });
     return respData(data);
   } catch (error: any) {
+    logLyricStageError('visuals', 'route-fail', error, {
+      durationMs: Date.now() - startedAt,
+      projectId: id,
+    });
     return respErr(error?.message || 'Generate visuals failed');
   }
 }

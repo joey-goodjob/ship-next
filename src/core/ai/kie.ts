@@ -14,6 +14,39 @@ import {
 } from './types';
 
 const defaultUuid: UuidFunction = () => crypto.randomUUID();
+export const KIE_Z_IMAGE_MODEL = 'z-image';
+
+const KIE_Z_IMAGE_MODEL_ALIASES = new Set([
+  KIE_Z_IMAGE_MODEL,
+  'zimage',
+  'z-image-turbo',
+  'zimage-turbo',
+  'zimageturbo',
+]);
+
+export function normalizeKieImageModel(model: string): string {
+  const normalized = model.trim().toLowerCase();
+  return KIE_Z_IMAGE_MODEL_ALIASES.has(normalized) ? KIE_Z_IMAGE_MODEL : model;
+}
+
+function isKieZImageModel(model: string): boolean {
+  return normalizeKieImageModel(model) === KIE_Z_IMAGE_MODEL;
+}
+
+const KIE_IMAGE_OPTION_INPUT_KEYS = [
+  'aspect_ratio',
+  'resolution',
+  'output_format',
+  'image_input',
+  'image_urls',
+  'reference_image_urls',
+  'mask_url',
+  'num_images',
+  'image_size',
+  'seed',
+  'guidance_scale',
+  'negative_prompt',
+];
 
 /**
  * Kie configs
@@ -127,8 +160,10 @@ export class KieProvider implements AIProvider {
       throw new Error('prompt is required');
     }
 
+    const model = normalizeKieImageModel(params.model);
+
     let payload: any = {
-      model: params.model,
+      model,
       callBackUrl: params.callbackUrl,
       input: {
         prompt: params.prompt,
@@ -137,18 +172,27 @@ export class KieProvider implements AIProvider {
 
     if (params.options) {
       const options = params.options;
-      if (options.image_input && Array.isArray(options.image_input)) {
-        payload.input.image_input = options.image_input;
+      KIE_IMAGE_OPTION_INPUT_KEYS.forEach((key) => {
+        if (options[key] !== undefined && options[key] !== null && options[key] !== '') {
+          payload.input[key] = options[key];
+        }
+      });
+      if (isKieZImageModel(model)) {
+        const nsfwChecker =
+          typeof options.nsfw_checker === 'boolean'
+            ? options.nsfw_checker
+            : typeof options.nsfwChecker === 'boolean'
+              ? options.nsfwChecker
+              : false;
+        payload.input.nsfw_checker = nsfwChecker;
       }
-      if (options.aspect_ratio) {
-        payload.input.aspect_ratio = options.aspect_ratio;
-      }
-      if (options.resolution) {
-        payload.input.resolution = options.resolution;
-      }
-      if (options.output_format) {
-        payload.input.output_format = options.output_format;
-      }
+    }
+
+    if (isKieZImageModel(model) && !payload.input.aspect_ratio) {
+      payload.input.aspect_ratio = '1:1';
+    }
+    if (isKieZImageModel(model) && typeof payload.input.nsfw_checker !== 'boolean') {
+      payload.input.nsfw_checker = false;
     }
 
     const resp = await fetch(apiUrl, {

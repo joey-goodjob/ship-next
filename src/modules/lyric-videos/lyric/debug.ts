@@ -4,11 +4,12 @@ import { GroqProvider, AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IM
 import { getUuid } from '@/lib/hash';
 import { getAllConfigs } from '@/modules/config/service';
 import { isStorageConfigured } from '@/modules/storage/service';
-import { cleanAsrWordsForLyrics, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
+import { asrTimingDebugSummary, cleanAsrWordsForLyrics, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
 import { runLibrosaAnalysisForLocalFile, saveAIProviderFiles } from './audio';
 import { parseJsonField } from './json';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm } from './storyboard';
 import {
+  DEFAULT_TRANSCRIBE_MODEL,
   type AudioAnalysisResult,
   type DebugImageSceneInput,
   type FixedStoryboardSceneDraft,
@@ -212,7 +213,7 @@ export async function analyzeUploadedAudioForDebug(params: {
 	        ? new GroqProvider({
 	            apiKey: configs.groq_api_key,
 	            baseUrl: configs.groq_base_url,
-	            transcribeModel: params.transcribeModel || configs.groq_transcribe_model,
+	            transcribeModel: DEFAULT_TRANSCRIBE_MODEL,
 	          }).transcribeFile({
             body,
             filename,
@@ -264,6 +265,18 @@ export async function analyzeUploadedAudioForDebug(params: {
       preprocessError = error?.message || 'Preprocess failed';
     }
 
+    const debugSummary = transcription
+      ? asrTimingDebugSummary({
+          raw: transcription.raw,
+          cleanedWords: transcription.words,
+          finalLines: transcription.rawSegments,
+          fixedScenes,
+        })
+      : undefined;
+    if (debugSummary) {
+      console.info('[debug lyric-videos analyze] asr timing summary', debugSummary);
+    }
+
     return {
       transcription,
       transcriptionError:
@@ -275,6 +288,7 @@ export async function analyzeUploadedAudioForDebug(params: {
         analysisResult.status === 'rejected' ? analysisResult.reason?.message || 'Audio analysis failed' : undefined,
       preprocess,
       fixedScenes,
+      debugSummary,
       preprocessError,
     };
   } finally {

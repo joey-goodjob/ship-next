@@ -18,13 +18,14 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const body = await req.json();
-    const lines = Array.isArray(body.lines) ? body.lines : [];
-    const words = Array.isArray(body.words) ? body.words : undefined;
-    const data = await service.replaceLyrics({ userId, projectId: id, lines, words });
-    await service.replaceLyricsSceneSkeleton({ userId, projectId: id });
+    const body = await req.json().catch(() => ({}));
+    const data = await service.generateCastCandidates({
+      userId,
+      projectId: id,
+      model: body.model,
+    });
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Save lyrics failed');
+    return respErr(error?.message || 'Generate character candidates failed');
   }
 }

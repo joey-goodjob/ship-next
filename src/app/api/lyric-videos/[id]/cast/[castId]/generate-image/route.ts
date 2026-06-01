@@ -10,20 +10,23 @@ async function getUserId() {
 }
 
 export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  req: Request,
+  { params }: { params: Promise<{ id: string; castId: string }> }
 ) {
   const userId = await getUserId();
   if (!userId) return respErr('Unauthorized');
 
   try {
-    const { id } = await params;
-    const data = await service.normalizeLyrics({
+    const { id, castId } = await params;
+    const body = await req.json().catch(() => ({}));
+    const data = await service.queueCastImage({
       userId,
       projectId: id,
+      castId,
+      model: body.model,
     });
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Organize lyrics failed');
+    return respErr(error?.message || 'Generate character image failed');
   }
 }

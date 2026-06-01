@@ -9,8 +9,8 @@ async function getUserId() {
   return session?.user?.id;
 }
 
-export async function POST(
-  req: Request,
+export async function GET(
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
@@ -18,13 +18,9 @@ export async function POST(
 
   try {
     const { id } = await params;
-    const body = await req.json();
-    const lines = Array.isArray(body.lines) ? body.lines : [];
-    const words = Array.isArray(body.words) ? body.words : undefined;
-    const data = await service.replaceLyrics({ userId, projectId: id, lines, words });
-    await service.replaceLyricsSceneSkeleton({ userId, projectId: id });
+    const data = await service.syncCastImages({ userId, projectId: id });
     return respData(data);
   } catch (error: any) {
-    return respErr(error?.message || 'Save lyrics failed');
+    return respErr(error?.message || 'Sync character images failed');
   }
 }

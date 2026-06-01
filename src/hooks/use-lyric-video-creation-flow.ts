@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
+import { logLyricStage, logLyricStageError, lyricLogPreview } from "@/lib/lyric-video-log";
 
 type ApiResponse<T> = {
   code: number;
@@ -14,10 +15,34 @@ type UploadAudioResponse = {
   key: string;
   filename: string;
   size: number;
+  deduped?: boolean;
 };
 
 type LyricVideoProject = {
   id: string;
+  title?: string;
+  pipelineStage?: string;
+  lyricsStatus?: string;
+  scenesStatus?: string;
+  storyPrompt?: string;
+};
+
+type AsrResponse = {
+  taskId?: string;
+  provider?: string;
+  model?: string;
+  rawText?: string;
+  rawSegments?: unknown[];
+  lines?: unknown[];
+  words?: unknown[];
+  scenes?: unknown[];
+  project?: LyricVideoProject;
+};
+
+type StoryPromptResponse = {
+  taskId?: string;
+  storyPrompt?: string;
+  project?: LyricVideoProject;
 };
 
 type GenerateOptions = {
@@ -42,7 +67,6 @@ export type LyricVideoCreationStage =
   | "waiting-auth"
   | "creating"
   | "recognizing"
-  | "organizing"
   | "story"
   | "redirecting"
   | "failed";
@@ -69,11 +93,31 @@ function titleFromFilename(filename: string) {
 async function uploadAudioFile(file: File) {
   const formData = new FormData();
   formData.append("file", file);
-
-  return requestJson<UploadAudioResponse>("/api/storage/upload-audio", {
-    method: "POST",
-    body: formData,
+  const startedAt = Date.now();
+  logLyricStage("upload-audio", "start", {
+    filename: file.name,
+    size: file.size,
+    type: file.type,
   });
+
+  try {
+    const uploaded = await requestJson<UploadAudioResponse>("/api/storage/upload-audio", {
+      method: "POST",
+      body: formData,
+    });
+    logLyricStage("upload-audio", "success", {
+      durationMs: Date.now() - startedAt,
+      url: uploaded.url,
+      key: uploaded.key,
+      filename: uploaded.filename,
+      size: uploaded.size,
+      deduped: uploaded.deduped,
+    });
+    return uploaded;
+  } catch (error) {
+    logLyricStageError("upload-audio", "fail", error, { durationMs: Date.now() - startedAt });
+    throw error;
+  }
 }
 
 function readPendingPayload(): PendingLyricVideoPayload | null {
@@ -115,6 +159,14 @@ export function useLyricVideoCreationFlow() {
       const trimEndMs = payload.options.useEntireAudio ? originalDurationMs : secondsToMs(payload.endTime);
       const filename = payload.uploaded.filename || payload.filename;
 
+      const createStartedAt = Date.now();
+      logLyricStage("create-project", "start", {
+        title: titleFromFilename(filename),
+        filename,
+        audioDurationMs: originalDurationMs,
+        trimStartMs,
+        trimEndMs,
+      });
       const project = await requestJson<LyricVideoProject>("/api/lyric-videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,26 +184,54 @@ export function useLyricVideoCreationFlow() {
           trimEndMs,
         }),
       });
+      logLyricStage("create-project", "success", {
+        durationMs: Date.now() - createStartedAt,
+        projectId: project.id,
+        title: project.title,
+        pipelineStage: project.pipelineStage,
+        lyricsStatus: project.lyricsStatus,
+        scenesStatus: project.scenesStatus,
+      });
 
       setStage("recognizing");
-      await requestJson(`/api/lyric-videos/${project.id}/asr`, {
+      const asrStartedAt = Date.now();
+      logLyricStage("asr", "start", { projectId: project.id });
+      const asr = await requestJson<AsrResponse>(`/api/lyric-videos/${project.id}/asr`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-
-      setStage("organizing");
-      await requestJson(`/api/lyric-videos/${project.id}/lyrics/normalize`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+      logLyricStage("asr", "success", {
+        durationMs: Date.now() - asrStartedAt,
+        projectId: project.id,
+        taskId: asr.taskId,
+        provider: asr.provider,
+        model: asr.model,
+        rawTextLength: asr.rawText?.length || 0,
+        rawSegmentsCount: asr.rawSegments?.length || 0,
+        lineCount: asr.lines?.length || 0,
+        wordCount: asr.words?.length || 0,
+        sceneCount: asr.scenes?.length || 0,
+        pipelineStage: asr.project?.pipelineStage,
+        lyricsStatus: asr.project?.lyricsStatus,
+        scenesStatus: asr.project?.scenesStatus,
       });
 
       setStage("story");
-      await requestJson(`/api/lyric-videos/${project.id}/story`, {
+      const storyStartedAt = Date.now();
+      logLyricStage("story-prompt", "start", { projectId: project.id });
+      const story = await requestJson<StoryPromptResponse>(`/api/lyric-videos/${project.id}/story`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
+      });
+      logLyricStage("story-prompt", "success", {
+        durationMs: Date.now() - storyStartedAt,
+        projectId: project.id,
+        taskId: story.taskId,
+        storyPromptLength: story.storyPrompt?.length || 0,
+        storyPromptPreview: lyricLogPreview(story.storyPrompt),
+        storyPromptPersisted: Boolean(story.project?.storyPrompt),
       });
 
       clearPendingPayload();

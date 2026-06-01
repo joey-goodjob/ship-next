@@ -85,10 +85,10 @@ export const testSpecs: Record<string, TestSpec> = {
   kie: {
     group: 'kie',
     fields: [
-      { name: 'model', label: 'Model', type: 'text', defaultValue: 'gpt-image-2-text-to-image', required: true },
+      { name: 'model', label: 'Model', type: 'text', defaultValue: 'nano-banana-2', required: true },
       { name: 'prompt', label: 'Prompt', type: 'textarea', defaultValue: 'cinematic lyric video still, musician under stage lights, no text', required: true },
       { name: 'aspect_ratio', label: 'Aspect ratio', type: 'text', defaultValue: '16:9' },
-      { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '1K' },
+      { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '2K' },
     ],
   },
   groq: {

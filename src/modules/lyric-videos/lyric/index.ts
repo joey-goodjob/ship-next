@@ -7,5 +7,6 @@ export * from './storyboard';
 export * from './llm';
 export * from './generation-runner';
 export * from './media-generation';
+export * from './cast';
 export * from './render';
 export * from './debug';

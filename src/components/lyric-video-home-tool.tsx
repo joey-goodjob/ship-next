@@ -30,7 +30,6 @@ function stageLabel(stage: string) {
   if (stage === "waiting-auth") return "Keeping your upload ready...";
   if (stage === "creating") return "Creating your lyric video project...";
   if (stage === "recognizing") return "Recognizing audio...";
-  if (stage === "organizing") return "Organizing lyrics...";
   if (stage === "story") return "Creating story...";
   if (stage === "redirecting") return "Opening the preview editor...";
   return "Preparing your preview...";

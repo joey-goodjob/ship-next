@@ -172,7 +172,7 @@ export const GENERATION_STAGES = [
 ] as const;
 
 export const ACTIVE_RUN_STATUSES = ['queued', 'running', 'waiting_provider'] as const;
-export const DEFAULT_TRANSCRIBE_MODEL = 'whisper-large-v3-turbo';
+export const DEFAULT_TRANSCRIBE_MODEL = 'whisper-large-v3';
 export const DEFAULT_SONG_ANALYSIS_MODEL = 'claude-opus-4-5';
 export const DEFAULT_STORYBOARD_MODEL = 'claude-opus-4-5';
 export const DEFAULT_MAX_STORYBOARD_SCENES = 16;
@@ -187,6 +187,7 @@ export type GenerationStage = (typeof GENERATION_STAGES)[number];
 export type StoryboardShotType = 'character_shot' | 'insert_shot' | 'landscape_shot';
 
 export type FixedStoryboardSceneDraft = {
+  dbId?: string;
   sceneId: string;
   kind: 'lyric' | 'instrumental';
   shotType: StoryboardShotType;
@@ -219,6 +220,7 @@ export type LyricWordInput = {
   startMs?: number;
   endMs?: number;
   confidence?: number;
+  timingRepaired?: boolean;
 };
 
 export type SceneInput = {
@@ -234,4 +236,5 @@ export type SceneInput = {
   timelineConfig?: unknown;
   motionPrompt?: string;
   imageUrl?: string;
+  status?: string;
 };

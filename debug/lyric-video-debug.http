@@ -1,13 +1,13 @@
 @baseUrl = http://localhost:3000
 
 # 改成你本机要测试的 MP3 文件路径。
-@audioFile = /Users/joey/Music/Music/Media.localized/Music/Unknown Artist/Unknown Album/Open Sky Tonight （素材）.mp3
-@audioFilename = Open Sky Tonight （素材）.mp3
-@audioMimeType = audio/mpeg
+@audioFile = /Users/joey/Documents/Codex/2026-05-29/demucs-demucs-text-song-mp3-text/outputs/open_sky_demucs/htdemucs/Open Sky Tonight （素材）/vocals.wav
+@audioFilename = vocals.wav
+@audioMimeType = audio/wav
 @audioLanguage = auto
 @audioPrompt =
-@transcribeModel = whisper-large-v3-turbo
-@fixtureKey = open-sky-official-like
+@transcribeModel = whisper-large-v3
+@fixtureKey = open-sky-vocals
 
 ### 第一步：MP3 -> Whisper + Librosa analysis -> fixed lyric/instrumental scenes
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
@@ -104,8 +104,8 @@ Content-Type: application/json
 # # }
 
 ### 第二步 Prompt：固定 lyric/instrumental scenes -> image_prompt + video_prompt
-# 先跑 analyze。这里不会让 LLM 切分镜，只让它给固定 scenes 写图片和视频 prompt。
-# songAnalysis 可选；不传时使用轻量默认歌曲理解。
+# 先跑 analyze，再跑 Prompt 1。这里不会让 LLM 切分镜，只让它给固定 scenes 写图片和视频 prompt。
+# songAnalysis 会把 Prompt 1 的 location_plan / narrative_arc / key_props 传给 Prompt 2。
 # 这个接口不需要登录，不写数据库，只返回 scenes JSON；会真实调用 Claude，cache=true 可避免重复扣费。
 # @name debugGenerateStoryboardScenesWithOpus
 POST {{baseUrl}}/api/debug/lyric-videos/llm/storyboard-scenes
@@ -115,6 +115,7 @@ Content-Type: application/json
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
   "model": "claude-opus-4-5",
+  "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}},
   "audioAnalysis": {{debugAnalyzeLyricVideoAudio.response.body.$.data.audioAnalysis}}
 }

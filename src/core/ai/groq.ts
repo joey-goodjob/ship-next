@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { AIConfigs } from './types';
 
@@ -98,6 +98,59 @@ async function fetchBytes(audioUrl: string) {
   return Buffer.from(await response.arrayBuffer());
 }
 
+function shanghaiTimestampForFilename(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+    .formatToParts(date)
+    .reduce<Record<string, string>>((acc, part) => {
+      if (part.type !== 'literal') acc[part.type] = part.value;
+      return acc;
+    }, {});
+  return `${parts.month}${parts.day}-${parts.hour}${parts.minute}${parts.second}-${String(date.getMilliseconds()).padStart(3, '0')}`;
+}
+
+function sanitizeOutputPart(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'audio';
+}
+
+async function writeWhisperRawOutput(params: {
+  raw: any;
+  model: string;
+  filename: string;
+  contentType?: string;
+  language?: string;
+  prompt?: string;
+}) {
+  const outputDir = path.join(process.cwd(), 'output');
+  const outputFilename = `${shanghaiTimestampForFilename()}-groq-whisper-${sanitizeOutputPart(params.filename)}.json`;
+  const outputPath = path.join(outputDir, outputFilename);
+  const payload = {
+    capturedAt: new Date().toISOString(),
+    provider: 'groq',
+    model: params.model,
+    filename: params.filename,
+    contentType: params.contentType,
+    language: params.language,
+    prompt: params.prompt,
+    response: params.raw,
+  };
+
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+}
+
 /**
  * Groq OpenAI-compatible audio transcription provider.
  * @docs https://console.groq.com/docs/api-reference
@@ -128,7 +181,7 @@ export class GroqProvider {
     }
 
     const filename = params.filename || 'audio.mp3';
-    const model = this.configs.transcribeModel || 'whisper-large-v3-turbo';
+    const model = this.configs.transcribeModel || 'whisper-large-v3';
     const baseUrl = (this.configs.baseUrl || 'https://api.groq.com/openai/v1').replace(/\/$/, '');
     const bytes = new Uint8Array(params.body);
     if (bytes.byteLength > MAX_TRANSCRIBE_BYTES) {
@@ -159,6 +212,14 @@ export class GroqProvider {
     }
 
     const raw = await response.json();
+    await writeWhisperRawOutput({
+      raw,
+      model,
+      filename,
+      contentType: params.contentType || contentTypeFromFilename(filename),
+      language: params.language,
+      prompt: params.prompt,
+    });
     const text = String(raw.text || '').trim();
     const rawWords = Array.isArray(raw.words) ? raw.words : [];
     const words = rawWords

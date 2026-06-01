@@ -420,7 +420,7 @@ async function testGroq(inputs: Record<string, string>, configs: Record<string, 
   const provider = new GroqProvider({
     apiKey: configs.groq_api_key,
     baseUrl: configs.groq_base_url || 'https://api.groq.com/openai/v1',
-    transcribeModel: configs.groq_transcribe_model || 'whisper-large-v3-turbo',
+    transcribeModel: 'whisper-large-v3',
   });
   const result = await provider.transcribeFile({
     body: makeSilentWav(),
@@ -434,7 +434,7 @@ async function testGroq(inputs: Record<string, string>, configs: Record<string, 
     success: true,
     message: 'Groq accepted the transcription request',
     details: {
-      Model: configs.groq_transcribe_model || 'whisper-large-v3-turbo',
+      Model: 'whisper-large-v3',
       Text: result.text || '(empty)',
       Lines: String(result.lines.length),
       Words: String(result.words.length),

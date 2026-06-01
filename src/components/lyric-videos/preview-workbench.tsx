@@ -18,6 +18,7 @@ import {
   MoreVertical,
   Pause,
   Play,
+  Plus,
   RefreshCcw,
   Save,
   Settings,
@@ -27,9 +28,11 @@ import {
   StepBack,
   StepForward,
   Type,
+  Trash2,
   Users,
   Volume2,
   Wand2,
+  X,
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
@@ -87,6 +90,7 @@ type LyricLine = {
 
 type LyricWord = {
   id: string;
+  lineId?: string | null;
   word: string;
   startMs: number;
   endMs: number;
@@ -120,6 +124,27 @@ type LyricExport = {
   createdAt?: string;
 };
 
+type LyricCastMember = {
+  id: string;
+  projectId: string;
+  userId: string;
+  name: string;
+  role: string;
+  description: string;
+  promptFragment: string;
+  referenceImageUrl?: string | null;
+  imageTaskId?: string | null;
+  providerTaskId?: string | null;
+  imageModel?: string | null;
+  imagePromptSnapshot?: string | null;
+  generationParams?: string | null;
+  completedAt?: string | null;
+  failureCode?: string | null;
+  error?: string | null;
+  status: string;
+  sort: number;
+};
+
 type ProjectDetails = {
   project: LyricVideoProject;
   generationRun?: unknown;
@@ -127,7 +152,7 @@ type ProjectDetails = {
   words?: LyricWord[];
   lines: LyricLine[];
   scenes: LyricScene[];
-  cast?: unknown[];
+  cast?: LyricCastMember[];
   exports: LyricExport[];
 };
 
@@ -145,10 +170,14 @@ type StoryGenerationResponse = {
   taskId: string;
 };
 
-type LyricsNormalizeResponse = {
-  lines: LyricLine[];
-  project: LyricVideoProject;
-  taskId: string;
+type GenerationRunResponse = {
+  run?: unknown;
+  steps?: unknown[];
+  project?: LyricVideoProject;
+  lines?: LyricLine[];
+  words?: LyricWord[];
+  scenes?: LyricScene[];
+  songAnalysis?: unknown;
 };
 
 type EditorContextValue = {
@@ -156,7 +185,9 @@ type EditorContextValue = {
   appName: string;
   project: LyricVideoProject | null;
   lines: LyricLine[];
+  words: LyricWord[];
   scenes: LyricScene[];
+  cast: LyricCastMember[];
   exports: LyricExport[];
   latestExport?: LyricExport;
   loading: boolean;
@@ -169,16 +200,25 @@ type EditorContextValue = {
   totalDuration: number;
   currentScene?: LyricScene;
   currentLine?: LyricLine;
+  currentWord?: LyricWord;
   lyricsDirty: boolean;
+  wordsDirty: boolean;
   exporting: boolean;
   preparingAudio: boolean;
   creatingStory: boolean;
+  castBusy: boolean;
+  audioAvailable: boolean;
   setCurrentTime: (time: number) => void;
   setIsPlaying: (playing: boolean) => void;
+  togglePlayback: () => Promise<void>;
+  playFrom: (time: number) => Promise<void>;
+  playScenePreview: (startTime: number, endTime: number) => Promise<void>;
+  pausePlayback: () => void;
   setActiveTab: (tab: PanelTab) => void;
   setZoom: (zoom: number) => void;
   updateProjectField: <K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) => void;
   setLines: (lines: LyricLine[]) => void;
+  setWords: (words: LyricWord[]) => void;
   uploadAndTranscribe: (
     file: File,
     startTime: number,
@@ -186,7 +226,14 @@ type EditorContextValue = {
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) => Promise<void>;
   createStory: () => Promise<void>;
-  saveLyrics: () => Promise<void>;
+  generateStoryboardPrompts: () => Promise<void>;
+  generateCastCandidates: () => Promise<void>;
+  createCastMember: (params: { name: string; description: string; promptFragment?: string }) => Promise<LyricCastMember | null>;
+  updateCastMember: (castId: string, data: Partial<LyricCastMember> & { selectAsMain?: boolean }) => Promise<LyricCastMember | null>;
+  deleteCastMember: (castId: string) => Promise<void>;
+  regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
+  syncCastImages: () => Promise<void>;
+  saveLyrics: () => Promise<boolean>;
   queueExport: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -225,6 +272,7 @@ const FORMAT_OPTIONS = ["16:9", "9:16", "1:1"];
 const SIDE_PANEL_WIDTH_KEY = "lyric-video-workbench-side-panel-width";
 const TIMELINE_HEIGHT_KEY = "lyric-video-workbench-timeline-height";
 const DEFAULT_TIMELINE_HEIGHT = 104;
+const LYRIC_FRAME_RATE = 30;
 
 function useEditor() {
   const value = useContext(EditorContext);
@@ -242,6 +290,14 @@ function msToSeconds(ms?: number | null) {
 
 function secondsToMs(seconds: number) {
   return Math.max(0, Math.round(seconds * 1000));
+}
+
+function msToFrame(ms?: number | null) {
+  return Math.max(0, Math.round((ms || 0) / (1000 / LYRIC_FRAME_RATE)));
+}
+
+function frameToMs(frame: number) {
+  return Math.max(0, Math.round(frame * (1000 / LYRIC_FRAME_RATE)));
 }
 
 function formatClock(seconds: number, withCentiseconds = false) {
@@ -300,6 +356,94 @@ function defaultSidePanelWidth() {
   return clamp(window.innerWidth * 0.39, 520, 760);
 }
 
+function sortWords(words: LyricWord[]) {
+  return [...words].sort((a, b) => (a.startMs || 0) - (b.startMs || 0) || (a.sort || 0) - (b.sort || 0));
+}
+
+function wordId(index: number) {
+  return `draft-word-${Date.now()}-${index}`;
+}
+
+function createWordsFromLines(lines: LyricLine[]) {
+  return lines.flatMap((line, lineIndex) => {
+    const tokens = line.text.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) return [];
+
+    const startMs = Math.max(0, line.startMs || 0);
+    const endMs = Math.max(startMs + 1, line.endMs || startMs + 3500);
+    const stepMs = Math.max(1, Math.round((endMs - startMs) / tokens.length));
+
+    return tokens.map((token, tokenIndex) => ({
+      id: `line-${line.id || lineIndex}-word-${tokenIndex}`,
+      lineId: line.id,
+      word: token,
+      startMs: startMs + tokenIndex * stepMs,
+      endMs: tokenIndex === tokens.length - 1 ? endMs : Math.min(endMs, startMs + (tokenIndex + 1) * stepMs),
+      sort: tokenIndex,
+    }));
+  });
+}
+
+function wordsFromDetails(details: ProjectDetails) {
+  if (details.words?.length) return sortWords(details.words);
+
+  const lineWords = details.lines.flatMap((line) => line.words || []);
+  if (lineWords.length) return sortWords(lineWords);
+
+  return createWordsFromLines(details.lines);
+}
+
+function wordBelongsToLine(word: LyricWord, line: LyricLine) {
+  if (word.lineId && line.id) return word.lineId === line.id;
+  const wordStart = word.startMs || 0;
+  const wordEnd = word.endMs || wordStart;
+  return (wordStart >= line.startMs && wordStart < line.endMs) || (wordEnd > line.startMs && wordEnd <= line.endMs);
+}
+
+function deriveLinesFromWords(lines: LyricLine[], words: LyricWord[]) {
+  const sorted = sortWords(words);
+  return lines.map((line) => {
+    const lineWords = sorted.filter((word) => wordBelongsToLine(word, line) && word.word.trim());
+    if (lineWords.length === 0) return line;
+    return {
+      ...line,
+      text: lineWords.map((word) => word.word.trim()).join(" "),
+      startMs: Math.min(...lineWords.map((word) => word.startMs)),
+      endMs: Math.max(...lineWords.map((word) => word.endMs)),
+      words: lineWords,
+    };
+  });
+}
+
+function normalizeWordsForSave(words: LyricWord[], totalDuration: number) {
+  const maxMs = Math.max(0, secondsToMs(totalDuration));
+  return sortWords(words)
+    .map((word, index) => {
+      const text = word.word.trim();
+      const frameStart = msToFrame(word.startMs);
+      const maxFrame = maxMs > 0 ? msToFrame(maxMs) : Number.MAX_SAFE_INTEGER;
+      const startFrame = clamp(frameStart, 0, maxFrame);
+      const endFrame = clamp(Math.max(startFrame + 1, msToFrame(word.endMs)), startFrame + 1, Math.max(startFrame + 1, maxFrame));
+      return {
+        id: word.id,
+        lineId: word.lineId,
+        word: text,
+        startMs: frameToMs(startFrame),
+        endMs: frameToMs(endFrame),
+        sort: index,
+      };
+    })
+    .filter((word) => word.word);
+}
+
+function wordOverlapsRange(word: LyricWord, startMs: number, endMs: number) {
+  return (word.endMs || word.startMs) > startMs && word.startMs < endMs;
+}
+
+function lineOverlapsRange(line: LyricLine, startMs: number, endMs: number) {
+  return line.endMs > startMs && line.startMs < endMs;
+}
+
 function EditorProvider({
   appName,
   children,
@@ -311,7 +455,9 @@ function EditorProvider({
 }) {
   const [project, setProject] = useState<LyricVideoProject | null>(null);
   const [lines, setLinesState] = useState<LyricLine[]>([]);
+  const [words, setWordsState] = useState<LyricWord[]>([]);
   const [scenes, setScenes] = useState<LyricScene[]>([]);
+  const [cast, setCast] = useState<LyricCastMember[]>([]);
   const [exports, setExports] = useState<LyricExport[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -321,11 +467,13 @@ function EditorProvider({
   const [activeTab, setActiveTab] = useState<PanelTab>("customize");
   const [zoom, setZoomState] = useState(1);
   const [lyricsDirty, setLyricsDirty] = useState(false);
+  const [wordsDirty, setWordsDirty] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
-  const frameRef = useRef<number | null>(null);
-  const lastFrameAtRef = useRef<number | null>(null);
+  const [castBusy, setCastBusy] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const scenePreviewEndRef = useRef<number | null>(null);
   const saveTimerRef = useRef<number | null>(null);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
@@ -335,17 +483,18 @@ function EditorProvider({
     const candidates = [
       project?.audioDurationMs || 0,
       ...lines.map((line) => line.endMs || 0),
+      ...words.map((word) => word.endMs || 0),
       ...scenes.map((scene) => scene.endMs || 0),
       20110,
     ];
     return Math.max(...candidates) / 1000;
-  }, [lines, project?.audioDurationMs, scenes]);
+  }, [lines, project?.audioDurationMs, scenes, words]);
 
   const currentScene = useMemo(() => {
-    return (
-      scenes.find((scene) => currentTime >= msToSeconds(scene.startMs) && currentTime < msToSeconds(scene.endMs)) ||
-      scenes[0]
-    );
+    const currentMs = secondsToMs(currentTime);
+    const activeScene = scenes.find((scene) => currentMs >= scene.startMs && currentMs < scene.endMs);
+    if (activeScene) return activeScene;
+    return [...scenes].reverse().find((scene) => currentMs >= scene.startMs) || scenes[0];
   }, [currentTime, scenes]);
 
   const currentLine = useMemo(() => {
@@ -355,7 +504,16 @@ function EditorProvider({
     );
   }, [currentTime, lines]);
 
+  const currentWord = useMemo(() => {
+    return (
+      words.find((word) => currentTime >= msToSeconds(word.startMs) && currentTime < msToSeconds(word.endMs)) ||
+      undefined
+    );
+  }, [currentTime, words]);
+
   const latestExport = exports[0];
+  const audioSrc = project?.processedAudioUrl || project?.audioUrl || project?.originalAudioUrl || "";
+  const audioAvailable = Boolean(audioSrc);
 
   const refresh = useCallback(async () => {
     setLoadError("");
@@ -364,8 +522,12 @@ function EditorProvider({
       if (!details?.project) throw new Error("Project not found");
       setProject(details.project);
       setLinesState(details.lines || []);
+      setWordsState(wordsFromDetails(details));
       setScenes(details.scenes || []);
+      setCast(details.cast || []);
       setExports(details.exports || []);
+      setLyricsDirty(false);
+      setWordsDirty(false);
       setSaveStatus("saved");
     } catch (err: any) {
       setLoadError(err?.message || "Project not found");
@@ -387,6 +549,15 @@ function EditorProvider({
   }, [project, refresh]);
 
   useEffect(() => {
+    const hasProcessingCast = cast.some((member) => member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
+    if (!hasProcessingCast) return;
+    const timer = window.setInterval(() => {
+      syncCastImages();
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [cast]);
+
+  useEffect(() => {
     const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
     const shouldAutoTranscribe =
       project &&
@@ -405,13 +576,14 @@ function EditorProvider({
       previous
         ? {
             ...previous,
-            lyricsStatus: "asr_processing",
-            pipelineStage: "asr_processing",
+            generationStatus: "running",
+            generationProgress: 5,
+            pipelineStage: "generation_queued",
             pipelineError: null,
           }
         : previous,
     );
-    console.info("[lyric-video] auto ASR started from preview", {
+    console.info("[lyric-video] auto generation started from preview", {
       projectId: project.id,
       audioUrl: project.audioUrl,
       originalAudioUrl: project.originalAudioUrl,
@@ -420,60 +592,35 @@ function EditorProvider({
       trimEndMs: project.trimEndMs,
     });
 
-    requestJson(`/api/lyric-videos/${project.id}/asr`, {
+    requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ maxScenes: 16 }),
     })
-      .then(async () => {
-        setProject((previous) =>
-          previous
-            ? {
-                ...previous,
-                lyricsStatus: "normalizing",
-                pipelineStage: "lyrics_normalizing",
-                pipelineError: null,
-              }
-            : previous,
-        );
-        console.info("[lyric-video] auto ASR completed from preview", {
+      .then(async (generated) => {
+        console.info("[lyric-video] auto generation completed from preview", {
           projectId: project.id,
+          lineCount: generated.lines?.length || 0,
+          sceneCount: generated.scenes?.length || 0,
+          firstScene: generated.scenes?.[0],
         });
-        const normalized = await requestJson<LyricsNormalizeResponse>(`/api/lyric-videos/${project.id}/lyrics/normalize`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        console.info("[lyric-video] lyrics normalization completed from preview", {
-          projectId: project.id,
-          lineCount: normalized.lines?.length || 0,
-          firstLine: normalized.lines?.[0],
-        });
-        setLinesState(normalized.lines || []);
+        setProject((previous) => generated.project || previous);
+        setLinesState(generated.lines || []);
+        setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
+        setScenes(generated.scenes || []);
         setLyricsDirty(false);
+        setWordsDirty(false);
         setCurrentTimeState(0);
-        let storyCreated = false;
-        try {
-          const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({}),
-          });
-          setProject(story.project || { ...project, storyPrompt: story.storyPrompt });
-          autoStoryProjectRef.current = project.id;
-          storyCreated = true;
-        } catch (storyError: any) {
-          toast.error(storyError?.message || "Generate story failed");
-        }
+        setActiveTab("scenes");
         await refresh();
         setSaveStatus("saved");
-        toast.success(storyCreated ? "Lyrics and story are ready" : "Lyrics organized");
+        toast.success("Lyrics and storyboard prompts are ready");
       })
       .catch(async (err: any) => {
-        console.error("[lyric-video] auto lyrics flow failed from preview", err);
+        console.error("[lyric-video] auto generation flow failed from preview", err);
         setSaveStatus("failed");
         await refresh();
-        toast.error(err?.message || "Generate lyrics failed");
+        toast.error(err?.message || "Generate storyboard failed");
       })
       .finally(() => {
         setPreparingAudio(false);
@@ -484,6 +631,7 @@ function EditorProvider({
     const shouldCreateStory =
       project &&
       lines.length > 0 &&
+      scenes.length === 0 &&
       !creatingStory &&
       !(project.storyPrompt || "").trim() &&
       autoStoryProjectRef.current !== project.id;
@@ -507,47 +655,138 @@ function EditorProvider({
       .finally(() => {
         setCreatingStory(false);
       });
-  }, [creatingStory, lines.length, project]);
+  }, [creatingStory, lines.length, project, scenes.length]);
 
   useEffect(() => {
-    if (!isPlaying) {
-      lastFrameAtRef.current = null;
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    if (!audioSrc) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      scenePreviewEndRef.current = null;
+      setIsPlaying(false);
       return;
     }
 
-    function tick(timestamp: number) {
-      if (lastFrameAtRef.current === null) lastFrameAtRef.current = timestamp;
-      const deltaSeconds = (timestamp - lastFrameAtRef.current) / 1000;
-      lastFrameAtRef.current = timestamp;
+    const audio = new Audio(audioSrc);
+    audio.preload = "metadata";
+    audio.currentTime = clamp(currentTime, 0, totalDuration);
+    audioRef.current = audio;
 
-      setCurrentTimeState((previous) => {
-        const next = previous + deltaSeconds;
-        if (next >= totalDuration) {
-          setIsPlaying(false);
-          return totalDuration;
-        }
-        return Number(next.toFixed(3));
-      });
-
-      frameRef.current = requestAnimationFrame(tick);
+    function syncCurrentTime() {
+      const nextTime = Number(clamp(audio.currentTime || 0, 0, totalDuration).toFixed(3));
+      const sceneEnd = scenePreviewEndRef.current;
+      if (sceneEnd !== null && nextTime >= sceneEnd) {
+        audio.currentTime = sceneEnd;
+        setCurrentTimeState(Number(sceneEnd.toFixed(3)));
+        scenePreviewEndRef.current = null;
+        audio.pause();
+        return;
+      }
+      setCurrentTimeState(nextTime);
     }
 
-    frameRef.current = requestAnimationFrame(tick);
+    function handlePlay() {
+      setIsPlaying(true);
+    }
+
+    function handlePause() {
+      setIsPlaying(false);
+    }
+
+    function handleEnded() {
+      scenePreviewEndRef.current = null;
+      setIsPlaying(false);
+      setCurrentTimeState(Number(clamp(audio.duration || totalDuration, 0, totalDuration).toFixed(3)));
+    }
+
+    function handleError() {
+      scenePreviewEndRef.current = null;
+      setIsPlaying(false);
+      toast.error("Audio failed to load");
+    }
+
+    audio.addEventListener("timeupdate", syncCurrentTime);
+    audio.addEventListener("play", handlePlay);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("loadedmetadata", syncCurrentTime);
+    audio.addEventListener("error", handleError);
+
     return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      audio.pause();
+      audio.removeEventListener("timeupdate", syncCurrentTime);
+      audio.removeEventListener("play", handlePlay);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("loadedmetadata", syncCurrentTime);
+      audio.removeEventListener("error", handleError);
+      if (audioRef.current === audio) audioRef.current = null;
     };
-  }, [isPlaying, totalDuration]);
+  }, [audioSrc, totalDuration]);
 
   useEffect(() => {
     return () => {
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      audioRef.current?.pause();
     };
   }, []);
 
   function setCurrentTime(time: number) {
-    setCurrentTimeState(Number(clamp(time, 0, totalDuration).toFixed(3)));
+    scenePreviewEndRef.current = null;
+    const nextTime = Number(clamp(time, 0, totalDuration).toFixed(3));
+    setCurrentTimeState(nextTime);
+    if (audioRef.current && Math.abs(audioRef.current.currentTime - nextTime) > 0.05) {
+      audioRef.current.currentTime = nextTime;
+    }
+  }
+
+  function pausePlayback() {
+    scenePreviewEndRef.current = null;
+    audioRef.current?.pause();
+    setIsPlaying(false);
+  }
+
+  async function playAudio(from?: number, sceneEnd?: number | null) {
+    const audio = audioRef.current;
+    if (!audioAvailable || !audio) {
+      setIsPlaying(false);
+      toast.error("No audio available for this project");
+      return;
+    }
+
+    scenePreviewEndRef.current = sceneEnd ?? null;
+    if (typeof from === "number") {
+      const startTime = Number(clamp(from, 0, totalDuration).toFixed(3));
+      audio.currentTime = startTime;
+      setCurrentTimeState(startTime);
+    }
+
+    try {
+      await audio.play();
+    } catch {
+      scenePreviewEndRef.current = null;
+      setIsPlaying(false);
+      toast.error("Click play again to start audio");
+    }
+  }
+
+  async function playFrom(time: number) {
+    await playAudio(time, null);
+  }
+
+  async function togglePlayback() {
+    if (isPlaying) {
+      pausePlayback();
+      return;
+    }
+    const startTime = currentTime >= totalDuration ? 0 : currentTime;
+    await playAudio(startTime, null);
+  }
+
+  async function playScenePreview(startTime: number, endTime: number) {
+    const safeStart = clamp(startTime, 0, totalDuration);
+    const safeEnd = clamp(endTime, safeStart, totalDuration);
+    const outsideScene = currentTime < safeStart || currentTime >= safeEnd;
+    await playAudio(outsideScene ? safeStart : currentTime, safeEnd);
   }
 
   function setZoom(zoomValue: number) {
@@ -579,6 +818,14 @@ function EditorProvider({
 
   function setLines(nextLines: LyricLine[]) {
     setLinesState(nextLines);
+    setLyricsDirty(true);
+  }
+
+  function setWords(nextWords: LyricWord[]) {
+    const sortedWords = sortWords(nextWords);
+    setWordsState(sortedWords);
+    setLinesState((previous) => deriveLinesFromWords(previous, sortedWords));
+    setWordsDirty(true);
     setLyricsDirty(true);
   }
 
@@ -637,44 +884,30 @@ function EditorProvider({
         }),
       });
 
-      console.info("[lyric-video] requesting ASR", { projectId });
-      await requestJson(`/api/lyric-videos/${projectId}/asr`, {
+      console.info("[lyric-video] requesting one-click LLM storyboard generation", { projectId });
+      const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ maxScenes: 16 }),
       });
-      console.info("[lyric-video] requesting lyrics normalization", { projectId });
-      const normalized = await requestJson<LyricsNormalizeResponse>(`/api/lyric-videos/${projectId}/lyrics/normalize`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      console.info("[lyric-video] lyrics normalization completed", {
+      console.info("[lyric-video] one-click LLM storyboard generation completed", {
         projectId,
-        lineCount: normalized.lines?.length || 0,
-        firstLine: normalized.lines?.[0],
+        lineCount: generated.lines?.length || 0,
+        sceneCount: generated.scenes?.length || 0,
+        firstScene: generated.scenes?.[0],
       });
 
-      setLinesState(normalized.lines || []);
+      setProject((previous) => generated.project || previous);
+      setLinesState(generated.lines || []);
+      setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
+      setScenes(generated.scenes || []);
       setLyricsDirty(false);
+      setWordsDirty(false);
       setCurrentTimeState(0);
-      setActiveTab("lyrics");
-      let storyCreated = false;
-      try {
-        const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${projectId}/story`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        setProject((previous) => story.project || (previous ? { ...previous, storyPrompt: story.storyPrompt } : previous));
-        autoStoryProjectRef.current = projectId;
-        storyCreated = true;
-      } catch (storyError: any) {
-        toast.error(storyError?.message || "Generate story failed");
-      }
+      setActiveTab("scenes");
       await refresh();
       setSaveStatus("saved");
-      toast.success(storyCreated ? "Lyrics and story are ready" : "Lyrics organized");
+      toast.success("Lyrics and storyboard prompts are ready");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");
@@ -715,22 +948,199 @@ function EditorProvider({
     }
   }
 
+  async function generateStoryboardPrompts() {
+    if (!project) {
+      toast.error("Project unavailable");
+      return;
+    }
+    if (lines.length === 0) {
+      toast.error("Generate lyrics before creating scenes");
+      return;
+    }
+
+    setSaveStatus("saving");
+    try {
+      if (lyricsDirty || wordsDirty) {
+        const saved = await saveLyrics();
+        if (!saved) return;
+      }
+
+      let storyPrompt = (project.storyPrompt || "").trim();
+      if (!storyPrompt) {
+        const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        storyPrompt = story.storyPrompt;
+        setProject((previous) => story.project || (previous ? { ...previous, storyPrompt } : previous));
+      }
+
+      const generated = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/storyboard`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storyPrompt }),
+      });
+      setScenes(generated || []);
+      setProject((previous) =>
+        previous
+          ? {
+              ...previous,
+              storyPrompt,
+              scenesStatus: "ready",
+              pipelineStage: "storyboard_ready",
+              pipelineError: null,
+            }
+          : previous,
+      );
+      setActiveTab("scenes");
+      setSaveStatus("saved");
+      await refresh();
+      toast.success("Storyboard prompts are ready");
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Generate storyboard failed");
+    }
+  }
+
+  async function generateCastCandidates() {
+    if (!project || castBusy) return;
+    setCastBusy(true);
+    setSaveStatus("saving");
+    try {
+      const generated = await requestJson<LyricCastMember[]>(`/api/lyric-videos/${project.id}/cast/candidates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setCast(generated || []);
+      setActiveTab("cast");
+      setSaveStatus("saved");
+      toast.success("Character candidates queued");
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Generate characters failed");
+    } finally {
+      setCastBusy(false);
+    }
+  }
+
+  async function createCastMember(params: { name: string; description: string; promptFragment?: string }) {
+    if (!project || castBusy) return null;
+    setCastBusy(true);
+    setSaveStatus("saving");
+    try {
+      const created = await requestJson<LyricCastMember>(`/api/lyric-videos/${project.id}/cast`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+      setCast((previous) => [...previous.filter((item) => item.id !== created.id), created]);
+      setSaveStatus("saved");
+      toast.success("Character created");
+      return created;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Create character failed");
+      return null;
+    } finally {
+      setCastBusy(false);
+    }
+  }
+
+  async function updateCastMember(castId: string, data: Partial<LyricCastMember> & { selectAsMain?: boolean }) {
+    if (!project) return null;
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricCastMember>(`/api/lyric-videos/${project.id}/cast/${castId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      setCast((previous) =>
+        data.selectAsMain
+          ? previous.map((item) => (item.id === updated.id ? updated : { ...item, status: item.status === "deleted" ? item.status : "inactive" }))
+          : previous.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setSaveStatus("saved");
+      toast.success(data.selectAsMain ? "Main character selected" : "Character saved");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Save character failed");
+      return null;
+    }
+  }
+
+  async function deleteCastMember(castId: string) {
+    if (!project) return;
+    setSaveStatus("saving");
+    try {
+      await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
+      setCast((previous) => previous.filter((item) => item.id !== castId));
+      setSaveStatus("saved");
+      toast.success("Character deleted");
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Delete character failed");
+    }
+  }
+
+  async function regenerateCastImage(castId: string) {
+    if (!project || castBusy) return null;
+    setCastBusy(true);
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricCastMember>(`/api/lyric-videos/${project.id}/cast/${castId}/generate-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setCast((previous) => previous.map((item) => (item.id === updated.id ? updated : item)));
+      setSaveStatus("saved");
+      toast.success("Character image queued");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Generate character image failed");
+      return null;
+    } finally {
+      setCastBusy(false);
+    }
+  }
+
+  async function syncCastImages() {
+    if (!project) return;
+    try {
+      const synced = await requestJson<LyricCastMember[]>(`/api/lyric-videos/${project.id}/cast/images`);
+      setCast(synced || []);
+    } catch (err: any) {
+      toast.error(err?.message || "Sync character images failed");
+    }
+  }
+
   async function saveLyrics() {
     try {
       setSaveStatus("saving");
+      const cleanWords = normalizeWordsForSave(words, totalDuration);
+      const derivedLines = deriveLinesFromWords(lines, cleanWords);
       const saved = await requestJson<LyricLine[]>(`/api/lyric-videos/${projectId}/lyrics`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lines }),
+        body: JSON.stringify({ lines: derivedLines, words: cleanWords }),
       });
       setLinesState(saved || []);
+      setWordsState(cleanWords);
       setLyricsDirty(false);
+      setWordsDirty(false);
       setSaveStatus("saved");
       await refresh();
       toast.success("Lyrics saved");
+      return true;
     } catch (err: any) {
       setSaveStatus("failed");
       toast.error(err?.message || "Save lyrics failed");
+      return false;
     }
   }
 
@@ -764,7 +1174,9 @@ function EditorProvider({
       appName,
       project,
       lines,
+      words,
       scenes,
+      cast,
       exports,
       latestExport,
       loading,
@@ -777,18 +1189,34 @@ function EditorProvider({
       totalDuration,
       currentScene,
       currentLine,
+      currentWord,
       lyricsDirty,
+      wordsDirty,
       exporting,
       preparingAudio,
       creatingStory,
+      castBusy,
+      audioAvailable,
       setCurrentTime,
       setIsPlaying,
+      togglePlayback,
+      playFrom,
+      playScenePreview,
+      pausePlayback,
       setActiveTab,
       setZoom,
       updateProjectField,
       setLines,
+      setWords,
       uploadAndTranscribe,
       createStory,
+      generateStoryboardPrompts,
+      generateCastCandidates,
+      createCastMember,
+      updateCastMember,
+      deleteCastMember,
+      regenerateCastImage,
+      syncCastImages,
       saveLyrics,
       queueExport,
       refresh,
@@ -796,9 +1224,13 @@ function EditorProvider({
     [
       activeTab,
       appName,
+      audioAvailable,
       currentLine,
       currentScene,
       currentTime,
+      currentWord,
+      cast,
+      castBusy,
       creatingStory,
       exporting,
       exports,
@@ -814,6 +1246,8 @@ function EditorProvider({
       scenes,
       totalDuration,
       isPlaying,
+      words,
+      wordsDirty,
       zoom,
       refresh,
     ],
@@ -965,7 +1399,7 @@ function SidePanel({ width }: { width: number }) {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex h-[52px] items-center gap-[7px] border-b-[2px] text-[14px] font-[800]",
+                "flex h-[52px] items-center gap-[7px] border-b-[2px] text-[14px] font-[800] outline-none focus-visible:rounded-[4px] focus-visible:ring-2 focus-visible:ring-[#D8E8FF]",
                 active ? "border-[#1A1A2E] text-[#1A1A2E]" : "border-transparent text-[#999999]",
               )}
             >
@@ -1120,31 +1554,208 @@ function FieldBlock({
 }
 
 function LyricsPanel() {
-  const { lines, lyricsDirty, project, saveLyrics, setLines } = useEditor();
+  const {
+    currentLine,
+    currentScene,
+    currentTime,
+    currentWord,
+    isPlaying,
+    lines,
+    lyricsDirty,
+    pausePlayback,
+    playScenePreview,
+    project,
+    saveLyrics,
+    scenes,
+    setCurrentTime,
+    setWords,
+    totalDuration,
+    words,
+  } = useEditor();
+  const [openWordMenuId, setOpenWordMenuId] = useState<string | null>(null);
   const lyricsProcessing = project?.lyricsStatus === "processing";
   const lyricsFailed = project?.lyricsStatus === "failed";
+  const projectEndMs = secondsToMs(totalDuration);
+  const segmentStartMs = currentScene?.startMs ?? 0;
+  const segmentEndMs = Math.max(segmentStartMs + 1, currentScene?.endMs ?? projectEndMs);
+  const maxFrame = msToFrame(Math.max(1, segmentEndMs - segmentStartMs));
+  const visibleWords = currentScene ? words.filter((word) => wordOverlapsRange(word, segmentStartMs, segmentEndMs)) : words;
+  const sceneIndex = currentScene ? scenes.findIndex((scene) => scene.id === currentScene.id) : -1;
+  const previousScene = sceneIndex > 0 ? scenes[sceneIndex - 1] : undefined;
+  const nextScene = sceneIndex >= 0 && sceneIndex < scenes.length - 1 ? scenes[sceneIndex + 1] : undefined;
+  const sceneLines = currentScene ? lines.filter((line) => lineOverlapsRange(line, segmentStartMs, segmentEndMs)) : lines;
+  const sceneText =
+    currentScene?.text?.trim() ||
+    visibleWords
+      .map((word) => word.word.trim())
+      .filter(Boolean)
+      .join(" ") ||
+    sceneLines
+      .map((line) => line.text.trim())
+      .filter(Boolean)
+      .join(" ");
+  const invalidWords = words.filter((word) => !word.word.trim() || msToFrame(word.endMs) <= msToFrame(word.startMs));
+  const invalidSceneWords = visibleWords.filter((word) => !word.word.trim() || msToFrame(word.endMs) <= msToFrame(word.startMs));
+  const invalidHiddenWords = invalidWords.length - invalidSceneWords.length;
+  const canSaveLyrics = lyricsDirty && lines.length > 0 && words.length > 0 && invalidSceneWords.length === 0;
 
-  function updateLine(index: number, text: string) {
-    setLines(lines.map((line, lineIndex) => (lineIndex === index ? { ...line, text } : line)));
+  function goToScene(scene?: LyricScene) {
+    if (!scene) return;
+    setOpenWordMenuId(null);
+    setCurrentTime(msToSeconds(scene.startMs));
+  }
+
+  async function saveAndNext() {
+    const saved = await saveLyrics();
+    if (saved && nextScene) setCurrentTime(msToSeconds(nextScene.startMs));
+  }
+
+  function wordFrame(ms: number) {
+    return clamp(msToFrame(ms - segmentStartMs), 0, maxFrame);
+  }
+
+  function frameMs(frame: number) {
+    return clamp(segmentStartMs + frameToMs(frame), segmentStartMs, segmentEndMs);
+  }
+
+  function updateWord(wordId: string, patch: Partial<LyricWord>) {
+    setOpenWordMenuId(null);
+    setWords(words.map((word) => (word.id === wordId ? { ...word, ...patch } : word)));
+  }
+
+  function updateWordFrame(wordIdValue: string, key: "startMs" | "endMs", rawValue: string | number) {
+    setOpenWordMenuId(null);
+    const frame = clamp(Math.round(Number(rawValue) || 0), 0, Math.max(1, maxFrame));
+    setWords(
+      words.map((word) => {
+        if (word.id !== wordIdValue) return word;
+        const currentStartFrame = wordFrame(word.startMs);
+        const currentEndFrame = wordFrame(word.endMs);
+        if (key === "startMs") {
+          const startFrame = clamp(frame, 0, Math.max(0, currentEndFrame - 1));
+          return { ...word, startMs: frameMs(startFrame) };
+        }
+        const endFrame = clamp(frame, currentStartFrame + 1, Math.max(currentStartFrame + 1, maxFrame));
+        return { ...word, endMs: frameMs(endFrame) };
+      }),
+    );
+  }
+
+  function nudgeWordFrame(word: LyricWord, key: "startMs" | "endMs", delta: number) {
+    updateWordFrame(word.id, key, wordFrame(word[key]) + delta);
+  }
+
+  function addWord() {
+    setOpenWordMenuId(null);
+    const baseLine =
+      sceneLines.find((line) => currentTime >= msToSeconds(line.startMs) && currentTime < msToSeconds(line.endMs)) ||
+      currentLine ||
+      sceneLines[0] ||
+      lines[lines.length - 1];
+    const preferredStartMs = currentWord?.endMs ?? secondsToMs(currentTime);
+    const baseStartMs = clamp(preferredStartMs, segmentStartMs, Math.max(segmentStartMs, segmentEndMs - 1));
+    const baseStartFrame = wordFrame(baseStartMs);
+    const startFrame = clamp(baseStartFrame, 0, Math.max(0, maxFrame - 1));
+    const endFrame = clamp(startFrame + Math.max(1, Math.round(LYRIC_FRAME_RATE * 0.4)), startFrame + 1, Math.max(startFrame + 1, maxFrame));
+    const nextWord: LyricWord = {
+      id: wordId(words.length),
+      lineId: baseLine?.id || null,
+      word: "word",
+      startMs: frameMs(startFrame),
+      endMs: frameMs(endFrame),
+      sort: words.length,
+    };
+    setWords([...words, nextWord]);
+    setCurrentTime(msToSeconds(nextWord.startMs));
+  }
+
+  function deleteWord(wordIdValue: string) {
+    setWords(words.filter((word) => word.id !== wordIdValue));
+    setOpenWordMenuId(null);
   }
 
   return (
-    <div className="flex flex-col gap-[14px]">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[14px] font-[800] text-[#1A1A2E]">Timed lyrics</p>
-          <p className="mt-[3px] text-[12px] font-[500] text-[#667085]">Edit text while preserving the current timestamps.</p>
+    <div className="flex flex-col gap-[16px]" onClick={() => setOpenWordMenuId(null)}>
+      {currentScene ? (
+        <div className="rounded-[8px] border border-[#DDE5EF] bg-[#F8FBFF] p-[10px]">
+          <div className="flex items-start justify-between gap-[10px]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-[8px]">
+                <span className="text-[14px] font-[900] text-[#1A1A2E]">Scene {sceneIndex + 1}</span>
+                <span className="rounded-full border border-[#D8E2EE] bg-white px-[7px] py-[2px] font-mono text-[11px] font-[800] text-[#61708A]">
+                  {formatMs(segmentStartMs)} - {formatMs(segmentEndMs)}
+                </span>
+                <span className="text-[11px] font-[800] text-[#8A94A6]">
+                  {visibleWords.length} {visibleWords.length === 1 ? "word" : "words"}
+                </span>
+              </div>
+              <p className="mt-[6px] max-h-[40px] overflow-hidden text-[12px] font-[700] leading-5 text-[#4E6384]">
+                {sceneText || "No recognized words in this scene yet."}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-[6px]">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  goToScene(previousScene);
+                }}
+                disabled={!previousScene}
+                aria-label="Previous scene"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                <StepBack className="h-[14px] w-[14px]" />
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  goToScene(nextScene);
+                }}
+                disabled={!nextScene}
+                aria-label="Next scene"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                <StepForward className="h-[14px] w-[14px]" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-[10px] flex flex-wrap justify-end gap-[8px]">
+            <button
+              type="button"
+              onClick={saveLyrics}
+              disabled={!canSaveLyrics}
+              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Save className="h-[14px] w-[14px]" />
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={saveAndNext}
+              disabled={!canSaveLyrics || !nextScene}
+              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[10px] text-[12px] font-[800] text-white hover:bg-[#2D2D44] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Save &amp; Next
+              <StepForward className="h-[14px] w-[14px]" />
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={saveLyrics}
-          disabled={!lyricsDirty || lines.length === 0}
-          className="inline-flex h-[34px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[800] text-white disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <Save className="h-[14px] w-[14px]" />
-          Save lyrics
-        </button>
-      </div>
+      ) : (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={saveLyrics}
+            disabled={!canSaveLyrics}
+            className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Save className="h-[14px] w-[14px]" />
+            Save
+          </button>
+        </div>
+      )}
 
       {lyricsProcessing ? (
         <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[8px] border border-dashed border-[#E8E8E8] bg-[#FAFAFA] px-8 text-center">
@@ -1172,60 +1783,541 @@ function LyricsPanel() {
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-[10px]">
-        {lines.map((line, index) => (
-          <div key={line.id || index} className="rounded-[6px] border border-[#E8E8E8] bg-[#FAFAFA] p-[10px]">
-            <div className="mb-[8px] flex items-center justify-between text-[11px] font-[800] text-[#8A94A6]">
-              <span>Line {index + 1}</span>
-              <span className="font-mono">
-                {formatMs(line.startMs)} - {formatMs(line.endMs)}
-              </span>
+      {words.length > 0 ? (
+        <>
+          <LyricsMiniWaveform
+            currentTime={currentTime}
+            currentWord={currentWord}
+            isPlaying={isPlaying}
+            onPlayScene={() => playScenePreview(msToSeconds(segmentStartMs), msToSeconds(segmentEndMs))}
+            onPause={pausePlayback}
+            segmentEndMs={segmentEndMs}
+            segmentStartMs={segmentStartMs}
+            setCurrentTime={setCurrentTime}
+            words={visibleWords}
+          />
+
+          <div className="mx-auto w-full max-w-[560px]">
+            <div className="grid grid-cols-[minmax(132px,1fr)_142px_142px_36px] gap-[8px] px-[2px] pb-[8px] text-[12px] font-[800] text-[#405372] max-[560px]:grid-cols-[minmax(116px,1fr)_112px_112px_34px]">
+              <span>Word</span>
+              <span>Start Frame</span>
+              <span>End Frame</span>
+              <span />
             </div>
-            <textarea
-              value={line.text}
-              onChange={(event) => updateLine(index, event.target.value)}
-              rows={2}
-              className="w-full resize-y bg-transparent text-[14px] font-[600] leading-5 text-[#1A1A2E] outline-none"
-            />
+
+            <div className="flex flex-col gap-[7px]">
+              {visibleWords.map((word) => {
+              const active = currentWord?.id === word.id;
+              const invalid = !word.word.trim() || msToFrame(word.endMs) <= msToFrame(word.startMs);
+              return (
+                <div
+                  key={word.id}
+                  onClick={() => setCurrentTime(msToSeconds(word.startMs))}
+                  className={cn(
+                    "grid grid-cols-[minmax(132px,1fr)_142px_142px_36px] items-center gap-[8px] rounded-[6px] outline-none max-[560px]:grid-cols-[minmax(116px,1fr)_112px_112px_34px]",
+                    active ? "bg-[#FFF8EB]" : "hover:bg-[#F8F9FA]",
+                    invalid ? "border-red-300 bg-red-50" : "",
+                  )}
+                >
+                  <input
+                    value={word.word}
+                    onChange={(event) => updateWord(word.id, { word: event.target.value })}
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={`${word.word || "word"} text`}
+                    className={cn(
+                      "h-[36px] min-w-0 rounded-[5px] border bg-white px-[10px] text-[13px] font-[700] text-[#26364E] outline-none focus:border-[#F5A623]",
+                      active ? "border-[#F5A623]" : "border-[#CAD3DF]",
+                      invalid ? "border-red-300" : "",
+                    )}
+                  />
+                  <WordFrameStepper
+                    label={`${word.word || "word"} start frame`}
+                    max={maxFrame}
+                    min={0}
+                    value={wordFrame(word.startMs)}
+                    onChange={(value) => updateWordFrame(word.id, "startMs", value)}
+                    onStep={(delta) => nudgeWordFrame(word, "startMs", delta)}
+                  />
+                  <WordFrameStepper
+                    label={`${word.word || "word"} end frame`}
+                    max={maxFrame}
+                    min={1}
+                    value={wordFrame(word.endMs)}
+                    onChange={(value) => updateWordFrame(word.id, "endMs", value)}
+                    onStep={(delta) => nudgeWordFrame(word, "endMs", delta)}
+                  />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenWordMenuId(openWordMenuId === word.id ? null : word.id);
+                      }}
+                      aria-label={`${word.word || "word"} actions`}
+                      className="flex h-[36px] w-[34px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA]"
+                    >
+                      <MoreVertical className="h-[15px] w-[15px]" />
+                    </button>
+                    {openWordMenuId === word.id ? (
+                      <div
+                        className="absolute right-0 top-[40px] z-20 w-[112px] rounded-[6px] border border-[#DDE5EF] bg-white p-[4px] shadow-[0_8px_20px_rgba(15,23,42,0.12)]"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => deleteWord(word.id)}
+                          className="flex h-[30px] w-full items-center rounded-[4px] px-[8px] text-left text-[12px] font-[800] text-red-600 hover:bg-red-50"
+                        >
+                          Delete word
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+              })}
+            </div>
+
+            {visibleWords.length === 0 ? (
+              <div className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px] text-center text-[13px] font-[700] leading-6 text-[#667085]">
+                No words in this scene yet. Add a word to start timing this section.
+              </div>
+            ) : null}
           </div>
+
+          {invalidSceneWords.length > 0 ? (
+            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-red-200 bg-red-50 px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-red-700">
+              Fix empty words and frame ranges in this scene before saving.
+            </p>
+          ) : null}
+          {invalidSceneWords.length === 0 && invalidHiddenWords > 0 ? (
+            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-amber-200 bg-amber-50 px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-amber-800">
+              {invalidHiddenWords} issue{invalidHiddenWords === 1 ? "" : "s"} in other scenes will not block this scene.
+            </p>
+          ) : null}
+        </>
+      ) : lines.length > 0 && !lyricsProcessing ? (
+        <div className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px] text-[13px] font-[600] leading-6 text-[#667085]">
+          This project has line-level lyrics only. Add a word to start frame-level timing.
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={addWord}
+        disabled={lines.length === 0 || maxFrame <= 1}
+        className="mx-auto inline-flex h-[34px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <Plus className="h-[14px] w-[14px]" />
+        Add word
+      </button>
+    </div>
+  );
+}
+
+function LyricsMiniWaveform({
+  currentTime,
+  currentWord,
+  isPlaying,
+  onPause,
+  onPlayScene,
+  segmentEndMs,
+  segmentStartMs,
+  setCurrentTime,
+  words,
+}: {
+  currentTime: number;
+  currentWord?: LyricWord;
+  isPlaying: boolean;
+  onPause: () => void;
+  onPlayScene: () => void;
+  segmentEndMs: number;
+  segmentStartMs: number;
+  setCurrentTime: (time: number) => void;
+  words: LyricWord[];
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const durationMs = Math.max(1, segmentEndMs - segmentStartMs);
+  const playheadPct = clamp(((secondsToMs(currentTime) - segmentStartMs) / durationMs) * 100, 0, 100);
+  const bars = useMemo(
+    () =>
+      Array.from({ length: 96 }, (_, index) => {
+        const wave = Math.sin(index * 0.58) * 0.35 + Math.sin(index * 1.17) * 0.22 + Math.sin(index * 0.19) * 0.18;
+        return clamp(28 + Math.abs(wave) * 52 + ((index * 13) % 17), 24, 86);
+      }),
+    [],
+  );
+  const tickCount = clamp(Math.ceil(durationMs / 1000), 1, 4);
+  const ticks = Array.from({ length: tickCount + 1 }, (_, index) => index / tickCount);
+
+  function seekFromClientX(clientX: number) {
+    const rect = trackRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return;
+    const pct = clamp((clientX - rect.left) / rect.width, 0, 1);
+    setCurrentTime(msToSeconds(segmentStartMs + durationMs * pct));
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    seekFromClientX(event.clientX);
+  }
+
+  function pctForMs(ms: number) {
+    return clamp(((ms - segmentStartMs) / durationMs) * 100, 0, 100);
+  }
+
+  return (
+    <div className="rounded-[6px] border border-[#DDE5EF] bg-white p-[8px]">
+      <div className="flex items-stretch gap-[8px]">
+        <button
+          type="button"
+          onClick={() => (isPlaying ? onPause() : onPlayScene())}
+          aria-label={isPlaying ? "Pause lyrics" : "Play lyrics"}
+          className="flex h-[54px] w-[42px] shrink-0 items-center justify-center rounded-[6px] border border-[#D8E2EE] bg-white text-[#405372] hover:bg-[#F8F9FA]"
+        >
+          {isPlaying ? <Pause className="h-[20px] w-[20px]" /> : <Play className="h-[20px] w-[20px]" />}
+        </button>
+        <div
+          ref={trackRef}
+          className="relative h-[54px] flex-1 touch-none overflow-hidden rounded-[5px] border border-[#D8E2EE] bg-[#F4F8FF]"
+          onPointerDown={handlePointerDown}
+        >
+          <div className="absolute inset-x-0 top-1/2 flex h-[42px] -translate-y-1/2 items-center gap-[2px] px-[2px]">
+            {bars.map((height, index) => (
+              <span key={index} className="flex-1 rounded-full bg-[#69A9FF]" style={{ height: `${height}%` }} />
+            ))}
+          </div>
+
+          {words.map((word) => {
+            const left = pctForMs(word.startMs);
+            const right = pctForMs(word.endMs);
+            const active = currentWord?.id === word.id;
+            return (
+              <button
+                key={word.id}
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setCurrentTime(msToSeconds(word.startMs));
+                }}
+                className={cn(
+                  "absolute top-[4px] h-[46px] overflow-hidden rounded-[4px] border px-[6px] text-left text-[12px] font-[800] leading-[46px] text-[#37506F] outline-none",
+                  active ? "border-[#F5A623] bg-[#E6F1FF]/95 text-[#1F3350]" : "border-[#74ADF3] bg-[#BFD9FF]/72 hover:bg-[#D9E9FF]",
+                )}
+                style={{ left: `${left}%`, width: `${Math.max(5, right - left)}%` }}
+              >
+                <span className="block truncate">{word.word || "word"}</span>
+              </button>
+            );
+          })}
+
+          <div className="absolute bottom-0 top-0 z-10 w-[2px] bg-[#FF4757]" style={{ left: `${playheadPct}%` }}>
+            <span className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#FF4757]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="ml-[50px] mt-[6px] flex justify-between font-mono text-[11px] font-[700] text-[#61708A]">
+        {ticks.map((tick) => (
+          <span key={tick}>{formatClock((durationMs * tick) / 1000, true)}</span>
         ))}
       </div>
     </div>
   );
 }
 
-function CastPanel() {
+function WordFrameStepper({
+  label,
+  max,
+  min,
+  onChange,
+  onStep,
+  value,
+}: {
+  label: string;
+  max: number;
+  min: number;
+  onChange: (value: string) => void;
+  onStep: (delta: number) => void;
+  value: number;
+}) {
   return (
-    <PanelEmpty
-      title="Character consistency is coming soon"
-      description="This first pass keeps the Cast entry lightweight while the editor focuses on project data, lyrics, scenes, preview, and export."
-    />
+    <div className="flex h-[36px] min-w-0 overflow-hidden rounded-[5px] border border-[#CAD3DF] bg-white">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onStep(-1);
+        }}
+        disabled={value <= min}
+        aria-label={`${label} decrease`}
+        className="flex w-[30px] shrink-0 items-center justify-center border-r border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
+      >
+        <StepBack className="h-[14px] w-[14px]" />
+      </button>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onClick={(event) => event.stopPropagation()}
+        aria-label={label}
+        className="h-full min-w-0 flex-1 border-0 bg-white px-[8px] font-mono text-[13px] font-[800] text-[#26364E] outline-none focus:bg-[#FFF8EB]"
+      />
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onStep(1);
+        }}
+        disabled={value >= max}
+        aria-label={`${label} increase`}
+        className="flex w-[30px] shrink-0 items-center justify-center border-l border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
+      >
+        <StepForward className="h-[14px] w-[14px]" />
+      </button>
+    </div>
+  );
+}
+
+function castImageIsProcessing(member: LyricCastMember) {
+  return Boolean(member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
+}
+
+function CastPanel() {
+  const {
+    cast,
+    castBusy,
+    createCastMember,
+    deleteCastMember,
+    generateCastCandidates,
+    regenerateCastImage,
+    updateCastMember,
+  } = useEditor();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+  const [draftDescription, setDraftDescription] = useState("");
+
+  function beginCreate() {
+    setEditingId(null);
+    setDraftName("");
+    setDraftDescription("");
+    setFormOpen(true);
+  }
+
+  function beginEdit(member: LyricCastMember) {
+    setEditingId(member.id);
+    setDraftName(member.name);
+    setDraftDescription(member.description);
+    setFormOpen(true);
+  }
+
+  async function submitCharacter() {
+    const name = draftName.trim();
+    const description = draftDescription.trim();
+    if (!name || !description) {
+      toast.error("Name and description are required");
+      return;
+    }
+
+    if (editingId) {
+      const updated = await updateCastMember(editingId, { name, description, promptFragment: description });
+      if (updated) {
+        setFormOpen(false);
+        setEditingId(null);
+      }
+      return;
+    }
+
+    const created = await createCastMember({ name, description, promptFragment: description });
+    if (created) {
+      setFormOpen(false);
+      await regenerateCastImage(created.id);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-[16px]">
+      <div className="flex flex-wrap items-center justify-center gap-[8px] border-b border-[#E8E8E8] pb-[16px]">
+        <button
+          type="button"
+          onClick={generateCastCandidates}
+          disabled={castBusy}
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {castBusy ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Wand2 className="h-[15px] w-[15px]" />}
+          Generate candidates
+        </button>
+        <button
+          type="button"
+          onClick={beginCreate}
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[12px] text-[13px] font-[800] text-white hover:bg-[#E6981F]"
+        >
+          <Plus className="h-[15px] w-[15px]" />
+          Add character
+        </button>
+      </div>
+
+      {formOpen ? (
+        <section className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px]">
+          <div className="mb-[10px] flex items-center justify-between">
+            <p className="text-[13px] font-[800] text-[#1A1A2E]">{editingId ? "Edit character" : "Create character"}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setFormOpen(false);
+                setEditingId(null);
+              }}
+              aria-label="Close character form"
+              className="text-[#667085] hover:text-[#1A1A2E]"
+            >
+              <X className="h-[16px] w-[16px]" />
+            </button>
+          </div>
+          <input
+            value={draftName}
+            onChange={(event) => setDraftName(event.target.value)}
+            placeholder="Elena"
+            className="mb-[8px] h-[38px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] text-[13px] font-[700] text-[#334155] outline-none focus:border-[#F5A623]"
+          />
+          <textarea
+            value={draftDescription}
+            onChange={(event) => setDraftDescription(event.target.value)}
+            rows={5}
+            placeholder="Describe the face, hair, build, outfit, accessories, and overall vibe."
+            className="w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] py-[9px] text-[13px] font-[500] leading-5 text-[#334155] outline-none focus:border-[#F5A623]"
+          />
+          <div className="mt-[10px] flex justify-end gap-[8px]">
+            <button
+              type="button"
+              onClick={() => {
+                setFormOpen(false);
+                setEditingId(null);
+              }}
+              className="h-[34px] rounded-[6px] border border-[#D9DDE3] px-[12px] text-[13px] font-[800] text-[#667085] hover:bg-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={submitCharacter}
+              disabled={castBusy}
+              className="inline-flex h-[34px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[800] text-white hover:bg-[#2B2B45] disabled:opacity-50"
+            >
+              {castBusy ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Save className="h-[14px] w-[14px]" />}
+              {editingId ? "Save" : "Create & generate"}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {cast.length === 0 ? (
+        <PanelEmpty
+          title="No characters yet"
+          description="Generate a few main character candidates from the song, or create one manually."
+        />
+      ) : (
+        <div className="flex flex-col divide-y divide-[#E8E8E8]">
+          {cast.map((member) => {
+            const processing = castImageIsProcessing(member);
+            const active = member.status === "active";
+            const failed = member.status === "failed";
+            return (
+              <article key={member.id} className="flex gap-[12px] py-[14px]">
+                <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[#EEF2F7]">
+                  {member.referenceImageUrl ? (
+                    <img src={member.referenceImageUrl} alt={member.name} className="h-full w-full object-cover" />
+                  ) : processing ? (
+                    <Loader2 className="h-[22px] w-[22px] animate-spin text-[#F5A623]" />
+                  ) : (
+                    <Users className="h-[24px] w-[24px] text-[#94A3B8]" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-[10px]">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-[6px]">
+                        <p className="truncate text-[14px] font-[900] text-[#1A1A2E]">{member.name}</p>
+                        <span
+                          className={cn(
+                            "rounded-[999px] px-[7px] py-[2px] text-[10px] font-[800] uppercase",
+                            active
+                              ? "bg-emerald-50 text-emerald-700"
+                              : failed
+                                ? "bg-red-50 text-red-600"
+                                : "bg-[#F1F5F9] text-[#64748B]",
+                          )}
+                        >
+                          {processing ? "processing" : active ? "main" : member.status}
+                        </span>
+                      </div>
+                      <p className="mt-[6px] line-clamp-3 text-[12px] font-[500] leading-5 text-[#526173]">{member.description}</p>
+                      {member.error ? <p className="mt-[6px] text-[12px] font-[700] text-red-600">{member.error}</p> : null}
+                    </div>
+                  </div>
+                  <div className="mt-[10px] flex flex-wrap gap-[7px]">
+                    <button
+                      type="button"
+                      onClick={() => updateCastMember(member.id, { selectAsMain: true })}
+                      disabled={active}
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
+                    >
+                      <Check className="h-[13px] w-[13px]" />
+                      Select
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => beginEdit(member)}
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA]"
+                    >
+                      <Edit3 className="h-[13px] w-[13px]" />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => regenerateCastImage(member.id)}
+                      disabled={castBusy || processing}
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
+                    >
+                      <RefreshCcw className="h-[13px] w-[13px]" />
+                      Regenerate
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteCastMember(member.id)}
+                      className="inline-flex h-[31px] items-center justify-center rounded-[6px] border border-[#F0D8D8] px-[9px] text-red-600 hover:bg-red-50"
+                      aria-label={`Delete ${member.name}`}
+                    >
+                      <Trash2 className="h-[13px] w-[13px]" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
 function ScenesPanel() {
   const { currentScene, scenes, setCurrentTime } = useEditor();
+  const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
 
   return (
     <div className="flex flex-col">
       <div className="mb-[16px] flex flex-wrap items-center justify-center gap-[8px] border-b border-[#E8E8E8] pb-[16px]">
         <button
           type="button"
-          disabled
-          title="Batch image generation is not wired in this preview pass."
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] opacity-70"
+          onClick={() => setBatchGenerationOpen(true)}
+          disabled={scenes.length === 0}
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <ImageIcon className="h-[15px] w-[15px]" />
-          Batch Image Generation
-        </button>
-        <button
-          type="button"
-          disabled
-          title="Batch video generation is not wired in this preview pass."
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] opacity-70"
-        >
-          <Clapperboard className="h-[15px] w-[15px]" />
-          Batch Video Generation
+          <Wand2 className="h-[15px] w-[15px]" />
+          Batch Generation
         </button>
       </div>
 
@@ -1301,6 +2393,209 @@ function ScenesPanel() {
           })}
         </div>
       )}
+      <BatchGenerationDialog open={batchGenerationOpen} onClose={() => setBatchGenerationOpen(false)} />
+    </div>
+  );
+}
+
+function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
+  const { project, scenes } = useEditor();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
+  const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!open) return;
+    setSelectedIds(new Set());
+    setImagePromptDrafts(Object.fromEntries(scenes.map((scene) => [scene.id, scene.prompt || ""])));
+    setVideoPromptDrafts(Object.fromEntries(scenes.map((scene) => [scene.id, scene.motionPrompt || ""])));
+  }, [open, scenes]);
+
+  if (!open) return null;
+
+  const selectedCount = selectedIds.size;
+  const creditCost = selectedCount * 10;
+  const allSelected = scenes.length > 0 && selectedCount === scenes.length;
+
+  function toggleScene(sceneId: string, checked: boolean) {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      if (checked) next.add(sceneId);
+      else next.delete(sceneId);
+      return next;
+    });
+  }
+
+  function toggleAll(checked: boolean) {
+    setSelectedIds(checked ? new Set(scenes.map((scene) => scene.id)) : new Set());
+  }
+
+  function updateImagePrompt(sceneId: string, prompt: string) {
+    setImagePromptDrafts((previous) => ({ ...previous, [sceneId]: prompt }));
+  }
+
+  function updateVideoPrompt(sceneId: string, prompt: string) {
+    setVideoPromptDrafts((previous) => ({ ...previous, [sceneId]: prompt }));
+  }
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex flex-col bg-white text-[#1A1A2E]">
+      <header className="flex h-[84px] shrink-0 items-start justify-between border-b border-[#E8E8E8] px-[22px] py-[18px]">
+        <div>
+          <h2 className="text-[24px] font-[800] leading-[28px] text-[#334155]">Batch Generation</h2>
+          <p className="mt-[7px] text-[14px] font-[600] text-[#4E6384]">Video: {project?.title || "Lyric video"}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close batch generation"
+          className="flex h-[36px] w-[36px] items-center justify-center rounded-[6px] text-[#61708A] hover:bg-[#F8F9FA]"
+        >
+          <X className="h-[20px] w-[20px]" />
+        </button>
+      </header>
+
+      <main className="min-h-0 flex-1 overflow-y-auto px-[22px]">
+        <div className="mx-auto w-full max-w-[1360px]">
+          <label className="flex h-[56px] items-center gap-[12px]">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={(event) => toggleAll(event.target.checked)}
+              className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
+              aria-label="Select all scenes"
+            />
+            <ChevronDown className="h-[16px] w-[16px] text-[#4E6384]" />
+          </label>
+
+          <div>
+            {scenes.map((scene, index) => {
+              const checked = selectedIds.has(scene.id);
+              const durationMs = Math.max(0, (scene.endMs || scene.startMs) - scene.startMs);
+              const title = scene.text?.trim() || "Instrumental";
+              return (
+	                <section
+	                  key={scene.id}
+	                  data-batch-scene-row
+	                  className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-[14px] gap-y-[12px] border-b border-[#DDE5EF] py-[16px] md:grid-cols-[32px_minmax(140px,180px)_minmax(0,1fr)_minmax(0,1fr)] md:gap-[16px] xl:grid-cols-[44px_220px_minmax(390px,1fr)_minmax(390px,1fr)]"
+	                >
+	                  <div className="pt-[2px] md:pt-[92px]">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(event) => toggleScene(scene.id, event.target.checked)}
+                      className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
+                      aria-label={`Select scene ${index + 1}`}
+                    />
+                  </div>
+
+	                  <div className="min-w-0 pt-0 md:pt-[74px]">
+                    <div className="mb-[8px] flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[#61708A]">
+                      <span>Scene {index + 1}</span>
+                      <span className="font-mono">
+                        {formatMs(scene.startMs)} - {formatMs(scene.endMs)}
+                      </span>
+                      <span className="font-mono">{formatDurationMs(durationMs)}</span>
+                    </div>
+	                    <p className="max-w-[230px] text-[16px] font-[700] leading-[24px] text-[#26364E]">{title}</p>
+	                    <span className="mt-[14px] inline-flex rounded-[5px] bg-[#EEF3F8] px-[6px] py-[3px] text-[10px] font-[800] text-[#334155]">
+	                      10 credits
+	                    </span>
+	                  </div>
+
+	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[#D8E0EA] bg-[#F8FAFC] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-3 md:row-start-1">
+	                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
+	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[#26364E]">
+	                        <ImageIcon className="h-[15px] w-[15px] shrink-0" />
+	                        <span className="truncate xl:hidden">Still Image</span>
+	                        <span className="hidden truncate xl:inline">Create Still Image</span>
+	                      </div>
+	                      <button
+	                        type="button"
+	                        disabled
+	                        className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[#E9EEF6] px-[9px] text-[11px] font-[800] text-[#61708A] disabled:cursor-not-allowed"
+	                      >
+	                        <RefreshCcw className="h-[12px] w-[12px]" />
+	                        <span className="xl:hidden">Retry</span>
+	                        <span className="hidden xl:inline">Retry Image</span>
+	                        <span className="inline-flex items-center gap-[3px]">
+	                          <Coins className="h-[11px] w-[11px]" />5
+	                        </span>
+	                      </button>
+	                    </div>
+	                    <div className="grid gap-[10px] 2xl:grid-cols-[minmax(0,1fr)_minmax(170px,0.86fr)]">
+	                      <textarea
+	                        value={imagePromptDrafts[scene.id] ?? scene.prompt ?? ""}
+	                        onChange={(event) => updateImagePrompt(scene.id, event.target.value)}
+	                        aria-label={`Scene ${index + 1} image prompt`}
+	                        className="min-h-[162px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623]"
+	                      />
+	                      <div className="aspect-video w-full overflow-hidden rounded-[5px] bg-[#E8EEF7]">
+	                        {scene.imageUrl ? (
+	                          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
+	                        ) : (
+	                          <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[#8A94A6]">
+	                            {scene.status || "draft"}
+	                          </div>
+	                        )}
+	                      </div>
+	                    </div>
+	                  </div>
+
+	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[#D8E0EA] bg-[#F8FAFC] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-4 md:row-start-1">
+	                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
+	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[#26364E]">
+	                        <Clapperboard className="h-[15px] w-[15px] shrink-0" />
+	                        <span className="truncate xl:hidden">Animate</span>
+	                        <span className="hidden truncate xl:inline">Animate the Image</span>
+	                      </div>
+	                      <button
+	                        type="button"
+	                        className="inline-flex h-[28px] w-[142px] shrink-0 items-center justify-between rounded-[5px] border border-[#CAD3DF] bg-white px-[9px] text-[11px] font-[800] text-[#334155]"
+	                      >
+	                        Video Model
+	                        <ChevronDown className="h-[13px] w-[13px] text-[#61708A]" />
+	                      </button>
+	                    </div>
+	                    <textarea
+	                      value={videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? ""}
+	                      onChange={(event) => updateVideoPrompt(scene.id, event.target.value)}
+	                      aria-label={`Scene ${index + 1} video prompt`}
+	                      className="min-h-[210px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623]"
+	                    />
+	                    <div className="mt-[8px] flex items-center justify-between rounded-[5px] border border-dashed border-[#CAD3DF] bg-white px-[10px] py-[7px] text-[11px] font-[800] text-[#61708A]">
+	                      <span className="inline-flex items-center gap-[6px]">
+	                        <Play className="h-[12px] w-[12px]" />
+	                        Video preview placeholder
+	                      </span>
+	                      <span className="inline-flex items-center gap-[3px]">
+	                        <Coins className="h-[11px] w-[11px]" />5
+	                      </span>
+	                    </div>
+	                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+
+      <footer className="flex min-h-[92px] shrink-0 flex-col items-stretch justify-center gap-[10px] border-t border-[#E8E8E8] bg-white px-[16px] py-[12px] sm:flex-row sm:items-center sm:justify-end sm:gap-[18px] sm:px-[22px]">
+        <button type="button" onClick={onClose} className="h-[42px] px-[10px] text-[15px] font-[800] text-[#4E6384]">
+          Cancel
+        </button>
+        <div className="flex flex-col items-stretch gap-[6px] sm:items-end">
+          <button
+            type="button"
+            disabled
+            title="Mock preview only. This button does not call the generation APIs yet."
+            className="h-[42px] rounded-[6px] bg-[#FFD987] px-[16px] text-[15px] font-[800] text-[#8A6A1C] disabled:cursor-not-allowed disabled:opacity-90"
+          >
+            Regenerate {selectedCount} Scenes ({creditCost} credits)
+          </button>
+          <span className="text-right text-[10px] font-[600] text-[#61708A]">Estimated time to generate: ~20 minutes</span>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -1351,12 +2646,7 @@ function LatestExport({
 }
 
 function PlaybackControls() {
-  const { currentTime, isPlaying, project, setCurrentTime, setIsPlaying, setZoom, totalDuration, zoom } = useEditor();
-
-  function togglePlayback() {
-    if (currentTime >= totalDuration) setCurrentTime(0);
-    setIsPlaying(!isPlaying);
-  }
+  const { audioAvailable, currentTime, isPlaying, setCurrentTime, setZoom, togglePlayback, totalDuration, zoom } = useEditor();
 
   return (
     <div className="flex h-[40px] shrink-0 items-center border-t border-[#E8E8E8] bg-[#F8F9FA] px-[16px]">
@@ -1382,8 +2672,9 @@ function PlaybackControls() {
           <button
             type="button"
             onClick={togglePlayback}
+            disabled={!audioAvailable}
             aria-label={isPlaying ? "Pause" : "Play"}
-            className="flex h-[28px] w-[28px] items-center justify-center text-[#333333]"
+            className="flex h-[28px] w-[28px] items-center justify-center text-[#333333] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isPlaying ? <Pause className="h-[20px] w-[20px]" /> : <Play className="h-[20px] w-[20px]" />}
           </button>
@@ -1419,7 +2710,7 @@ function PlaybackControls() {
 }
 
 function Timeline({ height }: { height: number }) {
-  const { currentScene, currentTime, lines, scenes, setCurrentTime, totalDuration, zoom } = useEditor();
+  const { currentScene, currentTime, currentWord, lines, scenes, setCurrentTime, totalDuration, words, zoom } = useEditor();
   const timelineRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const trackWidth = `${Math.max(100, zoom * 100)}%`;
@@ -1509,13 +2800,18 @@ function Timeline({ height }: { height: number }) {
 
         <div className="absolute left-0 right-0" style={{ top: lyricTop, height: lyricHeight }}>
           <div className="absolute inset-x-0 top-[13px] h-[1px] bg-[#DDE8F4]" />
-          {lines.map((line, index) => {
-            const left = (msToSeconds(line.startMs) / totalDuration) * 100;
-            const width = ((line.endMs - line.startMs) / 1000 / totalDuration) * 100;
+          {(words.length > 0 ? words : lines).map((item, index) => {
+            const active = "word" in item && currentWord?.id === item.id;
+            const left = (msToSeconds(item.startMs) / totalDuration) * 100;
+            const width = ((item.endMs - item.startMs) / 1000 / totalDuration) * 100;
             return (
               <span
-                key={line.id || index}
-                className="absolute top-[5px] min-w-[2px] rounded-[2px] bg-[#4A90D9]/70"
+                key={item.id || index}
+                className={cn(
+                  "absolute top-[5px] min-w-[2px] rounded-[2px]",
+                  words.length > 0 ? "bg-[#4A90D9]/75" : "bg-[#4A90D9]/70",
+                  active ? "outline outline-[2px] outline-[#F5A623]" : "",
+                )}
                 style={{ left: `${left}%`, width: `${Math.max(width, 0.4)}%`, height: Math.min(16, lyricHeight - 8) }}
               />
             );
@@ -1531,9 +2827,10 @@ function Timeline({ height }: { height: number }) {
 }
 
 function StatusBar() {
-  const { latestExport, loadError, project, refresh } = useEditor();
+  const { generateStoryboardPrompts, latestExport, loadError, project, refresh, saveStatus } = useEditor();
   const blockingError = loadError || project?.pipelineError || latestExport?.error;
   const ready = project?.renderStatus === "ready" || latestExport?.status === "success";
+  const continuing = saveStatus === "saving";
 
   return (
     <footer className="flex h-[44px] shrink-0 items-center justify-center border-t border-[#E8E8E8] bg-white px-[16px]">
@@ -1551,10 +2848,11 @@ function StatusBar() {
           <span>{ready ? "Export ready." : "Preview ready! Customize the look & feel or continue:"}</span>
           <button
             type="button"
-            onClick={() => toast.info("Continue flow coming next")}
-            className="flex h-[28px] w-[180px] items-center justify-center gap-[8px] rounded-[8px] bg-[#F5A623] text-[14px] font-[800] text-white hover:bg-[#E6981F]"
+            onClick={generateStoryboardPrompts}
+            disabled={continuing}
+            className="flex h-[28px] w-[180px] items-center justify-center gap-[8px] rounded-[8px] bg-[#F5A623] text-[14px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Continue -&gt;
+            {continuing ? "Working..." : "Continue ->"}
           </button>
         </div>
       )}

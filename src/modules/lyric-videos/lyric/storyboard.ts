@@ -2,14 +2,16 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '@/core/db';
 import { lyricVideoLine, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { energyLevelForValue, normalizePreprocessLyrics, readAudioAnalysis } from './asr';
 import { safeJson, sceneTextFromLineIds } from './json';
 import { getProject, getProjectDetails } from './project';
-import { generateStoryboardWithKieGemini, generateStoryPromptWithKieGemini } from './llm';
+import { generateStoryboardWithKieClaude, generateStoryPromptWithKieClaude } from './llm';
 import {
   DEFAULT_MAX_STORYBOARD_SCENES,
+  DEFAULT_STORYBOARD_MODEL,
   INSTRUMENTAL_GAP_MS,
   LYRIC_VIDEO_DEFAULT_STYLE,
   type AudioAnalysisResult,
@@ -306,6 +308,26 @@ export function buildFixedStoryboardSceneDrafts(params: {
 
   const makeEnergy = (startMs: number, endMs: number) => findEnergyForRange(startMs, endMs, energySegments);
 
+  const firstLine = lines[0];
+  if (firstLine && firstLine.startMs >= INSTRUMENTAL_GAP_MS) {
+    const introEnergy = makeEnergy(0, firstLine.startMs);
+    scenes.push({
+      sceneId: 'instrumental_0',
+      kind: 'instrumental',
+      shotType: pickInstrumentalShotType(0, firstLine.startMs, 0),
+      startMs: 0,
+      endMs: firstLine.startMs,
+      text: 'Instrumental',
+      linkedLineIds: [],
+      energyLevel: introEnergy.energyLevel,
+      avgEnergy: introEnergy.avgEnergy,
+      beatCount: countBeatsInRange(0, firstLine.startMs, params.audioAnalysis?.beatTimesMs),
+      bpm: params.audioAnalysis?.bpm,
+      key: params.audioAnalysis?.key,
+      nextLyric: firstLine.text,
+    });
+  }
+
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     const previous = lines[index - 1];
@@ -353,6 +375,129 @@ export function buildFixedStoryboardSceneDrafts(params: {
 
   balanceStoryboardShotTypes(scenes);
   return scenes;
+}
+
+function isStoryboardShotType(value: unknown): value is StoryboardShotType {
+  return value === 'character_shot' || value === 'insert_shot' || value === 'landscape_shot';
+}
+
+export function buildFixedStoryboardSceneDraftsFromPersistedScenes(params: {
+  scenes: any[];
+  lines: any[];
+  audioAnalysis?: AudioAnalysisResult;
+}): FixedStoryboardSceneDraft[] {
+  if (!params.scenes.length) {
+    return buildFixedStoryboardSceneDrafts({ lines: params.lines, audioAnalysis: params.audioAnalysis });
+  }
+
+  const energySegments = buildEnergySegments(params.audioAnalysis);
+  const makeEnergy = (startMs: number, endMs: number) => findEnergyForRange(startMs, endMs, energySegments);
+  const sortedLines = [...params.lines].sort((a, b) => (a.startMs || 0) - (b.startMs || 0));
+
+  const drafts = params.scenes
+    .map((scene, index) => {
+      const linkedLineIds = Array.isArray(scene.linkedLineIds) ? scene.linkedLineIds : [];
+      const linkedLineSet = new Set(linkedLineIds);
+      const startMs = Math.max(0, Number(scene.startMs) || 0);
+      const endMs = Math.max(startMs + 1, Number(scene.endMs) || startMs + 1);
+      const linkedLines = sortedLines.filter(
+        (line: any) =>
+          linkedLineSet.has(line.id) ||
+          ((line.endMs || line.startMs) > startMs && (line.startMs || 0) < endMs)
+      );
+      const timelineConfig = scene.timelineConfig && typeof scene.timelineConfig === 'object' ? scene.timelineConfig : {};
+      const kind = timelineConfig.kind === 'instrumental' || linkedLineIds.length === 0 ? 'instrumental' : 'lyric';
+      const shotType = isStoryboardShotType(timelineConfig.shotType)
+        ? timelineConfig.shotType
+        : kind === 'instrumental'
+          ? pickInstrumentalShotType(startMs, endMs, index)
+          : pickLyricShotType(scene.text || linkedLines[0]?.text || '', index);
+      const energy = makeEnergy(startMs, endMs);
+      const previousLine = sortedLines.filter((line: any) => (line.endMs || 0) <= startMs).at(-1);
+      const nextLine = sortedLines.find((line: any) => (line.startMs || 0) >= endMs);
+
+      return {
+        dbId: scene.id,
+        sceneId: scene.id || `${kind}_${index + 1}`,
+        kind,
+        shotType,
+        startMs,
+        endMs,
+        text: scene.text || sceneTextFromLineIds(linkedLineIds, sortedLines) || linkedLines.map((line: any) => line.text).join(' '),
+        linkedLineIds,
+        energyLevel: energy.energyLevel,
+        avgEnergy: energy.avgEnergy,
+        beatCount: countBeatsInRange(startMs, endMs, params.audioAnalysis?.beatTimesMs),
+        bpm: params.audioAnalysis?.bpm,
+        key: params.audioAnalysis?.key,
+        prevLyric: previousLine?.text,
+        nextLyric: nextLine?.text,
+      } satisfies FixedStoryboardSceneDraft;
+    })
+    .filter((scene) => scene.endMs > scene.startMs);
+
+  balanceStoryboardShotTypes(drafts);
+  return drafts;
+}
+
+export async function replaceLyricsSceneSkeleton(params: {
+  userId: string;
+  projectId: string;
+  runId?: string;
+}) {
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  if (!details) throw new Error('Project not found');
+
+  const audioAnalysis = readAudioAnalysis(details.project);
+  const fixedScenes = buildFixedStoryboardSceneDrafts({
+    lines: details.lines,
+    audioAnalysis,
+  });
+  const scenes: SceneInput[] = fixedScenes.map((scene) => ({
+    startMs: scene.startMs,
+    endMs: scene.endMs,
+    text: scene.text,
+    prompt: '',
+    motionPrompt: '',
+    linkedLineIds: scene.linkedLineIds,
+    timelineConfig: buildSceneTimelineConfig(scene),
+    negativePrompt: 'text, captions, subtitles, lyrics, watermark, logo, blurry, low quality',
+    status: 'lyrics_draft',
+  }));
+  const inserted = await replaceScenes({
+    userId: params.userId,
+    projectId: params.projectId,
+    runId: params.runId,
+    scenes,
+  });
+
+  await db()
+    .update(lyricVideoProject)
+    .set({
+      lyricsStatus: details.lines.length > 0 ? 'ready' : 'empty',
+      scenesStatus: inserted.length > 0 ? 'lyrics_draft' : 'empty',
+      pipelineStage: details.lines.length > 0 ? 'lyrics_ready' : 'uploaded',
+      pipelineError: null,
+    })
+    .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+  logLyricStage('lyrics-scenes', 'db-written', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+    sceneCount: inserted.length,
+    status: inserted.length > 0 ? 'lyrics_draft' : 'empty',
+    scenes: inserted.map((scene: any) => ({
+      id: scene.id,
+      status: scene.status,
+      startMs: scene.startMs,
+      endMs: scene.endMs,
+      linkedLineIds: scene.linkedLineIds,
+      promptLength: scene.prompt?.length || 0,
+    })),
+  });
+
+  return inserted;
 }
 
 export function audioAnalysisFromLlmPreprocess(preprocess: LyricVideoLlmPreprocessResult): AudioAnalysisResult | undefined {
@@ -609,18 +754,34 @@ export async function generateStoryboard(params: {
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: configs.kie_api_key ? 'kie' : 'heuristic',
-    model: configs.kie_api_key ? configs.kie_chat_model || 'gemini-2.5-flash' : 'local-storyboard',
+    provider: configs.kie_api_key ? 'kie_claude' : 'heuristic',
+    model: configs.kie_api_key ? configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
     prompt: params.storyPrompt || details.project.storyPrompt || details.project.title,
     costCredits: configs.kie_api_key ? 15 : 0,
     options: { projectId: params.projectId, stage: 'storyboard' },
   });
 
   try {
-    const scenes = await generateStoryboardWithKieGemini({
+    logLyricStage('storyboard', 'service-start', {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+      provider: configs.kie_api_key ? 'kie_claude' : 'heuristic',
+      model: configs.kie_api_key ? configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
+      lineCount: details.lines.length,
+      existingSceneCount: details.scenes.length,
+      hasStoryPrompt: Boolean(params.storyPrompt || details.project.storyPrompt),
+    });
+    const fixedScenes = buildFixedStoryboardSceneDraftsFromPersistedScenes({
+      scenes: details.scenes,
+      lines: details.lines,
+      audioAnalysis: readAudioAnalysis(details.project),
+    });
+    const scenes = await generateStoryboardWithKieClaude({
       lines: details.lines,
       project: details.project,
       storyPrompt: params.storyPrompt,
+      fixedScenes,
     });
     const inserted = await replaceScenes({ userId: params.userId, projectId: params.projectId, scenes });
     await Promise.all([
@@ -635,8 +796,26 @@ export async function generateStoryboard(params: {
         })
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
     ]);
+    logLyricStage('storyboard', 'service-success', {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+      sceneCount: inserted.length,
+      scenes: inserted.map((scene: any) => ({
+        id: scene.id,
+        status: scene.status,
+        promptLength: scene.prompt?.length || 0,
+      })),
+      pipelineStage: 'storyboard_ready',
+      scenesStatus: 'ready',
+    });
     return inserted;
   } catch (error: any) {
+    logLyricStageError('storyboard', 'service-fail', error, {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+    });
     await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
     throw error;
   }
@@ -654,8 +833,8 @@ export async function generateStoryPrompt(params: {
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: 'kie',
-    model: configs.kie_chat_model || 'gemini-2.5-flash',
+    provider: 'kie_claude',
+    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
     prompt: [
       `title: ${details.project.title}`,
       `style: ${details.project.artStyle}`,
@@ -667,7 +846,15 @@ export async function generateStoryPrompt(params: {
   });
 
   try {
-    const storyPrompt = await generateStoryPromptWithKieGemini({
+    logLyricStage('story-prompt', 'service-start', {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+      provider: 'kie_claude',
+      model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
+      lineCount: details.lines.length,
+    });
+    const storyPrompt = await generateStoryPromptWithKieClaude({
       lines: details.lines,
       project: details.project,
     });
@@ -691,8 +878,22 @@ export async function generateStoryPrompt(params: {
       taskResult: { storyPrompt },
     });
 
+    logLyricStage('story-prompt', 'service-success', {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+      storyPromptLength: storyPrompt.length,
+      storyPromptPreview: storyPrompt,
+      storyPromptPersisted: Boolean(project?.storyPrompt),
+    });
+
     return { storyPrompt, project, taskId: task.id };
   } catch (error: any) {
+    logLyricStageError('story-prompt', 'service-fail', error, {
+      projectId: params.projectId,
+      userId: params.userId,
+      taskId: task.id,
+    });
     await updateTask({
       taskId: task.id,
       status: AITaskStatus.FAILED,
@@ -718,8 +919,9 @@ export async function replaceScenes(params: {
 
   const cleanScenes = params.scenes
     .map((scene) => ({
+      id: scene.id,
       text: scene.text?.trim() || sceneTextFromLineIds(scene.linkedLineIds || [], existingLines),
-      prompt: scene.prompt.trim(),
+      prompt: scene.prompt?.trim() || '',
       negativePrompt: scene.negativePrompt?.trim() || '',
       linkedLineIds: scene.linkedLineIds || [],
       castIds: scene.castIds || [],
@@ -727,10 +929,11 @@ export async function replaceScenes(params: {
       timelineConfig: scene.timelineConfig || {},
       motionPrompt: scene.motionPrompt?.trim() || '',
       imageUrl: scene.imageUrl,
+      status: scene.status,
       startMs: Math.max(0, scene.startMs || 0),
       endMs: Math.max(scene.startMs || 0, scene.endMs || 0),
     }))
-    .filter((scene) => scene.prompt);
+    .filter((scene) => scene.endMs > scene.startMs && (scene.text || scene.linkedLineIds.length > 0));
 
   return db().transaction(async (tx: any) => {
     await tx
@@ -738,7 +941,7 @@ export async function replaceScenes(params: {
       .where(and(eq(lyricVideoScene.projectId, params.projectId), eq(lyricVideoScene.userId, params.userId)));
 
     const values = cleanScenes.map((scene, index) => ({
-      id: getUuid(),
+      id: scene.id || getUuid(),
       projectId: params.projectId,
       userId: params.userId,
       sort: index,
@@ -755,15 +958,36 @@ export async function replaceScenes(params: {
       motionPrompt: scene.motionPrompt,
       imageUrl: scene.imageUrl,
       imagePromptSnapshot: scene.prompt,
-      status: scene.imageUrl ? 'success' : 'draft',
+      status: scene.status || (scene.imageUrl ? 'success' : scene.prompt ? 'draft' : 'lyrics_draft'),
     }));
 
     const inserted = values.length > 0 ? await tx.insert(lyricVideoScene).values(values).returning() : [];
+    const scenesStatus =
+      inserted.length === 0
+        ? 'empty'
+        : inserted.some((scene: any) => scene.prompt?.trim())
+          ? 'ready'
+          : 'lyrics_draft';
 
     await tx
       .update(lyricVideoProject)
-      .set({ scenesStatus: inserted.length > 0 ? 'ready' : 'empty' })
+      .set({ scenesStatus })
       .where(eq(lyricVideoProject.id, params.projectId));
+
+    logLyricStage('replace-scenes', 'db-written', {
+      projectId: params.projectId,
+      userId: params.userId,
+      runId: params.runId,
+      sceneCount: inserted.length,
+      scenes: inserted.map((scene: any) => ({
+        id: scene.id,
+        status: scene.status,
+        promptLength: scene.prompt?.length || 0,
+        motionPromptLength: scene.motionPrompt?.length || 0,
+        hasImageUrl: Boolean(scene.imageUrl),
+      })),
+      scenesStatus,
+    });
 
     return inserted;
   });

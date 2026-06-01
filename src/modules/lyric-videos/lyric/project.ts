@@ -12,6 +12,7 @@ import {
   type NewLyricVideoProject,
 } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
+import { logLyricStage } from '@/lib/lyric-video-log';
 import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
@@ -73,6 +74,19 @@ export async function createProject(params: {
   };
 
   const [project] = await db().insert(lyricVideoProject).values(data).returning();
+  logLyricStage('create-project', 'db-inserted', {
+    projectId: project.id,
+    userId: project.userId,
+    title: project.title,
+    hasAudioUrl: Boolean(project.audioUrl),
+    audioUrl: project.audioUrl,
+    audioStorageKey: project.audioStorageKey,
+    audioFilename: project.audioFilename,
+    audioDurationMs: project.audioDurationMs,
+    pipelineStage: project.pipelineStage,
+    lyricsStatus: project.lyricsStatus,
+    scenesStatus: project.scenesStatus,
+  });
   return project;
 }
 
@@ -152,6 +166,28 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
         .where(and(eq(lyricVideoGenerationStep.runId, generationRun.id), eq(lyricVideoGenerationStep.userId, params.userId)))
         .orderBy(lyricVideoGenerationStep.sort)
     : [];
+
+  logLyricStage('preview-fetch', 'db-loaded', {
+    projectId: params.id,
+    userId: params.userId,
+    pipelineStage: project.pipelineStage,
+    lyricsStatus: project.lyricsStatus,
+    scenesStatus: project.scenesStatus,
+    renderStatus: project.renderStatus,
+    linesCount: lines.length,
+    wordsCount: words.length,
+    scenesCount: scenes.length,
+    exportsCount: exports.length,
+    generationRun: generationRun
+      ? {
+          id: generationRun.id,
+          status: generationRun.status,
+          currentStage: generationRun.currentStage,
+          progressPercent: generationRun.progressPercent,
+        }
+      : null,
+    generationStepsCount: generationSteps.length,
+  });
 
   const normalizedProject = {
     ...project,

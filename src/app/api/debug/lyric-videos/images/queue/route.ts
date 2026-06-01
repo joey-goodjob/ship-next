@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const model = body?.model || 'gpt-image-2-text-to-image';
+    const model = typeof body?.model === 'string' ? body.model : undefined;
     const aspectRatio = body?.aspectRatio || body?.aspect_ratio || '16:9';
     const resolution = body?.resolution || '1K';
     const data = await withDebugFixture({
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       cache: body?.cache,
       refreshCache: body?.refreshCache,
       stage: 'image-queue',
-      filename: debugFixtureName('image-queue', ['kie', 'grid-5x5', model, aspectRatio, resolution]),
+      filename: debugFixtureName('image-queue', ['kie', 'grid-5x5', model || 'default-image-model', aspectRatio, resolution]),
     }, async () => service.queueStoryboardSceneImagesWithKieForDebug({
         scenes: body?.scenes,
         model,

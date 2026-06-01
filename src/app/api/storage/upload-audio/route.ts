@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { envConfigs } from '@/config';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 
@@ -30,6 +31,7 @@ function extFromMime(mime: string) {
 }
 
 export async function POST(req: Request) {
+  const startedAt = Date.now();
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -48,7 +50,12 @@ export async function POST(req: Request) {
       const exists = await storage.exists({ key });
       const url = exists ? storage.getPublicUrl({ key }) : undefined;
       if (url) {
-        return respData({ url, key, filename: file.name, deduped: true, size: file.size });
+        const data = { url, key, filename: file.name, deduped: true, size: file.size };
+        logLyricStage('upload-audio', 'route-success', {
+          durationMs: Date.now() - startedAt,
+          ...data,
+        });
+        return respData(data);
       }
 
       const result = await storage.uploadFile({
@@ -57,7 +64,12 @@ export async function POST(req: Request) {
         contentType: file.type || 'audio/mpeg',
       });
       if (!result.success || !result.url) return respErr(result.error || 'Audio upload failed');
-      return respData({ url: result.url, key: result.key || key, filename: file.name, deduped: false, size: file.size });
+      const data = { url: result.url, key: result.key || key, filename: file.name, deduped: false, size: file.size };
+      logLyricStage('upload-audio', 'route-success', {
+        durationMs: Date.now() - startedAt,
+        ...data,
+      });
+      return respData(data);
     }
 
     const localDir = path.join(process.cwd(), 'public', 'uploads', 'audio');
@@ -65,9 +77,14 @@ export async function POST(req: Request) {
     const target = path.join(localDir, `${digest}.${ext}`);
     await writeFile(target, body);
     const url = `${envConfigs.app_url.replace(/\/$/, '')}/uploads/audio/${digest}.${ext}`;
-    return respData({ url, key, filename: file.name, deduped: false, size: file.size });
+    const data = { url, key, filename: file.name, deduped: false, size: file.size };
+    logLyricStage('upload-audio', 'route-success', {
+      durationMs: Date.now() - startedAt,
+      ...data,
+    });
+    return respData(data);
   } catch (error: any) {
-    console.error('upload audio failed:', error);
+    logLyricStageError('upload-audio', 'route-fail', error, { durationMs: Date.now() - startedAt });
     return respErr(error?.message || 'upload audio failed');
   }
 }

@@ -1,6 +1,7 @@
 import { envConfigs } from '@/config';
 import { GroqProvider, KieProvider } from '@/core/ai';
 import { getUuid } from '@/lib/hash';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
 import { isStorageConfigured } from '@/modules/storage/service';
 import { saveAIProviderFiles } from './audio';
@@ -61,22 +62,56 @@ export async function callKieGeminiChat(params: {
     requestBody.reasoning_effort = 'high';
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
+  const startedAt = Date.now();
+  logLyricStage('kie-gemini-chat', 'request-start', {
+    model,
+    endpoint,
+    hasMediaUrl: Boolean(params.mediaUrl),
+    hasResponseFormat: Boolean(params.responseFormat),
+    promptLength: params.text.length,
   });
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+  } catch (error) {
+    logLyricStageError('kie-gemini-chat', 'request-error', error, {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+    });
+    throw error;
+  }
 
   if (!response.ok) {
     const text = await response.text();
+    logLyricStage('kie-gemini-chat', 'response-error', {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+      status: response.status,
+      errorPreview: text,
+    });
     throw new Error(`Kie Gemini chat failed: ${response.status} ${text}`);
   }
 
   const data = await response.json();
   const contentText = chatContentToText(data.choices?.[0]?.message?.content || '');
+  logLyricStage('kie-gemini-chat', 'response-success', {
+    durationMs: Date.now() - startedAt,
+    model: data.model || model,
+    endpoint,
+    status: response.status,
+    contentLength: contentText.length,
+    contentPreview: contentText,
+  });
   return { model: data.model || model, raw: data, content: contentText };
 }
 
@@ -89,37 +124,72 @@ export async function callKieClaudeMessages(params: {
   const configs = await getAllConfigs();
   const apiKey = configs.kie_api_key;
   const endpoint = configs.kie_claude_endpoint || 'https://api.kie.ai/claude/v1/messages';
-  const model = params.model || configs.kie_claude_model || 'claude-sonnet-4-5';
+  const model = params.model || configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL;
 
   if (!apiKey) {
     throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: 'user', content: params.text }],
-      stream: false,
-      thinkingFlag: params.thinkingFlag ?? true,
-      max_tokens: params.maxTokens ?? 4096,
-    }),
+  const startedAt = Date.now();
+  logLyricStage('kie-claude-messages', 'request-start', {
+    model,
+    endpoint,
+    promptLength: params.text.length,
+    maxTokens: params.maxTokens ?? 4096,
+    thinkingFlag: params.thinkingFlag ?? true,
   });
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: params.text }],
+        stream: false,
+        thinkingFlag: params.thinkingFlag ?? true,
+        max_tokens: params.maxTokens ?? 4096,
+      }),
+    });
+  } catch (error) {
+    logLyricStageError('kie-claude-messages', 'request-error', error, {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+    });
+    throw error;
+  }
 
   if (!response.ok) {
     const text = await response.text();
+    logLyricStage('kie-claude-messages', 'response-error', {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+      status: response.status,
+      errorPreview: text,
+    });
     throw new Error(`Kie Claude messages failed: ${response.status} ${text}`);
   }
 
   const data = await response.json();
+  const contentText = chatContentToText(data.content || '');
+  logLyricStage('kie-claude-messages', 'response-success', {
+    durationMs: Date.now() - startedAt,
+    model: data.model || model,
+    endpoint,
+    status: response.status,
+    contentLength: contentText.length,
+    contentPreview: contentText,
+  });
   return {
     model: data.model || model,
     raw: data,
-    content: chatContentToText(data.content || ''),
+    content: contentText,
   };
 }
 
@@ -698,17 +768,38 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   };
 }
 
-export async function generateStoryboardWithKieGemini(params: {
+export async function generateStoryboardWithKieClaude(params: {
   lines: any[];
   project: any;
   storyPrompt?: string;
+  fixedScenes?: FixedStoryboardSceneDraft[];
 }): Promise<StoryboardScene[]> {
   const audioAnalysis = readAudioAnalysis(params.project);
-  const fixedScenes = buildFixedStoryboardSceneDrafts({
-    lines: params.lines,
-    audioAnalysis,
+  const fixedScenes = params.fixedScenes?.length
+    ? params.fixedScenes
+    : buildFixedStoryboardSceneDrafts({
+        lines: params.lines,
+        audioAnalysis,
+      });
+  const fallback = fixedScenes.map((scene) => {
+    const fallbackPrompt = fallbackPromptForFixedScene({
+      scene,
+      project: params.project,
+      storyPrompt: params.storyPrompt,
+    });
+    return {
+      id: scene.dbId,
+      startMs: scene.startMs,
+      endMs: scene.endMs,
+      text: scene.text,
+      prompt: fallbackPrompt.imagePrompt,
+      motionPrompt: fallbackPrompt.videoPrompt,
+      linkedLineIds: scene.linkedLineIds,
+      timelineConfig: buildSceneTimelineConfig(scene),
+      negativePrompt: 'text, captions, subtitles, lyrics, watermark, logo, blurry, low quality',
+      status: 'draft',
+    };
   });
-  const fallback = buildHeuristicStoryboard(params);
   const configs = await getAllConfigs();
   if (!configs.kie_api_key) return fallback;
 
@@ -729,25 +820,11 @@ export async function generateStoryboardWithKieGemini(params: {
     storyPrompt: params.storyPrompt,
   });
 
-  const result = await callKieGeminiChat({
+  const result = await callKieClaudeMessages({
     text: prompt,
-    responseFormat: {
-      type: 'json_schema',
-      properties: {
-        scenes: {
-          type: 'array',
-          items: {
-              type: 'object',
-              properties: {
-              scene_id: { type: 'string' },
-              image_prompt: { type: 'string' },
-              video_prompt: { type: 'string' },
-            },
-            required: ['scene_id', 'image_prompt', 'video_prompt'],
-          },
-        },
-      },
-    },
+    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
+    thinkingFlag: true,
+    maxTokens: 4096,
   });
 
   const content = result.content || '{}';
@@ -763,6 +840,7 @@ export async function generateStoryboardWithKieGemini(params: {
       storyPrompt: params.storyPrompt,
     });
     return {
+      id: scene.dbId,
       startMs: scene.startMs,
       endMs: scene.endMs,
       text: scene.text,
@@ -771,11 +849,12 @@ export async function generateStoryboardWithKieGemini(params: {
       linkedLineIds: scene.linkedLineIds,
       timelineConfig: buildSceneTimelineConfig(scene),
       negativePrompt: 'text, captions, subtitles, lyrics, watermark, logo, blurry, low quality',
+      status: 'draft',
     };
   }).filter((scene) => scene.prompt);
 }
 
-export async function generateStoryPromptWithKieGemini(params: {
+export async function generateStoryPromptWithKieClaude(params: {
   lines: any[];
   project: any;
 }) {
@@ -797,7 +876,13 @@ Aspect ratio: ${params.project.aspectRatio}
 Lyrics:
 ${lyrics}`;
 
-  const result = await callKieGeminiChat({ text: prompt });
+  const configs = await getAllConfigs();
+  const result = await callKieClaudeMessages({
+    text: prompt,
+    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
+    thinkingFlag: true,
+    maxTokens: 2048,
+  });
   return result.content.replace(/^["']|["']$/g, '').trim();
 }
 

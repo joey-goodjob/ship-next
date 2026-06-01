@@ -1,0 +1,1131 @@
+{
+  "capturedAt": "2026-05-29T04:24:33.440Z",
+  "provider": "groq",
+  "model": "whisper-large-v3",
+  "filename": "6a355abe9019a7a7999822233198af5ac9f9c69bbf4c2db542167b5dae0c63d8.mp3",
+  "contentType": "audio/mpeg",
+  "prompt": "Open Sky Tonight （素材）",
+  "response": {
+    "task": "transcribe",
+    "language": "English",
+    "duration": 165.865691648,
+    "text": " Sky Tonight, I can see it now right behind the bed Every little break leads me back again Open sky tonight I'm running to my dreams Open sky tonight Nothing's as it seems I'm free, I'm free Watch me rise again Scy Tonight （素材） Scy Tone I'm moving forward If the road bends hard I'll band with it too I was never made to stay stuck in the blue Hands up to the dawn I'm coming through No fear, no change, just a line I choose Open sky tonight I'm running to my dreams Open sky tonight Nothing's as it seems I'm free, I'm free, watch me rise again Open sky tonight, I'm moving forward Oh, oh, oh, oh, oh, oh Open sky tonight, I'm moving forward Sky Toneight （素材）",
+    "words": [
+      {
+        "word": "Sky",
+        "start": 1.76,
+        "end": 1.78
+      },
+      {
+        "word": "Tonight,",
+        "start": 1.78,
+        "end": 1.8
+      },
+      {
+        "word": "I",
+        "start": 30.8,
+        "end": 30.82
+      },
+      {
+        "word": "can",
+        "start": 30.82,
+        "end": 31.22
+      },
+      {
+        "word": "see",
+        "start": 31.22,
+        "end": 31.54
+      },
+      {
+        "word": "it",
+        "start": 31.54,
+        "end": 31.78
+      },
+      {
+        "word": "now",
+        "start": 31.78,
+        "end": 32.28
+      },
+      {
+        "word": "right",
+        "start": 32.28,
+        "end": 33.6
+      },
+      {
+        "word": "behind",
+        "start": 33.6,
+        "end": 34.1
+      },
+      {
+        "word": "the",
+        "start": 34.1,
+        "end": 34.32
+      },
+      {
+        "word": "bed",
+        "start": 34.32,
+        "end": 35.26
+      },
+      {
+        "word": "Every",
+        "start": 35.26,
+        "end": 36.26
+      },
+      {
+        "word": "little",
+        "start": 36.26,
+        "end": 36.76
+      },
+      {
+        "word": "break",
+        "start": 36.76,
+        "end": 37.52
+      },
+      {
+        "word": "leads",
+        "start": 37.52,
+        "end": 38.04
+      },
+      {
+        "word": "me",
+        "start": 38.04,
+        "end": 38.26
+      },
+      {
+        "word": "back",
+        "start": 38.26,
+        "end": 39.08
+      },
+      {
+        "word": "again",
+        "start": 39.08,
+        "end": 40.24
+      },
+      {
+        "word": "Open",
+        "start": 40.92,
+        "end": 41.94
+      },
+      {
+        "word": "sky",
+        "start": 41.94,
+        "end": 42.78
+      },
+      {
+        "word": "tonight",
+        "start": 42.78,
+        "end": 43.4
+      },
+      {
+        "word": "I'm",
+        "start": 43.4,
+        "end": 44.76
+      },
+      {
+        "word": "running",
+        "start": 44.76,
+        "end": 45.2
+      },
+      {
+        "word": "to",
+        "start": 45.2,
+        "end": 45.54
+      },
+      {
+        "word": "my",
+        "start": 45.54,
+        "end": 45.9
+      },
+      {
+        "word": "dreams",
+        "start": 45.9,
+        "end": 46.28
+      },
+      {
+        "word": "Open",
+        "start": 46.24,
+        "end": 46.92
+      },
+      {
+        "word": "sky",
+        "start": 46.92,
+        "end": 47.84
+      },
+      {
+        "word": "tonight",
+        "start": 47.84,
+        "end": 48.78
+      },
+      {
+        "word": "Nothing's",
+        "start": 48.78,
+        "end": 50.54
+      },
+      {
+        "word": "as",
+        "start": 50.54,
+        "end": 50.76
+      },
+      {
+        "word": "it",
+        "start": 50.76,
+        "end": 51.04
+      },
+      {
+        "word": "seems",
+        "start": 51.04,
+        "end": 51.32
+      },
+      {
+        "word": "I'm",
+        "start": 51.28,
+        "end": 51.6
+      },
+      {
+        "word": "free,",
+        "start": 51.6,
+        "end": 52
+      },
+      {
+        "word": "I'm",
+        "start": 52,
+        "end": 52.24
+      },
+      {
+        "word": "free",
+        "start": 52.24,
+        "end": 52.66
+      },
+      {
+        "word": "Watch",
+        "start": 52.66,
+        "end": 53.84
+      },
+      {
+        "word": "me",
+        "start": 53.84,
+        "end": 54.12
+      },
+      {
+        "word": "rise",
+        "start": 54.12,
+        "end": 54.54
+      },
+      {
+        "word": "again",
+        "start": 54.54,
+        "end": 55.72
+      },
+      {
+        "word": "Scy",
+        "start": 56,
+        "end": 56.74
+      },
+      {
+        "word": "Tonight",
+        "start": 56.74,
+        "end": 58.48
+      },
+      {
+        "word": "（素材）",
+        "start": 58.48,
+        "end": 58.5
+      },
+      {
+        "word": "（",
+        "start": 88.48,
+        "end": 88.5
+      },
+      {
+        "word": "Scy",
+        "start": 79.091995,
+        "end": 79.612
+      },
+      {
+        "word": "Tone",
+        "start": 79.612,
+        "end": 79.852
+      },
+      {
+        "word": "I'm",
+        "start": 107.992,
+        "end": 109.692
+      },
+      {
+        "word": "moving",
+        "start": 109.692,
+        "end": 110.052
+      },
+      {
+        "word": "forward",
+        "start": 110.052,
+        "end": 111.112
+      },
+      {
+        "word": "If",
+        "start": 111.112,
+        "end": 111.371994
+      },
+      {
+        "word": "the",
+        "start": 111.371994,
+        "end": 111.631996
+      },
+      {
+        "word": "road",
+        "start": 111.631996,
+        "end": 111.93199
+      },
+      {
+        "word": "bends",
+        "start": 111.93199,
+        "end": 112.192
+      },
+      {
+        "word": "hard",
+        "start": 112.192,
+        "end": 112.572
+      },
+      {
+        "word": "I'll",
+        "start": 112.572,
+        "end": 112.852
+      },
+      {
+        "word": "band",
+        "start": 112.852,
+        "end": 113.192
+      },
+      {
+        "word": "with",
+        "start": 113.192,
+        "end": 113.352
+      },
+      {
+        "word": "it",
+        "start": 113.352,
+        "end": 113.472
+      },
+      {
+        "word": "too",
+        "start": 113.472,
+        "end": 113.731995
+      },
+      {
+        "word": "I",
+        "start": 113.29199,
+        "end": 113.972
+      },
+      {
+        "word": "was",
+        "start": 113.972,
+        "end": 114.112
+      },
+      {
+        "word": "never",
+        "start": 114.112,
+        "end": 114.371994
+      },
+      {
+        "word": "made",
+        "start": 114.371994,
+        "end": 114.752
+      },
+      {
+        "word": "to",
+        "start": 114.752,
+        "end": 114.951996
+      },
+      {
+        "word": "stay",
+        "start": 114.951996,
+        "end": 115.231995
+      },
+      {
+        "word": "stuck",
+        "start": 115.231995,
+        "end": 115.631996
+      },
+      {
+        "word": "in",
+        "start": 115.631996,
+        "end": 115.871994
+      },
+      {
+        "word": "the",
+        "start": 115.871994,
+        "end": 116.032
+      },
+      {
+        "word": "blue",
+        "start": 116.032,
+        "end": 116.29199
+      },
+      {
+        "word": "Hands",
+        "start": 116.29199,
+        "end": 116.812
+      },
+      {
+        "word": "up",
+        "start": 116.812,
+        "end": 116.972
+      },
+      {
+        "word": "to",
+        "start": 116.972,
+        "end": 117.112
+      },
+      {
+        "word": "the",
+        "start": 117.112,
+        "end": 117.252
+      },
+      {
+        "word": "dawn",
+        "start": 117.252,
+        "end": 117.612
+      },
+      {
+        "word": "I'm",
+        "start": 117.612,
+        "end": 117.892
+      },
+      {
+        "word": "coming",
+        "start": 117.892,
+        "end": 118.352
+      },
+      {
+        "word": "through",
+        "start": 118.352,
+        "end": 118.752
+      },
+      {
+        "word": "No",
+        "start": 118.29199,
+        "end": 119.072
+      },
+      {
+        "word": "fear,",
+        "start": 119.072,
+        "end": 119.532
+      },
+      {
+        "word": "no",
+        "start": 119.532,
+        "end": 119.712
+      },
+      {
+        "word": "change,",
+        "start": 119.712,
+        "end": 120.15199
+      },
+      {
+        "word": "just",
+        "start": 120.15199,
+        "end": 120.29199
+      },
+      {
+        "word": "a",
+        "start": 120.29199,
+        "end": 120.51199
+      },
+      {
+        "word": "line",
+        "start": 120.51199,
+        "end": 120.812
+      },
+      {
+        "word": "I",
+        "start": 120.812,
+        "end": 121.212
+      },
+      {
+        "word": "choose",
+        "start": 121.212,
+        "end": 122.371994
+      },
+      {
+        "word": "Open",
+        "start": 124.212,
+        "end": 125.29199
+      },
+      {
+        "word": "sky",
+        "start": 125.29199,
+        "end": 125.972
+      },
+      {
+        "word": "tonight",
+        "start": 125.972,
+        "end": 126.65199
+      },
+      {
+        "word": "I'm",
+        "start": 126.65199,
+        "end": 128.032
+      },
+      {
+        "word": "running",
+        "start": 128.032,
+        "end": 128.452
+      },
+      {
+        "word": "to",
+        "start": 128.452,
+        "end": 128.812
+      },
+      {
+        "word": "my",
+        "start": 128.812,
+        "end": 129.172
+      },
+      {
+        "word": "dreams",
+        "start": 129.172,
+        "end": 129.552
+      },
+      {
+        "word": "Open",
+        "start": 129.532,
+        "end": 130.192
+      },
+      {
+        "word": "sky",
+        "start": 130.192,
+        "end": 131.052
+      },
+      {
+        "word": "tonight",
+        "start": 131.052,
+        "end": 131.972
+      },
+      {
+        "word": "Nothing's",
+        "start": 131.972,
+        "end": 133.79199
+      },
+      {
+        "word": "as",
+        "start": 133.79199,
+        "end": 134.032
+      },
+      {
+        "word": "it",
+        "start": 134.032,
+        "end": 134.252
+      },
+      {
+        "word": "seems",
+        "start": 134.252,
+        "end": 134.57199
+      },
+      {
+        "word": "I'm",
+        "start": 134.592,
+        "end": 134.79199
+      },
+      {
+        "word": "free,",
+        "start": 134.79199,
+        "end": 135.272
+      },
+      {
+        "word": "I'm",
+        "start": 135.272,
+        "end": 135.512
+      },
+      {
+        "word": "free,",
+        "start": 135.512,
+        "end": 135.892
+      },
+      {
+        "word": "watch",
+        "start": 135.892,
+        "end": 137.092
+      },
+      {
+        "word": "me",
+        "start": 137.092,
+        "end": 137.492
+      },
+      {
+        "word": "rise",
+        "start": 137.492,
+        "end": 137.832
+      },
+      {
+        "word": "again",
+        "start": 137.832,
+        "end": 139.152
+      },
+      {
+        "word": "Open",
+        "start": 139.392,
+        "end": 140.41199
+      },
+      {
+        "word": "sky",
+        "start": 140.41199,
+        "end": 141.112
+      },
+      {
+        "word": "tonight,",
+        "start": 141.112,
+        "end": 142.172
+      },
+      {
+        "word": "I'm",
+        "start": 142.172,
+        "end": 142.592
+      },
+      {
+        "word": "moving",
+        "start": 142.592,
+        "end": 142.992
+      },
+      {
+        "word": "forward",
+        "start": 142.992,
+        "end": 143.992
+      },
+      {
+        "word": "Oh,",
+        "start": 143.812,
+        "end": 145.79199
+      },
+      {
+        "word": "oh,",
+        "start": 145.79199,
+        "end": 145.892
+      },
+      {
+        "word": "oh,",
+        "start": 145.892,
+        "end": 146.35199
+      },
+      {
+        "word": "oh,",
+        "start": 146.35199,
+        "end": 146.752
+      },
+      {
+        "word": "oh,",
+        "start": 146.752,
+        "end": 147.172
+      },
+      {
+        "word": "oh",
+        "start": 147.172,
+        "end": 153.012
+      },
+      {
+        "word": "Open",
+        "start": 154.532,
+        "end": 155.392
+      },
+      {
+        "word": "sky",
+        "start": 155.392,
+        "end": 156.312
+      },
+      {
+        "word": "tonight,",
+        "start": 156.312,
+        "end": 157.312
+      },
+      {
+        "word": "I'm",
+        "start": 157.312,
+        "end": 157.772
+      },
+      {
+        "word": "moving",
+        "start": 157.772,
+        "end": 158.19199
+      },
+      {
+        "word": "forward",
+        "start": 158.19199,
+        "end": 159.812
+      },
+      {
+        "word": "Sky",
+        "start": 164.592,
+        "end": 166.07199
+      },
+      {
+        "word": "Toneight",
+        "start": 166.07199,
+        "end": 166.092
+      },
+      {
+        "word": "（素材）",
+        "start": 166.092,
+        "end": 166.112
+      }
+    ],
+    "segments": [
+      {
+        "id": 0,
+        "seek": 0,
+        "start": 0,
+        "end": 0,
+        "text": "",
+        "tokens": null,
+        "temperature": 0.2,
+        "avg_logprob": -0.3956217,
+        "compression_ratio": 1.0833334,
+        "no_speech_prob": 0.56347656
+      },
+      {
+        "id": 1,
+        "seek": 0,
+        "start": 2,
+        "end": 10,
+        "text": " Sky Tonight,",
+        "tokens": [
+          50465,
+          318,
+          4133,
+          314,
+          266,
+          397,
+          11,
+          50865
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -0.3956217,
+        "compression_ratio": 1.0833334,
+        "no_speech_prob": 0.56347656
+      },
+      {
+        "id": 2,
+        "seek": 3000,
+        "start": 30,
+        "end": 40,
+        "text": " I can see it now right behind the bed Every little break leads me back again",
+        "tokens": [
+          50365,
+          286,
+          393,
+          536,
+          309,
+          586,
+          558,
+          2261,
+          264,
+          2901,
+          2048,
+          707,
+          1821,
+          6689,
+          385,
+          646,
+          797,
+          50865
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.23069973,
+        "compression_ratio": 1.4592593,
+        "no_speech_prob": 0.35107422
+      },
+      {
+        "id": 3,
+        "seek": 3000,
+        "start": 40,
+        "end": 46,
+        "text": " Open sky tonight I'm running to my dreams",
+        "tokens": [
+          50865,
+          7238,
+          5443,
+          4440,
+          286,
+          478,
+          2614,
+          281,
+          452,
+          7505,
+          51165
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.23069973,
+        "compression_ratio": 1.4592593,
+        "no_speech_prob": 0.35107422
+      },
+      {
+        "id": 4,
+        "seek": 3000,
+        "start": 46,
+        "end": 51,
+        "text": " Open sky tonight Nothing's as it seems",
+        "tokens": [
+          51165,
+          7238,
+          5443,
+          4440,
+          6693,
+          311,
+          382,
+          309,
+          2544,
+          51415
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.23069973,
+        "compression_ratio": 1.4592593,
+        "no_speech_prob": 0.35107422
+      },
+      {
+        "id": 5,
+        "seek": 3000,
+        "start": 51,
+        "end": 56,
+        "text": " I'm free, I'm free Watch me rise again",
+        "tokens": [
+          51415,
+          286,
+          478,
+          1737,
+          11,
+          286,
+          478,
+          1737,
+          7277,
+          385,
+          6272,
+          797,
+          51665
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.23069973,
+        "compression_ratio": 1.4592593,
+        "no_speech_prob": 0.35107422
+      },
+      {
+        "id": 6,
+        "seek": 5600,
+        "start": 56,
+        "end": 58,
+        "text": " Scy Tonight （素材）",
+        "tokens": [
+          50365,
+          318,
+          1344,
+          314,
+          266,
+          397,
+          25072,
+          120,
+          230,
+          37204,
+          4422,
+          238,
+          171,
+          120,
+          231,
+          50465
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.7574071,
+        "compression_ratio": 0.7352941,
+        "no_speech_prob": 0.49560547
+      },
+      {
+        "id": 7,
+        "seek": 77,
+        "start": 86,
+        "end": 79.932,
+        "text": " Scy Tone",
+        "tokens": [
+          50365,
+          25072,
+          120,
+          230,
+          50465,
+          50365,
+          318,
+          1344,
+          314,
+          546,
+          50462
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -1.1489131,
+        "compression_ratio": 0.5294118,
+        "no_speech_prob": 0.5517578
+      },
+      {
+        "id": 8,
+        "seek": 3077,
+        "start": 107.992,
+        "end": 113.79199,
+        "text": " I'm moving forward If the road bends hard I'll band with it too",
+        "tokens": [
+          50365,
+          286,
+          478,
+          2684,
+          2128,
+          759,
+          264,
+          3060,
+          42990,
+          1152,
+          286,
+          603,
+          4116,
+          365,
+          309,
+          886,
+          50655
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.31221628,
+        "compression_ratio": 1.5027933,
+        "no_speech_prob": 0.38330078
+      },
+      {
+        "id": 9,
+        "seek": 3077,
+        "start": 113.79199,
+        "end": 118.79199,
+        "text": " I was never made to stay stuck in the blue Hands up to the dawn I'm coming through",
+        "tokens": [
+          50655,
+          286,
+          390,
+          1128,
+          1027,
+          281,
+          1754,
+          5541,
+          294,
+          264,
+          3344,
+          21369,
+          493,
+          281,
+          264,
+          18192,
+          286,
+          478,
+          1348,
+          807,
+          50905
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.31221628,
+        "compression_ratio": 1.5027933,
+        "no_speech_prob": 0.38330078
+      },
+      {
+        "id": 10,
+        "seek": 3077,
+        "start": 118.79199,
+        "end": 124.192,
+        "text": " No fear, no change, just a line I choose",
+        "tokens": [
+          50905,
+          883,
+          4240,
+          11,
+          572,
+          1319,
+          11,
+          445,
+          257,
+          1622,
+          286,
+          2826,
+          51175
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.31221628,
+        "compression_ratio": 1.5027933,
+        "no_speech_prob": 0.38330078
+      },
+      {
+        "id": 11,
+        "seek": 3077,
+        "start": 124.192,
+        "end": 129.592,
+        "text": " Open sky tonight I'm running to my dreams",
+        "tokens": [
+          51175,
+          7238,
+          5443,
+          4440,
+          286,
+          478,
+          2614,
+          281,
+          452,
+          7505,
+          51445
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.31221628,
+        "compression_ratio": 1.5027933,
+        "no_speech_prob": 0.38330078
+      },
+      {
+        "id": 12,
+        "seek": 3077,
+        "start": 129.592,
+        "end": 134.592,
+        "text": " Open sky tonight Nothing's as it seems",
+        "tokens": [
+          51445,
+          7238,
+          5443,
+          4440,
+          6693,
+          311,
+          382,
+          309,
+          2544,
+          51695
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.31221628,
+        "compression_ratio": 1.5027933,
+        "no_speech_prob": 0.38330078
+      },
+      {
+        "id": 13,
+        "seek": 5737,
+        "start": 134.592,
+        "end": 139.272,
+        "text": " I'm free, I'm free, watch me rise again",
+        "tokens": [
+          50365,
+          286,
+          478,
+          1737,
+          11,
+          286,
+          478,
+          1737,
+          11,
+          1159,
+          385,
+          6272,
+          797,
+          50599
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -0.15662187,
+        "compression_ratio": 1.6707317,
+        "no_speech_prob": 0.26000977
+      },
+      {
+        "id": 14,
+        "seek": 5737,
+        "start": 139.272,
+        "end": 144.312,
+        "text": " Open sky tonight, I'm moving forward",
+        "tokens": [
+          50599,
+          7238,
+          5443,
+          4440,
+          11,
+          286,
+          478,
+          2684,
+          2128,
+          50851
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -0.15662187,
+        "compression_ratio": 1.6707317,
+        "no_speech_prob": 0.26000977
+      },
+      {
+        "id": 15,
+        "seek": 5737,
+        "start": 144.312,
+        "end": 154.47198,
+        "text": " Oh, oh, oh, oh, oh, oh",
+        "tokens": [
+          50851,
+          876,
+          11,
+          1954,
+          11,
+          1954,
+          11,
+          1954,
+          11,
+          1954,
+          11,
+          1954,
+          51359
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -0.15662187,
+        "compression_ratio": 1.6707317,
+        "no_speech_prob": 0.26000977
+      },
+      {
+        "id": 16,
+        "seek": 5737,
+        "start": 154.47198,
+        "end": 164.552,
+        "text": " Open sky tonight, I'm moving forward",
+        "tokens": [
+          51359,
+          7238,
+          5443,
+          4440,
+          11,
+          286,
+          478,
+          2684,
+          2128,
+          51863
+        ],
+        "temperature": 0.2,
+        "avg_logprob": -0.15662187,
+        "compression_ratio": 1.6707317,
+        "no_speech_prob": 0.26000977
+      },
+      {
+        "id": 17,
+        "seek": 8737,
+        "start": 164.592,
+        "end": 165.592,
+        "text": " Sky Toneight （素材）",
+        "tokens": [
+          50365,
+          318,
+          4133,
+          314,
+          546,
+          397,
+          25072,
+          120,
+          230,
+          37204,
+          4422,
+          238,
+          171,
+          120,
+          231,
+          50415
+        ],
+        "temperature": 0,
+        "avg_logprob": -0.6882135,
+        "compression_ratio": 0.74285716,
+        "no_speech_prob": 0.5395508
+      }
+    ],
+    "x_groq": {
+      "id": "req_01ksrzkw41e1980ndz6nk6pgfd"
+    }
+  }
+}

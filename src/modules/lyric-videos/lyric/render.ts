@@ -7,6 +7,7 @@ import { envConfigs } from '@/config';
 import { db } from '@/core/db';
 import { lyricVideoExport, lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
+import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { fetchBytes, saveGeneratedFile } from './audio';
 import { safeJson } from './json';
@@ -116,12 +117,32 @@ export async function queueExport(params: {
     })
     .returning();
 
+  logLyricStage('export-video', 'db-inserted', {
+    projectId: params.projectId,
+    userId: params.userId,
+    exportId: exportJob.id,
+    taskId: task.id,
+    status: exportJob.status,
+    format: exportJob.format,
+    resolution: exportJob.resolution,
+    aspectRatio: exportJob.aspectRatio,
+    lineCount: details.lines.length,
+    sceneCount: details.scenes.length,
+    costCredits,
+  });
+
   await db()
     .update(lyricVideoProject)
     .set({ renderStatus: 'processing', renderTaskId: task.id, pipelineStage: 'rendering', pipelineError: null })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
   try {
+    logLyricStage('export-video', 'render-start', {
+      projectId: params.projectId,
+      userId: params.userId,
+      exportId: exportJob.id,
+      taskId: task.id,
+    });
     const rendered = await renderStaticVideo({
       project: details.project,
       lines: details.lines,
@@ -142,8 +163,27 @@ export async function queueExport(params: {
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
     ]);
 
+    logLyricStage('export-video', 'success', {
+      projectId: params.projectId,
+      userId: params.userId,
+      exportId: exportJob.id,
+      taskId: task.id,
+      status: 'success',
+      videoUrl: rendered.url,
+      storageKey: rendered.storageKey,
+      hasVideoUrl: Boolean(rendered.url),
+      pipelineStage: 'export_ready',
+      renderStatus: 'ready',
+    });
+
     return { ...exportJob, status: 'success', videoUrl: rendered.url, storageKey: rendered.storageKey };
   } catch (error: any) {
+    logLyricStageError('export-video', 'fail', error, {
+      projectId: params.projectId,
+      userId: params.userId,
+      exportId: exportJob.id,
+      taskId: task.id,
+    });
     await Promise.all([
       updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
       db()
