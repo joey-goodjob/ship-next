@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-type DebugFixtureStage = 'analyze' | 'prompt1' | 'prompt2' | 'image-queue' | 'image-query';
+type DebugFixtureStage = 'analyze' | 'prompt1' | 'prompt2' | 'image-queue' | 'image-query' | 'image-split';
 
 type DebugFixtureInfo = {
   key: string;

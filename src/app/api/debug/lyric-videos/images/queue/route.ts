@@ -12,15 +12,15 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const model = typeof body?.model === 'string' ? body.model : undefined;
-    const aspectRatio = body?.aspectRatio || body?.aspect_ratio || '16:9';
-    const resolution = body?.resolution || '1K';
-    const gridSize = Math.max(1, Math.min(5, Math.floor(Number(body?.gridSize || body?.grid_size || 5) || 5)));
+    const aspectRatio = body?.aspectRatio === '9:16' || body?.aspect_ratio === '9:16' ? '9:16' : '16:9';
+    const resolution = body?.resolution || '4K';
+    const gridSize = Math.max(1, Math.min(5, Math.floor(Number(body?.gridSize || body?.grid_size || 4) || 4)));
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,
       refreshCache: body?.refreshCache,
       stage: 'image-queue',
-      filename: debugFixtureName('image-queue', ['kie', `grid-${gridSize}x${gridSize}`, model || 'default-image-model', aspectRatio, resolution]),
+      filename: debugFixtureName('image-queue', ['kie', 'batched', `grid-${gridSize}x${gridSize}`, model || 'default-image-model', aspectRatio, resolution]),
     }, async () => service.queueStoryboardSceneImagesWithKieForDebug({
         scenes: body?.scenes,
         model,

@@ -10,6 +10,8 @@ export const MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR =
   process.env.MOCK_LYRIC_VIDEO_FIXTURE_KEY ||
   "open-sky-mp3";
 const MOCK_LYRIC_VIDEO_PROMPT2_FILENAME = "prompt2-kie_codex-gpt-5-5.json";
+const MOCK_LYRIC_VIDEO_IMAGE_SPLIT_FILENAME =
+  "image-split-kie-batched-grid-4x4-16-9-20b0142123366f2cc3f58e876181443f-392960065a4baddf02dafced3ffafc95-c4757d399210cf5a.json";
 
 // 固定的 mock 元信息：这些字段用来补齐数据库记录里通常会有的 user/run/date。
 const mockDate = "2026-05-25T08:00:00.000Z";
@@ -24,6 +26,21 @@ type Prompt2Scene = {
   image_prompt?: string;
   video_prompt?: string;
   timeline_config?: Record<string, unknown>;
+};
+
+type SplitSceneImage = {
+  scene_id?: number | string;
+  scene_index?: number | string;
+  batchIndex?: number;
+  batchNumber?: number;
+  panel?: number;
+  globalPanel?: number;
+  start_s?: number;
+  end_s?: number;
+  image_prompt?: string;
+  imageUrl?: string;
+  width?: number;
+  height?: number;
 };
 
 // 读取 debug analyze API 缓存文件；如果本地没有缓存，用空结构兜底，避免 mock 预览阻塞构建。
@@ -44,12 +61,27 @@ const prompt2FixturePath = path.join(
 const officialLikePrompt2 = existsSync(prompt2FixturePath)
   ? (JSON.parse(readFileSync(prompt2FixturePath, "utf8")) as any)
   : { scenes: [] };
+const imageSplitFixturePath = path.join(
+  process.cwd(),
+  "debug/fixtures",
+  MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR,
+  MOCK_LYRIC_VIDEO_IMAGE_SPLIT_FILENAME,
+);
+const officialLikeImageSplit = existsSync(imageSplitFixturePath)
+  ? (JSON.parse(readFileSync(imageSplitFixturePath, "utf8")) as any)
+  : { sceneImages: [] };
 
 // 从 analyze.json 里拆出后面转换要用的几个核心部分。
 const officialLikeAudioAnalysis = officialLikeAnalyze.audioAnalysis || {};
 const officialLikeTranscription = officialLikeAnalyze.transcription || {};
 const officialLikeFixedScenes = Array.isArray(officialLikeAnalyze.fixedScenes) ? officialLikeAnalyze.fixedScenes : [];
 const officialLikePrompt2Scenes: Prompt2Scene[] = Array.isArray(officialLikePrompt2.scenes) ? officialLikePrompt2.scenes : [];
+const officialLikeSceneImages: SplitSceneImage[] = Array.isArray(officialLikeImageSplit.sceneImages)
+  ? officialLikeImageSplit.sceneImages
+  : [];
+const officialLikeSceneImageBySceneNumber = new Map<number, SplitSceneImage>(
+  officialLikeSceneImages.map((sceneImage, index) => [index + 1, sceneImage]),
+);
 const officialLikePrompt2BySceneId = new Map<string, Prompt2Scene>(
   officialLikePrompt2Scenes.flatMap((scene) => {
     const entries: Array<[string, Prompt2Scene]> = [];
@@ -179,6 +211,9 @@ const officialLikeScenes = officialLikeFixedScenes.map((scene: any, index: numbe
     prompt2Scene?.image_prompt || `${scene.kind === "instrumental" ? "Instrumental transition" : "Lyric scene"}: ${text}`,
   );
   const motionPrompt = String(prompt2Scene?.video_prompt || "");
+  const splitSceneImage = officialLikeSceneImageBySceneNumber.get(index + 1);
+  const fallbackImageUrl = sceneImage(text, colors[index % colors.length], colors[(index + 1) % colors.length]);
+  const imagePromptSnapshot = String(splitSceneImage?.image_prompt || prompt);
   return {
     id: `mock-scene-${scene.sceneId || index + 1}`,
     projectId: MOCK_LYRIC_VIDEO_PROJECT_ID,
@@ -205,12 +240,18 @@ const officialLikeScenes = officialLikeFixedScenes.map((scene: any, index: numbe
       nextLyric: scene.nextLyric,
     },
     motionPrompt,
-    imageUrl: sceneImage(text, colors[index % colors.length], colors[(index + 1) % colors.length]),
+    imageUrl: splitSceneImage?.imageUrl || fallbackImageUrl,
     imageTaskId: `mock-image-task-${index + 1}`,
     providerTaskId: `mock-provider-image-${index + 1}`,
     generationParams: {
       source: "open_sky_mp3_analyze_fixture",
       prompt2Source: prompt2Scene ? MOCK_LYRIC_VIDEO_PROMPT2_FILENAME : null,
+      imageSplitSource: splitSceneImage ? MOCK_LYRIC_VIDEO_IMAGE_SPLIT_FILENAME : null,
+      imageSplitSceneNumber: splitSceneImage ? index + 1 : null,
+      imageSplitBatchNumber: splitSceneImage?.batchNumber ?? null,
+      imageSplitPanel: splitSceneImage?.panel ?? null,
+      imageSplitWidth: splitSceneImage?.width ?? null,
+      imageSplitHeight: splitSceneImage?.height ?? null,
     },
     attemptCount: 1,
     lastAttemptAt: mockDate,
@@ -219,7 +260,7 @@ const officialLikeScenes = officialLikeFixedScenes.map((scene: any, index: numbe
     failureCode: null,
     imageModel: "mock",
     imageSeed: String(1001 + index),
-    imagePromptSnapshot: prompt,
+    imagePromptSnapshot,
     error: null,
     status: "ready",
     createdAt: mockDate,

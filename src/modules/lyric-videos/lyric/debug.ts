@@ -4,8 +4,9 @@ import { ElevenLabsProvider, AIMediaType, AITaskStatus as ProviderTaskStatus, KI
 import { getUuid } from '@/lib/hash';
 import { getAllConfigs } from '@/modules/config/service';
 import { isStorageConfigured } from '@/modules/storage/service';
+import sharp from 'sharp';
 import { asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
-import { runLibrosaAnalysisForLocalFile, saveAIProviderFiles } from './audio';
+import { fetchBytes, runLibrosaAnalysisForLocalFile, saveAIProviderFiles, saveLocalPublicFile } from './audio';
 import { parseJsonField } from './json';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm } from './storyboard';
 import {
@@ -38,6 +39,7 @@ export function normalizeDebugImageScenes(params: {
       const start = Number(scene.start_s ?? 0);
       const end = Number(scene.end_s ?? start);
       return {
+        scene_index: index + 1,
         scene_id: Number.isFinite(sceneId) ? sceneId : index + 1,
         raw_scene_id: String(rawSceneId),
         start_s: Number.isFinite(start) ? Math.max(0, Number(start.toFixed(3))) : 0,
@@ -48,19 +50,32 @@ export function normalizeDebugImageScenes(params: {
     .filter((scene) => scene.image_prompt)
     .filter((scene) => !selectedIds || selectedIds.has(String(scene.scene_id)) || selectedIds.has(scene.raw_scene_id));
 
-  const maxPanels = Math.max(1, Math.min(25, Math.floor(Number(params.maxPanels || 25))));
+  const maxPanels = params.maxPanels
+    ? Math.max(1, Math.floor(Number(params.maxPanels)))
+    : scenes.length;
   if (limit > 0) return scenes.slice(0, Math.min(limit, maxPanels));
   return scenes.slice(0, maxPanels);
 }
 
 export function buildStoryboardGridImagePrompt(
   scenes: ReturnType<typeof normalizeDebugImageScenes>,
-  gridSize = 5
+  gridSize = 5,
+  aspectRatio = '16:9'
 ) {
   const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(gridSize) || 5)));
   const totalPanels = normalizedGridSize * normalizedGridSize;
+  const normalizedAspectRatio = aspectRatio === '9:16' ? '9:16' : '16:9';
+  const frameOrientation = normalizedAspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
+  const expectedCanvas = normalizedAspectRatio === '9:16'
+    ? 'The whole image should be a vertical 9:16 canvas, approximately 2160x3840 at 4K.'
+    : 'The whole image should be a horizontal 16:9 canvas, approximately 3840x2160 at 4K.';
+  const expectedPanel = normalizedAspectRatio === '9:16'
+    ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
+    : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
+  const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
   const panels = scenes.map((scene, index) => ({
     panel: index + 1,
+    scene_index: scene.scene_index,
     scene_id: scene.scene_id,
     start_s: scene.start_s,
     end_s: scene.end_s,
@@ -68,7 +83,12 @@ export function buildStoryboardGridImagePrompt(
   }));
   const panelLines = panels.map((panel) => `面板${panel.panel}：${panel.image_prompt}`);
   const compiledPrompt = [
-    `一张包含精确${normalizedGridSize}x${normalizedGridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
+    globalStyle,
+    `Create one exact ${normalizedGridSize}x${normalizedGridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels, no text.`,
+    expectedCanvas,
+    expectedPanel,
+    `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${normalizedAspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
+    `一张包含精确${normalizedGridSize}x${normalizedGridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。每个面板都必须是${normalizedAspectRatio}的${normalizedAspectRatio === '9:16' ? '竖图' : '横图'}画幅。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
     '',
     ...panelLines,
   ].join('\n');
@@ -76,6 +96,7 @@ export function buildStoryboardGridImagePrompt(
   return {
     compiledPrompt,
     gridSize: normalizedGridSize,
+    aspectRatio: normalizedAspectRatio,
     totalPanels,
     panelCount: panels.length,
     panels,
@@ -105,11 +126,11 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   }
 
   const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || 5))));
+  const batchSize = gridSize * gridSize;
   const scenes = normalizeDebugImageScenes({
     scenes: params.scenes,
     sceneIds: params.sceneIds,
     limit: params.limit,
-    maxPanels: gridSize * gridSize,
   });
   if (scenes.length === 0) {
     throw new Error('No scenes with image_prompt to generate');
@@ -117,53 +138,97 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
 
   const configs = await getAllConfigs();
   const model = resolveKieImageModel(configs, params.model);
-  const aspectRatio = params.aspectRatio || '16:9';
-  const resolution = params.resolution || '1K';
+  const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
+  const resolution = params.resolution || '4K';
   const provider = await createKieImageProviderForDebug();
-  const gridPrompt = buildStoryboardGridImagePrompt(scenes, gridSize);
-  console.info(`[debug lyric-videos images/queue] compiled ${gridPrompt.gridSize}x${gridPrompt.gridSize} grid prompt`, {
-    provider: 'kie',
-    model,
-    aspectRatio,
-    resolution,
-    gridSize: gridPrompt.gridSize,
-    totalPanels: gridPrompt.totalPanels,
-    panelCount: gridPrompt.panelCount,
-    panels: gridPrompt.panels.map((panel) => ({
-      panel: panel.panel,
-      scene_id: panel.scene_id,
-      start_s: panel.start_s,
-      end_s: panel.end_s,
-    })),
-    compiledPrompt: gridPrompt.compiledPrompt,
-  });
-  const result = await provider.generate({
-    params: {
-      mediaType: AIMediaType.IMAGE,
+  const sceneBatches = [];
+  for (let start = 0; start < scenes.length; start += batchSize) {
+    sceneBatches.push(scenes.slice(start, start + batchSize));
+  }
+
+  const batches = [];
+  const taskIds = [];
+  const rawResults = [];
+  const allPanels = [];
+  for (const [batchIndex, batchScenes] of sceneBatches.entries()) {
+    const sceneOffset = batchIndex * batchSize;
+    const gridPrompt = buildStoryboardGridImagePrompt(batchScenes, gridSize, aspectRatio);
+    const panels = gridPrompt.panels.map((panel) => ({
+      ...panel,
+      batchIndex,
+      sceneOffset,
+      globalPanel: sceneOffset + panel.panel,
+    }));
+    console.info(`[debug lyric-videos images/queue] compiled batch ${batchIndex + 1}/${sceneBatches.length} ${gridPrompt.gridSize}x${gridPrompt.gridSize} grid prompt`, {
+      provider: 'kie',
       model,
-      prompt: gridPrompt.compiledPrompt,
-      options: {
-        aspect_ratio: aspectRatio,
-        resolution,
-        output_format: params.outputFormat,
+      aspectRatio,
+      resolution,
+      gridSize: gridPrompt.gridSize,
+      gridAspectRatio: gridPrompt.aspectRatio,
+      totalPanels: gridPrompt.totalPanels,
+      sceneOffset,
+      panelCount: gridPrompt.panelCount,
+      panels: panels.map((panel) => ({
+        panel: panel.panel,
+        globalPanel: panel.globalPanel,
+        scene_id: panel.scene_id,
+        start_s: panel.start_s,
+        end_s: panel.end_s,
+      })),
+      compiledPrompt: gridPrompt.compiledPrompt,
+    });
+    const result = await provider.generate({
+      params: {
+        mediaType: AIMediaType.IMAGE,
+        model,
+        prompt: gridPrompt.compiledPrompt,
+        options: {
+          aspect_ratio: aspectRatio,
+          resolution,
+          output_format: params.outputFormat,
+        },
       },
-    },
-  });
+    });
+    taskIds.push(result.taskId);
+    rawResults.push(result.taskResult);
+    allPanels.push(...panels);
+    batches.push({
+      batchIndex,
+      batchNumber: batchIndex + 1,
+      sceneOffset,
+      providerTaskId: result.taskId,
+      taskId: result.taskId,
+      taskStatus: result.taskStatus,
+      compiledPrompt: gridPrompt.compiledPrompt,
+      gridSize: gridPrompt.gridSize,
+      gridAspectRatio: gridPrompt.aspectRatio,
+      totalPanels: gridPrompt.totalPanels,
+      panelCount: gridPrompt.panelCount,
+      panels,
+      raw: result.taskResult,
+    });
+  }
 
   return {
     provider: 'kie',
     model,
     aspect_ratio: aspectRatio,
     resolution,
-    providerTaskId: result.taskId,
-    taskStatus: result.taskStatus,
-    taskIds: [result.taskId],
-    compiledPrompt: gridPrompt.compiledPrompt,
-    gridSize: gridPrompt.gridSize,
-    totalPanels: gridPrompt.totalPanels,
-    panelCount: gridPrompt.panelCount,
-    panels: gridPrompt.panels,
-    raw: result.taskResult,
+    providerTaskId: taskIds[0],
+    taskStatus: batches[0]?.taskStatus,
+    taskIds,
+    batchSize,
+    batchCount: batches.length,
+    sceneCount: scenes.length,
+    gridSize,
+    gridAspectRatio: aspectRatio,
+    totalPanels: batchSize,
+    panelCount: scenes.length,
+    panels: allPanels,
+    batches,
+    compiledPrompt: batches[0]?.compiledPrompt,
+    raw: rawResults,
   };
 }
 
@@ -202,6 +267,187 @@ export async function queryStoryboardSceneImagesWithKieForDebug(params: {
   }
 
   return { provider: 'kie', results };
+}
+
+function sanitizeDebugPathPart(value: unknown) {
+  return String(value ?? '')
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 120) || 'default';
+}
+
+export async function splitStoryboardGridImageForDebug(params: {
+  taskIds: string[];
+  fixtureKey?: string;
+  gridSize?: number;
+  aspectRatio?: string;
+  panels?: Array<{
+    panel?: number;
+    globalPanel?: number;
+    batchIndex?: number;
+    sceneOffset?: number;
+    scene_index?: number;
+    scene_id?: number | string;
+    start_s?: number;
+    end_s?: number;
+    image_prompt?: string;
+  }>;
+  batches?: Array<{
+    batchIndex?: number;
+    batchNumber?: number;
+    sceneOffset?: number;
+    providerTaskId?: string;
+    taskId?: string;
+    panelCount?: number;
+    panels?: Array<{
+      panel?: number;
+      globalPanel?: number;
+      batchIndex?: number;
+      sceneOffset?: number;
+      scene_index?: number;
+      scene_id?: number | string;
+      start_s?: number;
+      end_s?: number;
+      image_prompt?: string;
+    }>;
+  }>;
+}) {
+  const taskIds = Array.isArray(params.taskIds)
+    ? params.taskIds.map((taskId) => String(taskId || '').trim()).filter(Boolean)
+    : [];
+  if (taskIds.length === 0) {
+    throw new Error('taskIds is required for debug image split');
+  }
+
+  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || 4) || 4)));
+  const totalPanels = normalizedGridSize * normalizedGridSize;
+  const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
+  const fixtureKey = sanitizeDebugPathPart(params.fixtureKey);
+  const queryData = await queryStoryboardSceneImagesWithKieForDebug({ taskIds });
+  const splitResults = [];
+  const sceneImages = [];
+
+  for (const [resultIndex, queryResult] of queryData.results.entries()) {
+    const batch = params.batches?.find((candidate) => {
+      const batchTaskId = String(candidate.providerTaskId || candidate.taskId || '').trim();
+      return batchTaskId && batchTaskId === queryResult.providerTaskId;
+    }) || params.batches?.[resultIndex];
+    const batchIndex = Number.isFinite(Number(batch?.batchIndex)) ? Number(batch?.batchIndex) : resultIndex;
+    const sceneOffset = Number.isFinite(Number(batch?.sceneOffset)) ? Number(batch?.sceneOffset) : batchIndex * totalPanels;
+    const batchPanels = Array.isArray(batch?.panels) && batch.panels.length > 0
+      ? batch.panels
+      : params.panels?.filter((panel) => {
+          if (Number.isFinite(Number(panel.batchIndex))) return Number(panel.batchIndex) === batchIndex;
+          const globalPanel = Number(panel.globalPanel);
+          return Number.isFinite(globalPanel) && globalPanel > sceneOffset && globalPanel <= sceneOffset + totalPanels;
+        });
+
+    if (!queryResult.imageUrl) {
+      splitResults.push({
+        provider: queryResult.provider,
+        providerTaskId: queryResult.providerTaskId,
+        batchIndex,
+        batchNumber: batchIndex + 1,
+        sceneOffset,
+        taskStatus: queryResult.taskStatus,
+        error: 'Image URL is not ready. Re-run image query/split after the Kie task succeeds.',
+      });
+      continue;
+    }
+
+    const imageBuffer = await fetchBytes(queryResult.imageUrl);
+    const source = sharp(imageBuffer);
+    const metadata = await source.metadata();
+    if (!metadata.width || !metadata.height) {
+      throw new Error('Could not read generated grid image dimensions');
+    }
+
+    const splitDir = `debug/lyric-videos/${fixtureKey}/${sanitizeDebugPathPart(queryResult.providerTaskId)}/batch-${String(batchIndex + 1).padStart(2, '0')}`;
+    const panels = [];
+    for (let index = 0; index < totalPanels; index += 1) {
+      const row = Math.floor(index / normalizedGridSize);
+      const col = index % normalizedGridSize;
+      const left = Math.round((col * metadata.width) / normalizedGridSize);
+      const top = Math.round((row * metadata.height) / normalizedGridSize);
+      const right = Math.round(((col + 1) * metadata.width) / normalizedGridSize);
+      const bottom = Math.round(((row + 1) * metadata.height) / normalizedGridSize);
+      const width = Math.max(1, right - left);
+      const height = Math.max(1, bottom - top);
+      const panelNumber = index + 1;
+      const panelMeta = batchPanels?.find((panel) => Number(panel.panel) === panelNumber);
+      const cropped = await sharp(imageBuffer)
+        .extract({ left, top, width, height })
+        .jpeg({ quality: 95 })
+        .toBuffer();
+      const imageUrl = await saveLocalPublicFile({
+        body: cropped,
+        dir: splitDir,
+        filename: `panel-${String(panelNumber).padStart(2, '0')}.jpg`,
+      });
+
+      panels.push({
+        panel: panelNumber,
+        globalPanel: sceneOffset + panelNumber,
+        batchIndex,
+        batchNumber: batchIndex + 1,
+        sceneOffset,
+        scene_index: panelMeta?.scene_index,
+        scene_id: panelMeta?.scene_id,
+        start_s: panelMeta?.start_s,
+        end_s: panelMeta?.end_s,
+        image_prompt: panelMeta?.image_prompt,
+        imageUrl,
+        width,
+        height,
+        crop: { left, top, width, height },
+      });
+      if (panelMeta?.scene_id !== undefined) {
+        sceneImages.push({
+          scene_id: panelMeta.scene_id,
+          scene_index: panelMeta.scene_index,
+          batchIndex,
+          batchNumber: batchIndex + 1,
+          panel: panelNumber,
+          globalPanel: sceneOffset + panelNumber,
+          start_s: panelMeta.start_s,
+          end_s: panelMeta.end_s,
+          image_prompt: panelMeta.image_prompt,
+          imageUrl,
+          width,
+          height,
+        });
+      }
+    }
+
+    splitResults.push({
+      provider: queryResult.provider,
+      providerTaskId: queryResult.providerTaskId,
+      batchIndex,
+      batchNumber: batchIndex + 1,
+      sceneOffset,
+      taskStatus: queryResult.taskStatus,
+      sourceImageUrl: queryResult.imageUrl,
+      sourceWidth: metadata.width,
+      sourceHeight: metadata.height,
+      gridSize: normalizedGridSize,
+      totalPanels,
+      aspect_ratio: aspectRatio,
+      panels,
+    });
+  }
+
+  return {
+    provider: 'kie',
+    gridSize: normalizedGridSize,
+    batchSize: totalPanels,
+    batchCount: taskIds.length,
+    totalPanels,
+    aspect_ratio: aspectRatio,
+    sceneCount: sceneImages.length,
+    sceneImages: sceneImages.sort((a, b) => Number(a.globalPanel || 0) - Number(b.globalPanel || 0)),
+    results: splitResults,
+  };
 }
 
 export async function analyzeUploadedAudioForDebug(params: {

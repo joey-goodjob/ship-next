@@ -46,6 +46,7 @@ next-env.d.ts
 src/config/db/schema.ts
 /public/uploads/
 /public/renders/
+/public/debug/lyric-videos/
 
 # local agent docs and workspace
 AGENTS.zh-CN.md

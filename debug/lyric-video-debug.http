@@ -9,6 +9,7 @@
 @transcribeModel = scribe_v2
 @fixtureKey = open-sky-mp3
 @codexModel = gpt-5-5
+@imageResolution = 4K
 
 ### 第一步：MP3 -> ElevenLabs Scribe v2 + Librosa analysis -> fixed lyric/instrumental scenes
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
@@ -102,35 +103,100 @@ Content-Type: application/json
   "model": "{{codexModel}}"
 }
 
-### 第三步 生图：Prompt scenes -> 单张 4x4 分镜网格图
-# Kie 生图是异步的：这里只把所有 scenes 编译成一张 4x4 总图 prompt，返回 1 个 providerTaskId，不写数据库。
+### 第三步 生图 16:9：Prompt scenes -> 多张 4x4 横向分镜网格图
+# Kie 生图是异步的：这里会把所有 scenes 按 16 个一批拆成多张 16:9 的 4x4 总图，返回多个 providerTaskId，不写数据库。
 # cache=true 会缓存 taskId，避免重复提交导致重复扣费。
-# 后续裁切时只需要保留前 panelCount 个格子，剩余格子按 prompt 要求应为空白。
-# @name debugQueueSceneImages
+# 例如 30 个 scene 会生成 2 张总图；40 个 scene 会生成 3 张总图。最后一批剩余格子按 prompt 要求应为空白。
+# @name debugQueueSceneImages16x9
 POST {{baseUrl}}/api/debug/lyric-videos/images/queue
 Content-Type: application/json
 
 {
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
-  "model": "gpt-image-2-text-to-image",
+  "model": "nano-banana-2",
   "gridSize": 4,
   "aspectRatio": "16:9",
-  "resolution": "4K",
+  "resolution": "{{imageResolution}}",
   "scenes": {{debugGenerateStoryboardScenesWithCodex.response.body.$.data.scenes}}
 }
 
-### 第四步 查询生图结果：单个 providerTaskId -> 4x4 grid imageUrl
+### 第三步 生图 9:16：Prompt scenes -> 多张 4x4 竖向分镜网格图
+# Kie 生图是异步的：这里会把所有 scenes 按 16 个一批拆成多张 9:16 的 4x4 总图，返回多个 providerTaskId，不写数据库。
+# cache=true 会缓存 taskId，避免重复提交导致重复扣费。
+# 例如 30 个 scene 会生成 2 张总图；40 个 scene 会生成 3 张总图。最后一批剩余格子按 prompt 要求应为空白。
+# @name debugQueueSceneImages9x16
+POST {{baseUrl}}/api/debug/lyric-videos/images/queue
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "model": "nano-banana-2",
+  "gridSize": 4,
+  "aspectRatio": "9:16",
+  "resolution": "{{imageResolution}}",
+  "scenes": {{debugGenerateStoryboardScenesWithCodex.response.body.$.data.scenes}}
+}
+
+### 第四步 查询 16:9 生图结果：多个 providerTaskId -> 多张 4x4 grid imageUrl
 # 如果返回 pending/processing，等一会儿重跑这个请求。
 # query 也支持缓存；如果第一次缓存到了 pending，请加 "refreshCache": true 重新查 provider。
-# @name debugQuerySceneImages
+# @name debugQuerySceneImages16x9
 POST {{baseUrl}}/api/debug/lyric-videos/images/query
 Content-Type: application/json
 
 {
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
-  "taskIds": {{debugQueueSceneImages.response.body.$.data.taskIds}}
+  "taskIds": {{debugQueueSceneImages16x9.response.body.$.data.taskIds}}
+}
+
+### 第五步 裁切 16:9：多张 4x4 grid imageUrl -> 多批横向 panel 图片
+# split 会内部重新查询所有 taskId，拿到每张总图 imageUrl 后按实际宽高等分裁切。
+# 返回 results 是每批 16 张；sceneImages 是按原 scene 顺序汇总后的真实镜头图片，不包含空白补位。
+# 如果任务还没完成，请先重跑上面的 query，或给这里加 "refreshCache": true。
+# @name debugSplitSceneImages16x9
+POST {{baseUrl}}/api/debug/lyric-videos/images/split
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "taskIds": {{debugQueueSceneImages16x9.response.body.$.data.taskIds}},
+  "gridSize": 4,
+  "aspectRatio": "16:9",
+  "batches": {{debugQueueSceneImages16x9.response.body.$.data.batches}}
+}
+
+### 第四步 查询 9:16 生图结果：多个 providerTaskId -> 多张 4x4 grid imageUrl
+# 如果返回 pending/processing，等一会儿重跑这个请求。
+# query 也支持缓存；如果第一次缓存到了 pending，请加 "refreshCache": true 重新查 provider。
+# @name debugQuerySceneImages9x16
+POST {{baseUrl}}/api/debug/lyric-videos/images/query
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "taskIds": {{debugQueueSceneImages9x16.response.body.$.data.taskIds}}
+}
+
+### 第五步 裁切 9:16：多张 4x4 grid imageUrl -> 多批竖向 panel 图片
+# split 会内部重新查询所有 taskId，拿到每张总图 imageUrl 后按实际宽高等分裁切。
+# 返回 results 是每批 16 张；sceneImages 是按原 scene 顺序汇总后的真实镜头图片，不包含空白补位。
+# 如果任务还没完成，请先重跑上面的 query，或给这里加 "refreshCache": true。
+# @name debugSplitSceneImages9x16
+POST {{baseUrl}}/api/debug/lyric-videos/images/split
+Content-Type: application/json
+
+{
+  "fixtureKey": "{{fixtureKey}}",
+  "cache": true,
+  "taskIds": {{debugQueueSceneImages9x16.response.body.$.data.taskIds}},
+  "gridSize": 4,
+  "aspectRatio": "9:16",
+  "batches": {{debugQueueSceneImages9x16.response.body.$.data.batches}}
 }
 
 ### 缓存说明
