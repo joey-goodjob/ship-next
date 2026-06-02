@@ -124,10 +124,13 @@ export async function callKieClaudeMessages(params: {
   const configs = await getAllConfigs();
   const apiKey = configs.kie_api_key;
   const endpoint = configs.kie_claude_endpoint || 'https://api.kie.ai/claude/v1/messages';
-  const model = params.model || configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL;
+  const model = params.model || configs.kie_claude_model;
 
   if (!apiKey) {
     throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+  }
+  if (!model) {
+    throw new Error('Claude model is required when using the Kie Claude endpoint.');
   }
 
   const startedAt = Date.now();
@@ -201,41 +204,75 @@ export async function callKieCodexResponses(params: {
   const configs = await getAllConfigs();
   const apiKey = configs.kie_api_key;
   const endpoint = configs.kie_codex_endpoint || 'https://api.kie.ai/codex/v1/responses';
-  const model = params.model || configs.kie_codex_model || 'gpt-5-4';
+  const model = params.model || configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL;
 
   if (!apiKey) {
     throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      stream: false,
-      input: [
-        {
-          role: 'user',
-          content: [{ type: 'input_text', text: params.text }],
-        },
-      ],
-      reasoning: { effort: params.reasoningEffort || 'medium' },
-    }),
+  const startedAt = Date.now();
+  logLyricStage('kie-codex-responses', 'request-start', {
+    model,
+    endpoint,
+    promptLength: params.text.length,
+    reasoningEffort: params.reasoningEffort || 'medium',
   });
+
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        stream: false,
+        input: [
+          {
+            role: 'user',
+            content: [{ type: 'input_text', text: params.text }],
+          },
+        ],
+        reasoning: { effort: params.reasoningEffort || 'medium' },
+      }),
+    });
+  } catch (error) {
+    logLyricStageError('kie-codex-responses', 'request-error', error, {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+    });
+    throw error;
+  }
 
   if (!response.ok) {
     const text = await response.text();
+    logLyricStage('kie-codex-responses', 'response-error', {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+      status: response.status,
+      errorPreview: text,
+    });
     throw new Error(`Kie Codex responses failed: ${response.status} ${text}`);
   }
 
   const data = await response.json();
+  const contentText = chatContentToText(data.output_text || data.output || data.content || data.response?.output || '');
+  logLyricStage('kie-codex-responses', 'response-success', {
+    durationMs: Date.now() - startedAt,
+    model: data.model || data.response?.model || model,
+    endpoint,
+    status: response.status,
+    contentLength: contentText.length,
+    contentPreview: contentText,
+  });
   return {
-    model: data.model || model,
+    model: data.model || data.response?.model || model,
     raw: data,
-    content: chatContentToText(data.output_text || data.output || data.content || ''),
+    content: contentText,
   };
 }
 
@@ -403,7 +440,7 @@ export async function analyzeSongWithKieForDebug(params: {
   provider?: DebugSongAnalysisProvider;
   model?: string;
 }) {
-  const provider = params.provider || 'kie_claude';
+  const provider = params.provider || 'kie_codex';
   if (!['kie_claude', 'kie_codex', 'kie_gemini'].includes(provider)) {
     throw new Error(`Unsupported LLM provider: ${provider}`);
   }
@@ -432,7 +469,7 @@ export async function analyzeSongWithKieForDebug(params: {
 }
 
 export async function analyzeSongWithKieClaudeForDebug(preprocess: LyricVideoLlmPreprocessResult) {
-  return analyzeSongWithKieForDebug({ preprocess, provider: 'kie_claude' });
+  return analyzeSongWithKieForDebug({ preprocess, provider: 'kie_codex' });
 }
 
 export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[] {
@@ -643,7 +680,7 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
     throw new Error('preprocess.lines is required for Prompt 2');
   }
 
-  const model = params.model || 'claude-opus-4-8';
+  const model = params.model || DEFAULT_STORYBOARD_MODEL;
   const songAnalysis = params.songAnalysis && typeof params.songAnalysis === 'object'
     ? params.songAnalysis
     : normalizeSongAnalysis({
@@ -667,11 +704,10 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
     songAnalysis,
     scenes: fixedScenes,
   });
-  const result = await callKieClaudeMessages({
+  const result = await callKieCodexResponses({
     text: prompt,
     model,
-    thinkingFlag: false,
-    maxTokens: 12000,
+    reasoningEffort: 'medium',
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));
@@ -693,7 +729,7 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
   });
 
   return {
-    provider: 'kie_claude',
+    provider: 'kie_codex',
     model,
     actualModel: result.model,
     scenes,
@@ -734,11 +770,10 @@ export async function generateStoryboardScenesWithKieClaude(params: {
     project: params.project,
     storyPrompt: params.project?.storyPrompt,
   });
-  const result = await callKieClaudeMessages({
+  const result = await callKieCodexResponses({
     text: prompt,
     model,
-    thinkingFlag: false,
-    maxTokens: 12000,
+    reasoningEffort: 'medium',
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));
@@ -772,7 +807,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   });
 
   return {
-    provider: 'kie_claude',
+    provider: 'kie_codex',
     model,
     actualModel: result.model,
     scenes,
@@ -834,11 +869,10 @@ export async function generateStoryboardWithKieClaude(params: {
     storyPrompt: params.storyPrompt,
   });
 
-  const result = await callKieClaudeMessages({
+  const result = await callKieCodexResponses({
     text: prompt,
-    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
-    thinkingFlag: true,
-    maxTokens: 4096,
+    model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
+    reasoningEffort: 'medium',
   });
 
   const content = result.content || '{}';
@@ -891,11 +925,10 @@ Lyrics:
 ${lyrics}`;
 
   const configs = await getAllConfigs();
-  const result = await callKieClaudeMessages({
+  const result = await callKieCodexResponses({
     text: prompt,
-    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
-    thinkingFlag: true,
-    maxTokens: 2048,
+    model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
+    reasoningEffort: 'medium',
   });
   return result.content.replace(/^["']|["']$/g, '').trim();
 }

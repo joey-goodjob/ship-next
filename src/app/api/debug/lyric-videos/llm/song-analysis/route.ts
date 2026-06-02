@@ -1,6 +1,6 @@
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
-import { debugFixtureName, withDebugFixture } from '../../_lib/fixtures';
+import { debugFixtureName, readDebugFixture, withDebugFixture } from '../../_lib/fixtures';
 
 export const runtime = 'nodejs';
 
@@ -11,9 +11,10 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const preprocess = body?.preprocess || body;
-    const provider = body?.provider || 'kie_claude';
-    const model = body?.model || 'default';
+    const provider = body?.provider || 'kie_codex';
+    const model = body?.model || 'gpt-5-5';
+    const analyzeFixture = body?.preprocess ? null : await readDebugFixture<any>(body?.fixtureKey, 'analyze.json');
+    const preprocess = body?.preprocess || analyzeFixture?.preprocess || body;
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
     }, async () => service.analyzeSongWithKieForDebug({
         preprocess,
         provider,
-        model: body?.model,
+        model,
       }));
     return respData(data);
   } catch (error: any) {

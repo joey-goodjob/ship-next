@@ -24,6 +24,7 @@ export function normalizeDebugImageScenes(params: {
   scenes: DebugImageSceneInput[];
   sceneIds?: Array<number | string>;
   limit?: number;
+  maxPanels?: number;
 }) {
   const selectedIds = Array.isArray(params.sceneIds) && params.sceneIds.length > 0
     ? new Set(params.sceneIds.map((id) => String(id)))
@@ -47,12 +48,17 @@ export function normalizeDebugImageScenes(params: {
     .filter((scene) => scene.image_prompt)
     .filter((scene) => !selectedIds || selectedIds.has(String(scene.scene_id)) || selectedIds.has(scene.raw_scene_id));
 
-  const maxPanels = 25;
+  const maxPanels = Math.max(1, Math.min(25, Math.floor(Number(params.maxPanels || 25))));
   if (limit > 0) return scenes.slice(0, Math.min(limit, maxPanels));
   return scenes.slice(0, maxPanels);
 }
 
-export function buildStoryboardGridImagePrompt(scenes: ReturnType<typeof normalizeDebugImageScenes>) {
+export function buildStoryboardGridImagePrompt(
+  scenes: ReturnType<typeof normalizeDebugImageScenes>,
+  gridSize = 5
+) {
+  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(gridSize) || 5)));
+  const totalPanels = normalizedGridSize * normalizedGridSize;
   const panels = scenes.map((scene, index) => ({
     panel: index + 1,
     scene_id: scene.scene_id,
@@ -62,13 +68,15 @@ export function buildStoryboardGridImagePrompt(scenes: ReturnType<typeof normali
   }));
   const panelLines = panels.map((panel) => `面板${panel.panel}：${panel.image_prompt}`);
   const compiledPrompt = [
-    '一张包含精确5x5网格的图片，共25个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。',
+    `一张包含精确${normalizedGridSize}x${normalizedGridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
     '',
     ...panelLines,
   ].join('\n');
 
   return {
     compiledPrompt,
+    gridSize: normalizedGridSize,
+    totalPanels,
     panelCount: panels.length,
     panels,
   };
@@ -90,15 +98,18 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   outputFormat?: string;
   sceneIds?: Array<number | string>;
   limit?: number;
+  gridSize?: number;
 }) {
   if (!Array.isArray(params.scenes) || params.scenes.length === 0) {
     throw new Error('scenes is required for debug image generation');
   }
 
+  const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || 5))));
   const scenes = normalizeDebugImageScenes({
     scenes: params.scenes,
     sceneIds: params.sceneIds,
     limit: params.limit,
+    maxPanels: gridSize * gridSize,
   });
   if (scenes.length === 0) {
     throw new Error('No scenes with image_prompt to generate');
@@ -109,12 +120,14 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   const aspectRatio = params.aspectRatio || '16:9';
   const resolution = params.resolution || '1K';
   const provider = await createKieImageProviderForDebug();
-  const gridPrompt = buildStoryboardGridImagePrompt(scenes);
-  console.info('[debug lyric-videos images/queue] compiled 5x5 grid prompt', {
+  const gridPrompt = buildStoryboardGridImagePrompt(scenes, gridSize);
+  console.info(`[debug lyric-videos images/queue] compiled ${gridPrompt.gridSize}x${gridPrompt.gridSize} grid prompt`, {
     provider: 'kie',
     model,
     aspectRatio,
     resolution,
+    gridSize: gridPrompt.gridSize,
+    totalPanels: gridPrompt.totalPanels,
     panelCount: gridPrompt.panelCount,
     panels: gridPrompt.panels.map((panel) => ({
       panel: panel.panel,
@@ -146,6 +159,8 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
     taskStatus: result.taskStatus,
     taskIds: [result.taskId],
     compiledPrompt: gridPrompt.compiledPrompt,
+    gridSize: gridPrompt.gridSize,
+    totalPanels: gridPrompt.totalPanels,
     panelCount: gridPrompt.panelCount,
     panels: gridPrompt.panels,
     raw: result.taskResult,

@@ -453,7 +453,7 @@ export async function executeGenerationRun(params: {
     });
     const songAnalysisResult = await analyzeSongWithKieForDebug({
       preprocess,
-      provider: 'kie_claude',
+      provider: 'kie_codex',
       model: options.songAnalysisModel,
     });
     assertUsableSongAnalysis(songAnalysisResult.songAnalysis);

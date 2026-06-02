@@ -75,6 +75,19 @@ export async function withDebugFixture<T extends Record<string, unknown>>(
   return { ...data, debugFixture: info(false) };
 }
 
+export async function readDebugFixture<T = any>(fixtureKey: unknown, filename: string): Promise<T | null> {
+  const key = sanitizePathPart(fixtureKey);
+  if (!key) return null;
+
+  try {
+    const fixturePath = path.join(FIXTURE_ROOT, key, sanitizeFilename(filename));
+    return JSON.parse(await readFile(fixturePath, 'utf-8')) as T;
+  } catch (error: any) {
+    if (error?.code === 'ENOENT') return null;
+    throw new Error(`Read debug fixture failed: ${error?.message || error}`);
+  }
+}
+
 function sanitizePathPart(value: unknown) {
   return String(value ?? '')
     .trim()

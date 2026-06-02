@@ -173,8 +173,8 @@ export const GENERATION_STAGES = [
 
 export const ACTIVE_RUN_STATUSES = ['queued', 'running', 'waiting_provider'] as const;
 export const DEFAULT_TRANSCRIBE_MODEL = 'whisper-large-v3';
-export const DEFAULT_SONG_ANALYSIS_MODEL = 'claude-opus-4-8';
-export const DEFAULT_STORYBOARD_MODEL = 'claude-opus-4-8';
+export const DEFAULT_SONG_ANALYSIS_MODEL = 'gpt-5-5';
+export const DEFAULT_STORYBOARD_MODEL = 'gpt-5-5';
 export const DEFAULT_MAX_STORYBOARD_SCENES = 16;
 export const INSTRUMENTAL_GAP_MS = 1000;
 export const ASR_LONG_SEGMENT_MS = 8000;

@@ -1223,8 +1223,8 @@ export async function generateStoryboard(params: {
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: configs.kie_api_key ? 'kie_claude' : 'heuristic',
-    model: configs.kie_api_key ? configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
+    provider: configs.kie_api_key ? 'kie_codex' : 'heuristic',
+    model: configs.kie_api_key ? configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
     prompt: params.storyPrompt || details.project.storyPrompt || details.project.title,
     costCredits: configs.kie_api_key ? 15 : 0,
     options: { projectId: params.projectId, stage: 'storyboard' },
@@ -1235,8 +1235,8 @@ export async function generateStoryboard(params: {
       projectId: params.projectId,
       userId: params.userId,
       taskId: task.id,
-      provider: configs.kie_api_key ? 'kie_claude' : 'heuristic',
-      model: configs.kie_api_key ? configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
+      provider: configs.kie_api_key ? 'kie_codex' : 'heuristic',
+      model: configs.kie_api_key ? configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
       lineCount: details.lines.length,
       existingSceneCount: details.scenes.length,
       hasStoryPrompt: Boolean(params.storyPrompt || details.project.storyPrompt),
@@ -1302,8 +1302,8 @@ export async function generateStoryPrompt(params: {
   const task = await createTask({
     userId: params.userId,
     mediaType: 'text',
-    provider: 'kie_claude',
-    model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
+    provider: 'kie_codex',
+    model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
     prompt: [
       `title: ${details.project.title}`,
       `style: ${details.project.artStyle}`,
@@ -1319,8 +1319,8 @@ export async function generateStoryPrompt(params: {
       projectId: params.projectId,
       userId: params.userId,
       taskId: task.id,
-      provider: 'kie_claude',
-      model: configs.kie_claude_model || DEFAULT_STORYBOARD_MODEL,
+      provider: 'kie_codex',
+      model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
       lineCount: details.lines.length,
     });
     const storyPrompt = await generateStoryPromptWithKieClaude({

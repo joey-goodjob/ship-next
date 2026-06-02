@@ -65,11 +65,11 @@ export const envConfigs: Record<string, string> = {
   kie_claude_endpoint:
     process.env.KIE_CLAUDE_ENDPOINT ??
     'https://api.kie.ai/claude/v1/messages',
-  kie_claude_model: process.env.KIE_CLAUDE_MODEL ?? 'claude-opus-4-8',
+  kie_claude_model: process.env.KIE_CLAUDE_MODEL ?? '',
   kie_codex_endpoint:
     process.env.KIE_CODEX_ENDPOINT ??
     'https://api.kie.ai/codex/v1/responses',
-  kie_codex_model: process.env.KIE_CODEX_MODEL ?? 'gpt-5-4',
+  kie_codex_model: process.env.KIE_CODEX_MODEL ?? 'gpt-5-5',
   kie_image_model: process.env.KIE_IMAGE_MODEL ?? 'z-image',
   kie_character_image_model: process.env.KIE_CHARACTER_IMAGE_MODEL ?? 'nano-banana-2',
   groq_api_key: process.env.GROQ_API_KEY ?? '',

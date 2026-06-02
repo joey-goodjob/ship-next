@@ -6,7 +6,7 @@ import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
-import { callKieClaudeMessages, createKieProvider } from './llm';
+import { callKieCodexResponses, createKieProvider } from './llm';
 import { parseJsonLoose, safeJson } from './json';
 import { getProjectDetails } from './project';
 
@@ -380,10 +380,10 @@ export async function generateCastCandidates(params: {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
-  const result = await callKieClaudeMessages({
+  const result = await callKieCodexResponses({
     text: buildCandidatePrompt(details),
-    maxTokens: 1800,
-    thinkingFlag: false,
+    model: params.model,
+    reasoningEffort: 'medium',
   });
   const candidates = normalizeCandidates(result.content);
   if (candidates.length === 0) throw new Error('No character candidates generated');

@@ -14,12 +14,13 @@ export async function POST(req: Request) {
     const model = typeof body?.model === 'string' ? body.model : undefined;
     const aspectRatio = body?.aspectRatio || body?.aspect_ratio || '16:9';
     const resolution = body?.resolution || '1K';
+    const gridSize = Math.max(1, Math.min(5, Math.floor(Number(body?.gridSize || body?.grid_size || 5) || 5)));
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,
       refreshCache: body?.refreshCache,
       stage: 'image-queue',
-      filename: debugFixtureName('image-queue', ['kie', 'grid-5x5', model || 'default-image-model', aspectRatio, resolution]),
+      filename: debugFixtureName('image-queue', ['kie', `grid-${gridSize}x${gridSize}`, model || 'default-image-model', aspectRatio, resolution]),
     }, async () => service.queueStoryboardSceneImagesWithKieForDebug({
         scenes: body?.scenes,
         model,
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
         outputFormat: body?.outputFormat || body?.output_format,
         sceneIds: body?.sceneIds,
         limit: body?.limit,
+        gridSize,
       }));
     return respData(data);
   } catch (error: any) {

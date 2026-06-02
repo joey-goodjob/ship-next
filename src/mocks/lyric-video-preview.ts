@@ -9,7 +9,7 @@ export const MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR =
   process.env.MOCK_LYRIC_VIDEO_ANALYZE_FIXTURE_DIR ||
   process.env.MOCK_LYRIC_VIDEO_FIXTURE_KEY ||
   "open-sky-mp3";
-const MOCK_LYRIC_VIDEO_PROMPT2_FILENAME = "prompt2-kie_claude-claude-opus-4-8.json";
+const MOCK_LYRIC_VIDEO_PROMPT2_FILENAME = "prompt2-kie_codex-gpt-5-5.json";
 
 // 固定的 mock 元信息：这些字段用来补齐数据库记录里通常会有的 user/run/date。
 const mockDate = "2026-05-25T08:00:00.000Z";

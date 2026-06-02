@@ -8,7 +8,7 @@
 @audioPrompt =
 @transcribeModel = scribe_v2
 @fixtureKey = open-sky-mp3
-@claudeOpusVersion = 4-6
+@codexModel = gpt-5-5
 
 ### 第一步：MP3 -> ElevenLabs Scribe v2 + Librosa analysis -> fixed lyric/instrumental scenes
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
@@ -46,39 +46,24 @@ Content-Disposition: form-data; name="cache"
 true
 ------lyricVideoDebugBoundary--
 
-### 可选：Prompt 1：Claude Opus 歌曲理解
-# 先点击上面的 analyze 请求，等它返回 preprocess。
-# 然后再点击下面任意一个 LLM 请求，REST Client 会把上一个请求的 data.preprocess 传给模型。
+### 可选：Prompt 1：GPT 5.5 歌曲理解
+# 先点击上面的 analyze 请求生成 debug/fixtures/{{fixtureKey}}/analyze.json。
+# 之后这个请求会直接读取 analyze fixture，不再依赖 REST Client response 变量。
 # 这个接口不需要登录，不写数据库，只在开发环境可用。
-# @name debugAnalyzeSongWithOpus
+# @name debugAnalyzeSongWithCodex
 POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
 Content-Type: application/json
 
 {
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
-  "provider": "kie_claude",
-  "model": "claude-opus-{{claudeOpusVersion}}",
-  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+  "provider": "kie_codex",
+  "model": "{{codexModel}}"
 }
 
-### 可选 LLM 测试：Claude Opus / Claude 其他版本
-# 想测 opus 4.6 / 4.7 / 4.8 时，只改顶部 claudeOpusVersion 这一行，例如 4-6、4-7、4-8。
-# # @name debugAnalyzeSongWithClaudeCustom
-# POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
-# Content-Type: application/json
-
-# {
-#   "fixtureKey": "{{fixtureKey}}",
-#   "cache": true,
-#   "provider": "kie_claude",
-#   "model": "claude-opus-{{claudeOpusVersion}}",
-#   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
-# }
-
-# ### 可选 LLM 测试：GPT / Codex 系列
-# # 想测 gpt-5-5 这类模型时，只改 model 这一行；模型名必须是 Kie 文档实际支持的名字。
-# # @name debugAnalyzeSongWithCodex
+### 可选 LLM 测试：GPT / Codex 其他版本
+# 想测其他 Codex chat 模型时，只改顶部 codexModel 这一行；模型名必须是 Kie 文档实际支持的名字。
+# # @name debugAnalyzeSongWithCodexCustom
 # POST {{baseUrl}}/api/debug/lyric-videos/llm/song-analysis
 # Content-Type: application/json
 
@@ -86,8 +71,7 @@ Content-Type: application/json
 #   "fixtureKey": "{{fixtureKey}}",
 #   "cache": true,
 #   "provider": "kie_codex",
-#   "model": "gpt-5-4",
-#   "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}}
+#   "model": "{{codexModel}}"
 # }
 
 # ### 可选 LLM 测试：Gemini 系列
@@ -105,25 +89,21 @@ Content-Type: application/json
 # # }
 
 ### 第二步 Prompt：固定 lyric/instrumental scenes -> image_prompt + video_prompt
-# 先跑 analyze，再跑 Prompt 1。这里不会让 LLM 切分镜，只让它给固定 scenes 写图片和视频 prompt。
-# songAnalysis 会把 Prompt 1 的 location_plan / narrative_arc / key_props 传给 Prompt 2。
-# 这个接口不需要登录，不写数据库，只返回 scenes JSON；会真实调用 Claude，cache=true 可避免重复扣费。
-# @name debugGenerateStoryboardScenesWithOpus
+# 先跑 analyze，再跑 Prompt 1。这里会读取 analyze / prompt1 fixtures，不再依赖 REST Client response 变量。
+# 如果 prompt1 fixture 不存在，会用 preprocess 做基础兜底；但效果不如先跑 Prompt 1。
+# 这个接口不需要登录，不写数据库，只返回 scenes JSON；会真实调用 GPT 5.5，cache=true 可避免重复扣费。
+# @name debugGenerateStoryboardScenesWithCodex
 POST {{baseUrl}}/api/debug/lyric-videos/llm/storyboard-scenes
 Content-Type: application/json
 
 {
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
-  "model": "claude-opus-{{claudeOpusVersion}}",
-  "songAnalysis": {{debugAnalyzeSongWithOpus.response.body.$.data.songAnalysis}},
-  "preprocess": {{debugAnalyzeLyricVideoAudio.response.body.$.data.preprocess}},
-  "audioAnalysis": {{debugAnalyzeLyricVideoAudio.response.body.$.data.audioAnalysis}},
-  "fixedScenes": {{debugAnalyzeLyricVideoAudio.response.body.$.data.fixedScenes}}
+  "model": "{{codexModel}}"
 }
 
-### 第三步 生图：Prompt scenes -> 单张 5x5 分镜网格图
-# Kie 生图是异步的：这里只把所有 scenes 编译成一张 5x5 总图 prompt，返回 1 个 providerTaskId，不写数据库。
+### 第三步 生图：Prompt scenes -> 单张 4x4 分镜网格图
+# Kie 生图是异步的：这里只把所有 scenes 编译成一张 4x4 总图 prompt，返回 1 个 providerTaskId，不写数据库。
 # cache=true 会缓存 taskId，避免重复提交导致重复扣费。
 # 后续裁切时只需要保留前 panelCount 个格子，剩余格子按 prompt 要求应为空白。
 # @name debugQueueSceneImages
@@ -134,12 +114,13 @@ Content-Type: application/json
   "fixtureKey": "{{fixtureKey}}",
   "cache": true,
   "model": "gpt-image-2-text-to-image",
+  "gridSize": 4,
   "aspectRatio": "16:9",
   "resolution": "4K",
-  "scenes": {{debugGenerateStoryboardScenesWithOpus.response.body.$.data.scenes}}
+  "scenes": {{debugGenerateStoryboardScenesWithCodex.response.body.$.data.scenes}}
 }
 
-### 第四步 查询生图结果：单个 providerTaskId -> 5x5 grid imageUrl
+### 第四步 查询生图结果：单个 providerTaskId -> 4x4 grid imageUrl
 # 如果返回 pending/processing，等一会儿重跑这个请求。
 # query 也支持缓存；如果第一次缓存到了 pending，请加 "refreshCache": true 重新查 provider。
 # @name debugQuerySceneImages
