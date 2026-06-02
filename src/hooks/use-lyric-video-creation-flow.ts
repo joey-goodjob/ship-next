@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
-import { logLyricStage, logLyricStageError, lyricLogPreview } from "@/lib/lyric-video-log";
+import { logLyricStage, logLyricStageError } from "@/lib/lyric-video-log";
 
 type ApiResponse<T> = {
   code: number;
@@ -25,23 +25,16 @@ type LyricVideoProject = {
   lyricsStatus?: string;
   scenesStatus?: string;
   storyPrompt?: string;
+  generationStatus?: string;
+  generationProgress?: number;
 };
 
-type AsrResponse = {
-  taskId?: string;
-  provider?: string;
-  model?: string;
-  rawText?: string;
-  rawSegments?: unknown[];
+type GenerationRunResponse = {
+  run?: unknown;
+  steps?: unknown[];
   lines?: unknown[];
   words?: unknown[];
   scenes?: unknown[];
-  project?: LyricVideoProject;
-};
-
-type StoryPromptResponse = {
-  taskId?: string;
-  storyPrompt?: string;
   project?: LyricVideoProject;
 };
 
@@ -66,8 +59,7 @@ export type LyricVideoCreationStage =
   | "uploading"
   | "waiting-auth"
   | "creating"
-  | "recognizing"
-  | "story"
+  | "generating"
   | "redirecting"
   | "failed";
 
@@ -149,7 +141,7 @@ export function useLyricVideoCreationFlow() {
   const [stage, setStage] = useState<LyricVideoCreationStage>("idle");
   const [error, setError] = useState("");
 
-  const createProjectAndTranscribe = useCallback(
+  const createProjectAndGenerate = useCallback(
     async (payload: PendingLyricVideoPayload) => {
       setError("");
       setStage("creating");
@@ -193,45 +185,25 @@ export function useLyricVideoCreationFlow() {
         scenesStatus: project.scenesStatus,
       });
 
-      setStage("recognizing");
-      const asrStartedAt = Date.now();
-      logLyricStage("asr", "start", { projectId: project.id });
-      const asr = await requestJson<AsrResponse>(`/api/lyric-videos/${project.id}/asr`, {
+      setStage("generating");
+      const generateStartedAt = Date.now();
+      logLyricStage("one-click-generate", "start", { projectId: project.id });
+      const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      logLyricStage("asr", "success", {
-        durationMs: Date.now() - asrStartedAt,
+      logLyricStage("one-click-generate", "queued-images", {
+        durationMs: Date.now() - generateStartedAt,
         projectId: project.id,
-        taskId: asr.taskId,
-        provider: asr.provider,
-        model: asr.model,
-        rawTextLength: asr.rawText?.length || 0,
-        rawSegmentsCount: asr.rawSegments?.length || 0,
-        lineCount: asr.lines?.length || 0,
-        wordCount: asr.words?.length || 0,
-        sceneCount: asr.scenes?.length || 0,
-        pipelineStage: asr.project?.pipelineStage,
-        lyricsStatus: asr.project?.lyricsStatus,
-        scenesStatus: asr.project?.scenesStatus,
-      });
-
-      setStage("story");
-      const storyStartedAt = Date.now();
-      logLyricStage("story-prompt", "start", { projectId: project.id });
-      const story = await requestJson<StoryPromptResponse>(`/api/lyric-videos/${project.id}/story`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      logLyricStage("story-prompt", "success", {
-        durationMs: Date.now() - storyStartedAt,
-        projectId: project.id,
-        taskId: story.taskId,
-        storyPromptLength: story.storyPrompt?.length || 0,
-        storyPromptPreview: lyricLogPreview(story.storyPrompt),
-        storyPromptPersisted: Boolean(story.project?.storyPrompt),
+        lineCount: generated.lines?.length || 0,
+        wordCount: generated.words?.length || 0,
+        sceneCount: generated.scenes?.length || 0,
+        pipelineStage: generated.project?.pipelineStage,
+        lyricsStatus: generated.project?.lyricsStatus,
+        scenesStatus: generated.project?.scenesStatus,
+        generationStatus: generated.project?.generationStatus,
+        generationProgress: generated.project?.generationProgress,
       });
 
       clearPendingPayload();
@@ -258,14 +230,14 @@ export function useLyricVideoCreationFlow() {
           createdAt: Date.now(),
         };
 
-        await createProjectAndTranscribe(payload);
+        await createProjectAndGenerate(payload);
       } catch (err: any) {
         setStage("failed");
         setError(err?.message || "Failed to create lyric video");
         throw err;
       }
     },
-    [createProjectAndTranscribe],
+    [createProjectAndGenerate],
   );
 
   const preparePendingAuth = useCallback(
@@ -299,14 +271,14 @@ export function useLyricVideoCreationFlow() {
     if (!payload) return false;
 
     try {
-      await createProjectAndTranscribe(payload);
+      await createProjectAndGenerate(payload);
       return true;
     } catch (err: any) {
       setStage("failed");
       setError(err?.message || "Failed to create lyric video");
       return false;
     }
-  }, [createProjectAndTranscribe]);
+  }, [createProjectAndGenerate]);
 
   const resetCreationState = useCallback(() => {
     setStage("idle");

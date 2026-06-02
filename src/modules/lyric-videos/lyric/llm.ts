@@ -218,33 +218,47 @@ export async function callKieCodexResponses(params: {
     reasoningEffort: params.reasoningEffort || 'medium',
   });
 
-  let response: Response;
-  try {
-    response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+  let response: Response | undefined;
+  let lastRequestError: unknown;
+  const requestBody = JSON.stringify({
+    model,
+    stream: false,
+    input: [
+      {
+        role: 'user',
+        content: [{ type: 'input_text', text: params.text }],
       },
-      body: JSON.stringify({
+    ],
+    reasoning: { effort: params.reasoningEffort || 'medium' },
+  });
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: requestBody,
+      });
+      break;
+    } catch (error) {
+      lastRequestError = error;
+      logLyricStageError('kie-codex-responses', attempt < 3 ? 'request-retry' : 'request-error', error, {
+        durationMs: Date.now() - startedAt,
         model,
-        stream: false,
-        input: [
-          {
-            role: 'user',
-            content: [{ type: 'input_text', text: params.text }],
-          },
-        ],
-        reasoning: { effort: params.reasoningEffort || 'medium' },
-      }),
-    });
-  } catch (error) {
-    logLyricStageError('kie-codex-responses', 'request-error', error, {
-      durationMs: Date.now() - startedAt,
-      model,
-      endpoint,
-    });
-    throw error;
+        endpoint,
+        attempt,
+      });
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+      }
+    }
+  }
+
+  if (!response) {
+    throw lastRequestError;
   }
 
   if (!response.ok) {

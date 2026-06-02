@@ -1,20 +1,172 @@
 import { and, eq } from 'drizzle-orm';
+import sharp from 'sharp';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
-import { lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
+import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
+import { getUuid } from '@/lib/hash';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
+import { fetchBytes, saveGeneratedFile } from './audio';
 import { createKieProvider } from './llm';
-import { safeJson } from './json';
+import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { generateStoryboard } from './storyboard';
+import { GENERATION_STAGES } from './types';
 
 function resolveKieImageModel(configs: Record<string, string>, model?: string) {
   return model || configs.kie_image_model || KIE_Z_IMAGE_MODEL;
 }
 
 export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
+const GRID_SCENE_IMAGE_SIZE = 4;
+const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
+
+function buildGridSceneImagePrompt(params: {
+  scenes: any[];
+  gridSize?: number;
+  aspectRatio?: string;
+}) {
+  const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE)));
+  const totalPanels = gridSize * gridSize;
+  const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
+  const frameOrientation = aspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
+  const expectedCanvas = aspectRatio === '9:16'
+    ? 'The whole image should be a vertical 9:16 canvas, approximately 2160x3840 at 4K.'
+    : 'The whole image should be a horizontal 16:9 canvas, approximately 3840x2160 at 4K.';
+  const expectedPanel = aspectRatio === '9:16'
+    ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
+    : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
+  const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
+  const panels = params.scenes.map((scene, index) => ({
+    panel: index + 1,
+    sceneId: scene.id,
+    startMs: scene.startMs,
+    endMs: scene.endMs,
+    prompt: String(scene.prompt || '').trim(),
+  }));
+  const panelLines = panels.map((panel) => `Panel ${panel.panel}: ${panel.prompt}`);
+  const compiledPrompt = [
+    globalStyle,
+    `Create one exact ${gridSize}x${gridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels, no text.`,
+    expectedCanvas,
+    expectedPanel,
+    `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${aspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
+    `一张包含精确${gridSize}x${gridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。每个面板都必须是${aspectRatio}的${aspectRatio === '9:16' ? '竖图' : '横图'}画幅。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
+    '',
+    ...panelLines,
+  ].join('\n');
+
+  return {
+    compiledPrompt,
+    gridSize,
+    aspectRatio,
+    totalPanels,
+    panelCount: panels.length,
+    panels,
+  };
+}
+
+function getGridGenerationParams(scene: any) {
+  const parsed = scene.generationParams && typeof scene.generationParams === 'object'
+    ? scene.generationParams as Record<string, any>
+    : parseJsonField<Record<string, any>>(scene.generationParams, {});
+  return parsed?.mode === 'grid_4x4' && parsed.grid ? parsed : null;
+}
+
+async function finalizeActiveImageGenerationRun(params: {
+  userId: string;
+  projectId: string;
+  project: any;
+  status: 'success' | 'partial_success';
+  outputSnapshot: unknown;
+  errorMessage?: string;
+}) {
+  const runId = params.project?.activeRunId;
+  if (!runId) return;
+
+  const [run] = await db()
+    .select()
+    .from(lyricVideoGenerationRun)
+    .where(
+      and(
+        eq(lyricVideoGenerationRun.id, runId),
+        eq(lyricVideoGenerationRun.projectId, params.projectId),
+        eq(lyricVideoGenerationRun.userId, params.userId)
+      )
+    )
+    .limit(1);
+  if (!run || !['queued', 'running', 'waiting_provider'].includes(run.status)) return;
+
+  const steps = await db()
+    .select()
+    .from(lyricVideoGenerationStep)
+    .where(and(eq(lyricVideoGenerationStep.runId, runId), eq(lyricVideoGenerationStep.userId, params.userId)));
+  const imageStep = steps.find((step: any) => step.stage === 'image_generation');
+  const finalizeStep = steps.find((step: any) => step.stage === 'finalize_project');
+  const now = new Date();
+
+  const updates: Promise<unknown>[] = [
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: params.status,
+        currentStage: 'finalize_project',
+        progressPercent: params.status === 'success' ? 100 : 90,
+        completedSteps: params.status === 'success' ? GENERATION_STAGES.length : Math.max(GENERATION_STAGES.length - 1, 0),
+        failedSteps: params.status === 'success' ? 0 : 1,
+        outputSnapshot: safeJson(params.outputSnapshot),
+        completedAt: now,
+        errorCode: params.status === 'success' ? null : 'images_partial_success',
+        errorMessage: params.errorMessage || null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+  ];
+
+  if (imageStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: params.status,
+          progressPercent: params.status === 'success' ? 100 : 90,
+          outputJson: safeJson(params.outputSnapshot),
+          errorCode: params.status === 'success' ? null : 'images_partial_success',
+          errorMessage: params.errorMessage || null,
+          completedAt: now,
+          lockedAt: null,
+          lockedBy: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, imageStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  if (finalizeStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: params.status,
+          progressPercent: params.status === 'success' ? 100 : 90,
+          outputJson: safeJson(params.outputSnapshot),
+          errorCode: params.status === 'success' ? null : 'images_partial_success',
+          errorMessage: params.errorMessage || null,
+          completedAt: now,
+          lockedAt: null,
+          lockedBy: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, finalizeStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  await Promise.all(updates);
+  logLyricStage('scene-images', 'generation-run-finalized', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId,
+    status: params.status,
+  });
+}
 
 export async function queueSceneImages(params: {
   userId: string;
@@ -197,6 +349,197 @@ export async function queueSceneImages(params: {
   return queued;
 }
 
+export async function queueSceneImagesGrid(params: {
+  userId: string;
+  projectId: string;
+  sceneIds?: string[];
+  model?: string;
+  onlyMissing?: boolean;
+  clearExistingImages?: boolean;
+}) {
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  if (!details) throw new Error('Project not found');
+
+  let scenes = details.scenes;
+  if (params.sceneIds && params.sceneIds.length > 0) {
+    const sceneIdSet = new Set(params.sceneIds);
+    scenes = scenes.filter((scene: any) => sceneIdSet.has(scene.id));
+  }
+  if (params.onlyMissing) {
+    scenes = scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
+  }
+  if (scenes.length === 0) throw new Error('No scenes to generate');
+  const scenesMissingPrompts = scenes.filter((scene: any) => !String(scene.prompt || '').trim());
+  if (scenesMissingPrompts.length > 0) {
+    throw new Error('Generate storyboard prompts before creating scene images');
+  }
+
+  const model = params.model || 'nano-banana-2';
+  const aspectRatio = details.project.aspectRatio === '9:16' ? '9:16' : '16:9';
+  const resolution = '4K';
+  const provider = await createKieProvider();
+  const queued: any[] = [];
+  const batches = [];
+
+  logLyricStage('scene-images-grid', 'queue-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    model,
+    aspectRatio,
+    resolution,
+    sceneCount: scenes.length,
+    sceneIds: scenes.map((scene: any) => scene.id),
+  });
+
+  for (let start = 0; start < scenes.length; start += GRID_SCENE_IMAGE_BATCH_SIZE) {
+    const batchIndex = Math.floor(start / GRID_SCENE_IMAGE_BATCH_SIZE);
+    const batchScenes = scenes.slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE);
+    const gridPrompt = buildGridSceneImagePrompt({
+      scenes: batchScenes,
+      gridSize: GRID_SCENE_IMAGE_SIZE,
+      aspectRatio,
+    });
+    const task = await createTask({
+      userId: params.userId,
+      mediaType: 'image',
+      provider: 'kie',
+      model,
+      prompt: gridPrompt.compiledPrompt,
+      costCredits: batchScenes.length * 5,
+      options: {
+        projectId: params.projectId,
+        mode: 'grid_4x4',
+        batchIndex,
+        sceneIds: batchScenes.map((scene: any) => scene.id),
+        aspect_ratio: aspectRatio,
+        resolution,
+        gridSize: GRID_SCENE_IMAGE_SIZE,
+      },
+    });
+
+    try {
+      const result = await provider.generate({
+        params: {
+          mediaType: AIMediaType.IMAGE,
+          model,
+          prompt: gridPrompt.compiledPrompt,
+          options: {
+            aspect_ratio: aspectRatio,
+            resolution,
+            output_format: 'jpg',
+          },
+        },
+      });
+      await updateTask({
+        taskId: task.id,
+        status: AITaskStatus.PROCESSING,
+        providerTaskId: result.taskId,
+        taskResult: result.taskResult,
+      });
+
+      const batchRecord = {
+        batchIndex,
+        providerTaskId: result.taskId,
+        taskId: task.id,
+        panelCount: batchScenes.length,
+        sceneOffset: start,
+      };
+      batches.push(batchRecord);
+
+      for (const [index, scene] of batchScenes.entries()) {
+        const grid = {
+          batchIndex,
+          batchNumber: batchIndex + 1,
+          sceneOffset: start,
+          panel: index + 1,
+          globalPanel: start + index + 1,
+          gridSize: GRID_SCENE_IMAGE_SIZE,
+          totalPanels: GRID_SCENE_IMAGE_BATCH_SIZE,
+          aspectRatio,
+          resolution,
+          providerTaskId: result.taskId,
+          imageTaskId: task.id,
+        };
+        const [updated] = await db()
+          .update(lyricVideoScene)
+          .set({
+            imageUrl: params.clearExistingImages ? null : scene.imageUrl,
+            imageTaskId: task.id,
+            providerTaskId: result.taskId,
+            status: 'processing',
+            attemptCount: (scene.attemptCount || 0) + 1,
+            lastAttemptAt: new Date(),
+            completedAt: null,
+            failureCode: null,
+            imageModel: model,
+            imagePromptSnapshot: scene.prompt,
+            generationParams: safeJson({ mode: 'grid_4x4', model, grid }),
+            error: null,
+          })
+          .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+          .returning();
+        queued.push(updated);
+      }
+
+      logLyricStage('scene-images-grid', 'batch-queued', {
+        projectId: params.projectId,
+        userId: params.userId,
+        batchIndex,
+        providerTaskId: result.taskId,
+        sceneCount: batchScenes.length,
+        sceneIds: batchScenes.map((scene: any) => scene.id),
+        promptLength: gridPrompt.compiledPrompt.length,
+      });
+    } catch (error: any) {
+      logLyricStageError('scene-images-grid', 'batch-queue-fail', error, {
+        projectId: params.projectId,
+        userId: params.userId,
+        batchIndex,
+        taskId: task.id,
+      });
+      await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
+      for (const scene of batchScenes) {
+        const [updated] = await db()
+          .update(lyricVideoScene)
+          .set({
+            imageUrl: params.clearExistingImages ? null : scene.imageUrl,
+            imageTaskId: task.id,
+            status: 'failed',
+            attemptCount: (scene.attemptCount || 0) + 1,
+            lastAttemptAt: new Date(),
+            completedAt: null,
+            failureCode: 'queue_failed',
+            error: error?.message || 'Grid image generation failed',
+          })
+          .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+          .returning();
+        queued.push(updated);
+      }
+    }
+  }
+
+  await db()
+    .update(lyricVideoProject)
+    .set({
+      scenesStatus: 'processing',
+      pipelineStage: 'images_processing',
+      generationStatus: 'waiting_provider',
+      generationProgress: 80,
+      pipelineError: null,
+    })
+    .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+  logLyricStage('scene-images-grid', 'queue-complete', {
+    projectId: params.projectId,
+    userId: params.userId,
+    queuedCount: queued.length,
+    batchCount: batches.length,
+    batches,
+  });
+
+  return queued;
+}
+
 export async function generateVisualsFromStory(params: {
   userId: string;
   projectId: string;
@@ -239,7 +582,7 @@ export async function generateVisualsFromStory(params: {
 
   const queuedImages =
     scenesToQueue.length > 0
-      ? await queueSceneImages({
+      ? await queueSceneImagesGrid({
           userId: params.userId,
           projectId: params.projectId,
           sceneIds: scenesToQueue.map((scene: any) => scene.id),
@@ -259,11 +602,150 @@ export async function generateVisualsFromStory(params: {
   };
 }
 
+async function syncGridSceneImageBatch(params: {
+  userId: string;
+  projectId: string;
+  provider: Awaited<ReturnType<typeof createKieProvider>>;
+  providerTaskId: string;
+  scenes: any[];
+}) {
+  const firstGridParams = getGridGenerationParams(params.scenes[0]);
+  const grid = firstGridParams?.grid || {};
+  const result = await params.provider.query({ taskId: params.providerTaskId, mediaType: AIMediaType.IMAGE });
+
+  if (result.taskStatus === ProviderTaskStatus.FAILED) {
+    const message = result.taskInfo?.errorMessage || 'Grid image generation failed';
+    const failed = [];
+    const updatedTaskIds = new Set<string>();
+    for (const scene of params.scenes) {
+      const [updated] = await db()
+        .update(lyricVideoScene)
+        .set({ status: 'failed', failureCode: 'provider_failed', error: message })
+        .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+        .returning();
+      if (scene.imageTaskId && !updatedTaskIds.has(scene.imageTaskId)) {
+        updatedTaskIds.add(scene.imageTaskId);
+        await updateTask({ taskId: scene.imageTaskId, status: AITaskStatus.FAILED, taskResult: result.taskResult });
+      }
+      failed.push(updated);
+    }
+    return failed;
+  }
+
+  if (result.taskStatus !== ProviderTaskStatus.SUCCESS) {
+    return [];
+  }
+
+  const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
+  if (!sourceImageUrl) {
+    const failed = [];
+    const updatedTaskIds = new Set<string>();
+    for (const scene of params.scenes) {
+      const [updated] = await db()
+        .update(lyricVideoScene)
+        .set({
+          status: 'failed',
+          completedAt: null,
+          failureCode: 'missing_image_url',
+          error: 'No grid image URL returned',
+        })
+        .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+        .returning();
+      if (scene.imageTaskId && !updatedTaskIds.has(scene.imageTaskId)) {
+        updatedTaskIds.add(scene.imageTaskId);
+        await updateTask({ taskId: scene.imageTaskId, status: AITaskStatus.FAILED, taskResult: result.taskResult });
+      }
+      failed.push(updated);
+    }
+    return failed;
+  }
+
+  const imageBuffer = await fetchBytes(sourceImageUrl);
+  const metadata = await sharp(imageBuffer).metadata();
+  if (!metadata.width || !metadata.height) {
+    throw new Error('Could not read generated grid image dimensions');
+  }
+
+  const gridSize = Math.max(1, Math.floor(Number(grid.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE));
+  const synced = [];
+  const updatedTaskIds = new Set<string>();
+  for (const scene of params.scenes) {
+    const sceneGridParams = getGridGenerationParams(scene);
+    const sceneGrid = sceneGridParams?.grid || {};
+    const panel = Math.max(1, Math.floor(Number(sceneGrid.panel || 1) || 1));
+    const row = Math.floor((panel - 1) / gridSize);
+    const col = (panel - 1) % gridSize;
+    const left = Math.round((col * metadata.width) / gridSize);
+    const top = Math.round((row * metadata.height) / gridSize);
+    const right = Math.round(((col + 1) * metadata.width) / gridSize);
+    const bottom = Math.round(((row + 1) * metadata.height) / gridSize);
+    const width = Math.max(1, right - left);
+    const height = Math.max(1, bottom - top);
+    const cropped = await sharp(imageBuffer)
+      .extract({ left, top, width, height })
+      .jpeg({ quality: 95 })
+      .toBuffer();
+    const saved = await saveGeneratedFile({
+      body: cropped,
+      key: `lyric-videos/${params.projectId}/scene-images/${scene.id}-${getUuid()}.jpg`,
+      contentType: 'image/jpeg',
+      localDir: `lyric-videos/${params.projectId}/scene-images`,
+    });
+    const mergedGenerationParams = {
+      ...sceneGridParams,
+      grid: {
+        ...sceneGrid,
+        sourceImageUrl,
+        sourceWidth: metadata.width,
+        sourceHeight: metadata.height,
+        crop: { left, top, width, height },
+      },
+    };
+    const [updated] = await db()
+      .update(lyricVideoScene)
+      .set({
+        imageUrl: saved.url,
+        status: 'success',
+        completedAt: new Date(),
+        failureCode: null,
+        error: null,
+        generationParams: safeJson(mergedGenerationParams),
+      })
+      .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+      .returning();
+    if (scene.imageTaskId && !updatedTaskIds.has(scene.imageTaskId)) {
+      updatedTaskIds.add(scene.imageTaskId);
+      await updateTask({
+        taskId: scene.imageTaskId,
+        status: AITaskStatus.SUCCESS,
+        taskInfo: result.taskInfo,
+        taskResult: result.taskResult,
+      });
+    }
+    synced.push(updated);
+  }
+
+  logLyricStage('scene-images-grid', 'batch-synced', {
+    projectId: params.projectId,
+    userId: params.userId,
+    providerTaskId: params.providerTaskId,
+    sourceImageUrl,
+    sourceWidth: metadata.width,
+    sourceHeight: metadata.height,
+    sceneCount: synced.length,
+    scenes: synced.map((scene: any) => ({ id: scene.id, imageUrl: scene.imageUrl })),
+  });
+
+  return synced;
+}
+
 export async function syncSceneImages(params: { userId: string; projectId: string }) {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   const provider = await createKieProvider();
   const processing = details.scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
+  const gridProcessing = processing.filter((scene: any) => getGridGenerationParams(scene));
+  const singleProcessing = processing.filter((scene: any) => !getGridGenerationParams(scene));
   const synced = [];
   logLyricStage('scene-images', 'sync-start', {
     projectId: params.projectId,
@@ -272,7 +754,41 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     sceneIds: processing.map((scene: any) => scene.id),
   });
 
-  for (const scene of processing) {
+  const gridGroups = new Map<string, any[]>();
+  for (const scene of gridProcessing) {
+    const group = gridGroups.get(scene.providerTaskId) || [];
+    group.push(scene);
+    gridGroups.set(scene.providerTaskId, group);
+  }
+
+  for (const [providerTaskId, scenes] of gridGroups.entries()) {
+    try {
+      synced.push(...await syncGridSceneImageBatch({
+        userId: params.userId,
+        projectId: params.projectId,
+        provider,
+        providerTaskId,
+        scenes,
+      }));
+    } catch (error: any) {
+      logLyricStageError('scene-images-grid', 'batch-sync-fail', error, {
+        projectId: params.projectId,
+        userId: params.userId,
+        providerTaskId,
+        sceneIds: scenes.map((scene: any) => scene.id),
+      });
+      for (const scene of scenes) {
+        const [updated] = await db()
+          .update(lyricVideoScene)
+          .set({ status: 'failed', failureCode: 'sync_failed', error: error?.message || 'Grid image sync failed' })
+          .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+          .returning();
+        synced.push(updated);
+      }
+    }
+  }
+
+  for (const scene of singleProcessing) {
     try {
       const result = await provider.query({ taskId: scene.providerTaskId, mediaType: AIMediaType.IMAGE });
       if (result.taskStatus === ProviderTaskStatus.SUCCESS) {
@@ -344,9 +860,21 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
   }
 
   const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
-  const allDone = refreshed?.scenes.length && refreshed.scenes.every((scene: any) => scene.status === 'success');
+  const hasProcessing = refreshed?.scenes.some((scene: any) => scene.status === 'processing');
+  const allDone = refreshed?.scenes.length && refreshed.scenes.every((scene: any) => scene.status === 'success' || scene.imageUrl);
   const hasFailures = refreshed?.scenes.some((scene: any) => scene.status === 'failed');
+  const hasImages = refreshed?.scenes.some((scene: any) => scene.imageUrl || scene.status === 'success');
   if (allDone) {
+    const outputSnapshot = {
+      mode: 'grid_4x4',
+      sceneCount: refreshed?.scenes.length || 0,
+      imageCount: refreshed?.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
+      projectStatus: {
+        scenesStatus: 'ready',
+        pipelineStage: 'images_ready',
+        generationStatus: 'success',
+      },
+    };
     await db()
       .update(lyricVideoProject)
       .set({
@@ -358,7 +886,25 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         pipelineError: null,
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
-  } else if (hasFailures) {
+    await finalizeActiveImageGenerationRun({
+      userId: params.userId,
+      projectId: params.projectId,
+      project: refreshed?.project,
+      status: 'success',
+      outputSnapshot,
+    });
+  } else if (!hasProcessing && (hasFailures || hasImages)) {
+    const outputSnapshot = {
+      mode: 'grid_4x4',
+      sceneCount: refreshed?.scenes.length || 0,
+      imageCount: refreshed?.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
+      failedCount: refreshed?.scenes.filter((scene: any) => scene.status === 'failed').length || 0,
+      projectStatus: {
+        scenesStatus: 'partial_success',
+        pipelineStage: 'images_partial_success',
+        generationStatus: 'partial_success',
+      },
+    };
     await db()
       .update(lyricVideoProject)
       .set({
@@ -369,6 +915,14 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         pipelineError: 'Some scene images failed',
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    await finalizeActiveImageGenerationRun({
+      userId: params.userId,
+      projectId: params.projectId,
+      project: refreshed?.project,
+      status: 'partial_success',
+      outputSnapshot,
+      errorMessage: 'Some scene images failed',
+    });
   }
 
   logLyricStage('scene-images', 'sync-complete', {

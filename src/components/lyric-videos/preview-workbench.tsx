@@ -109,6 +109,9 @@ type LyricScene = {
   castIds?: string[];
   motionPrompt?: string | null;
   imageUrl?: string | null;
+  imageTaskId?: string | null;
+  providerTaskId?: string | null;
+  generationParams?: Record<string, unknown> | string | null;
   status: string;
   error?: string | null;
   sort?: number;
@@ -233,6 +236,8 @@ type EditorContextValue = {
   deleteCastMember: (castId: string) => Promise<void>;
   regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
   syncCastImages: () => Promise<void>;
+  queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;
+  syncSceneImages: () => Promise<void>;
   saveLyrics: () => Promise<boolean>;
   queueExport: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -558,6 +563,15 @@ function EditorProvider({
   }, [cast]);
 
   useEffect(() => {
+    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && !scene.imageUrl && scene.status === "processing");
+    if (!hasProcessingScenes || !project) return;
+    const timer = window.setInterval(() => {
+      syncSceneImages();
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [project, scenes]);
+
+  useEffect(() => {
     const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
     const shouldAutoTranscribe =
       project &&
@@ -614,7 +628,7 @@ function EditorProvider({
         setActiveTab("scenes");
         await refresh();
         setSaveStatus("saved");
-        toast.success("Lyrics and storyboard prompts are ready");
+        toast.success("Scene images are generating");
       })
       .catch(async (err: any) => {
         console.error("[lyric-video] auto generation flow failed from preview", err);
@@ -884,13 +898,13 @@ function EditorProvider({
         }),
       });
 
-      console.info("[lyric-video] requesting one-click LLM storyboard generation", { projectId });
+      console.info("[lyric-video] requesting one-click lyric video image generation", { projectId });
       const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      console.info("[lyric-video] one-click LLM storyboard generation completed", {
+      console.info("[lyric-video] one-click lyric video image generation queued", {
         projectId,
         lineCount: generated.lines?.length || 0,
         sceneCount: generated.scenes?.length || 0,
@@ -907,7 +921,7 @@ function EditorProvider({
       setActiveTab("scenes");
       await refresh();
       setSaveStatus("saved");
-      toast.success("Lyrics and storyboard prompts are ready");
+      toast.success("Scene images are generating");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");
@@ -1119,6 +1133,55 @@ function EditorProvider({
     }
   }
 
+  async function queueSceneImages(sceneIds: string[]) {
+    if (!project) return [];
+    const selectedSceneIds = sceneIds.filter(Boolean);
+    if (selectedSceneIds.length === 0) return [];
+    setSaveStatus("saving");
+    try {
+      const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sceneIds: selectedSceneIds,
+          clearExistingImages: true,
+        }),
+      });
+      const queuedById = new Map((queued || []).map((scene) => [scene.id, scene]));
+      setScenes((previous) => previous.map((scene) => queuedById.get(scene.id) || scene));
+      setProject((previous) =>
+        previous
+          ? {
+              ...previous,
+              scenesStatus: "processing",
+              generationStatus: "waiting_provider",
+              generationProgress: Math.max(previous.generationProgress || 0, 80),
+              pipelineStage: "images_processing",
+              pipelineError: null,
+            }
+          : previous,
+      );
+      setSaveStatus("saved");
+      await refresh();
+      toast.success(`Queued ${selectedSceneIds.length} scene images`);
+      return queued || [];
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Queue scene images failed");
+      return [];
+    }
+  }
+
+  async function syncSceneImages() {
+    if (!project) return;
+    try {
+      await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`);
+      await refresh();
+    } catch (err: any) {
+      toast.error(err?.message || "Sync scene images failed");
+    }
+  }
+
   async function saveLyrics() {
     try {
       setSaveStatus("saving");
@@ -1217,6 +1280,8 @@ function EditorProvider({
       deleteCastMember,
       regenerateCastImage,
       syncCastImages,
+      queueSceneImages,
+      syncSceneImages,
       saveLyrics,
       queueExport,
       refresh,
@@ -2399,22 +2464,24 @@ function ScenesPanel() {
 }
 
 function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const { project, scenes } = useEditor();
+  const { project, queueSceneImages, scenes } = useEditor();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setSelectedIds(new Set());
     setImagePromptDrafts(Object.fromEntries(scenes.map((scene) => [scene.id, scene.prompt || ""])));
     setVideoPromptDrafts(Object.fromEntries(scenes.map((scene) => [scene.id, scene.motionPrompt || ""])));
+    setSubmitting(false);
   }, [open, scenes]);
 
   if (!open) return null;
 
   const selectedCount = selectedIds.size;
-  const creditCost = selectedCount * 10;
+  const creditCost = selectedCount * 5;
   const allSelected = scenes.length > 0 && selectedCount === scenes.length;
 
   function toggleScene(sceneId: string, checked: boolean) {
@@ -2436,6 +2503,18 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 
   function updateVideoPrompt(sceneId: string, prompt: string) {
     setVideoPromptDrafts((previous) => ({ ...previous, [sceneId]: prompt }));
+  }
+
+  async function submitBatchGeneration() {
+    if (!project || submitting || selectedCount === 0) return;
+    setSubmitting(true);
+    try {
+      const selectedSceneIds = scenes.filter((scene) => selectedIds.has(scene.id)).map((scene) => scene.id);
+      const queued = await queueSceneImages(selectedSceneIds);
+      if (queued.length > 0) onClose();
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -2499,7 +2578,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                     </div>
 	                    <p className="max-w-[230px] text-[16px] font-[700] leading-[24px] text-[#26364E]">{title}</p>
 	                    <span className="mt-[14px] inline-flex rounded-[5px] bg-[#EEF3F8] px-[6px] py-[3px] text-[10px] font-[800] text-[#334155]">
-	                      10 credits
+	                      5 credits
 	                    </span>
 	                  </div>
 
@@ -2587,11 +2666,12 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
         <div className="flex flex-col items-stretch gap-[6px] sm:items-end">
           <button
             type="button"
-            disabled
-            title="Mock preview only. This button does not call the generation APIs yet."
-            className="h-[42px] rounded-[6px] bg-[#FFD987] px-[16px] text-[15px] font-[800] text-[#8A6A1C] disabled:cursor-not-allowed disabled:opacity-90"
+            onClick={submitBatchGeneration}
+            disabled={!project || selectedCount === 0 || submitting}
+            className="inline-flex h-[42px] items-center justify-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[16px] text-[15px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Regenerate {selectedCount} Scenes ({creditCost} credits)
+            {submitting ? <Loader2 className="h-[16px] w-[16px] animate-spin" /> : <ImageIcon className="h-[16px] w-[16px]" />}
+            Generate {selectedCount} Scene Images ({creditCost} credits)
           </button>
           <span className="text-right text-[10px] font-[600] text-[#61708A]">Estimated time to generate: ~20 minutes</span>
         </div>

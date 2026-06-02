@@ -10,6 +10,7 @@ import { isActiveRunStatus, requestHash, safeJson } from './json';
 import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, generateStoryboardScenesWithKieClaude } from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
+import { queueSceneImagesGrid } from './media-generation';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm, replaceScenes } from './storyboard';
 import {
   DEFAULT_SONG_ANALYSIS_MODEL,
@@ -26,6 +27,7 @@ export function generationOptions(input: unknown) {
     transcribeModel: String(body.transcribeModel || 'scribe_v2'),
     songAnalysisModel: String(body.songAnalysisModel || DEFAULT_SONG_ANALYSIS_MODEL),
     storyboardModel: String(body.storyboardModel || DEFAULT_STORYBOARD_MODEL),
+    imageModel: String(body.imageModel || '').trim() || undefined,
   };
 }
 
@@ -198,6 +200,54 @@ export async function markGenerationStepSuccess(params: {
     stage: params.step.stage,
     progress: params.progress,
     outputPresent: params.output !== undefined,
+  });
+}
+
+export async function markGenerationStepWaitingProvider(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  output?: unknown;
+}) {
+  await Promise.all([
+    db()
+      .update(lyricVideoGenerationStep)
+      .set({
+        status: 'waiting_provider',
+        progressPercent: params.progress,
+        outputJson: params.output === undefined ? undefined : safeJson(params.output),
+        lockedAt: null,
+        lockedBy: null,
+      })
+      .where(and(eq(lyricVideoGenerationStep.id, params.step.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'waiting_provider',
+        currentStage: params.step.stage,
+        completedSteps: Math.max((params.step.sort || 0) + 1, 1),
+        progressPercent: params.progress,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set({
+        generationStatus: 'waiting_provider',
+        generationProgress: params.progress,
+        pipelineStage: 'images_processing',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ]);
+  logLyricStage('generation-step', 'waiting-provider', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+    stepId: params.step.id,
+    stage: params.step.stage,
+    progress: params.progress,
   });
 }
 
@@ -525,45 +575,66 @@ export async function executeGenerationRun(params: {
       },
     });
 
-    currentStep = findGenerationStep(params.steps, 'finalize_project');
+    currentStep = findGenerationStep(params.steps, 'image_generation');
+    await markGenerationStepRunning({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      step: currentStep,
+      progress: 92,
+      input: {
+        model: options.imageModel,
+        sceneCount: scenes.length,
+        sceneIds: scenes.map((scene: any) => scene.id),
+        gridSize: 4,
+        batchSize: 16,
+      },
+    });
+    const queuedImages = await queueSceneImagesGrid({
+      userId: params.userId,
+      projectId: params.projectId,
+      sceneIds: scenes.map((scene: any) => scene.id),
+      model: options.imageModel,
+      clearExistingImages: true,
+    });
+    const imageProviderTaskIds = Array.from(
+      new Set(queuedImages.map((scene: any) => scene.providerTaskId).filter(Boolean))
+    );
+    if (imageProviderTaskIds.length === 0) {
+      throw new Error('Scene image grid generation did not queue any provider tasks');
+    }
     const outputSnapshot = {
       songAnalysis: songAnalysisResult.songAnalysis,
       models: {
         transcribe: options.transcribeModel,
         songAnalysis: songAnalysisResult.actualModel || options.songAnalysisModel,
         storyboard: storyboard.actualModel || options.storyboardModel,
+        image: options.imageModel || 'nano-banana-2',
       },
       lineCount: lines.length,
       wordCount: detailsAfterLyrics.words.length,
       sceneCount: scenes.length,
+      imageGeneration: {
+        mode: 'grid_4x4',
+        queuedSceneCount: queuedImages.length,
+        providerTaskIds: imageProviderTaskIds,
+        batchCount: imageProviderTaskIds.length,
+      },
       durationMs: Date.now() - startedAt,
       projectStatus: {
         lyricsStatus: 'ready',
-        scenesStatus: 'ready',
-        generationStatus: 'success',
-        pipelineStage: 'storyboard_ready',
+        scenesStatus: 'processing',
+        generationStatus: 'waiting_provider',
+        pipelineStage: 'images_processing',
       },
     };
-    await markGenerationStepRunning({
+    await markGenerationStepWaitingProvider({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 95,
-      input: outputSnapshot,
-    });
-    await markGenerationStepSuccess({
-      userId: params.userId,
-      runId: params.run.id,
-      step: currentStep,
-      progress: 100,
       output: outputSnapshot,
-    });
-    await completeGenerationRun({
-      userId: params.userId,
-      projectId: params.projectId,
-      runId: params.run.id,
-      outputSnapshot,
     });
 
     const finalDetails = await getProjectDetails({ userId: params.userId, id: params.projectId });

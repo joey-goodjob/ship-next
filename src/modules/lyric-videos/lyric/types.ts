@@ -168,6 +168,7 @@ export const GENERATION_STAGES = [
   'asr_words',
   'song_analysis',
   'prompt_generation',
+  'image_generation',
   'finalize_project',
 ] as const;
 
