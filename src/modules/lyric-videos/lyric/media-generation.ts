@@ -27,6 +27,16 @@ function resolveKieImageModel(configs: Record<string, string>, model?: string) {
   return model || configs.kie_image_model || KIE_Z_IMAGE_MODEL;
 }
 
+function normalizeKieImageResolution(model: string, resolution: unknown) {
+  const normalizedModel = String(model || '').trim().toLowerCase();
+  const normalizedResolution = String(resolution || '').trim().toUpperCase();
+  if (normalizedModel !== 'nano-banana-2') return resolution || '1080p';
+  if (normalizedResolution === '1K' || normalizedResolution === '2K' || normalizedResolution === '4K') {
+    return normalizedResolution;
+  }
+  return '2K';
+}
+
 export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
 const GRID_SCENE_IMAGE_SIZE = 4;
 const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
@@ -71,14 +81,33 @@ async function runWithConcurrency<T, R>(
   return results;
 }
 
+function isProviderReachableUrl(url: unknown): url is string {
+  if (typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    const hostname = parsed.hostname.toLowerCase();
+    return hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '::1' && hostname !== '[::1]';
+  } catch {
+    return false;
+  }
+}
+
+function uniqueProviderReachableUrls(urls: unknown[]) {
+  return Array.from(new Set(urls.filter(isProviderReachableUrl).map((url) => url.trim())));
+}
+
 function getCastReferenceImageUrls(castMember: any) {
   if (!castMember) return [];
   const generationParams = parseJsonField<{ referenceImageUrls?: unknown }>(castMember.generationParams, {});
-  const referenceImageUrls = Array.isArray(generationParams.referenceImageUrls)
-    ? generationParams.referenceImageUrls.filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+  const primaryReferenceImageUrls = uniqueProviderReachableUrls([castMember.referenceImageUrl]);
+  if (primaryReferenceImageUrls.length > 0) return primaryReferenceImageUrls;
+
+  return Array.isArray(generationParams.referenceImageUrls)
+    ? uniqueProviderReachableUrls(generationParams.referenceImageUrls)
     : [];
-  if (referenceImageUrls.length > 0) return referenceImageUrls;
-  return castMember.referenceImageUrl ? [castMember.referenceImageUrl] : [];
 }
 
 function activeMainCast(cast: any[]) {
@@ -400,14 +429,15 @@ export async function queueSceneImages(params: {
     const sceneCastIds = Array.isArray(scene.castIds) ? scene.castIds : [];
     const boundCast =
       sceneCastIds.length > 0
-        ? details.cast.find((member: any) => sceneCastIds.includes(member.id) && member.referenceImageUrl)
-        : details.cast.find((member: any) => member.status === 'active' && member.referenceImageUrl);
+        ? details.cast.find((member: any) => sceneCastIds.includes(member.id) && getCastReferenceImageUrls(member).length > 0)
+        : activeMainCast(details.cast).find((member: any) => getCastReferenceImageUrls(member).length > 0) ||
+          details.cast.find((member: any) => member.status === 'active' && getCastReferenceImageUrls(member).length > 0);
     const referenceImageUrls = getCastReferenceImageUrls(boundCast);
     const referenceImageUrl = referenceImageUrls[0] || '';
     const model = referenceImageUrls.length > 0 ? characterImageModel : defaultModel;
     const imageOptions: Record<string, unknown> = {
       aspect_ratio: details.project.aspectRatio,
-      resolution: details.project.resolution,
+      resolution: normalizeKieImageResolution(model, details.project.resolution),
     };
     if (referenceImageUrls.length > 0) {
       imageOptions.image_input = referenceImageUrls;

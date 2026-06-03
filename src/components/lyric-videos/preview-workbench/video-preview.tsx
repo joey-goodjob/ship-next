@@ -10,10 +10,11 @@ import { usePlayback } from "./playback-context";
 import { clamp, deriveGenerationProgress, getAspectRatio, normalizePreviewConfig, secondsToMs } from "./utils";
 
 export function VideoPreview() {
-  const { generationRun, generationSteps, loading, project, retryFailedImageBatches, scenes, words } = useEditor();
+  const { generationRun, generationSteps, lines, loading, project, retryFailedImageBatches, scenes, words } = useEditor();
   const { currentLine, currentScene, currentTime, totalDuration } = usePlayback();
   const aspectRatio = getAspectRatio(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
+  const hasLyrics = lines.length > 0 || words.length > 0 || project?.lyricsStatus === "ready";
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
   const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
   const captionText = useMemo(() => {
@@ -62,14 +63,16 @@ export function VideoPreview() {
           </>
         ) : (
           <PreviewPlaceholder
-            title={currentScene ? "Scene image pending" : "No scene image yet"}
+            title={currentScene ? "Scene image pending" : hasLyrics ? "Scene timing pending" : "No scene image yet"}
             description={
               currentScene
                 ? currentScene.status === "failed"
                   ? currentScene.error || "Image generation failed."
-                  : "Generate scene images to fill the preview."
-                : totalDuration > 0
-                  ? "Add lyrics and generate a storyboard to preview this video."
+                  : "Scene timing is ready. Images will appear after image generation starts."
+                : hasLyrics
+                  ? "Lyrics are ready, but scene timing is not written yet."
+                  : totalDuration > 0
+                  ? "Add lyrics to create scene timing for this video."
                   : "Create the project flow to preview your lyric video."
             }
           />

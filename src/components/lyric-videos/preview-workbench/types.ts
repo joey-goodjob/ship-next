@@ -1,5 +1,5 @@
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
-export type PanelTab = "customize" | "lyrics" | "cast" | "scenes";
+export type PanelTab = "customize" | "lyrics" | "cast" | "scenes" | "diagnostics";
 
 export type ApiResponse<T> = {
   code: number;
@@ -98,6 +98,10 @@ export type GenerationStep = {
   status: string;
   progressPercent?: number | null;
   errorMessage?: string | null;
+  startedAt?: string | Date | null;
+  completedAt?: string | Date | null;
+  createdAt?: string | Date | null;
+  updatedAt?: string | Date | null;
   sort?: number | null;
 };
 

@@ -1,0 +1,491 @@
+"use client";
+
+import { useMemo } from "react";
+import { AlertTriangle, CheckCircle2, Clapperboard, Clipboard, Clock3, Images, Radio, UserRound, XCircle } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useEditor } from "./editor-context";
+import type { GenerationStep, LyricCastMember, LyricScene } from "./types";
+import { deriveGenerationProgress, failedImageBatchCount, sceneBatchKey, sceneGridParams, sceneHasImage, stepByStage } from "./utils";
+
+const generationStages = [
+  { stage: "audio_prepare", label: "准备音频" },
+  { stage: "asr_words", label: "识别歌词" },
+  { stage: "song_analysis", label: "分析歌曲 / Prompt1" },
+  { stage: "prompt_generation", label: "生成分镜 / Prompt2" },
+  { stage: "image_generation", label: "生成图片" },
+  { stage: "finalize_project", label: "完成项目" },
+] as const;
+
+type StatusTone = "success" | "running" | "waiting" | "failed" | "neutral";
+
+function statusTone(status?: string | null): StatusTone {
+  const value = String(status || "pending").toLowerCase();
+  if (["success", "completed", "ready", "done"].includes(value)) return "success";
+  if (["failed", "error"].includes(value)) return "failed";
+  if (["running", "processing", "queued"].includes(value)) return "running";
+  if (["waiting_provider", "waiting", "pending"].includes(value)) return "waiting";
+  return "neutral";
+}
+
+function statusLabel(status?: string | null) {
+  const value = String(status || "pending");
+  if (value === "success") return "完成";
+  if (value === "running" || value === "processing") return "进行中";
+  if (value === "queued") return "排队中";
+  if (value === "waiting_provider") return "等待服务商";
+  if (value === "failed") return "失败";
+  if (value === "pending") return "未开始";
+  return value;
+}
+
+function StatusBadge({ status }: { status?: string | null }) {
+  const tone = statusTone(status);
+  return (
+    <span
+      className={cn(
+        "inline-flex h-[22px] shrink-0 items-center rounded-[999px] px-[8px] text-[10px] font-[900]",
+        tone === "success" ? "bg-emerald-50 text-emerald-700" : null,
+        tone === "running" ? "bg-sky-50 text-sky-700" : null,
+        tone === "waiting" ? "bg-amber-50 text-amber-700" : null,
+        tone === "failed" ? "bg-red-50 text-red-600" : null,
+        tone === "neutral" ? "bg-slate-100 text-slate-600" : null,
+      )}
+    >
+      {statusLabel(status)}
+    </span>
+  );
+}
+
+function castImageIsProcessing(member: LyricCastMember) {
+  return Boolean(member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
+}
+
+function activeMainCast(cast: LyricCastMember[]) {
+  return cast.filter((member) => member.status === "active" && (member.role.toLowerCase() === "main" || !member.role.trim()));
+}
+
+function distinctCount(values: string[]) {
+  return new Set(values.map((value) => value.trim()).filter(Boolean)).size;
+}
+
+function numberFromUnknown(value: unknown) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function timestampMs(value?: string | Date | null) {
+  if (!value) return null;
+  const ms = value instanceof Date ? value.getTime() : Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function formatDuration(ms?: number | null) {
+  if (ms === null || ms === undefined || !Number.isFinite(ms) || ms < 0) return "未记录";
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes === 0) return `${seconds}s`;
+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+}
+
+function formatClockTime(value?: string | Date | null) {
+  const ms = timestampMs(value);
+  if (ms === null) return "未记录";
+  return new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date(ms));
+}
+
+function stepTiming(step?: GenerationStep | null) {
+  const startedMs = timestampMs(step?.startedAt);
+  const completedMs = timestampMs(step?.completedAt);
+  const status = String(step?.status || "pending");
+  const active = ["running", "processing", "queued", "waiting_provider"].includes(status);
+  const durationMs =
+    startedMs !== null && completedMs !== null
+      ? completedMs - startedMs
+      : startedMs !== null && active
+        ? Date.now() - startedMs
+        : null;
+
+  return {
+    startedAt: step?.startedAt || null,
+    completedAt: step?.completedAt || null,
+    durationMs,
+    durationLabel: formatDuration(durationMs),
+    startedLabel: formatClockTime(step?.startedAt),
+    completedLabel: formatClockTime(step?.completedAt),
+    prefix: completedMs !== null ? "耗时" : startedMs !== null && active ? "已运行" : "耗时",
+  };
+}
+
+function buildImageDiagnostics(scenes: LyricScene[]) {
+  const total = scenes.length;
+  const success = scenes.filter(sceneHasImage).length;
+  const lyricsDraft = scenes.filter((scene) => scene.status === "lyrics_draft").length;
+  const promptReady = scenes.filter((scene) => String(scene.prompt || "").trim() || String(scene.motionPrompt || "").trim()).length;
+  const processingScenes = scenes.filter((scene) => scene.status === "processing" && !scene.imageUrl);
+  const failedScenes = scenes.filter((scene) => scene.status === "failed" && !scene.imageUrl);
+  const missingImage = scenes.filter((scene) => !scene.imageUrl).length;
+  const providerTaskIds = scenes.map((scene) => scene.providerTaskId || String(sceneGridParams(scene)?.providerTaskId || ""));
+  const gridBatchKeys = scenes.map((scene) => {
+    const grid = sceneGridParams(scene);
+    const batchIndex = numberFromUnknown(grid?.batchIndex);
+    if (batchIndex !== null) return `batch:${batchIndex}`;
+    return sceneBatchKey(scene);
+  });
+  const processingBatchKeys = processingScenes.map(sceneBatchKey);
+  const failedBatches = failedImageBatchCount(scenes);
+  const panelIndexes = scenes
+    .map((scene) => {
+      const grid = sceneGridParams(scene);
+      return numberFromUnknown(grid?.globalPanelIndex ?? grid?.panelIndex);
+    })
+    .filter((value): value is number => value !== null);
+
+  return {
+    total,
+    success,
+    lyricsDraft,
+    promptReady,
+    processing: processingScenes.length,
+    failed: failedScenes.length,
+    missingImage,
+    providerTaskCount: distinctCount(providerTaskIds),
+    gridBatchCount: distinctCount(gridBatchKeys),
+    processingBatchCount: distinctCount(processingBatchKeys),
+    failedBatches,
+    minPanel: panelIndexes.length ? Math.min(...panelIndexes) : null,
+    maxPanel: panelIndexes.length ? Math.max(...panelIndexes) : null,
+    processingSceneIds: processingScenes.map((scene) => scene.id),
+  };
+}
+
+function buildCastDiagnostics(cast: LyricCastMember[]) {
+  const mainCast = activeMainCast(cast);
+  const primary = mainCast[0] || null;
+  return {
+    total: cast.length,
+    activeMainCount: mainCast.length,
+    activeMainName: primary?.name || "",
+    activeMainHasReference: Boolean(primary?.referenceImageUrl),
+    withReferenceImage: cast.filter((member) => Boolean(member.referenceImageUrl)).length,
+    processing: cast.filter(castImageIsProcessing).length,
+    failed: cast.filter((member) => member.status === "failed").length,
+  };
+}
+
+function buildSceneErrors(scenes: LyricScene[]) {
+  return scenes
+    .map((scene, index) => ({ scene, index }))
+    .filter(({ scene }) => Boolean(scene.error || (scene.status === "failed" && !scene.imageUrl)))
+    .slice(0, 8)
+    .map(({ scene, index }) => ({
+      sceneNumber: index + 1,
+      sceneId: scene.id,
+      status: scene.status,
+      providerTaskId: scene.providerTaskId || null,
+      error: scene.error || "Image generation failed",
+    }));
+}
+
+function buildReport(params: {
+  cast: LyricCastMember[];
+  generationSteps: GenerationStep[];
+  imageDiagnostics: ReturnType<typeof buildImageDiagnostics>;
+  lineCount: number;
+  wordCount: number;
+  projectId: string;
+  shouldSyncImages: boolean;
+  scenes: LyricScene[];
+  generationRunStatus?: string;
+  currentStage?: string | null;
+  activeRunId?: string | null;
+  generationStatus?: string;
+  generationProgress?: number;
+  pipelineError?: string | null;
+}) {
+  return {
+    projectId: params.projectId,
+    activeRunId: params.activeRunId || null,
+    pipeline: {
+      currentStage: params.currentStage || null,
+      generationRunStatus: params.generationRunStatus || null,
+      generationStatus: params.generationStatus || null,
+      generationProgress: params.generationProgress || 0,
+      pipelineError: params.pipelineError || null,
+    },
+    steps: generationStages.map(({ stage }) => {
+      const step = stepByStage(params.generationSteps, stage);
+      const timing = stepTiming(step);
+      return {
+        stage,
+        status: step?.status || "pending",
+        progressPercent: step?.progressPercent || 0,
+        errorMessage: step?.errorMessage || null,
+        startedAt: timing.startedAt,
+        completedAt: timing.completedAt,
+        durationMs: timing.durationMs,
+        durationLabel: timing.durationLabel,
+      };
+    }),
+    scenesSummary: {
+      lines: params.lineCount,
+      words: params.wordCount,
+      total: params.imageDiagnostics.total,
+      lyricsDraft: params.imageDiagnostics.lyricsDraft,
+      promptReady: params.imageDiagnostics.promptReady,
+      success: params.imageDiagnostics.success,
+      processing: params.imageDiagnostics.processing,
+      failed: params.imageDiagnostics.failed,
+      missingImage: params.imageDiagnostics.missingImage,
+      providerTaskCount: params.imageDiagnostics.providerTaskCount,
+      gridBatchCount: params.imageDiagnostics.gridBatchCount,
+      failedBatches: params.imageDiagnostics.failedBatches,
+    },
+    castSummary: buildCastDiagnostics(params.cast),
+    polling: {
+      shouldSyncImages: params.shouldSyncImages,
+      processingSceneIds: params.imageDiagnostics.processingSceneIds,
+    },
+    latestSceneErrors: buildSceneErrors(params.scenes),
+  };
+}
+
+async function copyText(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+export function DiagnosticsPanel() {
+  const { cast, generationRun, generationSteps, lines, project, projectId, scenes, words } = useEditor();
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const imageDiagnostics = useMemo(() => buildImageDiagnostics(scenes), [scenes]);
+  const castDiagnostics = useMemo(() => buildCastDiagnostics(cast), [cast]);
+  const sceneErrors = useMemo(() => buildSceneErrors(scenes), [scenes]);
+  const shouldSyncImages = imageDiagnostics.processingSceneIds.length > 0;
+  const report = useMemo(
+    () =>
+      buildReport({
+        cast,
+        generationSteps,
+        imageDiagnostics,
+        lineCount: lines.length,
+        projectId,
+        shouldSyncImages,
+        scenes,
+        wordCount: words.length,
+        generationRunStatus: generationRun?.status,
+        currentStage: generationRun?.currentStage || project?.pipelineStage,
+        activeRunId: project?.activeRunId,
+        generationStatus: project?.generationStatus,
+        generationProgress: project?.generationProgress,
+        pipelineError: project?.pipelineError,
+      }),
+    [cast, generationRun, generationSteps, imageDiagnostics, lines.length, project, projectId, scenes, shouldSyncImages, words.length],
+  );
+
+  async function copyDiagnostics() {
+    try {
+      await copyText(JSON.stringify(report, null, 2));
+      toast.success("诊断信息已复制");
+    } catch {
+      toast.error("复制失败");
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-[18px]">
+      <section className="border-b border-[#E8E8E8] pb-[16px]">
+        <div className="mb-[10px] flex items-center justify-between gap-[10px]">
+          <div className="min-w-0">
+            <p className="text-[13px] font-[900] text-[#1A1A2E]">当前状态</p>
+            <p className="mt-[3px] truncate text-[12px] font-[650] text-[#667085]">{project?.title || "Lyric video"}</p>
+          </div>
+          <StatusBadge status={progress.generationStatus} />
+        </div>
+        <div className="rounded-[6px] border border-[#DDE5EF] bg-[#F8FAFC] px-[12px] py-[11px]">
+          <div className="flex items-start gap-[9px]">
+            {progress.failed > 0 && progress.processing === 0 ? (
+              <AlertTriangle className="mt-[1px] h-[16px] w-[16px] shrink-0 text-red-600" />
+            ) : progress.isActive ? (
+              <Clock3 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-sky-700" />
+            ) : (
+              <CheckCircle2 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-emerald-700" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-[900] leading-[20px] text-[#26364E]">{progress.primary}</p>
+              <p className="mt-[4px] text-[12px] font-[650] leading-[18px] text-[#61708A]">
+                {progress.currentStage} · {Math.round(progress.progressPercent)}%
+              </p>
+              {progress.error ? <p className="mt-[7px] line-clamp-3 text-[12px] font-[750] leading-[18px] text-red-600">{progress.error}</p> : null}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <DiagnosticsSection title="流程步骤" icon={Clock3}>
+        <div className="divide-y divide-[#EEF1F5]">
+          {generationStages.map(({ label, stage }) => {
+            const step = stepByStage(generationSteps, stage);
+            const timing = stepTiming(step);
+            return (
+              <div key={stage} className="flex min-h-[46px] items-center gap-[10px] py-[9px]">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-[850] text-[#26364E]">{label}</p>
+                  <p className="mt-[2px] truncate text-[11px] font-[700] text-[#7B8797]">
+                    {stage} · {Math.round(step?.progressPercent || 0)}% · {timing.prefix} {timing.durationLabel}
+                  </p>
+                  {step?.startedAt || step?.completedAt ? (
+                    <p className="mt-[2px] truncate text-[11px] font-[650] text-[#9AA5B5]">
+                      开始 {timing.startedLabel} · 完成 {timing.completedLabel}
+                    </p>
+                  ) : null}
+                  {step?.errorMessage ? <p className="mt-[4px] line-clamp-2 text-[11px] font-[750] text-red-600">{step.errorMessage}</p> : null}
+                </div>
+                <StatusBadge status={step?.status || "pending"} />
+              </div>
+            );
+          })}
+        </div>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection title="时间分镜诊断" icon={Clapperboard}>
+        <MetricGrid
+          items={[
+            ["歌词行", lines.length],
+            ["words", words.length],
+            ["总 scenes", imageDiagnostics.total],
+            ["时间骨架", imageDiagnostics.lyricsDraft],
+            ["prompt ready", imageDiagnostics.promptReady],
+            ["有图片", imageDiagnostics.success],
+          ]}
+        />
+      </DiagnosticsSection>
+
+      <DiagnosticsSection title="图片诊断" icon={Images}>
+        <MetricGrid
+          items={[
+            ["有图片", imageDiagnostics.success],
+            ["处理中", imageDiagnostics.processing],
+            ["失败", imageDiagnostics.failed],
+            ["缺图", imageDiagnostics.missingImage],
+            ["grid 批次", imageDiagnostics.gridBatchCount],
+            ["provider tasks", imageDiagnostics.providerTaskCount],
+            ["失败批次", imageDiagnostics.failedBatches],
+          ]}
+        />
+        <p className="mt-[10px] truncate text-[11px] font-[700] text-[#7B8797]">
+          panel 范围: {imageDiagnostics.minPanel ?? "n/a"} - {imageDiagnostics.maxPanel ?? "n/a"} · processing batches:{" "}
+          {imageDiagnostics.processingBatchCount}
+        </p>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection title="角色诊断" icon={UserRound}>
+        <MetricGrid
+          items={[
+            ["角色数", castDiagnostics.total],
+            ["主角数", castDiagnostics.activeMainCount],
+            ["有参考图", castDiagnostics.withReferenceImage],
+            ["处理中", castDiagnostics.processing],
+            ["失败", castDiagnostics.failed],
+          ]}
+        />
+        <p className="mt-[10px] line-clamp-2 text-[12px] font-[750] text-[#526173]">
+          主角: {castDiagnostics.activeMainName || "未选择"} · reference:{" "}
+          {castDiagnostics.activeMainHasReference ? "已准备" : "缺少或未完成"}
+        </p>
+      </DiagnosticsSection>
+
+      <DiagnosticsSection title="同步判断" icon={Radio}>
+        <div
+          className={cn(
+            "flex items-start gap-[9px] rounded-[6px] border px-[11px] py-[10px]",
+            shouldSyncImages ? "border-amber-200 bg-amber-50 text-amber-800" : "border-emerald-200 bg-emerald-50 text-emerald-800",
+          )}
+        >
+          {shouldSyncImages ? <AlertTriangle className="mt-[1px] h-[16px] w-[16px] shrink-0" /> : <CheckCircle2 className="mt-[1px] h-[16px] w-[16px] shrink-0" />}
+          <div className="min-w-0">
+            <p className="text-[13px] font-[900]">{shouldSyncImages ? "需要同步 /images" : "不需要继续轮询"}</p>
+            <p className="mt-[3px] text-[12px] font-[700] leading-[18px]">
+              {shouldSyncImages
+                ? `${imageDiagnostics.processingSceneIds.length} 个 scene 正在等服务商返回图片。`
+                : "没有 processing 且缺图的 provider task，Preview 可以安静下来。"}
+            </p>
+          </div>
+        </div>
+      </DiagnosticsSection>
+
+      {sceneErrors.length > 0 ? (
+        <DiagnosticsSection title="最近错误" icon={XCircle}>
+          <div className="divide-y divide-[#F0E0E0] rounded-[6px] border border-[#F0D8D8] bg-red-50">
+            {sceneErrors.map((item) => (
+              <div key={`${item.sceneId}-${item.sceneNumber}`} className="px-[10px] py-[8px]">
+                <p className="truncate text-[12px] font-[900] text-red-700">Scene {item.sceneNumber}</p>
+                <p className="mt-[2px] line-clamp-2 text-[11px] font-[700] leading-[17px] text-red-600">{item.error}</p>
+              </div>
+            ))}
+          </div>
+        </DiagnosticsSection>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={copyDiagnostics}
+        className="inline-flex h-[38px] w-full items-center justify-center gap-[8px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[900] text-white hover:bg-[#2B2B45]"
+      >
+        <Clipboard className="h-[15px] w-[15px]" />
+        复制诊断信息
+      </button>
+    </div>
+  );
+}
+
+function DiagnosticsSection({
+  children,
+  icon: Icon,
+  title,
+}: {
+  children: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+}) {
+  return (
+    <section className="border-b border-[#E8E8E8] pb-[16px] last:border-b-0">
+      <div className="mb-[10px] flex items-center gap-[7px]">
+        <Icon className="h-[15px] w-[15px] text-[#F5A623]" />
+        <p className="text-[13px] font-[900] text-[#1A1A2E]">{title}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function MetricGrid({ items }: { items: Array<[string, number]> }) {
+  return (
+    <div className="grid grid-cols-2 gap-[8px]">
+      {items.map(([label, value]) => (
+        <div key={label} className="min-w-0 rounded-[6px] border border-[#E1E6EE] bg-white px-[10px] py-[8px]">
+          <p className="truncate text-[11px] font-[800] text-[#7B8797]">{label}</p>
+          <p className="mt-[2px] text-[18px] font-[950] leading-[22px] text-[#26364E]">{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}

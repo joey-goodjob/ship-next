@@ -13,6 +13,7 @@ export function ScenesPanel() {
   const { currentScene, setCurrentTime } = usePlayback();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const promptReadyCount = scenes.filter((scene) => String(scene.prompt || "").trim()).length;
 
   return (
     <div className="flex flex-col">
@@ -42,7 +43,7 @@ export function ScenesPanel() {
         <button
           type="button"
           onClick={() => setBatchGenerationOpen(true)}
-          disabled={scenes.length === 0}
+          disabled={promptReadyCount === 0}
           className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Wand2 className="h-[15px] w-[15px]" />
@@ -85,7 +86,7 @@ export function ScenesPanel() {
                     <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[10px] font-[800] uppercase text-[#8A94A6]">
-                      {scene.status || "draft"}
+                      {sceneStatusLabel(scene)}
                     </div>
                   )}
                 </div>
@@ -284,7 +285,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
 	                        ) : (
 	                          <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[#8A94A6]">
-	                            {scene.status || "draft"}
+	                            {sceneStatusLabel(scene)}
 	                          </div>
 	                        )}
 	                      </div>
@@ -348,4 +349,9 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
       </footer>
     </div>
   );
+}
+
+function sceneStatusLabel(scene: { prompt?: string | null; status?: string | null }) {
+  if (scene.status === "lyrics_draft" || !String(scene.prompt || "").trim()) return "Timing draft";
+  return scene.status || "draft";
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { Clapperboard, FileText, Settings, Users } from "lucide-react";
+import { Activity, Clapperboard, FileText, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CastPanel } from "./cast-panel";
 import { CustomizePanel } from "./customize-panel";
+import { DiagnosticsPanel } from "./diagnostics-panel";
 import { useEditor } from "./editor-context";
 import { LyricsPanel } from "./lyrics-panel";
 import { ScenesPanel } from "./scenes-panel";
@@ -17,6 +18,7 @@ export function SidePanel({ width }: { width: number }) {
     { id: "lyrics", label: "Lyrics", icon: FileText },
     { id: "cast", label: "Cast", icon: Users },
     { id: "scenes", label: "Scenes", icon: Clapperboard },
+    { id: "diagnostics", label: "诊断", icon: Activity },
   ];
 
   return (
@@ -50,6 +52,7 @@ export function SidePanel({ width }: { width: number }) {
         {activeTab === "lyrics" ? <LyricsPanel /> : null}
         {activeTab === "cast" ? <CastPanel /> : null}
         {activeTab === "scenes" ? <ScenesPanel /> : null}
+        {activeTab === "diagnostics" ? <DiagnosticsPanel /> : null}
       </div>
     </aside>
   );

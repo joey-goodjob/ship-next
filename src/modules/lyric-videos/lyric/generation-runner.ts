@@ -11,7 +11,12 @@ import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, generateStoryboar
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
 import { queueSceneImagesGrid } from './media-generation';
-import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm, replaceScenes } from './storyboard';
+import {
+  buildFixedStoryboardSceneDraftsFromPersistedScenes,
+  preprocessLyricVideoForLlm,
+  replaceLyricsSceneSkeleton,
+  replaceScenes,
+} from './storyboard';
 import {
   DEFAULT_SONG_ANALYSIS_MODEL,
   DEFAULT_STORYBOARD_MODEL,
@@ -480,9 +485,17 @@ export async function executeGenerationRun(params: {
         pipelineError: null,
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    const skeletonScenes = await replaceLyricsSceneSkeleton({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+    });
     const detailsAfterLyrics = await getProjectDetails({ userId: params.userId, id: params.projectId });
     if (!detailsAfterLyrics || detailsAfterLyrics.lines.length === 0) {
       throw new Error('Lyrics were not persisted after transcription');
+    }
+    if (detailsAfterLyrics.scenes.length === 0) {
+      throw new Error('Scene timing skeleton was not persisted after transcription');
     }
     await markGenerationStepSuccess({
       userId: params.userId,
@@ -494,6 +507,8 @@ export async function executeGenerationRun(params: {
         model: options.transcribeModel,
         lineCount: detailsAfterLyrics.lines.length,
         wordCount: detailsAfterLyrics.words.length,
+        sceneCount: skeletonScenes.length,
+        scenesStatus: skeletonScenes.length > 0 ? 'lyrics_draft' : 'empty',
         audioAnalysis: analysisResult.audioAnalysis,
         audioAnalysisError: analysisResult.audioAnalysisError,
       },
@@ -532,10 +547,10 @@ export async function executeGenerationRun(params: {
     });
 
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
-    const fixedScenes = buildFixedStoryboardSceneDrafts({
+    const fixedScenes = buildFixedStoryboardSceneDraftsFromPersistedScenes({
+      scenes: detailsAfterLyrics.scenes,
       lines: detailsAfterLyrics.lines,
       audioAnalysis: analysisResult.audioAnalysis,
-      words: detailsAfterLyrics.words,
     });
     logLyricStage('generation-run', 'asr-timing-summary', {
       projectId: params.projectId,

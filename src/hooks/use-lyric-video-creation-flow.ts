@@ -90,10 +90,6 @@ function resolvePublicAssetUrl(url: string) {
   return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
-function resolvePublicAssetUrls(urls: string[]) {
-  return urls.map((url) => resolvePublicAssetUrl(url)).filter(Boolean);
-}
-
 /**
  * 前端一键创建流程的第一步：上传原始音频。
  *
@@ -215,11 +211,14 @@ export function useLyricVideoCreationFlow() {
           characterName: selectedCharacter.name,
         });
         const thumbnailUrl = resolvePublicAssetUrl(selectedCharacter.thumbnailUrl || selectedCharacter.referenceImageUrl);
-        const referenceImageUrls = resolvePublicAssetUrls(
+        const referenceImageUrl = resolvePublicAssetUrl(selectedCharacter.referenceImageUrl || selectedCharacter.thumbnailUrl);
+        const referenceImageUrls = (
           selectedCharacter.referenceImageUrls?.length
             ? selectedCharacter.referenceImageUrls
-            : [selectedCharacter.referenceImageUrl],
-        );
+            : [referenceImageUrl]
+        )
+          .map(resolvePublicAssetUrl)
+          .filter(Boolean);
         await requestJson(`/api/lyric-videos/${project.id}/cast`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -228,7 +227,7 @@ export function useLyricVideoCreationFlow() {
             role: selectedCharacter.role,
             description: selectedCharacter.description,
             promptFragment: selectedCharacter.promptFragment,
-            referenceImageUrl: thumbnailUrl,
+            referenceImageUrl,
             generationParams: {
               presetSlug: selectedCharacter.slug,
               thumbnailUrl,
