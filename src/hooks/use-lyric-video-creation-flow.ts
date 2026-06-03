@@ -94,6 +94,11 @@ function resolvePublicAssetUrls(urls: string[]) {
   return urls.map((url) => resolvePublicAssetUrl(url)).filter(Boolean);
 }
 
+/**
+ * 前端一键创建流程的第一步：上传原始音频。
+ *
+ * 只调用 `/api/storage/upload-audio` 拿到 url/key；真正的歌词视频项目还没创建。
+ */
 async function uploadAudioFile(file: File) {
   const formData = new FormData();
   formData.append("file", file);
@@ -155,6 +160,10 @@ export function useLyricVideoCreationFlow() {
 
   const createProjectAndGenerate = useCallback(
     async (payload: PendingLyricVideoPayload) => {
+      // 前端主链路：
+      // 1. 用 upload-audio 返回的 url 创建 `lyric_video_project`
+      // 2. 可选写入默认角色 `lyric_video_cast_member`
+      // 3. 调 `/api/lyric-videos/:id/generate`，后端进入 generation-runner 一键生成
       setError("");
       setStage("creating");
 

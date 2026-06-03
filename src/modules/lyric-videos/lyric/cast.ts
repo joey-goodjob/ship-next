@@ -10,6 +10,14 @@ import { callKieCodexResponses, createKieProvider } from './llm';
 import { parseJsonLoose, safeJson } from './json';
 import { getProjectDetails } from './project';
 
+/**
+ * 角色模块：管理歌词视频里的主角/候选角色。
+ *
+ * 角色不是生成主链路的必需条件，但如果项目有 active main cast，
+ * `media-generation.ts` 会读取 `lyric_video_cast_member.referenceImageUrl`
+ * 和 `promptFragment`，把它们拼进 scene prompt，让不同分镜里的主角更一致。
+ */
+
 const DEFAULT_CHARACTER_IMAGE_MODEL = 'nano-banana-2';
 const CHARACTER_IMAGE_COST_CREDITS = 5;
 
@@ -137,6 +145,8 @@ export async function createCastMember(params: {
   status?: string;
   sort?: number;
 }) {
+  // 创建或保存用户选中的角色预设，写入 `lyric_video_cast_member`。
+  // 后续 scene 图片生成会按 scene.castIds 或 active main cast 读取它。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
@@ -238,6 +248,8 @@ export async function queueCastImage(params: {
   castId: string;
   model?: string;
 }) {
+  // 为角色生成参考图。这里创建 `ai_task`，并把 imageTaskId/providerTaskId
+  // 写回 `lyric_video_cast_member`，等待 syncCastImages 轮询结果。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   const castMember = details.cast.find((item: any) => item.id === params.castId);
@@ -323,6 +335,7 @@ export async function queueCastImage(params: {
 }
 
 export async function syncCastImages(params: { userId: string; projectId: string }) {
+  // 轮询角色参考图。成功后写 `referenceImageUrl`，后续 scene 图片生成会用它保持角色一致。
   const cast = await listCastMembers({ userId: params.userId, projectId: params.projectId });
   const processing = cast.filter((member: any) => member.providerTaskId && !member.referenceImageUrl && member.status !== 'failed');
   if (processing.length === 0) return cast;
@@ -379,6 +392,8 @@ export async function generateCastCandidates(params: {
   projectId: string;
   model?: string;
 }) {
+  // 让 LLM 生成三个候选主角，先插入 `lyric_video_cast_member`，再逐个调用 queueCastImage。
+  // 这是角色辅助链路，不是 `/generate` 必跑步骤。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 

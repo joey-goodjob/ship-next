@@ -28,6 +28,17 @@ import {
   type StoryboardScene,
 } from './types';
 
+/**
+ * LLM 边界模块：负责把内部结构发给 Kie/Groq 等供应商，并把模型输出整理成内部格式。
+ *
+ * 主链路里，`generation-runner.ts` 不直接拼请求细节，而是调用这里：
+ * - `analyzeSongWithKieForDebug`：Prompt1，分析歌曲情绪/主题/视觉方向。
+ * - `generateStoryboardScenesWithKieClaude`：Prompt2，基于固定 scene 时间边界补 prompt。
+ *
+ * 这里通常只保存到 `ai_task` 或 generation step 的 input/output；真正业务表
+ * `lyric_video_scene` 的写入仍由 `storyboard.ts` 的 `replaceScenes` 完成。
+ */
+
 export async function callKieGeminiChat(params: {
   text: string;
   mediaUrl?: string;

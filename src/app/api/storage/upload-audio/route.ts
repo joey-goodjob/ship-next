@@ -6,6 +6,14 @@ import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 
+/**
+ * 音频上传入口。
+ *
+ * 这一步只负责把用户文件保存到对象存储或本地 public 目录，返回 url/key/filename。
+ * 它不走 `src/modules/lyric-videos/service.ts`，也不写 `lyric_video_project`。
+ * 前端拿到这里返回的 audioUrl 后，才会调用 `POST /api/lyric-videos` 创建项目。
+ */
+
 const AUDIO_TYPES = new Set([
   'audio/mpeg',
   'audio/mp3',

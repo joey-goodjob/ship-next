@@ -28,6 +28,16 @@ import {
   type StoryboardShotType,
 } from './types';
 
+/**
+ * 分镜模块：把“可编辑歌词行”变成“可生成图片的 scene”。
+ *
+ * 主链路里有两层分镜：
+ * - `replaceLyricsSceneSkeleton`：ASR/手动歌词保存后，先根据时间轴生成 lyrics_draft
+ *   草稿 scene，让预览页马上有画面段落。
+ * - `generateStoryboard` / `replaceScenes`：结合 storyPrompt、歌曲分析和 LLM 输出，
+ *   把草稿 scene 升级为带 prompt/motionPrompt 的正式分镜，写入 `lyric_video_scene`。
+ */
+
 export function buildEnergySegments(audioAnalysis?: AudioAnalysisResult): PreprocessEnergySegment[] {
   const segments = (audioAnalysis?.segments || []).filter((segment) => segment.endMs > segment.startMs);
   if (segments.length === 0) return [];
@@ -730,6 +740,8 @@ export function buildFixedStoryboardSceneDrafts(params: {
   audioAnalysis?: AudioAnalysisResult;
   words?: LyricWordInput[];
 }): FixedStoryboardSceneDraft[] {
+  // 根据歌词行、逐词时间轴和音频能量，先在代码里规划稳定的 scene 时间边界。
+  // 后续 LLM 只补画面创意，不再决定“这首歌到底切多少段”。
   const lines = params.lines
     .map(normalizeStoryboardLine)
     .filter((line) => line.text)
@@ -913,6 +925,8 @@ export async function replaceLyricsSceneSkeleton(params: {
   projectId: string;
   runId?: string;
 }) {
+  // 歌词刚落库后的桥接步骤：用 line/word 生成 lyrics_draft scene。
+  // 这些 scene 还没有图片 prompt，但前端预览可以先按时间轴展示段落。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
@@ -1184,6 +1198,8 @@ export function preprocessLyricVideoForLlm(params: {
   };
   audioAnalysis?: AudioAnalysisResult;
 }): LyricVideoLlmPreprocessResult {
+  // 把项目、歌词、音频分析压缩成 Prompt1/Prompt2 能消费的结构。
+  // 这是 LLM 边界前的最后一道“确定性整理”，避免把原始大对象直接塞进 prompt。
   const lyrics = normalizePreprocessLyrics({
     rawText: params.transcription?.rawText,
     rawSegments: params.transcription?.rawSegments,
@@ -1215,6 +1231,8 @@ export async function generateStoryboard(params: {
   projectId: string;
   storyPrompt?: string;
 }) {
+  // 正式生成分镜：读取项目详情 -> 调 llm.ts 的 generateStoryboardWithKieClaude
+  // -> replaceScenes 重写 `lyric_video_scene`。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Add lyrics before generating scenes');
@@ -1295,6 +1313,8 @@ export async function generateStoryPrompt(params: {
   userId: string;
   projectId: string;
 }) {
+  // 生成故事方向：只更新 `lyric_video_project.storyPrompt`，不改歌词和 scene。
+  // 后续 generateStoryboard / generateVisualsFromStory 会使用这个 storyPrompt。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Generate lyrics before creating a story');
@@ -1379,6 +1399,8 @@ export async function replaceScenes(params: {
   scenes: SceneInput[];
   runId?: string;
 }) {
+  // scene 落库的主入口：先删除当前项目旧 scene，再插入新的分镜。
+  // 调用方包括 generateStoryboard、executeGenerationRun，以及歌词草稿生成。
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
   const existingLines = await db()

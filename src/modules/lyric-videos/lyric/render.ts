@@ -17,6 +17,14 @@ import { LYRIC_VIDEO_DEFAULT_STYLE, type LyricLineInput } from './types';
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * 导出模块：把已生成好的歌词、scene 图片和音频渲染成 MP4。
+ *
+ * 这不是一键生成 `/generate` 的必经步骤；它通常由预览页上的导出按钮触发。
+ * 成功时写 `lyric_video_export.videoUrl`，并把 `lyric_video_project.renderUrl`
+ * 更新成最终视频地址。
+ */
+
 export function getDimensions(aspectRatio?: string) {
   if (aspectRatio === '9:16') return { width: 1080, height: 1920 };
   if (aspectRatio === '1:1') return { width: 1080, height: 1080 };
@@ -121,6 +129,8 @@ export async function queueExport(params: {
   projectId: string;
   settings?: unknown;
 }) {
+  // 导出入口：创建视频类 `ai_task` 和 `lyric_video_export` 记录，
+  // 然后用本地 ffmpeg/ASS 渲染，成功或失败都会回写 export 和 project 状态。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Add lyrics before export');

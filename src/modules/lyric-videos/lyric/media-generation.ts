@@ -14,6 +14,15 @@ import { getProjectDetails } from './project';
 import { generateStoryboard } from './storyboard';
 import { GENERATION_STAGES } from './types';
 
+/**
+ * 图片生成模块：把已有的 `lyric_video_scene.prompt` 送去图片供应商，并把结果写回 scene。
+ *
+ * 主链路里，`executeGenerationRun` 会在 prompt_generation 之后调用
+ * `queueSceneImagesGrid`，把多个 scene 拼成网格图任务。前端随后通过
+ * `GET /api/lyric-videos/:id/images` 调 `syncSceneImages` 轮询供应商，
+ * 成功后把裁剪出的图片 URL 写回 `lyric_video_scene.imageUrl`。
+ */
+
 function resolveKieImageModel(configs: Record<string, string>, model?: string) {
   return model || configs.kie_image_model || KIE_Z_IMAGE_MODEL;
 }
@@ -349,6 +358,8 @@ export async function queueSceneImages(params: {
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
 }) {
+  // 单张或少量 scene 图片排队入口。会创建 `ai_task`，然后把 providerTaskId、
+  // imageTaskId、status=processing 写回对应 `lyric_video_scene`。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
@@ -530,6 +541,8 @@ export async function queueSceneImagesGrid(params: {
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
 }) {
+  // 主链路默认使用的批量图片入口：把最多 16 个 scene 合成一个 4x4 grid prompt，
+  // 降低供应商调用次数。每个 scene 会记录同一个 providerTaskId 和自己的 panel 信息。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
 
@@ -981,6 +994,8 @@ export async function generateVisualsFromStory(params: {
   regenerateStoryboard?: boolean;
   regenerateImages?: boolean;
 }) {
+  // 给“已有歌词和故事方向”的手动生成入口：必要时先补正式 storyboard，
+  // 然后只给缺图或要求重生的 scene 调 queueSceneImagesGrid。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Generate lyrics before creating visuals');
@@ -1248,6 +1263,9 @@ async function updateSceneImageProjectStatus(params: {
 }
 
 export async function syncSceneImages(params: { userId: string; projectId: string }) {
+  // 图片轮询入口：根据 scene.providerTaskId 查询供应商。
+  // 成功时裁剪/保存图片并写 `lyric_video_scene.imageUrl/status=success`；
+  // 所有图片完成后，再更新 `lyric_video_project.scenesStatus/generationStatus`。
   const normalizedFailedWithImages = await db()
     .update(lyricVideoScene)
     .set({

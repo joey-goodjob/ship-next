@@ -21,6 +21,17 @@ import {
   type LyricLineInput,
 } from './types';
 
+/**
+ * 一键生成总控模块。
+ *
+ * `/api/lyric-videos/:id/generate` 最终会调用这里：
+ * 1. `startGenerationRunQueued` 创建 run/steps，并把 project 标记为 generation_queued。
+ * 2. `executeGenerationRun` 依次执行 audio_prepare、asr_words、song_analysis、
+ *    prompt_generation、image_generation。
+ * 3. 每一步都会更新 `lyric_video_generation_step`，同时把核心业务结果写回
+ *    `lyric_video_project`、`lyric_video_line`、`lyric_video_word`、`lyric_video_scene`。
+ */
+
 export function generationOptions(input: unknown) {
   const body = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
   return {
@@ -38,6 +49,8 @@ export async function createGenerationRunRecord(params: {
   idempotencyKey?: string;
   inputSnapshot: unknown;
 }) {
+  // 创建一次生成运行记录。run 表记录整体进度，step 表记录每个阶段的输入、
+  // 输出和错误，project.activeRunId 用来让前端轮询当前正在跑的任务。
   return db().transaction(async (tx: any) => {
     const now = new Date();
     const [run] = await tx
@@ -359,6 +372,9 @@ export async function executeGenerationRun(params: {
   input?: unknown;
   inputSnapshot: unknown;
 }) {
+  // 真正执行一键生成的流水线：
+  // audio_prepare -> asr_words -> song_analysis -> prompt_generation -> image_generation。
+  // 这里不直接生成最终 MP4；图片就绪后，导出视频由 render.ts 的 queueExport 负责。
   const startedAt = Date.now();
   const options = generationOptions(params.input);
   let currentStep: any = undefined;
@@ -750,6 +766,8 @@ export async function startGenerationRunQueued(params: {
   idempotencyKey?: string;
   input?: unknown;
 }) {
+  // 默认的一键生成入口。它先把 run/steps 写进数据库并立刻返回给前端，
+  // route 再用 Next.js `after()` 在后台调用 executeGenerationRun 继续执行。
   logLyricStage('generation-run', 'service-queue-start', {
     projectId: params.projectId,
     userId: params.userId,

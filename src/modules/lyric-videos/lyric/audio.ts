@@ -13,6 +13,14 @@ import type { AudioAnalysisResult } from './types';
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * 音频辅助模块：负责下载、保存、裁剪和分析音频。
+ *
+ * 注意：用户最开始上传文件走的是 `/api/storage/upload-audio`，不经过这里。
+ * 这里是在歌词视频生成阶段被 `generation-runner.ts` / `asr.ts` 调用，用来把
+ * `lyric_video_project` 里的原始音频裁成转写用片段，并回写 processed audio 字段。
+ */
+
 export async function fetchBytes(url: string) {
   if (url.startsWith('/')) {
     return readFile(path.join(process.cwd(), 'public', url));
@@ -83,6 +91,17 @@ export function normalizeClipMs(params: { startMs?: unknown; endMs?: unknown; du
   };
 }
 
+/**
+ * 准备 ASR 转写用音频。
+ *
+ * 调用方：
+ * - `runAsr`：单独转写按钮
+ * - `executeGenerationRun`：一键生成主链路
+ *
+ * 写入：必要时更新 `lyric_video_project.audioUrl`、`processedAudioUrl`、
+ * `processedAudioStorageKey` 和 pipeline 状态。返回的 project 会继续交给
+ * ElevenLabs 转写。
+ */
 export async function prepareAudioClipForTranscription(params: { userId: string; project: any }) {
   const existingProcessedUrl = params.project.processedAudioUrl || '';
   if (existingProcessedUrl && params.project.audioUrl === existingProcessedUrl) {

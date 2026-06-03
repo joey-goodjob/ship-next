@@ -17,6 +17,22 @@ import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
 
+/**
+ * 项目模块：负责歌词视频的“项目主表”和详情聚合。
+ *
+ * 主链路里，前端上传音频后会先调用 `createProject`，这里把音频 URL、裁剪范围、
+ * 风格、分辨率和初始状态写入 `lyric_video_project`。预览页再通过
+ * `getProjectDetails` 把 project、lyrics、words、scenes、cast、exports 和最新 run
+ * 聚合返回给前端。
+ */
+
+/**
+ * 创建歌词视频项目。
+ *
+ * 调用入口：`POST /api/lyric-videos` -> `service.createProject`。
+ * 写入：`lyric_video_project`。
+ * 返回：刚创建的 project，前端随后会用 project.id 调 `/generate`。
+ */
 export async function createProject(params: {
   userId: string;
   title?: string;
@@ -253,6 +269,8 @@ export async function updateProject(params: {
     previewConfig: unknown;
   }>;
 }) {
+  // 更新项目本身。若 patch 里包含音频字段，说明用户换了歌或裁剪范围，
+  // 需要把歌词、分镜相关状态重置，后续 `/generate` 会重新转写和生成。
   const project = await getProject({ userId: params.userId, id: params.id });
   if (!project) throw new Error('Project not found');
 

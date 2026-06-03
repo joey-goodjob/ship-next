@@ -35,6 +35,15 @@ import {
  * 2. 转写结果会被 normalize/clean/refine 这一组函数清洗，去掉广告、网址、纯数字等脏词，并把过长句子切成更适合歌词视频展示的短句。
  * 3. asrSnapshot 把原始转写、清洗后的行、逐词时间轴、音频节奏分析一起保存到 project.transcriptionRaw。
  * 4. replaceLyrics 直接把 ASR 行和逐词结果写成可编辑歌词，并更新项目状态。
+ *
+ * 主链路调用关系：
+ * - `/api/lyric-videos/:id/asr` -> `runAsr`
+ * - `/api/lyric-videos/:id/generate` -> `executeGenerationRun` -> `replaceLyrics`
+ *
+ * 主要写库点：
+ * - `lyric_video_project.transcription_raw`
+ * - `lyric_video_line`
+ * - `lyric_video_word`
  */
 
 // ---------------------------------------------------------------------------
@@ -954,6 +963,8 @@ export async function runAsr(params: {
   userId: string;
   projectId: string;
 }) {
+  // 单独 ASR 入口：准备音频 -> ElevenLabs 转写 -> 清洗歌词 -> replaceLyrics 落库。
+  // 一键生成也会复用同一套转写/清洗函数，但由 generation-runner 负责串联后续步骤。
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
   if (!(project.originalAudioUrl || project.audioUrl)) throw new Error('Upload audio before ASR');
@@ -1119,6 +1130,8 @@ export async function replaceLyrics(params: {
   runId?: string;
   source?: string;
 }) {
+  // 歌词落库的唯一主入口：先清空当前项目旧 line/word，再写入新的歌词行和逐词时间轴。
+  // 这样前端手动保存歌词、ASR、以及一键生成都不会留下旧时间轴残留。
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
 
