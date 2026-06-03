@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { Loader2, Music2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim } from "@/components/audio-upload-trim";
+import { CharacterPresetPicker } from "@/components/character-preset-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,19 +18,26 @@ import { Input } from "@/components/ui/input";
 import { signIn, signUp, useSession } from "@/core/auth/client";
 import { Link, useRouter } from "@/core/i18n/navigation";
 import { useLyricVideoCreationFlow } from "@/hooks/use-lyric-video-creation-flow";
+import {
+  CHARACTER_PRESETS,
+  DEFAULT_CHARACTER_PRESET_SLUG,
+  getCharacterPreset,
+  type CharacterPreset,
+} from "@/lib/character-presets";
 
 type PendingGenerate = {
   file: File;
   startTime: number;
   endTime: number;
   options: { useEntireAudio: boolean; durationSeconds: number };
+  selectedCharacter: CharacterPreset | null;
 };
 
 function stageLabel(stage: string) {
   if (stage === "uploading") return "Uploading your audio...";
   if (stage === "waiting-auth") return "Keeping your upload ready...";
   if (stage === "creating") return "Creating your lyric video project...";
-  if (stage === "generating") return "Generating lyrics, storyboard, and scene images...";
+  if (stage === "generating") return "Starting lyrics, storyboard, and scene image generation...";
   if (stage === "redirecting") return "Opening the preview editor...";
   return "Preparing your preview...";
 }
@@ -54,6 +62,8 @@ export function LyricVideoHomeTool() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedCharacterSlug, setSelectedCharacterSlug] = useState(DEFAULT_CHARACTER_PRESET_SLUG);
+  const selectedCharacter = getCharacterPreset(selectedCharacterSlug) || CHARACTER_PRESETS[0] || null;
 
   useEffect(() => {
     if (isPending || !session?.user) return;
@@ -78,14 +88,14 @@ export function LyricVideoHomeTool() {
     resetCreationState();
 
     if (!session?.user) {
-      pendingGenerateRef.current = { file, startTime, endTime, options };
+      pendingGenerateRef.current = { file, startTime, endTime, options, selectedCharacter };
       setAuthMode("sign-in");
       setAuthError("");
       setAuthOpen(true);
       throw new Error("Sign in to generate your lyric preview");
     }
 
-    await generateFromFile(file, startTime, endTime, options);
+    await generateFromFile(file, startTime, endTime, options, selectedCharacter);
   }
 
   async function continueAfterAuth() {
@@ -93,7 +103,7 @@ export function LyricVideoHomeTool() {
     if (!pending) return;
     setAuthOpen(false);
     try {
-      await generateFromFile(pending.file, pending.startTime, pending.endTime, pending.options);
+      await generateFromFile(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
       pendingGenerateRef.current = null;
     } catch (err: any) {
       toast.error(err?.message || "Failed to create lyric video");
@@ -132,7 +142,7 @@ export function LyricVideoHomeTool() {
     }
 
     try {
-      await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options);
+      await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
       window.location.assign("/sign-in?callbackUrl=/%3Fcontinue%3Dlyric-video%23create");
     } catch (err: any) {
       toast.error(err?.message || "Failed to keep your upload ready");
@@ -143,7 +153,7 @@ export function LyricVideoHomeTool() {
     const pending = pendingGenerateRef.current;
     try {
       if (pending) {
-        await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options);
+        await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
       }
       await signIn.social({ provider, callbackURL: "/?continue=lyric-video#create" });
     } catch (err: any) {
@@ -153,6 +163,12 @@ export function LyricVideoHomeTool() {
 
   return (
     <div id="create" className="relative scroll-mt-24">
+      <CharacterPresetPicker
+        presets={CHARACTER_PRESETS}
+        selectedSlug={selectedCharacterSlug}
+        disabled={isWorking}
+        onChange={setSelectedCharacterSlug}
+      />
       <AudioUploadTrim
         compact
         showBack={false}
@@ -170,7 +186,7 @@ export function LyricVideoHomeTool() {
             <Loader2 className="mx-auto size-8 animate-spin text-[#fbbf24]" />
             <p className="mt-4 text-base font-black text-slate-950">{stageLabel(stage)}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-              Stay here for a moment. We will open the preview as soon as the scene images are queued.
+              We will open the preview editor shortly. You can leave that page and come back later to continue from the saved result.
             </p>
           </div>
         </div>

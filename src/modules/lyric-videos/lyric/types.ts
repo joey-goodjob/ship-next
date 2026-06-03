@@ -1,6 +1,7 @@
 export const LYRIC_VIDEO_DEFAULT_STYLE = {
+  captionsEnabled: true,
   fontFamily: 'Inter',
-  fontSize: 56,
+  fontSize: 42,
   textColor: '#ffffff',
   shadowColor: '#000000',
   position: 'bottom',

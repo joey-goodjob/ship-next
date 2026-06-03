@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { AudioUploadTrim } from "@/components/audio-upload-trim";
 import { Link } from "@/core/i18n/navigation";
+import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
 import { cn } from "@/lib/utils";
 
 type SaveStatus = "idle" | "saving" | "saved" | "failed";
@@ -48,6 +49,16 @@ type ApiResponse<T> = {
   code: number;
   message: string;
   data?: T;
+};
+
+type LyricPreviewConfig = {
+  captionsEnabled?: boolean;
+  fontFamily?: string;
+  fontSize?: number;
+  textColor?: string;
+  shadowColor?: string;
+  position?: string;
+  transition?: string;
 };
 
 type LyricVideoProject = {
@@ -76,7 +87,7 @@ type LyricVideoProject = {
   scenesStatus: string;
   renderStatus: string;
   renderUrl?: string | null;
-  previewConfig?: string | null;
+  previewConfig?: LyricPreviewConfig | string | null;
 };
 
 type LyricLine = {
@@ -117,6 +128,23 @@ type LyricScene = {
   sort?: number;
 };
 
+type GenerationRun = {
+  id: string;
+  status: string;
+  currentStage?: string | null;
+  progressPercent?: number | null;
+  errorMessage?: string | null;
+};
+
+type GenerationStep = {
+  id: string;
+  stage: string;
+  status: string;
+  progressPercent?: number | null;
+  errorMessage?: string | null;
+  sort?: number | null;
+};
+
 type LyricExport = {
   id: string;
   status: string;
@@ -150,8 +178,8 @@ type LyricCastMember = {
 
 type ProjectDetails = {
   project: LyricVideoProject;
-  generationRun?: unknown;
-  generationSteps?: unknown[];
+  generationRun?: GenerationRun | null;
+  generationSteps?: GenerationStep[];
   words?: LyricWord[];
   lines: LyricLine[];
   scenes: LyricScene[];
@@ -174,19 +202,39 @@ type StoryGenerationResponse = {
 };
 
 type GenerationRunResponse = {
-  run?: unknown;
-  steps?: unknown[];
+  run?: GenerationRun;
+  steps?: GenerationStep[];
   project?: LyricVideoProject;
   lines?: LyricLine[];
   words?: LyricWord[];
   scenes?: LyricScene[];
   songAnalysis?: unknown;
+  queued?: boolean;
+};
+
+type RetryFailedBatchesResponse = {
+  queuedScenes: LyricScene[];
+  batches: Array<{
+    batchKey: string;
+    sceneIds: string[];
+    queuedCount: number;
+  }>;
+  summary: {
+    total: number;
+    success: number;
+    processing: number;
+    failed: number;
+    failedBatches: number;
+    retryable: boolean;
+  };
 };
 
 type EditorContextValue = {
   projectId: string;
   appName: string;
   project: LyricVideoProject | null;
+  generationRun: GenerationRun | null;
+  generationSteps: GenerationStep[];
   lines: LyricLine[];
   words: LyricWord[];
   scenes: LyricScene[];
@@ -238,6 +286,7 @@ type EditorContextValue = {
   syncCastImages: () => Promise<void>;
   queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;
   syncSceneImages: () => Promise<void>;
+  retryFailedImageBatches: () => Promise<void>;
   saveLyrics: () => Promise<boolean>;
   queueExport: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -278,6 +327,9 @@ const SIDE_PANEL_WIDTH_KEY = "lyric-video-workbench-side-panel-width";
 const TIMELINE_HEIGHT_KEY = "lyric-video-workbench-timeline-height";
 const DEFAULT_TIMELINE_HEIGHT = 104;
 const LYRIC_FRAME_RATE = 30;
+const DEFAULT_CAPTION_FONT_SIZE = 42;
+const MIN_CAPTION_FONT_SIZE = 28;
+const MAX_CAPTION_FONT_SIZE = 72;
 
 function useEditor() {
   const value = useContext(EditorContext);
@@ -287,6 +339,29 @@ function useEditor() {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function normalizePreviewConfig(config?: LyricVideoProject["previewConfig"]): LyricPreviewConfig {
+  let rawConfig: unknown = config;
+  if (typeof config === "string") {
+    try {
+      rawConfig = JSON.parse(config);
+    } catch {
+      rawConfig = {};
+    }
+  }
+  const raw = rawConfig && typeof rawConfig === "object" ? (rawConfig as LyricPreviewConfig) : {};
+  const numericFontSize = Number(raw.fontSize);
+  const fontSize = Number.isFinite(numericFontSize) ? numericFontSize : DEFAULT_CAPTION_FONT_SIZE;
+  return {
+    captionsEnabled: raw.captionsEnabled !== false,
+    fontFamily: raw.fontFamily || "Inter",
+    fontSize: Math.round(clamp(fontSize, MIN_CAPTION_FONT_SIZE, MAX_CAPTION_FONT_SIZE)),
+    textColor: raw.textColor || "#ffffff",
+    shadowColor: raw.shadowColor || "#000000",
+    position: raw.position || "bottom",
+    transition: raw.transition || "fade",
+  };
 }
 
 function msToSeconds(ms?: number | null) {
@@ -337,6 +412,123 @@ function projectIsProcessing(project: LyricVideoProject | null) {
     ["queued", "running", "waiting_provider"].includes(project.generationStatus || "") ||
     [project.lyricsStatus, project.scenesStatus, project.renderStatus].some((status) => activeStatuses.includes(status || ""))
   );
+}
+
+function sceneHasImage(scene: LyricScene) {
+  return Boolean(scene.imageUrl || scene.status === "success");
+}
+
+function sceneGridParams(scene: LyricScene) {
+  if (!scene.generationParams) return null;
+  let params = typeof scene.generationParams === "string" ? null : scene.generationParams;
+  if (!params && typeof scene.generationParams === "string") {
+    try {
+      params = JSON.parse(scene.generationParams) as Record<string, unknown>;
+    } catch {
+      params = null;
+    }
+  }
+  if (params?.mode !== "grid_4x4" || !params.grid || typeof params.grid !== "object") return null;
+  return params.grid as Record<string, unknown>;
+}
+
+function sceneBatchKey(scene: LyricScene) {
+  const grid = sceneGridParams(scene);
+  const providerTaskId = String(grid?.providerTaskId || scene.providerTaskId || "").trim();
+  if (providerTaskId) return `provider:${providerTaskId}`;
+  const imageTaskId = String(grid?.imageTaskId || scene.imageTaskId || "").trim();
+  if (imageTaskId) return `task:${imageTaskId}`;
+  return "";
+}
+
+function failedImageBatchCount(scenes: LyricScene[]) {
+  const failed = scenes
+    .filter((scene) => scene.status === "failed" && !scene.imageUrl)
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  const keys = new Set<string>();
+  let fallbackGroups = 0;
+  let previousSort: number | null = null;
+  for (const scene of failed) {
+    const key = sceneBatchKey(scene);
+    if (key) {
+      keys.add(key);
+      previousSort = null;
+      continue;
+    }
+    const sort = scene.sort || 0;
+    if (previousSort === null || sort !== previousSort + 1) fallbackGroups += 1;
+    previousSort = sort;
+  }
+  return keys.size + fallbackGroups;
+}
+
+function stepByStage(steps: GenerationStep[], stage: string) {
+  return steps.find((step) => step.stage === stage);
+}
+
+function stageLabel(stage?: string | null) {
+  if (stage === "audio_prepare") return "Preparing audio";
+  if (stage === "asr_words") return "Recognizing lyrics";
+  if (stage === "song_analysis") return "Prompt1 song analysis";
+  if (stage === "prompt_generation") return "Prompt2 storyboard prompts";
+  if (stage === "image_generation") return "Image generation";
+  if (stage === "finalize_project") return "Finalizing project";
+  return "Generation";
+}
+
+function deriveGenerationProgress(params: {
+  project: LyricVideoProject | null;
+  generationRun: GenerationRun | null;
+  generationSteps: GenerationStep[];
+  scenes: LyricScene[];
+}) {
+  const { generationRun, generationSteps, project, scenes } = params;
+  const total = scenes.length;
+  const success = scenes.filter(sceneHasImage).length;
+  const processing = scenes.filter((scene) => scene.status === "processing" && !scene.imageUrl).length;
+  const failed = scenes.filter((scene) => scene.status === "failed" && !scene.imageUrl).length;
+  const failedBatches = failedImageBatchCount(scenes);
+  const songAnalysisStep = stepByStage(generationSteps, "song_analysis");
+  const promptStep = stepByStage(generationSteps, "prompt_generation");
+  const imageStep = stepByStage(generationSteps, "image_generation");
+  const currentStage = generationRun?.currentStage || project?.pipelineStage;
+  const generationStatus = generationRun?.status || project?.generationStatus || "idle";
+  const retryable = failed > 0 && processing === 0;
+  const isActive = ["queued", "running", "waiting_provider"].includes(generationStatus || "") || processing > 0;
+  const progressPercent = Math.max(
+    Number(project?.generationProgress || 0),
+    Number(generationRun?.progressPercent || 0),
+    Number(imageStep?.progressPercent || 0),
+  );
+  const imageText =
+    total > 0
+      ? `Images ${success}/${total}${processing ? `, processing ${processing}` : ""}${failed ? `, failed ${failed}` : ""}`
+      : "Images not queued yet";
+  const primary =
+    failed > 0 && processing === 0
+      ? `Image generation partial ${success}/${total}, failed ${failed}, retry available`
+      : total > 0 && (processing > 0 || generationStatus === "waiting_provider")
+        ? `Image generation ${success}/${total}${failed ? `, failed ${failed}` : ""}`
+        : stageLabel(currentStage);
+
+  return {
+    primary,
+    imageText,
+    total,
+    success,
+    processing,
+    failed,
+    failedBatches,
+    retryable,
+    isActive,
+    progressPercent,
+    generationStatus,
+    currentStage: stageLabel(currentStage),
+    songAnalysisStatus: songAnalysisStep?.status || "pending",
+    promptStatus: promptStep?.status || "pending",
+    imageStatus: imageStep?.status || (total > 0 ? "pending" : "empty"),
+    error: project?.pipelineError || generationRun?.errorMessage || songAnalysisStep?.errorMessage || promptStep?.errorMessage || imageStep?.errorMessage || "",
+  };
 }
 
 async function requestJson<T>(url: string, init?: RequestInit) {
@@ -459,6 +651,8 @@ function EditorProvider({
   projectId: string;
 }) {
   const [project, setProject] = useState<LyricVideoProject | null>(null);
+  const [generationRun, setGenerationRun] = useState<GenerationRun | null>(null);
+  const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([]);
   const [lines, setLinesState] = useState<LyricLine[]>([]);
   const [words, setWordsState] = useState<LyricWord[]>([]);
   const [scenes, setScenes] = useState<LyricScene[]>([]);
@@ -526,6 +720,8 @@ function EditorProvider({
       const details = await requestJson<ProjectDetails>(`/api/lyric-videos/${projectId}`);
       if (!details?.project) throw new Error("Project not found");
       setProject(details.project);
+      setGenerationRun(details.generationRun || null);
+      setGenerationSteps(details.generationSteps || []);
       setLinesState(details.lines || []);
       setWordsState(wordsFromDetails(details));
       setScenes(details.scenes || []);
@@ -619,16 +815,20 @@ function EditorProvider({
           firstScene: generated.scenes?.[0],
         });
         setProject((previous) => generated.project || previous);
-        setLinesState(generated.lines || []);
-        setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
-        setScenes(generated.scenes || []);
+        if (generated.run) setGenerationRun(generated.run);
+        if (generated.steps) setGenerationSteps(generated.steps);
+        if (generated.lines?.length) setLinesState(generated.lines);
+        if (generated.words?.length || generated.lines?.length) {
+          setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
+        }
+        if (generated.scenes?.length) setScenes(generated.scenes);
         setLyricsDirty(false);
         setWordsDirty(false);
         setCurrentTimeState(0);
         setActiveTab("scenes");
         await refresh();
         setSaveStatus("saved");
-        toast.success("Scene images are generating");
+        toast.success("Generation started. You can leave this page and come back later.");
       })
       .catch(async (err: any) => {
         console.error("[lyric-video] auto generation flow failed from preview", err);
@@ -912,16 +1112,20 @@ function EditorProvider({
       });
 
       setProject((previous) => generated.project || previous);
-      setLinesState(generated.lines || []);
-      setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
-      setScenes(generated.scenes || []);
+      if (generated.run) setGenerationRun(generated.run);
+      if (generated.steps) setGenerationSteps(generated.steps);
+      if (generated.lines?.length) setLinesState(generated.lines);
+      if (generated.words?.length || generated.lines?.length) {
+        setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
+      }
+      if (generated.scenes?.length) setScenes(generated.scenes);
       setLyricsDirty(false);
       setWordsDirty(false);
       setCurrentTimeState(0);
       setActiveTab("scenes");
       await refresh();
       setSaveStatus("saved");
-      toast.success("Scene images are generating");
+      toast.success("Generation started. You can leave this page and come back later.");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");
@@ -1182,6 +1386,38 @@ function EditorProvider({
     }
   }
 
+  async function retryFailedImageBatches() {
+    if (!project) return;
+    setSaveStatus("saving");
+    try {
+      const data = await requestJson<RetryFailedBatchesResponse>(`/api/lyric-videos/${project.id}/images/retry-failed-batches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const queuedById = new Map((data.queuedScenes || []).map((scene) => [scene.id, scene]));
+      setScenes((previous) => previous.map((scene) => queuedById.get(scene.id) || scene));
+      setProject((previous) =>
+        previous
+          ? {
+              ...previous,
+              scenesStatus: data.queuedScenes.length > 0 ? "processing" : previous.scenesStatus,
+              generationStatus: data.queuedScenes.length > 0 ? "waiting_provider" : previous.generationStatus,
+              generationProgress: data.queuedScenes.length > 0 ? Math.max(previous.generationProgress || 0, 95) : previous.generationProgress,
+              pipelineStage: data.queuedScenes.length > 0 ? "images_processing" : previous.pipelineStage,
+              pipelineError: data.queuedScenes.length > 0 ? null : previous.pipelineError,
+            }
+          : previous,
+      );
+      setSaveStatus("saved");
+      await refresh();
+      toast.success(data.queuedScenes.length > 0 ? `Retrying ${data.queuedScenes.length} failed scene images` : "No failed image batches to retry");
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Retry failed image batches failed");
+    }
+  }
+
   async function saveLyrics() {
     try {
       setSaveStatus("saving");
@@ -1211,11 +1447,13 @@ function EditorProvider({
     if (exporting) return;
     setExporting(true);
     try {
+      const previewConfig = normalizePreviewConfig(project?.previewConfig);
       const exportJob = await requestJson<LyricExport>(`/api/lyric-videos/${projectId}/exports`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           settings: {
+            ...previewConfig,
             aspectRatio: project?.aspectRatio,
             resolution: project?.resolution,
           },
@@ -1236,6 +1474,8 @@ function EditorProvider({
       projectId,
       appName,
       project,
+      generationRun,
+      generationSteps,
       lines,
       words,
       scenes,
@@ -1282,6 +1522,7 @@ function EditorProvider({
       syncCastImages,
       queueSceneImages,
       syncSceneImages,
+      retryFailedImageBatches,
       saveLyrics,
       queueExport,
       refresh,
@@ -1299,6 +1540,8 @@ function EditorProvider({
       creatingStory,
       exporting,
       exports,
+      generationRun,
+      generationSteps,
       latestExport,
       lines,
       loadError,
@@ -1315,6 +1558,7 @@ function EditorProvider({
       wordsDirty,
       zoom,
       refresh,
+      retryFailedImageBatches,
     ],
   );
 
@@ -1377,12 +1621,24 @@ function TopNavBar() {
 }
 
 function VideoPreview() {
-  const { currentLine, currentScene, loading, project, totalDuration } = useEditor();
+  const { currentLine, currentScene, currentTime, generationRun, generationSteps, loading, project, retryFailedImageBatches, scenes, totalDuration, words } = useEditor();
   const aspectRatio = getAspectRatio(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
+  const captionText = useMemo(() => {
+    const currentMs = secondsToMs(currentTime);
+    const activeChunk = findActiveCaptionChunk(words, currentMs, {
+      rangeStartMs: currentScene?.startMs,
+      rangeEndMs: currentScene?.endMs,
+    });
+    if (activeChunk?.text) return activeChunk.text;
+    return currentLine?.text || project?.title || "Lyric preview";
+  }, [currentLine?.text, currentScene?.endMs, currentScene?.startMs, currentTime, project?.title, words]);
 
   return (
-    <section className="flex min-h-0 flex-1 items-start justify-start overflow-hidden bg-[#F8F9FA] px-[16px] pt-[16px]">
+    <section className="relative flex min-h-0 flex-1 items-start justify-start overflow-hidden bg-[#F8F9FA] px-[16px] pt-[16px]">
+      <GenerationProgressBanner progress={progress} onRetry={retryFailedImageBatches} />
       <div
         className="relative max-h-full overflow-hidden rounded-[4px] bg-[#E8EEF7]"
         style={{
@@ -1396,18 +1652,23 @@ function VideoPreview() {
         ) : hasImage ? (
           <>
             <img src={currentScene?.imageUrl || ""} alt="" className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-x-[32px] bottom-[12%] flex justify-center">
-              <p
-                className="max-w-full text-center font-black uppercase leading-[1] text-white"
-                style={{
-                  fontFamily: "Impact, Arial Black, system-ui, sans-serif",
-                  fontSize: "clamp(34px, 4.2vw, 72px)",
-                  textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-                }}
-              >
-                {currentLine?.text || project?.title || "Lyric preview"}
-              </p>
-            </div>
+            {previewConfig.captionsEnabled ? (
+              <div className="absolute inset-x-[32px] bottom-[8%] flex justify-center">
+                <p
+                  className="max-w-[78%] rounded-[5px] bg-black/35 px-[12px] py-[7px] text-center font-[800] leading-[1.18] text-white"
+                  style={{
+                    fontFamily: previewConfig.fontFamily,
+                    fontSize: `clamp(${Math.max(18, Math.round((previewConfig.fontSize || DEFAULT_CAPTION_FONT_SIZE) * 0.72))}px, 2.15vw, ${
+                      previewConfig.fontSize || DEFAULT_CAPTION_FONT_SIZE
+                    }px)`,
+                    color: previewConfig.textColor,
+                    textShadow: `0 1px 3px ${previewConfig.shadowColor || "rgba(0,0,0,0.75)"}`,
+                  }}
+                >
+                  {captionText}
+                </p>
+              </div>
+            ) : null}
           </>
         ) : (
           <PreviewPlaceholder
@@ -1425,6 +1686,63 @@ function VideoPreview() {
         )}
       </div>
     </section>
+  );
+}
+
+function GenerationProgressBanner({
+  onRetry,
+  progress,
+}: {
+  onRetry: () => Promise<void>;
+  progress: ReturnType<typeof deriveGenerationProgress>;
+}) {
+  const shouldShow = progress.isActive || progress.retryable || Boolean(progress.error);
+  if (!shouldShow) return null;
+
+  return (
+    <div className="absolute left-[24px] top-[24px] z-20 w-[min(540px,calc(100%-48px))] rounded-[6px] border border-[#D7DEE8] bg-white/94 px-[14px] py-[12px] shadow-[0_8px_24px_rgba(15,23,42,0.10)] backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-[10px]">
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-[900] text-[#1A1A2E]">{progress.primary}</p>
+          <p className="mt-[4px] text-[12px] font-[650] leading-5 text-[#526173]">
+            {progress.imageText}. You can leave this page and come back later.
+          </p>
+        </div>
+        {progress.retryable ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F]"
+          >
+            <RefreshCcw className="h-[13px] w-[13px]" />
+            Retry {progress.failedBatches} batch{progress.failedBatches === 1 ? "" : "es"}
+          </button>
+        ) : null}
+      </div>
+      <div className="mt-[10px] h-[6px] overflow-hidden rounded-full bg-[#E8EEF7]">
+        <div className="h-full rounded-full bg-[#F5A623]" style={{ width: `${clamp(progress.progressPercent || 0, 5, 100)}%` }} />
+      </div>
+      <div className="mt-[8px] flex flex-wrap gap-[6px]">
+        <StatusPill label="Prompt1" value={progress.songAnalysisStatus} />
+        <StatusPill label="Prompt2" value={progress.promptStatus} />
+        <StatusPill label="Images" value={progress.imageStatus} />
+        {progress.failed > 0 ? <StatusPill label="Failed" value={`${progress.failed}`} tone="danger" /> : null}
+      </div>
+      {progress.error ? <p className="mt-[8px] line-clamp-2 text-[12px] font-[700] text-red-600">{progress.error}</p> : null}
+    </div>
+  );
+}
+
+function StatusPill({ label, tone, value }: { label: string; tone?: "danger"; value: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-[22px] items-center rounded-[5px] border px-[7px] text-[10px] font-[900] uppercase",
+        tone === "danger" ? "border-red-200 bg-red-50 text-red-600" : "border-[#DDE5EF] bg-[#F8FAFC] text-[#526173]",
+      )}
+    >
+      {label}: {value}
+    </span>
   );
 }
 
@@ -1488,6 +1806,11 @@ function SidePanel({ width }: { width: number }) {
 function CustomizePanel() {
   const { createStory, creatingStory, latestExport, project, updateProjectField } = useEditor();
   if (!project) return <PanelEmpty title="Project unavailable" description="Refresh the page or open a project from the library." />;
+  const previewConfig = normalizePreviewConfig(project.previewConfig);
+
+  function updatePreviewConfig(patch: Partial<LyricPreviewConfig>) {
+    updateProjectField("previewConfig", { ...previewConfig, ...patch });
+  }
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -1503,6 +1826,49 @@ function CustomizePanel() {
             </option>
           ))}
         </select>
+      </FieldBlock>
+
+      <FieldBlock label="Subtitles">
+        <div className="rounded-[6px] border border-[#E8E8E8] bg-[#F8FAFC] p-[12px]">
+          <button
+            type="button"
+            onClick={() => updatePreviewConfig({ captionsEnabled: !previewConfig.captionsEnabled })}
+            className={cn(
+              "flex h-[38px] w-full items-center justify-between rounded-[6px] border px-[11px] text-[13px] font-[800]",
+              previewConfig.captionsEnabled
+                ? "border-[#F5A623] bg-amber-50 text-[#1A1A2E]"
+                : "border-[#D9DDE3] bg-white text-[#667085] hover:bg-[#F8F9FA]",
+            )}
+          >
+            <span>{previewConfig.captionsEnabled ? "Subtitles on" : "Subtitles off"}</span>
+            <span
+              className={cn(
+                "flex h-[20px] w-[34px] items-center rounded-full p-[2px] transition-colors",
+                previewConfig.captionsEnabled ? "justify-end bg-[#F5A623]" : "justify-start bg-[#CBD5E1]",
+              )}
+              aria-hidden="true"
+            >
+              <span className="size-[16px] rounded-full bg-white shadow-sm" />
+            </span>
+          </button>
+          <div className={cn("mt-[12px]", !previewConfig.captionsEnabled && "opacity-50")}>
+            <div className="mb-[8px] flex items-center justify-between text-[12px] font-[800] text-[#526173]">
+              <span>Size</span>
+              <span>{previewConfig.fontSize}px</span>
+            </div>
+            <input
+              type="range"
+              min={MIN_CAPTION_FONT_SIZE}
+              max={MAX_CAPTION_FONT_SIZE}
+              step={1}
+              value={previewConfig.fontSize || DEFAULT_CAPTION_FONT_SIZE}
+              disabled={!previewConfig.captionsEnabled}
+              onChange={(event) => updatePreviewConfig({ fontSize: Number(event.target.value) })}
+              className="h-[20px] w-full accent-[#F5A623] disabled:cursor-not-allowed"
+              aria-label="Subtitle size"
+            />
+          </div>
+        </div>
       </FieldBlock>
 
       <FieldBlock
@@ -2369,12 +2735,35 @@ function CastPanel() {
 }
 
 function ScenesPanel() {
-  const { currentScene, scenes, setCurrentTime } = useEditor();
+  const { currentScene, generationRun, generationSteps, project, retryFailedImageBatches, scenes, setCurrentTime } = useEditor();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
 
   return (
     <div className="flex flex-col">
-      <div className="mb-[16px] flex flex-wrap items-center justify-center gap-[8px] border-b border-[#E8E8E8] pb-[16px]">
+      <div className="mb-[16px] flex flex-col gap-[10px] border-b border-[#E8E8E8] pb-[16px]">
+        <div className="rounded-[6px] border border-[#DDE5EF] bg-[#F8FAFC] px-[12px] py-[10px]">
+          <div className="flex flex-wrap items-center justify-between gap-[8px]">
+            <div className="min-w-0">
+              <p className="text-[13px] font-[900] text-[#26364E]">{progress.primary}</p>
+              <p className="mt-[3px] text-[12px] font-[650] text-[#61708A]">
+                Prompt1 {progress.songAnalysisStatus} · Prompt2 {progress.promptStatus} · {progress.imageText}
+              </p>
+            </div>
+            {progress.retryable ? (
+              <button
+                type="button"
+                onClick={retryFailedImageBatches}
+                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F]"
+              >
+                <RefreshCcw className="h-[13px] w-[13px]" />
+                Retry {progress.failedBatches} failed batch{progress.failedBatches === 1 ? "" : "es"}
+              </button>
+            ) : null}
+          </div>
+          {progress.error ? <p className="mt-[7px] line-clamp-2 text-[12px] font-[700] text-red-600">{progress.error}</p> : null}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-[8px]">
         <button
           type="button"
           onClick={() => setBatchGenerationOpen(true)}
@@ -2384,6 +2773,7 @@ function ScenesPanel() {
           <Wand2 className="h-[15px] w-[15px]" />
           Batch Generation
         </button>
+        </div>
       </div>
 
       {scenes.length === 0 ? (
@@ -2434,6 +2824,11 @@ function ScenesPanel() {
                     <span className="font-mono">{formatDurationMs(durationMs)}</span>
                   </div>
                   <p className="line-clamp-2 text-[15px] font-[700] leading-[20px] text-[#1A1A2E]">{title}</p>
+                  {scene.status === "failed" && !scene.imageUrl ? (
+                    <p className="mt-[4px] line-clamp-1 text-[12px] font-[700] text-red-600">
+                      {scene.error || "Image generation failed"}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-[6px]">

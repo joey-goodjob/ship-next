@@ -40,8 +40,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-sans), -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-serif: var(--font-serif-display), var(--font-serif-sc), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: -apple-system, "system-ui", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 @layer base {

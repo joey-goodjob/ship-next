@@ -743,6 +743,95 @@ export async function startGenerationRun(params: {
   return { ...result, reused: false };
 }
 
+export async function startGenerationRunQueued(params: {
+  userId: string;
+  projectId: string;
+  idempotencyKey?: string;
+  input?: unknown;
+}) {
+  logLyricStage('generation-run', 'service-queue-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    idempotencyKey: params.idempotencyKey,
+  });
+  const project = await getProject({ userId: params.userId, id: params.projectId });
+  if (!project) throw new Error('Project not found');
+
+  if (project.activeRunId && isActiveRunStatus(project.generationStatus)) {
+    const [activeRun] = await db()
+      .select()
+      .from(lyricVideoGenerationRun)
+      .where(and(eq(lyricVideoGenerationRun.id, project.activeRunId), eq(lyricVideoGenerationRun.userId, params.userId)))
+      .limit(1);
+    if (activeRun && isActiveRunStatus(activeRun.status)) {
+      const steps = await listGenerationSteps({ userId: params.userId, runId: activeRun.id });
+      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      logLyricStage('generation-run', 'queue-reused-active-run', {
+        projectId: params.projectId,
+        userId: params.userId,
+        runId: activeRun.id,
+        runStatus: activeRun.status,
+        currentStage: activeRun.currentStage,
+      });
+      return {
+        run: activeRun,
+        steps,
+        project: details?.project,
+        lines: details?.lines || [],
+        words: details?.words || [],
+        scenes: details?.scenes || [],
+        reused: true,
+        queued: true,
+        shouldExecute: false,
+      };
+    }
+  }
+
+  const inputSnapshot = {
+    projectId: params.projectId,
+    title: project.title,
+    audioUrl: project.audioUrl,
+    originalAudioUrl: project.originalAudioUrl || project.audioUrl,
+    trimStartMs: project.trimStartMs || 0,
+    trimEndMs: project.trimEndMs || project.audioDurationMs || 0,
+    audioDurationMs: project.audioDurationMs || 0,
+    storyPrompt: project.storyPrompt,
+    artStyle: project.artStyle,
+    palette: project.palette,
+    aspectRatio: project.aspectRatio,
+    resolution: project.resolution,
+    request: params.input || {},
+  };
+
+  const created = await createGenerationRunRecord({
+    userId: params.userId,
+    projectId: params.projectId,
+    project,
+    idempotencyKey: params.idempotencyKey,
+    inputSnapshot,
+  });
+
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  return {
+    run: created.run,
+    steps: created.steps,
+    project: details?.project || project,
+    lines: details?.lines || [],
+    words: details?.words || [],
+    scenes: details?.scenes || [],
+    reused: false,
+    queued: true,
+    shouldExecute: true,
+    execution: {
+      run: created.run,
+      steps: created.steps,
+      project,
+      input: params.input,
+      inputSnapshot,
+    },
+  };
+}
+
 export async function getGenerationRun(params: { userId: string; projectId: string; runId: string }) {
   const [run] = await db()
     .select()

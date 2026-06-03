@@ -74,6 +74,81 @@ function getGridGenerationParams(scene: any) {
   return parsed?.mode === 'grid_4x4' && parsed.grid ? parsed : null;
 }
 
+function sceneHasImage(scene: any) {
+  return Boolean(scene.imageUrl || scene.status === 'success');
+}
+
+function gridBatchKeyForScene(scene: any) {
+  const gridParams = getGridGenerationParams(scene);
+  const grid = gridParams?.grid || {};
+  if (grid.providerTaskId || scene.providerTaskId) return `provider:${grid.providerTaskId || scene.providerTaskId}`;
+  if (grid.imageTaskId || scene.imageTaskId) return `task:${grid.imageTaskId || scene.imageTaskId}`;
+  return '';
+}
+
+function groupFailedSceneImageBatches(scenes: any[]) {
+  const failed = scenes
+    .filter((scene: any) => scene.status === 'failed' && !scene.imageUrl)
+    .sort((a: any, b: any) => (a.sort || 0) - (b.sort || 0));
+  const groups = new Map<string, any[]>();
+  const fallbackScenes: any[] = [];
+
+  for (const scene of failed) {
+    const key = gridBatchKeyForScene(scene);
+    if (!key) {
+      fallbackScenes.push(scene);
+      continue;
+    }
+    const group = groups.get(key) || [];
+    group.push(scene);
+    groups.set(key, group);
+  }
+
+  let fallbackGroup: any[] = [];
+  let lastSort: number | null = null;
+  for (const scene of fallbackScenes) {
+    const sort = Number(scene.sort || 0);
+    if (fallbackGroup.length > 0 && lastSort !== null && sort !== lastSort + 1) {
+      const key = `range:${fallbackGroup[0].sort || 0}:${fallbackGroup[fallbackGroup.length - 1].sort || 0}`;
+      groups.set(key, fallbackGroup);
+      fallbackGroup = [];
+    }
+    fallbackGroup.push(scene);
+    lastSort = sort;
+  }
+  if (fallbackGroup.length > 0) {
+    const key = `range:${fallbackGroup[0].sort || 0}:${fallbackGroup[fallbackGroup.length - 1].sort || 0}`;
+    groups.set(key, fallbackGroup);
+  }
+
+  return Array.from(groups.entries()).map(([batchKey, batchScenes]) => {
+    const firstGridParams = getGridGenerationParams(batchScenes[0]);
+    const firstGrid = firstGridParams?.grid || {};
+    return {
+      batchKey,
+      batchIndex: firstGrid.batchIndex ?? null,
+      batchNumber: firstGrid.batchNumber ?? null,
+      providerTaskId: firstGrid.providerTaskId || batchScenes[0]?.providerTaskId || null,
+      imageTaskId: firstGrid.imageTaskId || batchScenes[0]?.imageTaskId || null,
+      sceneIds: batchScenes.map((scene: any) => scene.id),
+      failedCount: batchScenes.length,
+      scenes: batchScenes,
+    };
+  });
+}
+
+function summarizeSceneImageProgress(scenes: any[]) {
+  const failedBatches = groupFailedSceneImageBatches(scenes);
+  return {
+    total: scenes.length,
+    success: scenes.filter(sceneHasImage).length,
+    processing: scenes.filter((scene: any) => scene.status === 'processing').length,
+    failed: scenes.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length,
+    failedBatches: failedBatches.length,
+    retryable: failedBatches.length > 0,
+  };
+}
+
 async function finalizeActiveImageGenerationRun(params: {
   userId: string;
   projectId: string;
@@ -498,17 +573,34 @@ export async function queueSceneImagesGrid(params: {
         taskId: task.id,
       });
       await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
-      for (const scene of batchScenes) {
+      for (const [index, scene] of batchScenes.entries()) {
+        const grid = {
+          batchIndex,
+          batchNumber: batchIndex + 1,
+          sceneOffset: start,
+          panel: index + 1,
+          globalPanel: start + index + 1,
+          gridSize: GRID_SCENE_IMAGE_SIZE,
+          totalPanels: GRID_SCENE_IMAGE_BATCH_SIZE,
+          aspectRatio,
+          resolution,
+          providerTaskId: null,
+          imageTaskId: task.id,
+        };
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
             imageUrl: params.clearExistingImages ? null : scene.imageUrl,
             imageTaskId: task.id,
+            providerTaskId: null,
             status: 'failed',
             attemptCount: (scene.attemptCount || 0) + 1,
             lastAttemptAt: new Date(),
             completedAt: null,
             failureCode: 'queue_failed',
+            imageModel: model,
+            imagePromptSnapshot: scene.prompt,
+            generationParams: safeJson({ mode: 'grid_4x4', model, grid }),
             error: error?.message || 'Grid image generation failed',
           })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
@@ -538,6 +630,173 @@ export async function queueSceneImagesGrid(params: {
   });
 
   return queued;
+}
+
+async function reopenActiveImageGenerationRunForRetry(params: {
+  userId: string;
+  projectId: string;
+  project: any;
+  outputSnapshot: unknown;
+}) {
+  const runId = params.project?.activeRunId;
+  if (!runId) return;
+
+  const steps = await db()
+    .select()
+    .from(lyricVideoGenerationStep)
+    .where(and(eq(lyricVideoGenerationStep.runId, runId), eq(lyricVideoGenerationStep.userId, params.userId)));
+  const imageStep = steps.find((step: any) => step.stage === 'image_generation');
+  const finalizeStep = steps.find((step: any) => step.stage === 'finalize_project');
+  const updates: Promise<unknown>[] = [
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'waiting_provider',
+        currentStage: 'image_generation',
+        progressPercent: 95,
+        failedSteps: 0,
+        errorCode: null,
+        errorMessage: null,
+        completedAt: null,
+        outputSnapshot: safeJson(params.outputSnapshot),
+      })
+      .where(
+        and(
+          eq(lyricVideoGenerationRun.id, runId),
+          eq(lyricVideoGenerationRun.projectId, params.projectId),
+          eq(lyricVideoGenerationRun.userId, params.userId)
+        )
+      ),
+  ];
+
+  if (imageStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'waiting_provider',
+          progressPercent: 95,
+          outputJson: safeJson(params.outputSnapshot),
+          errorCode: null,
+          errorMessage: null,
+          lockedAt: null,
+          lockedBy: null,
+          completedAt: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, imageStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  if (finalizeStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'pending',
+          progressPercent: 0,
+          errorCode: null,
+          errorMessage: null,
+          outputJson: null,
+          lockedAt: null,
+          lockedBy: null,
+          completedAt: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, finalizeStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  await Promise.all(updates);
+}
+
+export async function retryFailedSceneImageBatches(params: {
+  userId: string;
+  projectId: string;
+  batchKeys?: string[];
+  model?: string;
+}) {
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  if (!details) throw new Error('Project not found');
+
+  const requestedBatchKeys = new Set((params.batchKeys || []).filter(Boolean));
+  const failedBatches = groupFailedSceneImageBatches(details.scenes).filter((batch) =>
+    requestedBatchKeys.size > 0 ? requestedBatchKeys.has(batch.batchKey) : true
+  );
+  const beforeSummary = summarizeSceneImageProgress(details.scenes);
+  if (failedBatches.length === 0) {
+    return {
+      queuedScenes: [],
+      batches: [],
+      summary: beforeSummary,
+    };
+  }
+
+  const queuedScenes = [];
+  const queuedBatches = [];
+  for (const batch of failedBatches) {
+    const queued = await queueSceneImagesGrid({
+      userId: params.userId,
+      projectId: params.projectId,
+      sceneIds: batch.sceneIds,
+      model: params.model,
+      clearExistingImages: false,
+    });
+    queuedScenes.push(...queued);
+    queuedBatches.push({
+      batchKey: batch.batchKey,
+      previousProviderTaskId: batch.providerTaskId,
+      previousImageTaskId: batch.imageTaskId,
+      batchIndex: batch.batchIndex,
+      batchNumber: batch.batchNumber,
+      sceneIds: batch.sceneIds,
+      queuedCount: queued.length,
+      providerTaskIds: Array.from(new Set(queued.map((scene: any) => scene.providerTaskId).filter(Boolean))),
+      imageTaskIds: Array.from(new Set(queued.map((scene: any) => scene.imageTaskId).filter(Boolean))),
+    });
+  }
+
+  const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  const summary = summarizeSceneImageProgress(refreshed?.scenes || details.scenes);
+  const outputSnapshot = {
+    mode: 'grid_4x4',
+    retry: true,
+    retriedBatchCount: queuedBatches.length,
+    retriedSceneCount: queuedScenes.length,
+    beforeSummary,
+    summary,
+    batches: queuedBatches,
+  };
+  await reopenActiveImageGenerationRunForRetry({
+    userId: params.userId,
+    projectId: params.projectId,
+    project: refreshed?.project || details.project,
+    outputSnapshot,
+  });
+  await db()
+    .update(lyricVideoProject)
+    .set({
+      scenesStatus: 'processing',
+      pipelineStage: 'images_processing',
+      generationStatus: 'waiting_provider',
+      generationProgress: 95,
+      pipelineError: null,
+    })
+    .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+  logLyricStage('scene-images-grid', 'retry-failed-batches', {
+    projectId: params.projectId,
+    userId: params.userId,
+    retriedBatchCount: queuedBatches.length,
+    retriedSceneCount: queuedScenes.length,
+    beforeSummary,
+    summary,
+    batches: queuedBatches,
+  });
+
+  return {
+    queuedScenes,
+    batches: queuedBatches,
+    summary,
+  };
 }
 
 export async function generateVisualsFromStory(params: {

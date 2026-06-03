@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
+import { getCharacterPreset, type CharacterPreset } from "@/lib/character-presets";
 import { logLyricStage, logLyricStageError } from "@/lib/lyric-video-log";
 
 type ApiResponse<T> = {
@@ -51,6 +52,7 @@ type PendingLyricVideoPayload = {
   startTime: number;
   endTime: number;
   options: GenerateOptions;
+  selectedCharacterSlug?: string;
   createdAt: number;
 };
 
@@ -80,6 +82,12 @@ function secondsToMs(seconds: number) {
 
 function titleFromFilename(filename: string) {
   return filename.replace(/\.[^/.]+$/, "").trim() || "Untitled lyric video";
+}
+
+function resolvePublicAssetUrl(url: string) {
+  if (!url || /^https?:\/\//.test(url)) return url;
+  if (typeof window === "undefined") return url;
+  return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
 async function uploadAudioFile(file: File) {
@@ -185,6 +193,34 @@ export function useLyricVideoCreationFlow() {
         scenesStatus: project.scenesStatus,
       });
 
+      const selectedCharacter = getCharacterPreset(payload.selectedCharacterSlug);
+      if (selectedCharacter) {
+        const castStartedAt = Date.now();
+        logLyricStage("create-project-cast", "start", {
+          projectId: project.id,
+          characterSlug: selectedCharacter.slug,
+          characterName: selectedCharacter.name,
+        });
+        await requestJson(`/api/lyric-videos/${project.id}/cast`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: selectedCharacter.name,
+            role: selectedCharacter.role,
+            description: selectedCharacter.description,
+            promptFragment: selectedCharacter.promptFragment,
+            referenceImageUrl: resolvePublicAssetUrl(selectedCharacter.referenceImageUrl),
+            status: "active",
+          }),
+        });
+        logLyricStage("create-project-cast", "success", {
+          durationMs: Date.now() - castStartedAt,
+          projectId: project.id,
+          characterSlug: selectedCharacter.slug,
+          characterName: selectedCharacter.name,
+        });
+      }
+
       setStage("generating");
       const generateStartedAt = Date.now();
       logLyricStage("one-click-generate", "start", { projectId: project.id });
@@ -214,7 +250,13 @@ export function useLyricVideoCreationFlow() {
   );
 
   const generateFromFile = useCallback(
-    async (file: File, startTime: number, endTime: number, options: GenerateOptions) => {
+    async (
+      file: File,
+      startTime: number,
+      endTime: number,
+      options: GenerateOptions,
+      selectedCharacter?: CharacterPreset | null,
+    ) => {
       try {
         setError("");
         setStage("uploading");
@@ -227,6 +269,7 @@ export function useLyricVideoCreationFlow() {
           startTime,
           endTime,
           options,
+          selectedCharacterSlug: selectedCharacter?.slug,
           createdAt: Date.now(),
         };
 
@@ -241,7 +284,13 @@ export function useLyricVideoCreationFlow() {
   );
 
   const preparePendingAuth = useCallback(
-    async (file: File, startTime: number, endTime: number, options: GenerateOptions) => {
+    async (
+      file: File,
+      startTime: number,
+      endTime: number,
+      options: GenerateOptions,
+      selectedCharacter?: CharacterPreset | null,
+    ) => {
       try {
         setError("");
         setStage("uploading");
@@ -254,6 +303,7 @@ export function useLyricVideoCreationFlow() {
           startTime,
           endTime,
           options,
+          selectedCharacterSlug: selectedCharacter?.slug,
           createdAt: Date.now(),
         });
         setStage("waiting-auth");

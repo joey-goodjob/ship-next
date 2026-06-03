@@ -1,8 +1,12 @@
+import { after } from 'next/server';
 import { headers } from 'next/headers';
 import { getAuth } from '@/core/auth';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
+
+export const runtime = 'nodejs';
+export const maxDuration = 900;
 
 async function getUserId() {
   const auth = getAuth();
@@ -30,28 +34,76 @@ export async function POST(
       transcribeModel: body.transcribeModel,
       songAnalysisModel: body.songAnalysisModel,
       storyboardModel: body.storyboardModel,
+      imageModel: body.imageModel,
+      wait: Boolean(body.wait),
     });
-    const data = await service.startGenerationRun({
-      userId,
-      projectId: id,
-      idempotencyKey,
-      input: body,
-    });
+    const data = body.wait
+      ? await service.startGenerationRun({
+          userId,
+          projectId: id,
+          idempotencyKey,
+          input: body,
+        })
+      : await service.startGenerationRunQueued({
+          userId,
+          projectId: id,
+          idempotencyKey,
+          input: body,
+        });
+
+    const queuedData = data as Awaited<ReturnType<typeof service.startGenerationRunQueued>>;
+    if (!body.wait && queuedData.shouldExecute && queuedData.execution) {
+      const execution = queuedData.execution;
+      after(async () => {
+        const backgroundStartedAt = Date.now();
+        try {
+          await service.executeGenerationRun({
+            userId,
+            projectId: id,
+            run: execution.run,
+            steps: execution.steps,
+            project: execution.project,
+            input: execution.input,
+            inputSnapshot: execution.inputSnapshot,
+          });
+          logLyricStage('generation-run', 'route-background-success', {
+            durationMs: Date.now() - backgroundStartedAt,
+            projectId: id,
+            runId: execution.run.id,
+          });
+        } catch (error: any) {
+          logLyricStageError('generation-run', 'route-background-fail', error, {
+            durationMs: Date.now() - backgroundStartedAt,
+            projectId: id,
+            runId: execution.run.id,
+          });
+        }
+      });
+    }
+    const responseData = body.wait
+      ? data
+      : (() => {
+          const { execution: _execution, shouldExecute: _shouldExecute, ...publicData } = queuedData;
+          return publicData;
+        })();
+
     logLyricStage('generation-run', 'route-success', {
       durationMs: Date.now() - startedAt,
       projectId: id,
-      reused: data.reused,
-      runId: data.run?.id,
-      runStatus: data.run?.status,
-      currentStage: data.run?.currentStage,
-      stepCount: data.steps?.length || 0,
-      lineCount: data.lines?.length || 0,
-      wordCount: data.words?.length || 0,
-      sceneCount: data.scenes?.length || 0,
-      pipelineStage: data.project?.pipelineStage,
-      generationStatus: data.project?.generationStatus,
+      reused: responseData.reused,
+      runId: responseData.run?.id,
+      runStatus: responseData.run?.status,
+      currentStage: responseData.run?.currentStage,
+      stepCount: responseData.steps?.length || 0,
+      lineCount: responseData.lines?.length || 0,
+      wordCount: responseData.words?.length || 0,
+      sceneCount: responseData.scenes?.length || 0,
+      pipelineStage: responseData.project?.pipelineStage,
+      generationStatus: responseData.project?.generationStatus,
+      queued: queuedData.queued,
+      wait: Boolean(body.wait),
     });
-    return respData(data);
+    return respData(responseData);
   } catch (error: any) {
     logLyricStageError('generation-run', 'route-fail', error, {
       durationMs: Date.now() - startedAt,

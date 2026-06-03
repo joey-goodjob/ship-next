@@ -7,6 +7,7 @@ import { envConfigs } from '@/config';
 import { db } from '@/core/db';
 import { lyricVideoExport, lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
+import { buildCaptionChunks, type CaptionWord } from '@/lib/lyric-caption-chunks';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { fetchBytes, saveGeneratedFile } from './audio';
@@ -46,17 +47,54 @@ export function cssHexToAss(hex: string, fallback: string) {
   return `&H00${bb}${gg}${rr}`;
 }
 
+function normalizeCaptionStyle(style?: unknown) {
+  return {
+    ...LYRIC_VIDEO_DEFAULT_STYLE,
+    ...(style && typeof style === 'object' ? style : {}),
+  } as typeof LYRIC_VIDEO_DEFAULT_STYLE & Record<string, unknown>;
+}
+
+function captionsAreEnabled(style?: unknown) {
+  return normalizeCaptionStyle(style).captionsEnabled !== false;
+}
+
 export function buildAss(params: {
   lines: LyricLineInput[];
+  words?: CaptionWord[];
+  scenes?: Array<{ startMs?: number; endMs?: number }>;
   width: number;
   height: number;
   style?: any;
 }) {
-  const style = { ...LYRIC_VIDEO_DEFAULT_STYLE, ...(params.style || {}) };
+  const style = normalizeCaptionStyle(params.style);
   const alignment = style.position === 'top' ? 8 : style.position === 'center' ? 5 : 2;
-  const marginV = style.position === 'bottom' ? Math.round(params.height * 0.1) : Math.round(params.height * 0.08);
+  const marginV = style.position === 'bottom' ? Math.round(params.height * 0.08) : Math.round(params.height * 0.08);
+  const sceneRanges = (params.scenes || [])
+    .filter((scene) => Number.isFinite(Number(scene.startMs)) && Number.isFinite(Number(scene.endMs)) && Number(scene.endMs) > Number(scene.startMs))
+    .sort((a, b) => Number(a.startMs || 0) - Number(b.startMs || 0));
+  const wordCaptionChunks =
+    params.words?.length && sceneRanges.length > 0
+      ? sceneRanges.flatMap((scene) =>
+          buildCaptionChunks(params.words || [], {
+            rangeStartMs: Number(scene.startMs || 0),
+            rangeEndMs: Number(scene.endMs || 0),
+          })
+        )
+      : buildCaptionChunks(params.words || []);
+  const captionLines =
+    wordCaptionChunks.length > 0
+      ? wordCaptionChunks.map((chunk) => ({
+          startMs: chunk.startMs,
+          endMs: chunk.endMs,
+          text: chunk.text,
+        }))
+      : params.lines.map((line) => ({
+          startMs: line.startMs || 0,
+          endMs: line.endMs || (line.startMs || 0) + 3500,
+          text: line.text,
+        }));
 
-  const events = params.lines
+  const events = captionLines
     .map(
       (line) =>
         `Dialogue: 0,${assTime(line.startMs || 0)},${assTime(line.endMs || (line.startMs || 0) + 3500)},Default,,0,0,0,,${escapeAssText(line.text)}`
@@ -146,6 +184,7 @@ export async function queueExport(params: {
     const rendered = await renderStaticVideo({
       project: details.project,
       lines: details.lines,
+      words: details.words,
       scenes: details.scenes,
       settings: params.settings,
       exportId: exportJob.id,
@@ -202,6 +241,7 @@ export async function queueExport(params: {
 export async function renderStaticVideo(params: {
   project: any;
   lines: any[];
+  words?: any[];
   scenes: any[];
   settings?: unknown;
   exportId: string;
@@ -229,16 +269,30 @@ export async function renderStaticVideo(params: {
     const concatPath = path.join(tmpDir, 'images.txt');
     const assPath = path.join(tmpDir, 'subtitles.ass');
     const outputPath = path.join(tmpDir, 'output.mp4');
+    const captionStyle = normalizeCaptionStyle(params.settings);
+    const subtitlesEnabled = captionsAreEnabled(captionStyle);
     await writeFile(concatPath, concatLines.join('\n'));
-    await writeFile(
-      assPath,
-      buildAss({
-        lines: params.lines,
-        width,
-        height,
-        style: params.settings,
-      })
-    );
+    if (subtitlesEnabled) {
+      await writeFile(
+        assPath,
+        buildAss({
+          lines: params.lines,
+          words: params.words,
+          scenes: params.scenes,
+          width,
+          height,
+          style: captionStyle,
+        })
+      );
+    }
+
+    const videoFilter = [
+      `scale=${width}:${height}:force_original_aspect_ratio=increase`,
+      `crop=${width}:${height}`,
+      subtitlesEnabled ? `subtitles=${assPath}` : null,
+    ]
+      .filter(Boolean)
+      .join(',');
 
     await execFileAsync(envConfigs.ffmpeg_path || 'ffmpeg', [
       '-y',
@@ -251,7 +305,7 @@ export async function renderStaticVideo(params: {
       '-i',
       audioPath,
       '-vf',
-      `scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},subtitles=${assPath}`,
+      videoFilter,
       '-shortest',
       '-r',
       '30',
