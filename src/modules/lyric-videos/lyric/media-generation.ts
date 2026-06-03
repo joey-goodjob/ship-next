@@ -22,6 +22,16 @@ export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
 const GRID_SCENE_IMAGE_SIZE = 4;
 const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
 
+function getCastReferenceImageUrls(castMember: any) {
+  if (!castMember) return [];
+  const generationParams = parseJsonField<{ referenceImageUrls?: unknown }>(castMember.generationParams, {});
+  const referenceImageUrls = Array.isArray(generationParams.referenceImageUrls)
+    ? generationParams.referenceImageUrls.filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+    : [];
+  if (referenceImageUrls.length > 0) return referenceImageUrls;
+  return castMember.referenceImageUrl ? [castMember.referenceImageUrl] : [];
+}
+
 function buildGridSceneImagePrompt(params: {
   scenes: any[];
   gridSize?: number;
@@ -294,17 +304,18 @@ export async function queueSceneImages(params: {
       sceneCastIds.length > 0
         ? details.cast.find((member: any) => sceneCastIds.includes(member.id) && member.referenceImageUrl)
         : details.cast.find((member: any) => member.status === 'active' && member.referenceImageUrl);
-    const referenceImageUrl = boundCast?.referenceImageUrl || '';
-    const model = referenceImageUrl ? characterImageModel : defaultModel;
+    const referenceImageUrls = getCastReferenceImageUrls(boundCast);
+    const referenceImageUrl = referenceImageUrls[0] || '';
+    const model = referenceImageUrls.length > 0 ? characterImageModel : defaultModel;
     const imageOptions: Record<string, unknown> = {
       aspect_ratio: details.project.aspectRatio,
       resolution: details.project.resolution,
     };
-    if (referenceImageUrl) {
-      imageOptions.image_input = [referenceImageUrl];
+    if (referenceImageUrls.length > 0) {
+      imageOptions.image_input = referenceImageUrls;
       imageOptions.output_format = 'jpg';
     }
-    const prompt = referenceImageUrl && boundCast?.promptFragment
+    const prompt = referenceImageUrls.length > 0 && boundCast?.promptFragment
       ? `${scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
       : scene.prompt;
 
@@ -352,7 +363,7 @@ export async function queueSceneImages(params: {
           failureCode: null,
           imageModel: model,
           imagePromptSnapshot: prompt,
-          generationParams: safeJson({ model, castId: boundCast?.id, referenceImageUrl }),
+          generationParams: safeJson({ model, castId: boundCast?.id, referenceImageUrl, referenceImageUrls }),
           error: null,
         })
         .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))

@@ -43,6 +43,7 @@ export async function POST(
       description: body.description,
       promptFragment: body.promptFragment,
       referenceImageUrl: body.referenceImageUrl,
+      generationParams: body.generationParams,
       status: body.status,
     });
     return respData(data);

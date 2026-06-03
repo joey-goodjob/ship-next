@@ -90,6 +90,10 @@ function resolvePublicAssetUrl(url: string) {
   return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
+function resolvePublicAssetUrls(urls: string[]) {
+  return urls.map((url) => resolvePublicAssetUrl(url)).filter(Boolean);
+}
+
 async function uploadAudioFile(file: File) {
   const formData = new FormData();
   formData.append("file", file);
@@ -201,6 +205,12 @@ export function useLyricVideoCreationFlow() {
           characterSlug: selectedCharacter.slug,
           characterName: selectedCharacter.name,
         });
+        const thumbnailUrl = resolvePublicAssetUrl(selectedCharacter.thumbnailUrl || selectedCharacter.referenceImageUrl);
+        const referenceImageUrls = resolvePublicAssetUrls(
+          selectedCharacter.referenceImageUrls?.length
+            ? selectedCharacter.referenceImageUrls
+            : [selectedCharacter.referenceImageUrl],
+        );
         await requestJson(`/api/lyric-videos/${project.id}/cast`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -209,7 +219,12 @@ export function useLyricVideoCreationFlow() {
             role: selectedCharacter.role,
             description: selectedCharacter.description,
             promptFragment: selectedCharacter.promptFragment,
-            referenceImageUrl: resolvePublicAssetUrl(selectedCharacter.referenceImageUrl),
+            referenceImageUrl: thumbnailUrl,
+            generationParams: {
+              presetSlug: selectedCharacter.slug,
+              thumbnailUrl,
+              referenceImageUrls,
+            },
             status: "active",
           }),
         });

@@ -133,6 +133,7 @@ export async function createCastMember(params: {
   description: string;
   promptFragment?: string;
   referenceImageUrl?: string;
+  generationParams?: unknown;
   status?: string;
   sort?: number;
 }) {
@@ -154,6 +155,7 @@ export async function createCastMember(params: {
     description,
     promptFragment: cleanText(params.promptFragment, description),
     referenceImageUrl: cleanText(params.referenceImageUrl) || null,
+    generationParams: params.generationParams ? safeJson(params.generationParams) : null,
     status: params.status || 'active',
     sort: params.sort ?? existing.length,
   };
