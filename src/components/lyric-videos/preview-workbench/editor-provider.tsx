@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { EditorContext } from "./editor-context";
+import { PlaybackProvider } from "./playback-context";
 import type {
   EditorContextValue,
   GenerationRun,
@@ -26,7 +27,6 @@ import {
   clamp,
   createWordsFromLines,
   deriveLinesFromWords,
-  msToSeconds,
   normalizePreviewConfig,
   normalizeWordsForSave,
   projectIsProcessing,
@@ -56,8 +56,6 @@ export function EditorProvider({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const [currentTime, setCurrentTimeState] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState<PanelTab>("customize");
   const [zoom, setZoomState] = useState(1);
   const [lyricsDirty, setLyricsDirty] = useState(false);
@@ -66,9 +64,8 @@ export function EditorProvider({
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
   const [castBusy, setCastBusy] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const scenePreviewEndRef = useRef<number | null>(null);
   const saveTimerRef = useRef<number | null>(null);
+  const imageSyncInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
@@ -84,30 +81,7 @@ export function EditorProvider({
     return Math.max(...candidates) / 1000;
   }, [lines, project?.audioDurationMs, scenes, words]);
 
-  const currentScene = useMemo(() => {
-    const currentMs = secondsToMs(currentTime);
-    const activeScene = scenes.find((scene) => currentMs >= scene.startMs && currentMs < scene.endMs);
-    if (activeScene) return activeScene;
-    return [...scenes].reverse().find((scene) => currentMs >= scene.startMs) || scenes[0];
-  }, [currentTime, scenes]);
-
-  const currentLine = useMemo(() => {
-    return (
-      lines.find((line) => currentTime >= msToSeconds(line.startMs) && currentTime < msToSeconds(line.endMs)) ||
-      lines[0]
-    );
-  }, [currentTime, lines]);
-
-  const currentWord = useMemo(() => {
-    return (
-      words.find((word) => currentTime >= msToSeconds(word.startMs) && currentTime < msToSeconds(word.endMs)) ||
-      undefined
-    );
-  }, [currentTime, words]);
-
   const latestExport = exports[0];
-  const audioSrc = project?.processedAudioUrl || project?.audioUrl || project?.originalAudioUrl || "";
-  const audioAvailable = Boolean(audioSrc);
 
   const refresh = useCallback(async () => {
     setLoadError("");
@@ -219,7 +193,6 @@ export function EditorProvider({
         if (generated.scenes?.length) setScenes(generated.scenes);
         setLyricsDirty(false);
         setWordsDirty(false);
-        setCurrentTimeState(0);
         setActiveTab("scenes");
         await refresh();
         setSaveStatus("saved");
@@ -267,136 +240,10 @@ export function EditorProvider({
   }, [creatingStory, lines.length, project, scenes.length]);
 
   useEffect(() => {
-    if (!audioSrc) {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      scenePreviewEndRef.current = null;
-      setIsPlaying(false);
-      return;
-    }
-
-    const audio = new Audio(audioSrc);
-    audio.preload = "metadata";
-    audio.currentTime = clamp(currentTime, 0, totalDuration);
-    audioRef.current = audio;
-
-    function syncCurrentTime() {
-      const nextTime = Number(clamp(audio.currentTime || 0, 0, totalDuration).toFixed(3));
-      const sceneEnd = scenePreviewEndRef.current;
-      if (sceneEnd !== null && nextTime >= sceneEnd) {
-        audio.currentTime = sceneEnd;
-        setCurrentTimeState(Number(sceneEnd.toFixed(3)));
-        scenePreviewEndRef.current = null;
-        audio.pause();
-        return;
-      }
-      setCurrentTimeState(nextTime);
-    }
-
-    function handlePlay() {
-      setIsPlaying(true);
-    }
-
-    function handlePause() {
-      setIsPlaying(false);
-    }
-
-    function handleEnded() {
-      scenePreviewEndRef.current = null;
-      setIsPlaying(false);
-      setCurrentTimeState(Number(clamp(audio.duration || totalDuration, 0, totalDuration).toFixed(3)));
-    }
-
-    function handleError() {
-      scenePreviewEndRef.current = null;
-      setIsPlaying(false);
-      toast.error("Audio failed to load");
-    }
-
-    audio.addEventListener("timeupdate", syncCurrentTime);
-    audio.addEventListener("play", handlePlay);
-    audio.addEventListener("pause", handlePause);
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("loadedmetadata", syncCurrentTime);
-    audio.addEventListener("error", handleError);
-
-    return () => {
-      audio.pause();
-      audio.removeEventListener("timeupdate", syncCurrentTime);
-      audio.removeEventListener("play", handlePlay);
-      audio.removeEventListener("pause", handlePause);
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("loadedmetadata", syncCurrentTime);
-      audio.removeEventListener("error", handleError);
-      if (audioRef.current === audio) audioRef.current = null;
-    };
-  }, [audioSrc, totalDuration]);
-
-  useEffect(() => {
     return () => {
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
-      audioRef.current?.pause();
     };
   }, []);
-
-  function setCurrentTime(time: number) {
-    scenePreviewEndRef.current = null;
-    const nextTime = Number(clamp(time, 0, totalDuration).toFixed(3));
-    setCurrentTimeState(nextTime);
-    if (audioRef.current && Math.abs(audioRef.current.currentTime - nextTime) > 0.05) {
-      audioRef.current.currentTime = nextTime;
-    }
-  }
-
-  function pausePlayback() {
-    scenePreviewEndRef.current = null;
-    audioRef.current?.pause();
-    setIsPlaying(false);
-  }
-
-  async function playAudio(from?: number, sceneEnd?: number | null) {
-    const audio = audioRef.current;
-    if (!audioAvailable || !audio) {
-      setIsPlaying(false);
-      toast.error("No audio available for this project");
-      return;
-    }
-
-    scenePreviewEndRef.current = sceneEnd ?? null;
-    if (typeof from === "number") {
-      const startTime = Number(clamp(from, 0, totalDuration).toFixed(3));
-      audio.currentTime = startTime;
-      setCurrentTimeState(startTime);
-    }
-
-    try {
-      await audio.play();
-    } catch {
-      scenePreviewEndRef.current = null;
-      setIsPlaying(false);
-      toast.error("Click play again to start audio");
-    }
-  }
-
-  async function playFrom(time: number) {
-    await playAudio(time, null);
-  }
-
-  async function togglePlayback() {
-    if (isPlaying) {
-      pausePlayback();
-      return;
-    }
-    const startTime = currentTime >= totalDuration ? 0 : currentTime;
-    await playAudio(startTime, null);
-  }
-
-  async function playScenePreview(startTime: number, endTime: number) {
-    const safeStart = clamp(startTime, 0, totalDuration);
-    const safeEnd = clamp(endTime, safeStart, totalDuration);
-    const outsideScene = currentTime < safeStart || currentTime >= safeEnd;
-    await playAudio(outsideScene ? safeStart : currentTime, safeEnd);
-  }
 
   function setZoom(zoomValue: number) {
     setZoomState(Number(clamp(zoomValue, 1, 3).toFixed(2)));
@@ -516,7 +363,6 @@ export function EditorProvider({
       if (generated.scenes?.length) setScenes(generated.scenes);
       setLyricsDirty(false);
       setWordsDirty(false);
-      setCurrentTimeState(0);
       setActiveTab("scenes");
       await refresh();
       setSaveStatus("saved");
@@ -773,11 +619,15 @@ export function EditorProvider({
 
   async function syncSceneImages() {
     if (!project) return;
+    if (imageSyncInFlightRef.current) return;
+    imageSyncInFlightRef.current = true;
     try {
       await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`);
       await refresh();
     } catch (err: any) {
       toast.error(err?.message || "Sync scene images failed");
+    } finally {
+      imageSyncInFlightRef.current = false;
     }
   }
 
@@ -880,27 +730,14 @@ export function EditorProvider({
       loading,
       loadError,
       saveStatus,
-      currentTime,
-      isPlaying,
       activeTab,
       zoom,
-      totalDuration,
-      currentScene,
-      currentLine,
-      currentWord,
       lyricsDirty,
       wordsDirty,
       exporting,
       preparingAudio,
       creatingStory,
       castBusy,
-      audioAvailable,
-      setCurrentTime,
-      setIsPlaying,
-      togglePlayback,
-      playFrom,
-      playScenePreview,
-      pausePlayback,
       setActiveTab,
       setZoom,
       updateProjectField,
@@ -925,11 +762,6 @@ export function EditorProvider({
     [
       activeTab,
       appName,
-      audioAvailable,
-      currentLine,
-      currentScene,
-      currentTime,
-      currentWord,
       cast,
       castBusy,
       creatingStory,
@@ -947,8 +779,6 @@ export function EditorProvider({
       projectId,
       saveStatus,
       scenes,
-      totalDuration,
-      isPlaying,
       words,
       wordsDirty,
       zoom,
@@ -957,5 +787,11 @@ export function EditorProvider({
     ],
   );
 
-  return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;
+  return (
+    <EditorContext.Provider value={value}>
+      <PlaybackProvider project={project} scenes={scenes} lines={lines} words={words} totalDuration={totalDuration}>
+        {children}
+      </PlaybackProvider>
+    </EditorContext.Provider>
+  );
 }

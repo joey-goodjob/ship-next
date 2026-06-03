@@ -1251,6 +1251,7 @@ export async function generateStoryboard(params: {
       project: details.project,
       storyPrompt: params.storyPrompt,
       fixedScenes,
+      cast: details.cast,
     });
     const inserted = await replaceScenes({ userId: params.userId, projectId: params.projectId, scenes });
     await Promise.all([

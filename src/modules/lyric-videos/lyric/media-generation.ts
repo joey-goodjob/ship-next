@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import sharp from 'sharp';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
@@ -21,6 +21,46 @@ function resolveKieImageModel(configs: Record<string, string>, model?: string) {
 export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
 const GRID_SCENE_IMAGE_SIZE = 4;
 const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
+const GRID_IMAGE_QUEUE_CONCURRENCY = 4;
+
+type GridImagePanelScene = any & {
+  finalPrompt?: string;
+  boundCast?: any;
+  castIdsForGeneration?: string[];
+  referenceImageUrl?: string;
+  referenceImageUrls?: string[];
+};
+
+type GridImageBatchDescriptor = {
+  batchIndex: number;
+  start: number;
+  scenes: GridImagePanelScene[];
+  gridPrompt: ReturnType<typeof buildGridSceneImagePrompt>;
+  imageOptions: Record<string, unknown>;
+  referenceImageUrl: string;
+  referenceImageUrls: string[];
+  castId?: string;
+};
+
+async function runWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+) {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, concurrency), items.length);
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex;
+        nextIndex += 1;
+        results[currentIndex] = await worker(items[currentIndex], currentIndex);
+      }
+    })
+  );
+  return results;
+}
 
 function getCastReferenceImageUrls(castMember: any) {
   if (!castMember) return [];
@@ -30,6 +70,53 @@ function getCastReferenceImageUrls(castMember: any) {
     : [];
   if (referenceImageUrls.length > 0) return referenceImageUrls;
   return castMember.referenceImageUrl ? [castMember.referenceImageUrl] : [];
+}
+
+function activeMainCast(cast: any[]) {
+  return (Array.isArray(cast) ? cast : [])
+    .filter((member: any) => !member.deletedAt)
+    .filter((member: any) => String(member.status || 'active') === 'active')
+    .filter((member: any) => String(member.role || '').toLowerCase() === 'main' || !String(member.role || '').trim())
+    .sort((a: any, b: any) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
+}
+
+function sceneShotType(scene: any) {
+  const timelineConfig = scene.timelineConfig && typeof scene.timelineConfig === 'object'
+    ? scene.timelineConfig
+    : parseJsonField<Record<string, any>>(scene.timelineConfig, {});
+  return String(timelineConfig?.shotType || '').trim();
+}
+
+function resolveSceneCast(params: { scene: any; cast: any[] }) {
+  const sceneCastIds = Array.isArray(params.scene.castIds) ? params.scene.castIds : [];
+  if (sceneCastIds.length > 0) {
+    return params.cast.find((member: any) => sceneCastIds.includes(member.id) && String(member.status || 'active') === 'active');
+  }
+  const mainCast = activeMainCast(params.cast);
+  if (mainCast.length === 1 && sceneShotType(params.scene) === 'character_shot') {
+    return mainCast[0];
+  }
+  return null;
+}
+
+function scenePromptWithCast(params: { scene: any; cast: any[] }) {
+  const boundCast = resolveSceneCast(params);
+  const referenceImageUrls = getCastReferenceImageUrls(boundCast);
+  const prompt = referenceImageUrls.length > 0 && boundCast?.promptFragment
+    ? `${params.scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
+    : boundCast?.promptFragment
+      ? `${params.scene.prompt}\n\nUse this established main character: ${boundCast.name || 'main character'}, ${boundCast.promptFragment}.`
+      : params.scene.prompt;
+  const explicitCastIds = Array.isArray(params.scene.castIds) ? params.scene.castIds.filter(Boolean) : [];
+  const castIdsForGeneration = explicitCastIds.length > 0 ? explicitCastIds : boundCast?.id ? [boundCast.id] : [];
+  return {
+    ...params.scene,
+    finalPrompt: prompt,
+    boundCast,
+    castIdsForGeneration,
+    referenceImageUrl: referenceImageUrls[0] || '',
+    referenceImageUrls,
+  };
 }
 
 function buildGridSceneImagePrompt(params: {
@@ -53,7 +140,7 @@ function buildGridSceneImagePrompt(params: {
     sceneId: scene.id,
     startMs: scene.startMs,
     endMs: scene.endMs,
-    prompt: String(scene.prompt || '').trim(),
+    prompt: String(scene.finalPrompt || scene.prompt || '').trim(),
   }));
   const panelLines = panels.map((panel) => `Panel ${panel.panel}: ${panel.prompt}`);
   const compiledPrompt = [
@@ -465,7 +552,8 @@ export async function queueSceneImagesGrid(params: {
   const resolution = '4K';
   const provider = await createKieProvider();
   const queued: any[] = [];
-  const batches = [];
+  const queuedBatchRecords: any[] = [];
+  const cast = Array.isArray(details.cast) ? details.cast : [];
 
   logLyricStage('scene-images-grid', 'queue-start', {
     projectId: params.projectId,
@@ -475,45 +563,83 @@ export async function queueSceneImagesGrid(params: {
     resolution,
     sceneCount: scenes.length,
     sceneIds: scenes.map((scene: any) => scene.id),
+    queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
   });
 
+  const descriptors: GridImageBatchDescriptor[] = [];
   for (let start = 0; start < scenes.length; start += GRID_SCENE_IMAGE_BATCH_SIZE) {
     const batchIndex = Math.floor(start / GRID_SCENE_IMAGE_BATCH_SIZE);
-    const batchScenes = scenes.slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE);
+    const batchScenes = scenes
+      .slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE)
+      .map((scene: any) => scenePromptWithCast({ scene, cast }));
     const gridPrompt = buildGridSceneImagePrompt({
       scenes: batchScenes,
       gridSize: GRID_SCENE_IMAGE_SIZE,
       aspectRatio,
     });
-    const task = await createTask({
-      userId: params.userId,
-      mediaType: 'image',
-      provider: 'kie',
-      model,
-      prompt: gridPrompt.compiledPrompt,
-      costCredits: batchScenes.length * 5,
-      options: {
-        projectId: params.projectId,
-        mode: 'grid_4x4',
-        batchIndex,
-        sceneIds: batchScenes.map((scene: any) => scene.id),
-        aspect_ratio: aspectRatio,
-        resolution,
-        gridSize: GRID_SCENE_IMAGE_SIZE,
-      },
+    const batchReferenceCast =
+      batchScenes.find((scene: GridImagePanelScene) => scene.boundCast && (scene.referenceImageUrls || []).length > 0)?.boundCast ||
+      activeMainCast(cast).find((member: any) => getCastReferenceImageUrls(member).length > 0);
+    const referenceImageUrls = getCastReferenceImageUrls(batchReferenceCast);
+    const imageOptions: Record<string, unknown> = {
+      aspect_ratio: aspectRatio,
+      resolution,
+      output_format: 'jpg',
+    };
+    if (referenceImageUrls.length > 0) {
+      imageOptions.image_input = referenceImageUrls;
+    }
+    descriptors.push({
+      batchIndex,
+      start,
+      scenes: batchScenes,
+      gridPrompt,
+      imageOptions,
+      referenceImageUrl: referenceImageUrls[0] || '',
+      referenceImageUrls,
+      castId: batchReferenceCast?.id,
     });
+  }
 
+  async function queueBatch(descriptor: GridImageBatchDescriptor) {
+    const { batchIndex, gridPrompt } = descriptor;
+    let task: any = null;
     try {
+      task = await createTask({
+        userId: params.userId,
+        mediaType: 'image',
+        provider: 'kie',
+        model,
+        prompt: gridPrompt.compiledPrompt,
+        costCredits: descriptor.scenes.length * 5,
+        options: {
+          projectId: params.projectId,
+          mode: 'grid_4x4',
+          batchIndex,
+          sceneIds: descriptor.scenes.map((scene: any) => scene.id),
+          gridSize: GRID_SCENE_IMAGE_SIZE,
+          ...descriptor.imageOptions,
+          castId: descriptor.castId,
+          referenceImageUrl: descriptor.referenceImageUrl,
+          referenceImageUrls: descriptor.referenceImageUrls,
+        },
+      });
+      logLyricStage('scene-images-grid', 'batch-queue-start', {
+        projectId: params.projectId,
+        userId: params.userId,
+        batchIndex,
+        taskId: task.id,
+        sceneCount: descriptor.scenes.length,
+        sceneIds: descriptor.scenes.map((scene: any) => scene.id),
+        queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
+        hasReferenceImage: descriptor.referenceImageUrls.length > 0,
+      });
       const result = await provider.generate({
         params: {
           mediaType: AIMediaType.IMAGE,
           model,
           prompt: gridPrompt.compiledPrompt,
-          options: {
-            aspect_ratio: aspectRatio,
-            resolution,
-            output_format: 'jpg',
-          },
+          options: descriptor.imageOptions,
         },
       });
       await updateTask({
@@ -527,18 +653,22 @@ export async function queueSceneImagesGrid(params: {
         batchIndex,
         providerTaskId: result.taskId,
         taskId: task.id,
-        panelCount: batchScenes.length,
-        sceneOffset: start,
+        panelCount: descriptor.scenes.length,
+        sceneOffset: descriptor.start,
+        castId: descriptor.castId,
+        referenceImageUrl: descriptor.referenceImageUrl,
+        referenceImageUrls: descriptor.referenceImageUrls,
       };
-      batches.push(batchRecord);
+      queuedBatchRecords.push(batchRecord);
 
-      for (const [index, scene] of batchScenes.entries()) {
+      const batchQueued = [];
+      for (const [index, scene] of descriptor.scenes.entries()) {
         const grid = {
           batchIndex,
           batchNumber: batchIndex + 1,
-          sceneOffset: start,
+          sceneOffset: descriptor.start,
           panel: index + 1,
-          globalPanel: start + index + 1,
+          globalPanel: descriptor.start + index + 1,
           gridSize: GRID_SCENE_IMAGE_SIZE,
           totalPanels: GRID_SCENE_IMAGE_BATCH_SIZE,
           aspectRatio,
@@ -546,6 +676,7 @@ export async function queueSceneImagesGrid(params: {
           providerTaskId: result.taskId,
           imageTaskId: task.id,
         };
+        const castIds = scene.castIdsForGeneration || [];
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
@@ -558,13 +689,21 @@ export async function queueSceneImagesGrid(params: {
             completedAt: null,
             failureCode: null,
             imageModel: model,
-            imagePromptSnapshot: scene.prompt,
-            generationParams: safeJson({ mode: 'grid_4x4', model, grid }),
+            imagePromptSnapshot: scene.finalPrompt || scene.prompt,
+            generationParams: safeJson({
+              mode: 'grid_4x4',
+              model,
+              castId: castIds[0],
+              castIds,
+              referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
+              referenceImageUrls: (scene.referenceImageUrls || []).length > 0 ? scene.referenceImageUrls : descriptor.referenceImageUrls,
+              grid,
+            }),
             error: null,
           })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
           .returning();
-        queued.push(updated);
+        batchQueued.push(updated);
       }
 
       logLyricStage('scene-images-grid', 'batch-queued', {
@@ -572,37 +711,46 @@ export async function queueSceneImagesGrid(params: {
         userId: params.userId,
         batchIndex,
         providerTaskId: result.taskId,
-        sceneCount: batchScenes.length,
-        sceneIds: batchScenes.map((scene: any) => scene.id),
+        sceneCount: descriptor.scenes.length,
+        sceneIds: descriptor.scenes.map((scene: any) => scene.id),
         promptLength: gridPrompt.compiledPrompt.length,
+        hasReferenceImage: descriptor.referenceImageUrls.length > 0,
+        queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
       });
+      return batchQueued;
     } catch (error: any) {
       logLyricStageError('scene-images-grid', 'batch-queue-fail', error, {
         projectId: params.projectId,
         userId: params.userId,
         batchIndex,
-        taskId: task.id,
+        taskId: task?.id,
+        sceneIds: descriptor.scenes.map((scene: any) => scene.id),
+        queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
       });
-      await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
-      for (const [index, scene] of batchScenes.entries()) {
+      if (task?.id) {
+        await updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } });
+      }
+      const batchQueued = [];
+      for (const [index, scene] of descriptor.scenes.entries()) {
         const grid = {
           batchIndex,
           batchNumber: batchIndex + 1,
-          sceneOffset: start,
+          sceneOffset: descriptor.start,
           panel: index + 1,
-          globalPanel: start + index + 1,
+          globalPanel: descriptor.start + index + 1,
           gridSize: GRID_SCENE_IMAGE_SIZE,
           totalPanels: GRID_SCENE_IMAGE_BATCH_SIZE,
           aspectRatio,
           resolution,
           providerTaskId: null,
-          imageTaskId: task.id,
+          imageTaskId: task?.id || null,
         };
+        const castIds = scene.castIdsForGeneration || [];
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
             imageUrl: params.clearExistingImages ? null : scene.imageUrl,
-            imageTaskId: task.id,
+            imageTaskId: task?.id || null,
             providerTaskId: null,
             status: 'failed',
             attemptCount: (scene.attemptCount || 0) + 1,
@@ -610,16 +758,30 @@ export async function queueSceneImagesGrid(params: {
             completedAt: null,
             failureCode: 'queue_failed',
             imageModel: model,
-            imagePromptSnapshot: scene.prompt,
-            generationParams: safeJson({ mode: 'grid_4x4', model, grid }),
+            imagePromptSnapshot: scene.finalPrompt || scene.prompt,
+            generationParams: safeJson({
+              mode: 'grid_4x4',
+              model,
+              castId: castIds[0],
+              castIds,
+              referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
+              referenceImageUrls: (scene.referenceImageUrls || []).length > 0 ? scene.referenceImageUrls : descriptor.referenceImageUrls,
+              grid,
+            }),
             error: error?.message || 'Grid image generation failed',
           })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
           .returning();
-        queued.push(updated);
+        batchQueued.push(updated);
       }
+      return batchQueued;
     }
   }
+
+  const batchResults = await runWithConcurrency(descriptors, GRID_IMAGE_QUEUE_CONCURRENCY, queueBatch);
+  queued.push(...batchResults.flat());
+  const sceneOrder = new Map<string, number>(scenes.map((scene: any, index: number) => [scene.id, index]));
+  queued.sort((a: any, b: any) => (sceneOrder.get(a.id) ?? 0) - (sceneOrder.get(b.id) ?? 0));
 
   await db()
     .update(lyricVideoProject)
@@ -636,8 +798,9 @@ export async function queueSceneImagesGrid(params: {
     projectId: params.projectId,
     userId: params.userId,
     queuedCount: queued.length,
-    batchCount: batches.length,
-    batches,
+    batchCount: queuedBatchRecords.length,
+    queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
+    batches: queuedBatchRecords.sort((a: any, b: any) => a.batchIndex - b.batchIndex),
   });
 
   return queued;
@@ -882,8 +1045,9 @@ async function syncGridSceneImageBatch(params: {
   const firstGridParams = getGridGenerationParams(params.scenes[0]);
   const grid = firstGridParams?.grid || {};
   const result = await params.provider.query({ taskId: params.providerTaskId, mediaType: AIMediaType.IMAGE });
+  const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
 
-  if (result.taskStatus === ProviderTaskStatus.FAILED) {
+  if (result.taskStatus === ProviderTaskStatus.FAILED && !sourceImageUrl) {
     const message = result.taskInfo?.errorMessage || 'Grid image generation failed';
     const failed = [];
     const updatedTaskIds = new Set<string>();
@@ -902,11 +1066,10 @@ async function syncGridSceneImageBatch(params: {
     return failed;
   }
 
-  if (result.taskStatus !== ProviderTaskStatus.SUCCESS) {
+  if (result.taskStatus !== ProviderTaskStatus.SUCCESS && !(result.taskStatus === ProviderTaskStatus.FAILED && sourceImageUrl)) {
     return [];
   }
 
-  const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
   if (!sourceImageUrl) {
     const failed = [];
     const updatedTaskIds = new Set<string>();
@@ -1009,9 +1172,130 @@ async function syncGridSceneImageBatch(params: {
   return synced;
 }
 
+async function updateSceneImageProjectStatus(params: {
+  userId: string;
+  projectId: string;
+  project: any;
+  scenes: any[];
+}) {
+  const hasProcessing = params.scenes.some((scene: any) => scene.status === 'processing' && !scene.imageUrl);
+  const allDone = params.scenes.length && params.scenes.every((scene: any) => scene.status === 'success' || scene.imageUrl);
+  const hasFailures = params.scenes.some((scene: any) => scene.status === 'failed' && !scene.imageUrl);
+  const hasImages = params.scenes.some((scene: any) => scene.imageUrl || scene.status === 'success');
+
+  if (allDone) {
+    const outputSnapshot = {
+      mode: 'grid_4x4',
+      sceneCount: params.scenes.length || 0,
+      imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
+      projectStatus: {
+        scenesStatus: 'ready',
+        pipelineStage: 'images_ready',
+        generationStatus: 'success',
+      },
+    };
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'ready',
+        pipelineStage: 'images_ready',
+        generationStatus: 'success',
+        generationProgress: 100,
+        lastGeneratedAt: new Date(),
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    await finalizeActiveImageGenerationRun({
+      userId: params.userId,
+      projectId: params.projectId,
+      project: params.project,
+      status: 'success',
+      outputSnapshot,
+    });
+  } else if (!hasProcessing && (hasFailures || hasImages)) {
+    const outputSnapshot = {
+      mode: 'grid_4x4',
+      sceneCount: params.scenes.length || 0,
+      imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
+      failedCount: params.scenes.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length || 0,
+      projectStatus: {
+        scenesStatus: 'partial_success',
+        pipelineStage: 'images_partial_success',
+        generationStatus: 'partial_success',
+      },
+    };
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'partial_success',
+        pipelineStage: 'images_partial_success',
+        generationStatus: 'partial_success',
+        generationProgress: 90,
+        pipelineError: 'Some scene images failed',
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    await finalizeActiveImageGenerationRun({
+      userId: params.userId,
+      projectId: params.projectId,
+      project: params.project,
+      status: 'partial_success',
+      outputSnapshot,
+      errorMessage: 'Some scene images failed',
+    });
+  }
+
+  return { allDone: Boolean(allDone), hasFailures: Boolean(hasFailures), hasProcessing: Boolean(hasProcessing) };
+}
+
 export async function syncSceneImages(params: { userId: string; projectId: string }) {
+  const normalizedFailedWithImages = await db()
+    .update(lyricVideoScene)
+    .set({
+      status: 'success',
+      completedAt: new Date(),
+      failureCode: null,
+      error: null,
+    })
+    .where(
+      and(
+        eq(lyricVideoScene.projectId, params.projectId),
+        eq(lyricVideoScene.userId, params.userId),
+        eq(lyricVideoScene.status, 'failed'),
+        isNotNull(lyricVideoScene.imageUrl)
+      )
+    )
+    .returning();
+  const processingRows = await db()
+    .select({ id: lyricVideoScene.id })
+    .from(lyricVideoScene)
+    .where(
+      and(
+        eq(lyricVideoScene.projectId, params.projectId),
+        eq(lyricVideoScene.userId, params.userId),
+        eq(lyricVideoScene.status, 'processing'),
+        isNotNull(lyricVideoScene.providerTaskId)
+      )
+    );
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
+  if (processingRows.length === 0) {
+    const status = await updateSceneImageProjectStatus({
+      userId: params.userId,
+      projectId: params.projectId,
+      project: details.project,
+      scenes: details.scenes,
+    });
+    logLyricStage('scene-images', 'sync-skip-no-processing', {
+      projectId: params.projectId,
+      userId: params.userId,
+      normalizedCount: normalizedFailedWithImages.length,
+      sceneCount: details.scenes.length,
+      allDone: status.allDone,
+      hasFailures: status.hasFailures,
+    });
+    return normalizedFailedWithImages;
+  }
+
   const provider = await createKieProvider();
   const processing = details.scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   const gridProcessing = processing.filter((scene: any) => getGridGenerationParams(scene));
@@ -1093,14 +1377,26 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           hasImageUrl: Boolean(updated.imageUrl),
         });
       } else if (result.taskStatus === ProviderTaskStatus.FAILED) {
+        const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
         const message = result.taskInfo?.errorMessage || 'Image generation failed';
         const [updated] = await db()
           .update(lyricVideoScene)
-          .set({ status: 'failed', failureCode: 'provider_failed', error: message })
+          .set({
+            imageUrl,
+            status: imageUrl ? 'success' : 'failed',
+            completedAt: imageUrl ? new Date() : null,
+            failureCode: imageUrl ? null : 'provider_failed',
+            error: imageUrl ? null : message,
+          })
           .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
           .returning();
         if (scene.imageTaskId) {
-          await updateTask({ taskId: scene.imageTaskId, status: AITaskStatus.FAILED, taskResult: result.taskResult });
+          await updateTask({
+            taskId: scene.imageTaskId,
+            status: imageUrl ? AITaskStatus.SUCCESS : AITaskStatus.FAILED,
+            taskInfo: result.taskInfo,
+            taskResult: result.taskResult,
+          });
         }
         synced.push(updated);
         logLyricStage('scene-images', 'scene-synced', {
@@ -1130,77 +1426,19 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
   }
 
   const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
-  const hasProcessing = refreshed?.scenes.some((scene: any) => scene.status === 'processing');
-  const allDone = refreshed?.scenes.length && refreshed.scenes.every((scene: any) => scene.status === 'success' || scene.imageUrl);
-  const hasFailures = refreshed?.scenes.some((scene: any) => scene.status === 'failed');
-  const hasImages = refreshed?.scenes.some((scene: any) => scene.imageUrl || scene.status === 'success');
-  if (allDone) {
-    const outputSnapshot = {
-      mode: 'grid_4x4',
-      sceneCount: refreshed?.scenes.length || 0,
-      imageCount: refreshed?.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
-      projectStatus: {
-        scenesStatus: 'ready',
-        pipelineStage: 'images_ready',
-        generationStatus: 'success',
-      },
-    };
-    await db()
-      .update(lyricVideoProject)
-      .set({
-        scenesStatus: 'ready',
-        pipelineStage: 'images_ready',
-        generationStatus: 'success',
-        generationProgress: 100,
-        lastGeneratedAt: new Date(),
-        pipelineError: null,
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
-    await finalizeActiveImageGenerationRun({
-      userId: params.userId,
-      projectId: params.projectId,
-      project: refreshed?.project,
-      status: 'success',
-      outputSnapshot,
-    });
-  } else if (!hasProcessing && (hasFailures || hasImages)) {
-    const outputSnapshot = {
-      mode: 'grid_4x4',
-      sceneCount: refreshed?.scenes.length || 0,
-      imageCount: refreshed?.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
-      failedCount: refreshed?.scenes.filter((scene: any) => scene.status === 'failed').length || 0,
-      projectStatus: {
-        scenesStatus: 'partial_success',
-        pipelineStage: 'images_partial_success',
-        generationStatus: 'partial_success',
-      },
-    };
-    await db()
-      .update(lyricVideoProject)
-      .set({
-        scenesStatus: 'partial_success',
-        pipelineStage: 'images_partial_success',
-        generationStatus: 'partial_success',
-        generationProgress: 90,
-        pipelineError: 'Some scene images failed',
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
-    await finalizeActiveImageGenerationRun({
-      userId: params.userId,
-      projectId: params.projectId,
-      project: refreshed?.project,
-      status: 'partial_success',
-      outputSnapshot,
-      errorMessage: 'Some scene images failed',
-    });
-  }
+  const status = await updateSceneImageProjectStatus({
+    userId: params.userId,
+    projectId: params.projectId,
+    project: refreshed?.project,
+    scenes: refreshed?.scenes || [],
+  });
 
   logLyricStage('scene-images', 'sync-complete', {
     projectId: params.projectId,
     userId: params.userId,
     syncedCount: synced.length,
-    allDone: Boolean(allDone),
-    hasFailures: Boolean(hasFailures),
+    allDone: status.allDone,
+    hasFailures: status.hasFailures,
     scenes: synced.map((scene: any) => ({
       id: scene.id,
       status: scene.status,

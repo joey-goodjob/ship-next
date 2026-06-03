@@ -549,6 +549,7 @@ export async function executeGenerationRun(params: {
       fixedScenes,
       project: detailsAfterLyrics.project,
       model: options.storyboardModel,
+      cast: detailsAfterLyrics.cast,
     });
     const scenes = await replaceScenes({
       userId: params.userId,

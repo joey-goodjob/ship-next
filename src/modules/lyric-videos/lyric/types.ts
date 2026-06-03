@@ -153,6 +153,7 @@ export type LyricVideoPromptSceneResult = {
   lyrics_summary: string;
   image_prompt: string;
   video_prompt: string;
+  castIds?: string[];
   kind?: 'lyric' | 'instrumental';
   timeline_config?: unknown;
 };

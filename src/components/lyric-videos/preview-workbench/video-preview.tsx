@@ -6,10 +6,12 @@ import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
+import { usePlayback } from "./playback-context";
 import { clamp, deriveGenerationProgress, getAspectRatio, normalizePreviewConfig, secondsToMs } from "./utils";
 
 export function VideoPreview() {
-  const { currentLine, currentScene, currentTime, generationRun, generationSteps, loading, project, retryFailedImageBatches, scenes, totalDuration, words } = useEditor();
+  const { generationRun, generationSteps, loading, project, retryFailedImageBatches, scenes, words } = useEditor();
+  const { currentLine, currentScene, currentTime, totalDuration } = usePlayback();
   const aspectRatio = getAspectRatio(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });

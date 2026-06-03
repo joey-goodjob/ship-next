@@ -2,10 +2,12 @@
 
 import { Expand, Pause, Play, Shuffle, SkipBack, SkipForward, StepBack, StepForward, Type, Volume2, Wand2, ZoomIn, ZoomOut } from "lucide-react";
 import { useEditor } from "./editor-context";
+import { usePlayback } from "./playback-context";
 import { formatClock } from "./utils";
 
 export function PlaybackControls() {
-  const { audioAvailable, currentTime, isPlaying, setCurrentTime, setZoom, togglePlayback, totalDuration, zoom } = useEditor();
+  const { setZoom, zoom } = useEditor();
+  const { audioAvailable, currentTime, isPlaying, setCurrentTime, togglePlayback, totalDuration } = usePlayback();
 
   return (
     <div className="flex h-[40px] shrink-0 items-center border-t border-[#E8E8E8] bg-[#F8F9FA] px-[16px]">

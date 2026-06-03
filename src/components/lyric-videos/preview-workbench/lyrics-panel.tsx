@@ -6,6 +6,7 @@ import { AlertCircle, FileText, Loader2, MoreVertical, Pause, Play, Plus, Save, 
 import { cn } from "@/lib/utils";
 import { LYRIC_FRAME_RATE } from "./constants";
 import { useEditor } from "./editor-context";
+import { usePlayback } from "./playback-context";
 import type { LyricScene, LyricWord } from "./types";
 import {
   clamp,
@@ -22,23 +23,25 @@ import {
 
 export function LyricsPanel() {
   const {
+    lines,
+    lyricsDirty,
+    project,
+    saveLyrics,
+    scenes,
+    setWords,
+    words,
+  } = useEditor();
+  const {
     currentLine,
     currentScene,
     currentTime,
     currentWord,
     isPlaying,
-    lines,
-    lyricsDirty,
     pausePlayback,
     playScenePreview,
-    project,
-    saveLyrics,
-    scenes,
     setCurrentTime,
-    setWords,
     totalDuration,
-    words,
-  } = useEditor();
+  } = usePlayback();
   const [openWordMenuId, setOpenWordMenuId] = useState<string | null>(null);
   const lyricsProcessing = project?.lyricsStatus === "processing";
   const lyricsFailed = project?.lyricsStatus === "failed";

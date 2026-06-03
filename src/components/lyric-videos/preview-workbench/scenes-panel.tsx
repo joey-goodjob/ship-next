@@ -5,10 +5,12 @@ import { ChevronDown, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, Pla
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { PanelEmpty } from "./panel-empty";
+import { usePlayback } from "./playback-context";
 import { deriveGenerationProgress, formatDurationMs, formatMs, msToSeconds } from "./utils";
 
 export function ScenesPanel() {
-  const { currentScene, generationRun, generationSteps, project, retryFailedImageBatches, scenes, setCurrentTime } = useEditor();
+  const { generationRun, generationSteps, project, retryFailedImageBatches, scenes } = useEditor();
+  const { currentScene, setCurrentTime } = usePlayback();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
 
