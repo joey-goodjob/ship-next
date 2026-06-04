@@ -9,10 +9,10 @@ import { usePlayback } from "./playback-context";
 import { deriveGenerationProgress, formatDurationMs, formatMs, msToSeconds } from "./utils";
 
 export function ScenesPanel() {
-  const { generationLocked, generationLockReason, generationRun, generationSteps, project, retryFailedImageBatches, scenes } = useEditor();
+  const { generationLocked, generationLockReason, generationRun, generationSteps, project, retryFailedImageBatches, runtimeState, scenes } = useEditor();
   const { currentScene, setCurrentTime } = usePlayback();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
-  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const promptReadyCount = scenes.filter((scene) => String(scene.prompt || "").trim()).length;
 
   return (

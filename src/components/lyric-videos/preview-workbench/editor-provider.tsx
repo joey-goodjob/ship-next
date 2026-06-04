@@ -19,6 +19,7 @@ import type {
   PanelTab,
   ProjectDetails,
   RetryFailedBatchesResponse,
+  RuntimeState,
   SaveStatus,
   StoryGenerationResponse,
   UploadAudioResponse,
@@ -50,6 +51,7 @@ export function EditorProvider({
   projectId: string;
 }) {
   const [project, setProject] = useState<LyricVideoProject | null>(null);
+  const [runtimeState, setRuntimeState] = useState<RuntimeState | null>(null);
   const [generationRun, setGenerationRun] = useState<GenerationRun | null>(null);
   const [generationSteps, setGenerationSteps] = useState<GenerationStep[]>([]);
   const [lines, setLinesState] = useState<LyricLine[]>([]);
@@ -87,8 +89,8 @@ export function EditorProvider({
 
   const latestExport = exports[0];
   const generationLocked = useMemo(
-    () => Boolean(debugGenerationLocked) || isGenerationLocked(project, generationRun),
-    [debugGenerationLocked, generationRun, project],
+    () => Boolean(debugGenerationLocked) || isGenerationLocked(project, generationRun, runtimeState),
+    [debugGenerationLocked, generationRun, project, runtimeState],
   );
   const generationLockReason = GENERATION_LOCK_REASON;
 
@@ -102,6 +104,7 @@ export function EditorProvider({
       const details = await requestJson<ProjectDetails>(`/api/lyric-videos/${projectId}`);
       if (!details?.project) throw new Error("Project not found");
       setProject(details.project);
+      setRuntimeState(details.runtimeState || null);
       setGenerationRun(details.generationRun || null);
       setGenerationSteps(details.generationSteps || []);
       setLinesState(details.lines || []);
@@ -124,12 +127,12 @@ export function EditorProvider({
   }, [refresh]);
 
   useEffect(() => {
-    if (!projectIsProcessing(project)) return;
+    if (!projectIsProcessing(project, runtimeState)) return;
     const timer = window.setInterval(() => {
       refresh();
     }, 4000);
     return () => window.clearInterval(timer);
-  }, [project, refresh]);
+  }, [project, refresh, runtimeState]);
 
   useEffect(() => {
     const hasProcessingCast = cast.some((member) => member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
@@ -794,6 +797,7 @@ export function EditorProvider({
       projectId,
       appName,
       project,
+      runtimeState,
       generationRun,
       generationSteps,
       lines,
@@ -854,6 +858,7 @@ export function EditorProvider({
       lyricsDirty,
       preparingAudio,
       project,
+      runtimeState,
       projectId,
       saveStatus,
       scenes,

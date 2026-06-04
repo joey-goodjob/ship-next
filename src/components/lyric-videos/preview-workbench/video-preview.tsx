@@ -19,6 +19,7 @@ export function VideoPreview() {
     loading,
     project,
     retryFailedImageBatches,
+    runtimeState,
     scenes,
     words,
   } = useEditor();
@@ -26,7 +27,7 @@ export function VideoPreview() {
   const aspectRatio = getAspectRatio(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
   const hasLyrics = lines.length > 0 || words.length > 0 || project?.lyricsStatus === "ready";
-  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
   const captionText = useMemo(() => {
     const currentMs = secondsToMs(currentTime);

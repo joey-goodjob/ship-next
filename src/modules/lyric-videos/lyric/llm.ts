@@ -474,14 +474,42 @@ export async function analyzeSongWithKieForDebug(params: {
   }
 
   const prompt = buildSongAnalysisPrompt(params.preprocess);
-  const result =
-    provider === 'kie_codex'
-      ? await callKieCodexResponses({ text: prompt, model: params.model })
-      : provider === 'kie_gemini'
-        ? await callKieGeminiChat({ text: prompt, model: params.model })
-        : await callKieClaudeMessages({ text: prompt, model: params.model, thinkingFlag: false, maxTokens: 8192 });
-  const songAnalysis = normalizeSongAnalysis(parseJsonLoose<any>(result.content, {}));
-  assertUsableSongAnalysis(songAnalysis);
+  const warnings: string[] = [];
+  let result: Awaited<ReturnType<typeof callKieCodexResponses>> | Awaited<ReturnType<typeof callKieGeminiChat>> | Awaited<ReturnType<typeof callKieClaudeMessages>> | undefined;
+  let songAnalysis: LyricVideoSongAnalysisResult | undefined;
+  let lastValidationError: unknown;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    result =
+      provider === 'kie_codex'
+        ? await callKieCodexResponses({ text: prompt, model: params.model })
+        : provider === 'kie_gemini'
+          ? await callKieGeminiChat({ text: prompt, model: params.model })
+          : await callKieClaudeMessages({ text: prompt, model: params.model, thinkingFlag: false, maxTokens: 8192 });
+    songAnalysis = normalizeSongAnalysis(parseJsonLoose<any>(result.content, {}));
+
+    try {
+      assertUsableSongAnalysis(songAnalysis);
+      break;
+    } catch (error) {
+      lastValidationError = error;
+      logLyricStageError('kie-song-analysis', attempt < 2 ? 'validation-retry' : 'validation-error', error, {
+        provider,
+        model: params.model || result.model,
+        attempt,
+        contentPreview: previewText(result.content, 500),
+      });
+      if (attempt < 2) {
+        warnings.push('Prompt1 returned unusable song analysis; retried once.');
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  if (!result || !songAnalysis) {
+    throw lastValidationError || new Error('Song analysis returned no usable JSON content');
+  }
 
   return {
     provider,
@@ -490,6 +518,9 @@ export async function analyzeSongWithKieForDebug(params: {
     songAnalysis,
     rawText: result.content,
     raw: result.raw,
+    retryMode: warnings.length > 0 ? 'full' : 'none',
+    attempts: warnings.length > 0 ? 2 : 1,
+    warnings,
   };
 }
 
@@ -497,7 +528,7 @@ export async function analyzeSongWithKieClaudeForDebug(preprocess: LyricVideoLlm
   return analyzeSongWithKieForDebug({ preprocess, provider: 'kie_codex' });
 }
 
-export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[] {
+function normalizePromptScenesForRepair(parsed: any): LyricVideoPromptSceneResult[] {
   const scenes = Array.isArray(parsed?.scenes) ? parsed.scenes : Array.isArray(parsed) ? parsed : [];
   return scenes
     .map((scene: any, index: number) => {
@@ -520,11 +551,17 @@ export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[
         timeline_config: scene?.timeline_config || scene?.timelineConfig,
       };
     })
-    .filter((scene: LyricVideoPromptSceneResult) => scene.end_s > scene.start_s && scene.image_prompt && scene.video_prompt)
+    .filter((scene: LyricVideoPromptSceneResult) => scene.end_s > scene.start_s)
     .map((scene: LyricVideoPromptSceneResult, index: number) => ({
       ...scene,
       scene_id: scene.scene_id || index + 1,
     }));
+}
+
+export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[] {
+  return normalizePromptScenesForRepair(parsed).filter(
+    (scene) => scene.image_prompt && scene.video_prompt
+  );
 }
 
 function activeMainCast(cast?: any[]) {
@@ -844,6 +881,120 @@ export function assertUsableSongAnalysis(songAnalysis: LyricVideoSongAnalysisRes
   }
 }
 
+type StoryboardPromptAttempt = Awaited<ReturnType<typeof callKieCodexResponses>>;
+
+function sceneLookupKeys(scene: FixedStoryboardSceneDraft, index: number) {
+  return [scene.sceneId, String(index + 1)];
+}
+
+function findPromptScene(params: {
+  promptScenes: Map<string, LyricVideoPromptSceneResult>;
+  scene: FixedStoryboardSceneDraft;
+  index: number;
+}) {
+  for (const key of sceneLookupKeys(params.scene, params.index)) {
+    const generated = params.promptScenes.get(key);
+    if (generated) return generated;
+  }
+  return undefined;
+}
+
+function buildPromptSceneMap(scenes: LyricVideoPromptSceneResult[]) {
+  const promptScenes = new Map<string, LyricVideoPromptSceneResult>();
+  for (const scene of scenes) {
+    promptScenes.set(String(scene.scene_id), scene);
+  }
+  return promptScenes;
+}
+
+function promptSceneIssues(params: {
+  fixedScenes: FixedStoryboardSceneDraft[];
+  promptScenes: Map<string, LyricVideoPromptSceneResult>;
+}) {
+  const missingSceneIds: string[] = [];
+  const incompleteSceneIds: string[] = [];
+  for (const [index, scene] of params.fixedScenes.entries()) {
+    const generated = findPromptScene({ promptScenes: params.promptScenes, scene, index });
+    if (!generated) {
+      missingSceneIds.push(scene.sceneId);
+      continue;
+    }
+    if (!generated.image_prompt || !generated.video_prompt) {
+      incompleteSceneIds.push(scene.sceneId);
+    }
+  }
+  return { missingSceneIds, incompleteSceneIds };
+}
+
+function completePromptSceneCount(params: {
+  fixedScenes: FixedStoryboardSceneDraft[];
+  promptScenes: Map<string, LyricVideoPromptSceneResult>;
+}) {
+  return params.fixedScenes.reduce((count, scene, index) => {
+    const generated = findPromptScene({ promptScenes: params.promptScenes, scene, index });
+    return generated?.image_prompt && generated?.video_prompt ? count + 1 : count;
+  }, 0);
+}
+
+function subsetBySceneIds(fixedScenes: FixedStoryboardSceneDraft[], sceneIds: string[]) {
+  const sceneIdSet = new Set(sceneIds);
+  return fixedScenes.filter((scene) => sceneIdSet.has(scene.sceneId));
+}
+
+function mergePromptScenes(params: {
+  targetScenes: FixedStoryboardSceneDraft[];
+  promptScenes: Map<string, LyricVideoPromptSceneResult>;
+  retryScenes: LyricVideoPromptSceneResult[];
+}) {
+  const retryMap = buildPromptSceneMap(params.retryScenes);
+  for (const [index, scene] of params.targetScenes.entries()) {
+    const retryGenerated = findPromptScene({ promptScenes: retryMap, scene, index });
+    if (!retryGenerated) continue;
+
+    const existing = params.promptScenes.get(scene.sceneId);
+    params.promptScenes.set(scene.sceneId, {
+      ...existing,
+      ...retryGenerated,
+      scene_id: scene.sceneId,
+      image_prompt: retryGenerated.image_prompt || existing?.image_prompt || '',
+      video_prompt: retryGenerated.video_prompt || existing?.video_prompt || '',
+      castIds: retryGenerated.castIds?.length ? retryGenerated.castIds : existing?.castIds,
+      timeline_config: retryGenerated.timeline_config || existing?.timeline_config,
+    });
+  }
+}
+
+async function callStoryboardPromptAttempt(params: {
+  songAnalysis: LyricVideoSongAnalysisResult;
+  fixedScenes: FixedStoryboardSceneDraft[];
+  project: any;
+  model: string;
+  cast?: any[];
+  attemptLabel: string;
+}) {
+  const prompt = buildDebugStoryboardScenesPrompt({
+    songAnalysis: params.songAnalysis,
+    scenes: params.fixedScenes,
+    project: params.project,
+    storyPrompt: params.project?.storyPrompt,
+    cast: params.cast,
+  });
+  const result = await callKieCodexResponses({
+    text: prompt,
+    model: params.model,
+    reasoningEffort: 'medium',
+  });
+  const parsed = parseJsonLoose<any>(result.content, {});
+  const repairScenes = normalizePromptScenesForRepair(parsed);
+  logLyricStage('kie-storyboard-scenes', 'attempt-result', {
+    attemptLabel: params.attemptLabel,
+    model: params.model,
+    fixedSceneCount: params.fixedScenes.length,
+    returnedSceneCount: repairScenes.length,
+  });
+  return { result, repairScenes };
+}
+
 export async function generateStoryboardScenesWithKieClaude(params: {
   songAnalysis: LyricVideoSongAnalysisResult;
   fixedScenes: FixedStoryboardSceneDraft[];
@@ -856,46 +1007,124 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   }
 
   const model = params.model || DEFAULT_STORYBOARD_MODEL;
-  const prompt = buildDebugStoryboardScenesPrompt({
-    songAnalysis: params.songAnalysis,
-    scenes: params.fixedScenes,
-    project: params.project,
-    storyPrompt: params.project?.storyPrompt,
-    cast: params.cast,
-  });
-  const result = await callKieCodexResponses({
-    text: prompt,
-    model,
-    reasoningEffort: 'medium',
-  });
-  const parsed = parseJsonLoose<any>(result.content, {});
-  const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));
+  const warnings: string[] = [];
+  const retryAttempts: Array<{
+    mode: 'full' | 'targeted';
+    sceneIds?: string[];
+    returnedSceneCount: number;
+    actualModel?: string;
+  }> = [];
+  let retryMode = 'none';
+  let firstAttempt: StoryboardPromptAttempt | undefined;
+  let finalAttempt: StoryboardPromptAttempt | undefined;
 
-  const missingSceneIds = params.fixedScenes
-    .filter((scene, index) => !promptScenes.get(scene.sceneId) && !promptScenes.get(String(index + 1)))
-    .map((scene) => scene.sceneId);
-  if (promptScenes.size === 0 || missingSceneIds.length > 0) {
-    throw new Error(
-      missingSceneIds.length > 0
-        ? `Storyboard prompt generation missed scenes: ${missingSceneIds.join(', ')}`
-        : 'Storyboard prompt generation returned no valid scenes'
+  const initial = await callStoryboardPromptAttempt({
+    songAnalysis: params.songAnalysis,
+    project: params.project,
+    fixedScenes: params.fixedScenes,
+    model,
+    cast: params.cast,
+    attemptLabel: 'initial',
+  });
+  firstAttempt = initial.result;
+  finalAttempt = initial.result;
+  let promptScenes = buildPromptSceneMap(initial.repairScenes);
+
+  if (completePromptSceneCount({ fixedScenes: params.fixedScenes, promptScenes }) === 0) {
+    warnings.push('Prompt2 returned no valid scenes on the first attempt; retried the full prompt once.');
+    retryMode = 'full';
+    logLyricStage('kie-storyboard-scenes', 'full-retry', {
+      model,
+      fixedSceneCount: params.fixedScenes.length,
+    });
+    const fullRetry = await callStoryboardPromptAttempt({
+      songAnalysis: params.songAnalysis,
+      project: params.project,
+      fixedScenes: params.fixedScenes,
+      model,
+      cast: params.cast,
+      attemptLabel: 'full_retry',
+    });
+    finalAttempt = fullRetry.result;
+    retryAttempts.push({
+      mode: 'full',
+      returnedSceneCount: fullRetry.repairScenes.length,
+      actualModel: fullRetry.result.model,
+    });
+    promptScenes = buildPromptSceneMap(fullRetry.repairScenes);
+    if (completePromptSceneCount({ fixedScenes: params.fixedScenes, promptScenes }) === 0) {
+      throw new Error('Storyboard prompt generation returned no valid scenes');
+    }
+  }
+
+  let { missingSceneIds, incompleteSceneIds } = promptSceneIssues({
+    fixedScenes: params.fixedScenes,
+    promptScenes,
+  });
+  const initialMissingSceneIds = missingSceneIds;
+  const initialIncompleteSceneIds = incompleteSceneIds;
+  const retrySceneIds = Array.from(new Set([...missingSceneIds, ...incompleteSceneIds]));
+  const retriedSceneIds: string[] = [];
+
+  if (retrySceneIds.length > 0) {
+    retryMode = retryMode === 'full' ? 'full+targeted' : 'targeted';
+    warnings.push(
+      `Prompt2 returned incomplete storyboard prompts for ${retrySceneIds.length} scene(s); retried only those scenes.`
     );
+    logLyricStage('kie-storyboard-scenes', 'targeted-retry', {
+      model,
+      missingSceneIds,
+      incompleteSceneIds,
+    });
+    const targetScenes = subsetBySceneIds(params.fixedScenes, retrySceneIds);
+    const targetedRetry = await callStoryboardPromptAttempt({
+      songAnalysis: params.songAnalysis,
+      project: params.project,
+      fixedScenes: targetScenes,
+      model,
+      cast: params.cast,
+      attemptLabel: 'targeted_retry',
+    });
+    finalAttempt = targetedRetry.result;
+    retriedSceneIds.push(...targetScenes.map((scene) => scene.sceneId));
+    retryAttempts.push({
+      mode: 'targeted',
+      sceneIds: targetScenes.map((scene) => scene.sceneId),
+      returnedSceneCount: targetedRetry.repairScenes.length,
+      actualModel: targetedRetry.result.model,
+    });
+    mergePromptScenes({
+      targetScenes,
+      promptScenes,
+      retryScenes: targetedRetry.repairScenes,
+    });
+    ({ missingSceneIds, incompleteSceneIds } = promptSceneIssues({
+      fixedScenes: params.fixedScenes,
+      promptScenes,
+    }));
+  }
+
+  const fallbackSceneIds = Array.from(new Set([...missingSceneIds, ...incompleteSceneIds]));
+  if (fallbackSceneIds.length > 0) {
+    warnings.push(`Prompt2 still had ${fallbackSceneIds.length} scene gap(s) after retry; fallback prompts were used.`);
   }
 
   const scenes: SceneInput[] = params.fixedScenes.map((scene, index) => {
-    const generated = promptScenes.get(scene.sceneId) || promptScenes.get(String(index + 1));
-    if (!generated?.image_prompt || !generated?.video_prompt) {
-      throw new Error(`Storyboard prompt generation returned incomplete prompts for ${scene.sceneId}`);
-    }
+    const generated = findPromptScene({ promptScenes, scene, index });
+    const fallback = fallbackPromptForFixedScene({
+      scene,
+      project: params.project,
+      storyPrompt: params.project?.storyPrompt,
+    });
     return {
       startMs: scene.startMs,
       endMs: scene.endMs,
       text: scene.text,
-      prompt: generated.image_prompt,
-      motionPrompt: generated.video_prompt,
+      prompt: generated?.image_prompt || fallback.imagePrompt,
+      motionPrompt: generated?.video_prompt || fallback.videoPrompt,
       castIds: castIdsForGeneratedScene({ generated, scene, cast: params.cast }),
       linkedLineIds: scene.linkedLineIds,
-      timelineConfig: generated.timeline_config || buildSceneTimelineConfig(scene),
+      timelineConfig: generated?.timeline_config || buildSceneTimelineConfig(scene),
       negativePrompt: 'text, captions, subtitles, lyrics, watermark, logo, blurry, low quality',
     };
   });
@@ -903,11 +1132,22 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   return {
     provider: 'kie_codex',
     model,
-    actualModel: result.model,
+    actualModel: finalAttempt.model,
     scenes,
     fixedScenes: params.fixedScenes,
-    rawText: result.content,
-    raw: result.raw,
+    rawText: finalAttempt.content,
+    raw: finalAttempt.raw,
+    firstRawText: firstAttempt.content,
+    firstRaw: firstAttempt.raw,
+    fixedSceneCount: params.fixedScenes.length,
+    sceneCount: scenes.length,
+    retryMode,
+    missingSceneIds: initialMissingSceneIds,
+    incompleteSceneIds: initialIncompleteSceneIds,
+    retriedSceneIds,
+    fallbackSceneIds,
+    warnings,
+    retryAttempts,
   };
 }
 

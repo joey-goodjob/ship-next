@@ -6,7 +6,7 @@ import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
 import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './audio';
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
-import { isActiveRunStatus, requestHash, safeJson } from './json';
+import { requestHash, safeJson } from './json';
 import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, generateStoryboardScenesWithKieClaude } from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
@@ -17,11 +17,15 @@ import {
   replaceLyricsSceneSkeleton,
   replaceScenes,
 } from './storyboard';
+import { buildProjectGenerationSnapshot, isActiveGenerationRunStatus } from './status';
 import {
   DEFAULT_SONG_ANALYSIS_MODEL,
   DEFAULT_STORYBOARD_MODEL,
+  DEBUG_STOP_AFTER_GENERATION_STAGES,
   GENERATION_STAGES,
   type AsrDraftResult,
+  type GenerationDebugOptions,
+  type GenerationDebugStopAfter,
   type GenerationStage,
   type LyricLineInput,
 } from './types';
@@ -31,7 +35,7 @@ import {
  *
  * `/api/lyric-videos/:id/generate` 最终会调用这里：
  * 1. `startGenerationRunQueued` 创建 run/steps，并把 project 标记为 generation_queued。
- * 2. `executeGenerationRun` 依次执行 audio_prepare、asr_words、song_analysis、
+ * 2. `executeGenerationRun` 依次执行 asr_words、song_analysis、
  *    prompt_generation、image_generation。
  * 3. 每一步都会更新 `lyric_video_generation_step`，同时把核心业务结果写回
  *    `lyric_video_project`、`lyric_video_line`、`lyric_video_word`、`lyric_video_scene`。
@@ -45,6 +49,30 @@ export function generationOptions(input: unknown) {
     storyboardModel: String(body.storyboardModel || DEFAULT_STORYBOARD_MODEL),
     imageModel: String(body.imageModel || '').trim() || undefined,
   };
+}
+
+export function generationDebugOptions(input: unknown): GenerationDebugOptions {
+  if (process.env.NODE_ENV === 'production') return {};
+
+  const body = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
+  const debug = body.debug && typeof body.debug === 'object' ? (body.debug as Record<string, unknown>) : {};
+  const stopAfter = String(debug.stopAfter || '').trim();
+  if (DEBUG_STOP_AFTER_GENERATION_STAGES.includes(stopAfter as GenerationDebugStopAfter)) {
+    return { stopAfter: stopAfter as GenerationDebugStopAfter };
+  }
+  return {};
+}
+
+function debugStopOutput(stage: GenerationStage, output: unknown, debug: GenerationDebugOptions) {
+  if (debug.stopAfter !== stage) return output;
+  if (output && typeof output === 'object' && !Array.isArray(output)) {
+    return {
+      ...(output as Record<string, unknown>),
+      debugStopped: true,
+      stopAfter: stage,
+    };
+  }
+  return { value: output, debugStopped: true, stopAfter: stage };
 }
 
 export async function createGenerationRunRecord(params: {
@@ -98,11 +126,11 @@ export async function createGenerationRunRecord(params: {
     await tx
       .update(lyricVideoProject)
       .set({
-        activeRunId: run.id,
-        generationStatus: 'queued',
-        generationProgress: 0,
-        pipelineStage: 'generation_queued',
-        pipelineError: null,
+        ...buildProjectGenerationSnapshot(run, {
+          activeRunId: run.id,
+          pipelineStage: 'generation_queued',
+          pipelineError: null,
+        }),
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
@@ -165,12 +193,12 @@ export async function markGenerationStepRunning(params: {
       .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
     db()
       .update(lyricVideoProject)
-      .set({
-        generationStatus: 'running',
-        generationProgress: params.progress,
-        pipelineStage: params.step.stage,
-        pipelineError: null,
-      })
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'running', currentStage: params.step.stage, progressPercent: params.progress },
+          { pipelineError: null }
+        )
+      )
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
   ]);
   logLyricStage('generation-step', 'running', {
@@ -251,12 +279,12 @@ export async function markGenerationStepWaitingProvider(params: {
       .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
     db()
       .update(lyricVideoProject)
-      .set({
-        generationStatus: 'waiting_provider',
-        generationProgress: params.progress,
-        pipelineStage: 'images_processing',
-        pipelineError: null,
-      })
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'waiting_provider', currentStage: params.step.stage, progressPercent: params.progress },
+          { pipelineStage: 'images_processing', pipelineError: null }
+        )
+      )
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
   ]);
   logLyricStage('generation-step', 'waiting-provider', {
@@ -290,11 +318,20 @@ export async function failGenerationRun(params: {
       .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
     db()
       .update(lyricVideoProject)
-      .set({
-        generationStatus: 'failed',
-        pipelineStage: params.step ? `${params.step.stage}_failed` : 'generation_failed',
-        pipelineError: message,
-      })
+      .set(
+        buildProjectGenerationSnapshot(
+          {
+            status: 'failed',
+            currentStage: params.step?.stage || 'generation_failed',
+            progressPercent: 0,
+            errorMessage: message,
+          },
+          {
+            pipelineStage: params.step ? `${params.step.stage}_failed` : 'generation_failed',
+            pipelineError: message,
+          }
+        )
+      )
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
   ];
 
@@ -350,10 +387,10 @@ export async function completeGenerationRun(params: {
       .set({
         lyricsStatus: 'ready',
         scenesStatus: 'ready',
-        generationStatus: 'success',
-        generationProgress: 100,
-        pipelineStage: 'storyboard_ready',
-        pipelineError: null,
+        ...buildProjectGenerationSnapshot(
+          { status: 'success', currentStage: 'finalize_project', progressPercent: 100 },
+          { pipelineStage: 'storyboard_ready', pipelineError: null }
+        ),
         lastGeneratedAt: new Date(),
       })
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
@@ -368,6 +405,92 @@ export async function completeGenerationRun(params: {
   });
 }
 
+export async function markGenerationRunDebugStopped(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  outputSnapshot?: unknown;
+}) {
+  await Promise.all([
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'success',
+        currentStage: params.step.stage,
+        progressPercent: params.progress,
+        completedSteps: Math.max((params.step.sort || 0) + 1, 1),
+        failedSteps: 0,
+        outputSnapshot: safeJson(
+          params.outputSnapshot || {
+            debugStopped: true,
+            stopAfter: params.step.stage,
+          }
+        ),
+        completedAt: new Date(),
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'success', currentStage: params.step.stage, progressPercent: params.progress },
+          { pipelineStage: `debug_stopped:${params.step.stage}`, pipelineError: null }
+        )
+      )
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ]);
+  logLyricStage('generation-run', 'debug-stopped', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+    stopAfter: params.step.stage,
+    progress: params.progress,
+  });
+}
+
+async function maybeStopAfterGenerationStage(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  debug: GenerationDebugOptions;
+  outputSnapshot?: unknown;
+  songAnalysis?: unknown;
+}) {
+  if (params.debug.stopAfter !== params.step.stage) return undefined;
+
+  await markGenerationRunDebugStopped({
+    userId: params.userId,
+    projectId: params.projectId,
+    runId: params.runId,
+    step: params.step,
+    progress: params.progress,
+    outputSnapshot: params.outputSnapshot || {
+      debugStopped: true,
+      stopAfter: params.step.stage,
+    },
+  });
+
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.runId });
+  return {
+    run: finalRun?.run,
+    steps: finalRun?.steps || [],
+    project: details?.project,
+    lines: details?.lines || [],
+    words: details?.words || [],
+    scenes: details?.scenes || [],
+    songAnalysis: params.songAnalysis,
+    debugStopped: true,
+    stopAfter: params.step.stage,
+  };
+}
+
 export async function executeGenerationRun(params: {
   userId: string;
   projectId: string;
@@ -378,23 +501,31 @@ export async function executeGenerationRun(params: {
   inputSnapshot: unknown;
 }) {
   // 真正执行一键生成的流水线：
-  // audio_prepare -> asr_words -> song_analysis -> prompt_generation -> image_generation。
+  // asr_words -> song_analysis -> prompt_generation -> image_generation。
   // 这里不直接生成最终 MP4；图片就绪后，导出视频由 render.ts 的 queueExport 负责。
   const startedAt = Date.now();
   const options = generationOptions(params.input);
+  const debug = generationDebugOptions(params.input);
   let currentStep: any = undefined;
 
   try {
     const configs = await getAllConfigs();
 
-    currentStep = findGenerationStep(params.steps, 'audio_prepare');
+    currentStep = findGenerationStep(params.steps, 'asr_words');
     await markGenerationStepRunning({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 5,
-      input: params.inputSnapshot,
+      input: {
+        request: params.inputSnapshot,
+        audioUrl: params.project.originalAudioUrl || params.project.audioUrl,
+        processedAudioUrl: params.project.processedAudioUrl,
+        trimStartMs: params.project.trimStartMs,
+        trimEndMs: params.project.trimEndMs,
+        transcribeModel: options.transcribeModel,
+      },
     });
     if (!(params.project.originalAudioUrl || params.project.audioUrl)) {
       throw new Error('Upload audio before generation');
@@ -407,32 +538,33 @@ export async function executeGenerationRun(params: {
       project: params.project,
     });
     const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
-    await markGenerationStepSuccess({
-      userId: params.userId,
-      runId: params.run.id,
-      step: currentStep,
-      progress: 15,
-      output: {
-        audioUrl: transcriptionProject.audioUrl,
-        processedAudioUrl: transcriptionProject.processedAudioUrl,
-        trimStartMs: transcriptionProject.trimStartMs,
-        trimEndMs: transcriptionProject.trimEndMs,
-      },
-    });
-
-    currentStep = findGenerationStep(params.steps, 'asr_words');
-    await markGenerationStepRunning({
-      userId: params.userId,
-      projectId: params.projectId,
-      runId: params.run.id,
-      step: currentStep,
-      progress: 20,
-      input: {
-        audioUrl: transcriptionAudioUrl,
-        language: transcriptionProject.language,
-        transcribeModel: options.transcribeModel,
-      },
-    });
+    const audioPrepareSnapshot = {
+      audioUrl: transcriptionProject.audioUrl,
+      processedAudioUrl: transcriptionProject.processedAudioUrl,
+      trimStartMs: transcriptionProject.trimStartMs,
+      trimEndMs: transcriptionProject.trimEndMs,
+      language: transcriptionProject.language,
+      transcribeModel: options.transcribeModel,
+    };
+    await Promise.all([
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({ inputJson: safeJson(audioPrepareSnapshot), progressPercent: 20 })
+        .where(and(eq(lyricVideoGenerationStep.id, currentStep.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+      db()
+        .update(lyricVideoGenerationRun)
+        .set({ status: 'running', currentStage: currentStep.stage, progressPercent: 20 })
+        .where(and(eq(lyricVideoGenerationRun.id, params.run.id), eq(lyricVideoGenerationRun.userId, params.userId))),
+      db()
+        .update(lyricVideoProject)
+        .set(
+          buildProjectGenerationSnapshot(
+            { status: 'running', currentStage: currentStep.stage, progressPercent: 20 },
+            { pipelineError: null }
+          )
+        )
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+    ]);
     const [result, analysisResult] = await Promise.all([
       transcribeWithElevenLabs({
         audioUrl: transcriptionAudioUrl || '',
@@ -497,22 +629,34 @@ export async function executeGenerationRun(params: {
     if (detailsAfterLyrics.scenes.length === 0) {
       throw new Error('Scene timing skeleton was not persisted after transcription');
     }
+    const asrOutput = {
+      ...audioPrepareSnapshot,
+      provider: 'elevenlabs',
+      model: options.transcribeModel,
+      lineCount: detailsAfterLyrics.lines.length,
+      wordCount: detailsAfterLyrics.words.length,
+      sceneCount: skeletonScenes.length,
+      scenesStatus: skeletonScenes.length > 0 ? 'lyrics_draft' : 'empty',
+      audioAnalysis: analysisResult.audioAnalysis,
+      audioAnalysisError: analysisResult.audioAnalysisError,
+    };
     await markGenerationStepSuccess({
       userId: params.userId,
       runId: params.run.id,
       step: currentStep,
       progress: 45,
-      output: {
-        provider: 'elevenlabs',
-        model: options.transcribeModel,
-        lineCount: detailsAfterLyrics.lines.length,
-        wordCount: detailsAfterLyrics.words.length,
-        sceneCount: skeletonScenes.length,
-        scenesStatus: skeletonScenes.length > 0 ? 'lyrics_draft' : 'empty',
-        audioAnalysis: analysisResult.audioAnalysis,
-        audioAnalysisError: analysisResult.audioAnalysisError,
-      },
+      output: debugStopOutput('asr_words', asrOutput, debug),
     });
+    const stoppedAfterAsr = await maybeStopAfterGenerationStage({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      step: currentStep,
+      progress: 45,
+      debug,
+      outputSnapshot: debugStopOutput('asr_words', asrOutput, debug),
+    });
+    if (stoppedAfterAsr) return stoppedAfterAsr;
 
     currentStep = findGenerationStep(params.steps, 'song_analysis');
     const preprocess = preprocessLyricVideoForLlm({
@@ -543,8 +687,19 @@ export async function executeGenerationRun(params: {
       runId: params.run.id,
       step: currentStep,
       progress: 70,
-      output: songAnalysisResult,
+      output: debugStopOutput('song_analysis', songAnalysisResult, debug),
     });
+    const stoppedAfterSongAnalysis = await maybeStopAfterGenerationStage({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      step: currentStep,
+      progress: 70,
+      debug,
+      outputSnapshot: debugStopOutput('song_analysis', songAnalysisResult, debug),
+      songAnalysis: songAnalysisResult.songAnalysis,
+    });
+    if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
 
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
     const fixedScenes = buildFixedStoryboardSceneDraftsFromPersistedScenes({
@@ -591,21 +746,41 @@ export async function executeGenerationRun(params: {
     if (scenes.length === 0) {
       throw new Error('Storyboard prompts were not persisted');
     }
+    const promptGenerationOutput = {
+      provider: storyboard.provider,
+      model: storyboard.model,
+      actualModel: storyboard.actualModel,
+      sceneCount: scenes.length,
+      fixedSceneCount: storyboard.fixedSceneCount || storyboard.fixedScenes?.length || fixedScenes.length,
+      retryMode: storyboard.retryMode || 'none',
+      missingSceneIds: storyboard.missingSceneIds || [],
+      incompleteSceneIds: storyboard.incompleteSceneIds || [],
+      retriedSceneIds: storyboard.retriedSceneIds || [],
+      fallbackSceneIds: storyboard.fallbackSceneIds || [],
+      warnings: storyboard.warnings || [],
+      retryAttempts: storyboard.retryAttempts || [],
+      fixedScenes: storyboard.fixedScenes,
+      rawText: storyboard.rawText,
+      raw: storyboard.raw,
+    };
     await markGenerationStepSuccess({
       userId: params.userId,
       runId: params.run.id,
       step: currentStep,
       progress: 90,
-      output: {
-        provider: storyboard.provider,
-        model: storyboard.model,
-        actualModel: storyboard.actualModel,
-        sceneCount: scenes.length,
-        fixedScenes: storyboard.fixedScenes,
-        rawText: storyboard.rawText,
-        raw: storyboard.raw,
-      },
+      output: debugStopOutput('prompt_generation', promptGenerationOutput, debug),
     });
+    const stoppedAfterPromptGeneration = await maybeStopAfterGenerationStage({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      step: currentStep,
+      progress: 90,
+      debug,
+      outputSnapshot: debugStopOutput('prompt_generation', promptGenerationOutput, debug),
+      songAnalysis: songAnalysisResult.songAnalysis,
+    });
+    if (stoppedAfterPromptGeneration) return stoppedAfterPromptGeneration;
 
     currentStep = findGenerationStep(params.steps, 'image_generation');
     await markGenerationStepRunning({
@@ -666,8 +841,19 @@ export async function executeGenerationRun(params: {
       runId: params.run.id,
       step: currentStep,
       progress: 95,
-      output: outputSnapshot,
+      output: debugStopOutput('image_generation', outputSnapshot, debug),
     });
+    const stoppedAfterImageGeneration = await maybeStopAfterGenerationStage({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      step: currentStep,
+      progress: 95,
+      debug,
+      outputSnapshot: debugStopOutput('image_generation', outputSnapshot, debug),
+      songAnalysis: songAnalysisResult.songAnalysis,
+    });
+    if (stoppedAfterImageGeneration) return stoppedAfterImageGeneration;
 
     const finalDetails = await getProjectDetails({ userId: params.userId, id: params.projectId });
     const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
@@ -706,13 +892,13 @@ export async function startGenerationRun(params: {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
 
-  if (project.activeRunId && isActiveRunStatus(project.generationStatus)) {
+  if (project.activeRunId) {
     const [activeRun] = await db()
       .select()
       .from(lyricVideoGenerationRun)
       .where(and(eq(lyricVideoGenerationRun.id, project.activeRunId), eq(lyricVideoGenerationRun.userId, params.userId)))
       .limit(1);
-    if (activeRun && isActiveRunStatus(activeRun.status)) {
+    if (activeRun && isActiveGenerationRunStatus(activeRun.status)) {
       const steps = await listGenerationSteps({ userId: params.userId, runId: activeRun.id });
       const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
       logLyricStage('generation-run', 'reused-active-run', {
@@ -791,13 +977,13 @@ export async function startGenerationRunQueued(params: {
   const project = await getProject({ userId: params.userId, id: params.projectId });
   if (!project) throw new Error('Project not found');
 
-  if (project.activeRunId && isActiveRunStatus(project.generationStatus)) {
+  if (project.activeRunId) {
     const [activeRun] = await db()
       .select()
       .from(lyricVideoGenerationRun)
       .where(and(eq(lyricVideoGenerationRun.id, project.activeRunId), eq(lyricVideoGenerationRun.userId, params.userId)))
       .limit(1);
-    if (activeRun && isActiveRunStatus(activeRun.status)) {
+    if (activeRun && isActiveGenerationRunStatus(activeRun.status)) {
       const steps = await listGenerationSteps({ userId: params.userId, runId: activeRun.id });
       const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
       logLyricStage('generation-run', 'queue-reused-active-run', {
@@ -924,12 +1110,12 @@ export async function retryGenerationRun(params: { userId: string; projectId: st
 
     await tx
       .update(lyricVideoProject)
-      .set({
-        activeRunId: params.runId,
-        generationStatus: 'queued',
-        pipelineStage: 'generation_retry_queued',
-        pipelineError: null,
-      })
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'queued', currentStage: retrySteps[0].stage, progressPercent: data.run.progressPercent || 0 },
+          { activeRunId: params.runId, pipelineStage: 'generation_retry_queued', pipelineError: null }
+        )
+      )
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   });
 

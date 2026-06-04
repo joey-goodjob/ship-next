@@ -105,6 +105,27 @@ export type GenerationStep = {
   sort?: number | null;
 };
 
+export type RuntimeState = {
+  generationStatus: string;
+  currentStage: string;
+  progressPercent: number;
+  error?: string;
+  isGenerationActive: boolean;
+  isGenerationLocked: boolean;
+  activeRunId?: string | null;
+  runId?: string | null;
+  lyricsStatus?: string;
+  scenesStatus?: string;
+  renderStatus?: string;
+  sceneImageSummary?: {
+    total: number;
+    success: number;
+    processing: number;
+    failed: number;
+  };
+  latestExportStatus?: string;
+};
+
 export type LyricExport = {
   id: string;
   status: string;
@@ -138,6 +159,7 @@ export type LyricCastMember = {
 
 export type ProjectDetails = {
   project: LyricVideoProject;
+  runtimeState?: RuntimeState;
   generationRun?: GenerationRun | null;
   generationSteps?: GenerationStep[];
   words?: LyricWord[];
@@ -201,6 +223,7 @@ export type EditorContextValue = {
   cast: LyricCastMember[];
   exports: LyricExport[];
   latestExport?: LyricExport;
+  runtimeState?: RuntimeState | null;
   loading: boolean;
   loadError: string;
   saveStatus: SaveStatus;

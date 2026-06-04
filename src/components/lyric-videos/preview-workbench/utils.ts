@@ -8,6 +8,7 @@ import type {
   LyricVideoProject,
   LyricWord,
   ProjectDetails,
+  RuntimeState,
 } from "./types";
 import { DEFAULT_CAPTION_FONT_SIZE, LYRIC_FRAME_RATE, MAX_CAPTION_FONT_SIZE, MIN_CAPTION_FONT_SIZE } from "./constants";
 
@@ -79,10 +80,11 @@ export function getAspectRatio(aspectRatio?: string) {
   return "16 / 9";
 }
 
-export function projectIsProcessing(project: LyricVideoProject | null) {
+export function projectIsProcessing(project: LyricVideoProject | null, runtimeState?: RuntimeState | null) {
   if (!project) return false;
   const activeStatuses = ["processing", "asr_processing", "normalizing"];
   return (
+    Boolean(runtimeState?.isGenerationActive) ||
     ["queued", "running", "waiting_provider"].includes(project.generationStatus || "") ||
     [project.lyricsStatus, project.scenesStatus, project.renderStatus].some((status) => activeStatuses.includes(status || ""))
   );
@@ -93,8 +95,9 @@ const ACTIVE_GENERATION_STATUSES = ["queued", "running", "waiting_provider"];
 export const GENERATION_LOCK_REASON =
   "Generation is running. Editing unlocks after image generation finishes.";
 
-export function isGenerationLocked(project: LyricVideoProject | null, generationRun: GenerationRun | null) {
+export function isGenerationLocked(project: LyricVideoProject | null, generationRun: GenerationRun | null, runtimeState?: RuntimeState | null) {
   return (
+    Boolean(runtimeState?.isGenerationLocked) ||
     ACTIVE_GENERATION_STATUSES.includes(generationRun?.status || "") ||
     ACTIVE_GENERATION_STATUSES.includes(project?.generationStatus || "")
   );
@@ -166,9 +169,10 @@ export function deriveGenerationProgress(params: {
   project: LyricVideoProject | null;
   generationRun: GenerationRun | null;
   generationSteps: GenerationStep[];
+  runtimeState?: RuntimeState | null;
   scenes: LyricScene[];
 }) {
-  const { generationRun, generationSteps, project, scenes } = params;
+  const { generationRun, generationSteps, project, runtimeState, scenes } = params;
   const total = scenes.length;
   const success = scenes.filter(sceneHasImage).length;
   const processing = scenes.filter((scene) => scene.status === "processing" && !scene.imageUrl).length;
@@ -177,11 +181,12 @@ export function deriveGenerationProgress(params: {
   const songAnalysisStep = stepByStage(generationSteps, "song_analysis");
   const promptStep = stepByStage(generationSteps, "prompt_generation");
   const imageStep = stepByStage(generationSteps, "image_generation");
-  const currentStage = generationRun?.currentStage || project?.pipelineStage;
-  const generationStatus = generationRun?.status || project?.generationStatus || "idle";
+  const currentStage = runtimeState?.currentStage || generationRun?.currentStage || project?.pipelineStage;
+  const generationStatus = runtimeState?.generationStatus || generationRun?.status || project?.generationStatus || "idle";
   const retryable = failed > 0 && processing === 0;
-  const isActive = ["queued", "running", "waiting_provider"].includes(generationStatus || "") || processing > 0;
+  const isActive = Boolean(runtimeState?.isGenerationActive) || ["queued", "running", "waiting_provider"].includes(generationStatus || "") || processing > 0;
   const progressPercent = Math.max(
+    Number(runtimeState?.progressPercent || 0),
     Number(project?.generationProgress || 0),
     Number(generationRun?.progressPercent || 0),
     Number(imageStep?.progressPercent || 0),
@@ -213,7 +218,7 @@ export function deriveGenerationProgress(params: {
     songAnalysisStatus: songAnalysisStep?.status || "pending",
     promptStatus: promptStep?.status || "pending",
     imageStatus: imageStep?.status || (total > 0 ? "pending" : "empty"),
-    error: project?.pipelineError || generationRun?.errorMessage || songAnalysisStep?.errorMessage || promptStep?.errorMessage || imageStep?.errorMessage || "",
+    error: runtimeState?.error || generationRun?.errorMessage || songAnalysisStep?.errorMessage || promptStep?.errorMessage || imageStep?.errorMessage || project?.pipelineError || "",
   };
 }
 

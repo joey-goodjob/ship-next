@@ -591,7 +591,7 @@ export const lyricVideoGenerationRun = table(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     status: varchar191('status').notNull().default('queued'),
-    currentStage: varchar191('current_stage').notNull().default('audio_prepare'),
+    currentStage: varchar191('current_stage').notNull().default('asr_words'),
     progressPercent: int('progress_percent').notNull().default(0),
     totalSteps: int('total_steps').notNull().default(0),
     completedSteps: int('completed_steps').notNull().default(0),

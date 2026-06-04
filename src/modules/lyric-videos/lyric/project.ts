@@ -15,6 +15,7 @@ import { getUuid } from '@/lib/hash';
 import { logLyricStage } from '@/lib/lyric-video-log';
 import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
+import { deriveRuntimeState } from './status';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
 
 /**
@@ -134,7 +135,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
   const project = await getProject(params);
   if (!project) return null;
 
-  const [lines, scenes, exports, words, cast, runs] = await Promise.all([
+  const [lines, scenes, exports, words, cast, latestRuns, activeRuns] = await Promise.all([
     db()
       .select()
       .from(lyricVideoLine)
@@ -172,9 +173,16 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       .where(and(eq(lyricVideoGenerationRun.projectId, params.id), eq(lyricVideoGenerationRun.userId, params.userId)))
       .orderBy(desc(lyricVideoGenerationRun.createdAt))
       .limit(1),
+    project.activeRunId
+      ? db()
+          .select()
+          .from(lyricVideoGenerationRun)
+          .where(and(eq(lyricVideoGenerationRun.id, project.activeRunId), eq(lyricVideoGenerationRun.userId, params.userId)))
+          .limit(1)
+      : Promise.resolve([]),
   ]);
 
-  const generationRun = runs[0] || null;
+  const generationRun = activeRuns[0] || latestRuns[0] || null;
   const generationSteps = generationRun
     ? await db()
         .select()
@@ -229,9 +237,17 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
     };
   });
+  const runtimeState = deriveRuntimeState({
+    project: normalizedProject,
+    generationRun,
+    generationSteps,
+    scenes: normalizedScenes,
+    exports,
+  });
 
   return {
     project: normalizedProject,
+    runtimeState,
     generationRun,
     generationSteps,
     words,

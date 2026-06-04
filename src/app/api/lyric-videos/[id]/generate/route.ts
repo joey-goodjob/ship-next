@@ -36,6 +36,7 @@ export async function POST(
       storyboardModel: body.storyboardModel,
       imageModel: body.imageModel,
       wait: Boolean(body.wait),
+      debugStopAfter: body.debug?.stopAfter,
     });
     const data = body.wait
       ? await service.startGenerationRun({

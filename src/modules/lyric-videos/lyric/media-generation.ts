@@ -11,6 +11,7 @@ import { fetchBytes, saveGeneratedFile } from './audio';
 import { createKieProvider } from './llm';
 import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
+import { buildProjectGenerationSnapshot } from './status';
 import { generateStoryboard } from './storyboard';
 import { GENERATION_STAGES } from './types';
 
@@ -542,10 +543,10 @@ export async function queueSceneImages(params: {
     .update(lyricVideoProject)
     .set({
       scenesStatus: 'processing',
-      pipelineStage: 'images_processing',
-      generationStatus: 'waiting_provider',
-      generationProgress: 80,
-      pipelineError: null,
+      ...buildProjectGenerationSnapshot(
+        { status: 'waiting_provider', currentStage: 'image_generation', progressPercent: 80 },
+        { pipelineStage: 'images_processing', pipelineError: null }
+      ),
     })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
@@ -835,10 +836,10 @@ export async function queueSceneImagesGrid(params: {
     .update(lyricVideoProject)
     .set({
       scenesStatus: 'processing',
-      pipelineStage: 'images_processing',
-      generationStatus: 'waiting_provider',
-      generationProgress: 80,
-      pipelineError: null,
+      ...buildProjectGenerationSnapshot(
+        { status: 'waiting_provider', currentStage: 'image_generation', progressPercent: 80 },
+        { pipelineStage: 'images_processing', pipelineError: null }
+      ),
     })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
@@ -997,10 +998,10 @@ export async function retryFailedSceneImageBatches(params: {
     .update(lyricVideoProject)
     .set({
       scenesStatus: 'processing',
-      pipelineStage: 'images_processing',
-      generationStatus: 'waiting_provider',
-      generationProgress: 95,
-      pipelineError: null,
+      ...buildProjectGenerationSnapshot(
+        { status: 'waiting_provider', currentStage: 'image_generation', progressPercent: 95 },
+        { pipelineStage: 'images_processing', pipelineError: null }
+      ),
     })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
@@ -1244,17 +1245,6 @@ async function updateSceneImageProjectStatus(params: {
         generationStatus: 'success',
       },
     };
-    await db()
-      .update(lyricVideoProject)
-      .set({
-        scenesStatus: 'ready',
-        pipelineStage: 'images_ready',
-        generationStatus: 'success',
-        generationProgress: 100,
-        lastGeneratedAt: new Date(),
-        pipelineError: null,
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
     await finalizeActiveImageGenerationRun({
       userId: params.userId,
       projectId: params.projectId,
@@ -1262,6 +1252,17 @@ async function updateSceneImageProjectStatus(params: {
       status: 'success',
       outputSnapshot,
     });
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'ready',
+        ...buildProjectGenerationSnapshot(
+          { status: 'success', currentStage: 'finalize_project', progressPercent: 100 },
+          { pipelineStage: 'images_ready', pipelineError: null }
+        ),
+        lastGeneratedAt: new Date(),
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   } else if (!hasProcessing && (hasFailures || hasImages)) {
     const outputSnapshot = {
       mode: 'grid_4x4',
@@ -1274,16 +1275,6 @@ async function updateSceneImageProjectStatus(params: {
         generationStatus: 'partial_success',
       },
     };
-    await db()
-      .update(lyricVideoProject)
-      .set({
-        scenesStatus: 'partial_success',
-        pipelineStage: 'images_partial_success',
-        generationStatus: 'partial_success',
-        generationProgress: 90,
-        pipelineError: 'Some scene images failed',
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
     await finalizeActiveImageGenerationRun({
       userId: params.userId,
       projectId: params.projectId,
@@ -1292,6 +1283,16 @@ async function updateSceneImageProjectStatus(params: {
       outputSnapshot,
       errorMessage: 'Some scene images failed',
     });
+    await db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'partial_success',
+        ...buildProjectGenerationSnapshot(
+          { status: 'partial_success', currentStage: 'finalize_project', progressPercent: 90 },
+          { pipelineStage: 'images_partial_success', pipelineError: 'Some scene images failed' }
+        ),
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   }
 
   return { allDone: Boolean(allDone), hasFailures: Boolean(hasFailures), hasProcessing: Boolean(hasProcessing) };

@@ -5,11 +5,10 @@ import { AlertTriangle, CheckCircle2, Clapperboard, Clipboard, Clock3, Images, R
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
-import type { GenerationStep, LyricCastMember, LyricScene } from "./types";
+import type { GenerationStep, LyricCastMember, LyricScene, RuntimeState } from "./types";
 import { deriveGenerationProgress, failedImageBatchCount, sceneBatchKey, sceneGridParams, sceneHasImage, stepByStage } from "./utils";
 
 const generationStages = [
-  { stage: "audio_prepare", label: "准备音频" },
   { stage: "asr_words", label: "识别歌词" },
   { stage: "song_analysis", label: "分析歌曲 / Prompt1" },
   { stage: "prompt_generation", label: "生成分镜 / Prompt2" },
@@ -205,6 +204,7 @@ function buildReport(params: {
   scenes: LyricScene[];
   generationRunStatus?: string;
   currentStage?: string | null;
+  runtimeState?: RuntimeState | null;
   activeRunId?: string | null;
   generationStatus?: string;
   generationProgress?: number;
@@ -219,6 +219,7 @@ function buildReport(params: {
       generationStatus: params.generationStatus || null,
       generationProgress: params.generationProgress || 0,
       pipelineError: params.pipelineError || null,
+      runtimeState: params.runtimeState || null,
     },
     steps: generationStages.map(({ stage }) => {
       const step = stepByStage(params.generationSteps, stage);
@@ -274,8 +275,8 @@ async function copyText(text: string) {
 }
 
 export function DiagnosticsPanel() {
-  const { cast, generationRun, generationSteps, lines, project, projectId, scenes, words } = useEditor();
-  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
+  const { cast, generationRun, generationSteps, lines, project, projectId, runtimeState, scenes, words } = useEditor();
+  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const imageDiagnostics = useMemo(() => buildImageDiagnostics(scenes), [scenes]);
   const castDiagnostics = useMemo(() => buildCastDiagnostics(cast), [cast]);
   const sceneErrors = useMemo(() => buildSceneErrors(scenes), [scenes]);
@@ -292,13 +293,14 @@ export function DiagnosticsPanel() {
         scenes,
         wordCount: words.length,
         generationRunStatus: generationRun?.status,
-        currentStage: generationRun?.currentStage || project?.pipelineStage,
+        currentStage: runtimeState?.currentStage || generationRun?.currentStage || project?.pipelineStage,
+        runtimeState,
         activeRunId: project?.activeRunId,
         generationStatus: project?.generationStatus,
         generationProgress: project?.generationProgress,
         pipelineError: project?.pipelineError,
       }),
-    [cast, generationRun, generationSteps, imageDiagnostics, lines.length, project, projectId, scenes, shouldSyncImages, words.length],
+    [cast, generationRun, generationSteps, imageDiagnostics, lines.length, project, projectId, runtimeState, scenes, shouldSyncImages, words.length],
   );
 
   async function copyDiagnostics() {

@@ -38,6 +38,15 @@ export async function GET(
       lyricsStatus: data.project.lyricsStatus,
       scenesStatus: data.project.scenesStatus,
       renderStatus: data.project.renderStatus,
+      runtimeState: data.runtimeState
+        ? {
+            generationStatus: data.runtimeState.generationStatus,
+            currentStage: data.runtimeState.currentStage,
+            progressPercent: data.runtimeState.progressPercent,
+            isGenerationActive: data.runtimeState.isGenerationActive,
+            isGenerationLocked: data.runtimeState.isGenerationLocked,
+          }
+        : null,
       linesCount: data.lines.length,
       wordsCount: data.words.length,
       scenesCount: data.scenes.length,

@@ -166,12 +166,18 @@ export type DebugImageSceneInput = Partial<LyricVideoPromptSceneResult> & {
 };
 
 export const GENERATION_STAGES = [
-  'audio_prepare',
   'asr_words',
   'song_analysis',
   'prompt_generation',
   'image_generation',
   'finalize_project',
+] as const;
+
+export const DEBUG_STOP_AFTER_GENERATION_STAGES = [
+  'asr_words',
+  'song_analysis',
+  'prompt_generation',
+  'image_generation',
 ] as const;
 
 export const ACTIVE_RUN_STATUSES = ['queued', 'running', 'waiting_provider'] as const;
@@ -186,6 +192,10 @@ export const ASR_WORD_GAP_CUT_MS = 700;
 export const ASR_MAX_WORDS_PER_LINE = 10;
 
 export type GenerationStage = (typeof GENERATION_STAGES)[number];
+export type GenerationDebugStopAfter = (typeof DEBUG_STOP_AFTER_GENERATION_STAGES)[number];
+export type GenerationDebugOptions = {
+  stopAfter?: GenerationDebugStopAfter;
+};
 
 export type StoryboardShotType = 'character_shot' | 'insert_shot' | 'landscape_shot';
 

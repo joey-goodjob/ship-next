@@ -7,6 +7,7 @@
  */
 export * from './types';
 export * from './json';
+export * from './status';
 export * from './project';
 export * from './audio';
 export * from './asr';
