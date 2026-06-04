@@ -10,7 +10,18 @@ import { usePlayback } from "./playback-context";
 import { clamp, deriveGenerationProgress, getAspectRatio, normalizePreviewConfig, secondsToMs } from "./utils";
 
 export function VideoPreview() {
-  const { generationRun, generationSteps, lines, loading, project, retryFailedImageBatches, scenes, words } = useEditor();
+  const {
+    generationLocked,
+    generationLockReason,
+    generationRun,
+    generationSteps,
+    lines,
+    loading,
+    project,
+    retryFailedImageBatches,
+    scenes,
+    words,
+  } = useEditor();
   const { currentLine, currentScene, currentTime, totalDuration } = usePlayback();
   const aspectRatio = getAspectRatio(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
@@ -29,7 +40,12 @@ export function VideoPreview() {
 
   return (
     <section className="relative flex min-h-0 flex-1 items-start justify-start overflow-hidden bg-[#F8F9FA] px-[16px] pt-[16px]">
-      <GenerationProgressBanner progress={progress} onRetry={retryFailedImageBatches} />
+      <GenerationProgressBanner
+        locked={generationLocked}
+        lockReason={generationLockReason}
+        progress={progress}
+        onRetry={retryFailedImageBatches}
+      />
       <div
         className="relative max-h-full overflow-hidden rounded-[4px] bg-[#E8EEF7]"
         style={{
@@ -83,9 +99,13 @@ export function VideoPreview() {
 }
 
 function GenerationProgressBanner({
+  locked,
+  lockReason,
   onRetry,
   progress,
 }: {
+  locked: boolean;
+  lockReason: string;
   onRetry: () => Promise<void>;
   progress: ReturnType<typeof deriveGenerationProgress>;
 }) {
@@ -105,7 +125,9 @@ function GenerationProgressBanner({
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F]"
+            disabled={locked}
+            title={locked ? lockReason : undefined}
+            className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshCcw className="h-[13px] w-[13px]" />
             Retry {progress.failedBatches} batch{progress.failedBatches === 1 ? "" : "es"}

@@ -88,6 +88,18 @@ export function projectIsProcessing(project: LyricVideoProject | null) {
   );
 }
 
+const ACTIVE_GENERATION_STATUSES = ["queued", "running", "waiting_provider"];
+
+export const GENERATION_LOCK_REASON =
+  "Generation is running. Editing unlocks after image generation finishes.";
+
+export function isGenerationLocked(project: LyricVideoProject | null, generationRun: GenerationRun | null) {
+  return (
+    ACTIVE_GENERATION_STATUSES.includes(generationRun?.status || "") ||
+    ACTIVE_GENERATION_STATUSES.includes(project?.generationStatus || "")
+  );
+}
+
 export function sceneHasImage(scene: LyricScene) {
   return Boolean(scene.imageUrl || scene.status === "success");
 }

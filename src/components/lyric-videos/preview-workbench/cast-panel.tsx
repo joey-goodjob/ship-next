@@ -18,6 +18,8 @@ export function CastPanel() {
     castBusy,
     createCastMember,
     deleteCastMember,
+    generationLocked,
+    generationLockReason,
     generateCastCandidates,
     regenerateCastImage,
     updateCastMember,
@@ -28,6 +30,7 @@ export function CastPanel() {
   const [draftDescription, setDraftDescription] = useState("");
 
   function beginCreate() {
+    if (generationLocked) return;
     setEditingId(null);
     setDraftName("");
     setDraftDescription("");
@@ -35,6 +38,7 @@ export function CastPanel() {
   }
 
   function beginEdit(member: LyricCastMember) {
+    if (generationLocked) return;
     setEditingId(member.id);
     setDraftName(member.name);
     setDraftDescription(member.description);
@@ -71,7 +75,8 @@ export function CastPanel() {
         <button
           type="button"
           onClick={generateCastCandidates}
-          disabled={castBusy}
+          disabled={castBusy || generationLocked}
+          title={generationLocked ? generationLockReason : undefined}
           className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {castBusy ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Wand2 className="h-[15px] w-[15px]" />}
@@ -80,7 +85,9 @@ export function CastPanel() {
         <button
           type="button"
           onClick={beginCreate}
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[12px] text-[13px] font-[800] text-white hover:bg-[#E6981F]"
+          disabled={generationLocked}
+          title={generationLocked ? generationLockReason : undefined}
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[12px] text-[13px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="h-[15px] w-[15px]" />
           Add character
@@ -106,15 +113,19 @@ export function CastPanel() {
           <input
             value={draftName}
             onChange={(event) => setDraftName(event.target.value)}
+            disabled={generationLocked}
+            title={generationLocked ? generationLockReason : undefined}
             placeholder="Elena"
-            className="mb-[8px] h-[38px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] text-[13px] font-[700] text-[#334155] outline-none focus:border-[#F5A623]"
+            className="mb-[8px] h-[38px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] text-[13px] font-[700] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
           />
           <textarea
             value={draftDescription}
             onChange={(event) => setDraftDescription(event.target.value)}
+            disabled={generationLocked}
+            title={generationLocked ? generationLockReason : undefined}
             rows={5}
             placeholder="Describe the face, hair, build, outfit, accessories, and overall vibe."
-            className="w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] py-[9px] text-[13px] font-[500] leading-5 text-[#334155] outline-none focus:border-[#F5A623]"
+            className="w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] py-[9px] text-[13px] font-[500] leading-5 text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
           />
           <div className="mt-[10px] flex justify-end gap-[8px]">
             <button
@@ -130,7 +141,8 @@ export function CastPanel() {
             <button
               type="button"
               onClick={submitCharacter}
-              disabled={castBusy}
+              disabled={castBusy || generationLocked}
+              title={generationLocked ? generationLockReason : undefined}
               className="inline-flex h-[34px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[800] text-white hover:bg-[#2B2B45] disabled:opacity-50"
             >
               {castBusy ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Save className="h-[14px] w-[14px]" />}
@@ -188,7 +200,8 @@ export function CastPanel() {
                     <button
                       type="button"
                       onClick={() => updateCastMember(member.id, { selectAsMain: true })}
-                      disabled={active}
+                      disabled={active || generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
                       className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
                     >
                       <Check className="h-[13px] w-[13px]" />
@@ -197,7 +210,9 @@ export function CastPanel() {
                     <button
                       type="button"
                       onClick={() => beginEdit(member)}
-                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA]"
+                      disabled={generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       <Edit3 className="h-[13px] w-[13px]" />
                       Edit
@@ -205,7 +220,8 @@ export function CastPanel() {
                     <button
                       type="button"
                       onClick={() => regenerateCastImage(member.id)}
-                      disabled={castBusy || processing}
+                      disabled={castBusy || processing || generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
                       className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
                     >
                       <RefreshCcw className="h-[13px] w-[13px]" />
@@ -214,7 +230,9 @@ export function CastPanel() {
                     <button
                       type="button"
                       onClick={() => deleteCastMember(member.id)}
-                      className="inline-flex h-[31px] items-center justify-center rounded-[6px] border border-[#F0D8D8] px-[9px] text-red-600 hover:bg-red-50"
+                      disabled={generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
+                      className="inline-flex h-[31px] items-center justify-center rounded-[6px] border border-[#F0D8D8] px-[9px] text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-45"
                       aria-label={`Delete ${member.name}`}
                     >
                       <Trash2 className="h-[13px] w-[13px]" />

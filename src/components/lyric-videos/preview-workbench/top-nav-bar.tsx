@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, ChevronDown, Coins, Download, Edit3, Loader2, Menu, Settings } from "lucide-react";
+import { Check, ChevronDown, Coins, Download, Edit3, Loader2, Lock, Menu, Settings } from "lucide-react";
 import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 
 export function TopNavBar() {
-  const { appName, exporting, project, queueExport, saveStatus, updateProjectField } = useEditor();
+  const { appName, exporting, generationLocked, generationLockReason, project, queueExport, saveStatus, updateProjectField } = useEditor();
 
   const saveLabel =
     saveStatus === "saving" ? "Saving" : saveStatus === "failed" ? "Save failed" : saveStatus === "saved" ? "Saved" : "Ready";
@@ -22,11 +22,20 @@ export function TopNavBar() {
         <input
           value={project?.title || ""}
           onChange={(event) => project && updateProjectField("title", event.target.value)}
-          className="w-full max-w-[360px] truncate bg-transparent text-center text-[14px] font-[800] text-[#1A1A2E] outline-none"
+          className={cn(
+            "w-full max-w-[360px] truncate bg-transparent text-center text-[14px] font-[800] text-[#1A1A2E] outline-none disabled:cursor-not-allowed disabled:text-[#61708A]",
+            generationLocked && "opacity-75",
+          )}
           aria-label="Project title"
-          disabled={!project}
+          disabled={!project || generationLocked}
         />
-        <Edit3 className="h-[14px] w-[14px] shrink-0 text-[#9AA4B2]" />
+        {generationLocked ? (
+          <span title={generationLockReason} aria-label="Locked">
+            <Lock className="h-[14px] w-[14px] shrink-0 text-[#61708A]" />
+          </span>
+        ) : (
+          <Edit3 className="h-[14px] w-[14px] shrink-0 text-[#9AA4B2]" />
+        )}
       </label>
 
       <div className="flex w-[360px] items-center justify-end gap-[14px]">
@@ -42,7 +51,8 @@ export function TopNavBar() {
         <button
           type="button"
           onClick={queueExport}
-          disabled={exporting || !project}
+          disabled={exporting || !project || generationLocked}
+          title={generationLocked ? generationLockReason : undefined}
           className="flex h-[34px] items-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[16px] text-[14px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {exporting ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Download className="h-[15px] w-[15px]" />}

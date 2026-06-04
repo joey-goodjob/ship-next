@@ -9,7 +9,7 @@ import { usePlayback } from "./playback-context";
 import { deriveGenerationProgress, formatDurationMs, formatMs, msToSeconds } from "./utils";
 
 export function ScenesPanel() {
-  const { generationRun, generationSteps, project, retryFailedImageBatches, scenes } = useEditor();
+  const { generationLocked, generationLockReason, generationRun, generationSteps, project, retryFailedImageBatches, scenes } = useEditor();
   const { currentScene, setCurrentTime } = usePlayback();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, scenes });
@@ -30,7 +30,9 @@ export function ScenesPanel() {
               <button
                 type="button"
                 onClick={retryFailedImageBatches}
-                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F]"
+                disabled={generationLocked}
+                title={generationLocked ? generationLockReason : undefined}
+                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RefreshCcw className="h-[13px] w-[13px]" />
                 Retry {progress.failedBatches} failed batch{progress.failedBatches === 1 ? "" : "es"}
@@ -43,7 +45,8 @@ export function ScenesPanel() {
         <button
           type="button"
           onClick={() => setBatchGenerationOpen(true)}
-          disabled={promptReadyCount === 0}
+          disabled={promptReadyCount === 0 || generationLocked}
+          title={generationLocked ? generationLockReason : undefined}
           className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Wand2 className="h-[15px] w-[15px]" />
@@ -111,7 +114,9 @@ export function ScenesPanel() {
                   <button
                     type="button"
                     onClick={(event) => event.stopPropagation()}
-                    className="h-[36px] rounded-[6px] border border-[#CAD3DF] bg-white px-[11px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA]"
+                    disabled={generationLocked}
+                    title={generationLocked ? generationLockReason : undefined}
+                    className="h-[36px] rounded-[6px] border border-[#CAD3DF] bg-white px-[11px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     Edit
                   </button>
@@ -119,7 +124,9 @@ export function ScenesPanel() {
                     type="button"
                     onClick={(event) => event.stopPropagation()}
                     aria-label={`Scene ${index + 1} more options`}
-                    className="flex h-[36px] w-[32px] items-center justify-center rounded-[6px] border border-[#CAD3DF] bg-white text-[#334155] hover:bg-[#F8F9FA]"
+                    disabled={generationLocked}
+                    title={generationLocked ? generationLockReason : undefined}
+                    className="flex h-[36px] w-[32px] items-center justify-center rounded-[6px] border border-[#CAD3DF] bg-white text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     <MoreVertical className="h-[16px] w-[16px]" />
                   </button>
@@ -135,7 +142,7 @@ export function ScenesPanel() {
 }
 
 function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const { project, queueSceneImages, scenes } = useEditor();
+  const { generationLocked, generationLockReason, project, queueSceneImages, scenes } = useEditor();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
@@ -212,6 +219,8 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
               type="checkbox"
               checked={allSelected}
               onChange={(event) => toggleAll(event.target.checked)}
+              disabled={generationLocked}
+              title={generationLocked ? generationLockReason : undefined}
               className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
               aria-label="Select all scenes"
             />
@@ -234,6 +243,8 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                       type="checkbox"
                       checked={checked}
                       onChange={(event) => toggleScene(scene.id, event.target.checked)}
+                      disabled={generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
                       className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
                       aria-label={`Select scene ${index + 1}`}
                     />
@@ -277,8 +288,10 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                      <textarea
 	                        value={imagePromptDrafts[scene.id] ?? scene.prompt ?? ""}
 	                        onChange={(event) => updateImagePrompt(scene.id, event.target.value)}
+	                        disabled={generationLocked}
+	                        title={generationLocked ? generationLockReason : undefined}
 	                        aria-label={`Scene ${index + 1} image prompt`}
-	                        className="min-h-[162px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623]"
+	                        className="min-h-[162px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
 	                      />
 	                      <div className="aspect-video w-full overflow-hidden rounded-[5px] bg-[#E8EEF7]">
 	                        {scene.imageUrl ? (
@@ -310,8 +323,10 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                    <textarea
 	                      value={videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? ""}
 	                      onChange={(event) => updateVideoPrompt(scene.id, event.target.value)}
+	                      disabled={generationLocked}
+	                      title={generationLocked ? generationLockReason : undefined}
 	                      aria-label={`Scene ${index + 1} video prompt`}
-	                      className="min-h-[210px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623]"
+	                      className="min-h-[210px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
 	                    />
 	                    <div className="mt-[8px] flex items-center justify-between rounded-[5px] border border-dashed border-[#CAD3DF] bg-white px-[10px] py-[7px] text-[11px] font-[800] text-[#61708A]">
 	                      <span className="inline-flex items-center gap-[6px]">
@@ -338,7 +353,8 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
           <button
             type="button"
             onClick={submitBatchGeneration}
-            disabled={!project || selectedCount === 0 || submitting}
+            disabled={!project || selectedCount === 0 || submitting || generationLocked}
+            title={generationLocked ? generationLockReason : undefined}
             className="inline-flex h-[42px] items-center justify-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[16px] text-[15px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? <Loader2 className="h-[16px] w-[16px] animate-spin" /> : <ImageIcon className="h-[16px] w-[16px]" />}

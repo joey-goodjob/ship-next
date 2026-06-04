@@ -27,6 +27,8 @@ import {
   clamp,
   createWordsFromLines,
   deriveLinesFromWords,
+  GENERATION_LOCK_REASON,
+  isGenerationLocked,
   normalizePreviewConfig,
   normalizeWordsForSave,
   projectIsProcessing,
@@ -39,10 +41,12 @@ import {
 export function EditorProvider({
   appName,
   children,
+  debugGenerationLocked,
   projectId,
 }: {
   appName: string;
   children: ReactNode;
+  debugGenerationLocked?: boolean;
   projectId: string;
 }) {
   const [project, setProject] = useState<LyricVideoProject | null>(null);
@@ -82,6 +86,15 @@ export function EditorProvider({
   }, [lines, project?.audioDurationMs, scenes, words]);
 
   const latestExport = exports[0];
+  const generationLocked = useMemo(
+    () => Boolean(debugGenerationLocked) || isGenerationLocked(project, generationRun),
+    [debugGenerationLocked, generationRun, project],
+  );
+  const generationLockReason = GENERATION_LOCK_REASON;
+
+  function showGenerationLockedToast() {
+    toast.info(generationLockReason);
+  }
 
   const refresh = useCallback(async () => {
     setLoadError("");
@@ -143,6 +156,7 @@ export function EditorProvider({
       hasAudio &&
       lines.length === 0 &&
       !preparingAudio &&
+      !generationLocked &&
       !["processing", "asr_processing", "normalizing", "ready", "failed"].includes(project.lyricsStatus || "") &&
       autoTranscribeProjectRef.current !== project.id;
     if (!shouldAutoTranscribe) return;
@@ -207,7 +221,7 @@ export function EditorProvider({
       .finally(() => {
         setPreparingAudio(false);
       });
-  }, [lines.length, preparingAudio, project, refresh]);
+  }, [generationLocked, lines.length, preparingAudio, project, refresh]);
 
   useEffect(() => {
     const shouldCreateStory =
@@ -215,6 +229,7 @@ export function EditorProvider({
       lines.length > 0 &&
       scenes.length === 0 &&
       !creatingStory &&
+      !generationLocked &&
       !(project.storyPrompt || "").trim() &&
       autoStoryProjectRef.current !== project.id;
     if (!shouldCreateStory) return;
@@ -237,7 +252,7 @@ export function EditorProvider({
       .finally(() => {
         setCreatingStory(false);
       });
-  }, [creatingStory, lines.length, project, scenes.length]);
+  }, [creatingStory, generationLocked, lines.length, project, scenes.length]);
 
   useEffect(() => {
     return () => {
@@ -250,6 +265,10 @@ export function EditorProvider({
   }
 
   function updateProjectField<K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     setProject((previous) => (previous ? { ...previous, [key]: value } : previous));
     pendingProjectPatchRef.current = { ...pendingProjectPatchRef.current, [key]: value };
     setSaveStatus("saving");
@@ -273,11 +292,19 @@ export function EditorProvider({
   }
 
   function setLines(nextLines: LyricLine[]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     setLinesState(nextLines);
     setLyricsDirty(true);
   }
 
   function setWords(nextWords: LyricWord[]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     const sortedWords = sortWords(nextWords);
     setWordsState(sortedWords);
     setLinesState((previous) => deriveLinesFromWords(previous, sortedWords));
@@ -291,6 +318,10 @@ export function EditorProvider({
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (preparingAudio) return;
     console.info("[lyric-video] upload flow started", {
       projectId,
@@ -378,6 +409,10 @@ export function EditorProvider({
   }
 
   async function createStory() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (creatingStory) return;
     if (!project) {
       toast.error("Project unavailable");
@@ -408,6 +443,10 @@ export function EditorProvider({
   }
 
   async function generateStoryboardPrompts() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (!project) {
       toast.error("Project unavailable");
       return;
@@ -463,6 +502,10 @@ export function EditorProvider({
   }
 
   async function generateCastCandidates() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (!project || castBusy) return;
     setCastBusy(true);
     setSaveStatus("saving");
@@ -485,6 +528,10 @@ export function EditorProvider({
   }
 
   async function createCastMember(params: { name: string; description: string; promptFragment?: string }) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
     if (!project || castBusy) return null;
     setCastBusy(true);
     setSaveStatus("saving");
@@ -508,6 +555,10 @@ export function EditorProvider({
   }
 
   async function updateCastMember(castId: string, data: Partial<LyricCastMember> & { selectAsMain?: boolean }) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
     if (!project) return null;
     setSaveStatus("saving");
     try {
@@ -532,6 +583,10 @@ export function EditorProvider({
   }
 
   async function deleteCastMember(castId: string) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (!project) return;
     setSaveStatus("saving");
     try {
@@ -546,6 +601,10 @@ export function EditorProvider({
   }
 
   async function regenerateCastImage(castId: string) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
     if (!project || castBusy) return null;
     setCastBusy(true);
     setSaveStatus("saving");
@@ -579,6 +638,10 @@ export function EditorProvider({
   }
 
   async function queueSceneImages(sceneIds: string[]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return [];
+    }
     if (!project) return [];
     const selectedSceneIds = sceneIds.filter(Boolean);
     if (selectedSceneIds.length === 0) return [];
@@ -632,6 +695,10 @@ export function EditorProvider({
   }
 
   async function retryFailedImageBatches() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (!project) return;
     setSaveStatus("saving");
     try {
@@ -664,6 +731,10 @@ export function EditorProvider({
   }
 
   async function saveLyrics() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return false;
+    }
     try {
       setSaveStatus("saving");
       const cleanWords = normalizeWordsForSave(words, totalDuration);
@@ -689,6 +760,10 @@ export function EditorProvider({
   }
 
   async function queueExport() {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
     if (exporting) return;
     setExporting(true);
     try {
@@ -738,6 +813,8 @@ export function EditorProvider({
       preparingAudio,
       creatingStory,
       castBusy,
+      generationLocked,
+      generationLockReason,
       setActiveTab,
       setZoom,
       updateProjectField,
@@ -769,6 +846,7 @@ export function EditorProvider({
       exports,
       generationRun,
       generationSteps,
+      generationLocked,
       latestExport,
       lines,
       loadError,

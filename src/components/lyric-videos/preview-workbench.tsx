@@ -4,7 +4,15 @@ import { useEffect } from "react";
 import { EditorProvider } from "./preview-workbench/editor-provider";
 import { EditorWorkspace } from "./preview-workbench/editor-workspace";
 
-export function PreviewWorkbench({ appName, projectId }: { appName: string; projectId: string }) {
+export function PreviewWorkbench({
+  appName,
+  debugGenerationLocked,
+  projectId,
+}: {
+  appName: string;
+  debugGenerationLocked?: boolean;
+  projectId: string;
+}) {
   useEffect(() => {
     const htmlOverflow = document.documentElement.style.overflow;
     const bodyOverflow = document.body.style.overflow;
@@ -18,7 +26,7 @@ export function PreviewWorkbench({ appName, projectId }: { appName: string; proj
   }, []);
 
   return (
-    <EditorProvider appName={appName} projectId={projectId}>
+    <EditorProvider appName={appName} projectId={projectId} debugGenerationLocked={debugGenerationLocked}>
       <EditorWorkspace />
     </EditorProvider>
   );

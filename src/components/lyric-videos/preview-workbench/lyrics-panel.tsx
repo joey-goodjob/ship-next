@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
-import { AlertCircle, FileText, Loader2, MoreVertical, Pause, Play, Plus, Save, StepBack, StepForward } from "lucide-react";
+import { AlertCircle, FileText, Loader2, Lock, MoreVertical, Pause, Play, Plus, Save, StepBack, StepForward } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LYRIC_FRAME_RATE } from "./constants";
 import { useEditor } from "./editor-context";
@@ -25,6 +25,8 @@ export function LyricsPanel() {
   const {
     lines,
     lyricsDirty,
+    generationLocked,
+    generationLockReason,
     project,
     saveLyrics,
     scenes,
@@ -67,7 +69,7 @@ export function LyricsPanel() {
   const invalidWords = words.filter((word) => !word.word.trim() || msToFrame(word.endMs) <= msToFrame(word.startMs));
   const invalidSceneWords = visibleWords.filter((word) => !word.word.trim() || msToFrame(word.endMs) <= msToFrame(word.startMs));
   const invalidHiddenWords = invalidWords.length - invalidSceneWords.length;
-  const canSaveLyrics = lyricsDirty && lines.length > 0 && words.length > 0 && invalidSceneWords.length === 0;
+  const canSaveLyrics = !generationLocked && lyricsDirty && lines.length > 0 && words.length > 0 && invalidSceneWords.length === 0;
 
   function goToScene(scene?: LyricScene) {
     if (!scene) return;
@@ -152,6 +154,11 @@ export function LyricsPanel() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-[8px]">
                 <span className="text-[14px] font-[900] text-[#1A1A2E]">Scene {sceneIndex + 1}</span>
+                {generationLocked ? (
+                  <span title={generationLockReason} aria-label="Locked">
+                    <Lock className="h-[13px] w-[13px] text-[#61708A]" />
+                  </span>
+                ) : null}
                 <span className="rounded-full border border-[#D8E2EE] bg-white px-[7px] py-[2px] font-mono text-[11px] font-[800] text-[#61708A]">
                   {formatMs(segmentStartMs)} - {formatMs(segmentEndMs)}
                 </span>
@@ -197,6 +204,7 @@ export function LyricsPanel() {
               type="button"
               onClick={saveLyrics}
               disabled={!canSaveLyrics}
+              title={generationLocked ? generationLockReason : undefined}
               className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Save className="h-[14px] w-[14px]" />
@@ -206,6 +214,7 @@ export function LyricsPanel() {
               type="button"
               onClick={saveAndNext}
               disabled={!canSaveLyrics || !nextScene}
+              title={generationLocked ? generationLockReason : undefined}
               className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[10px] text-[12px] font-[800] text-white hover:bg-[#2D2D44] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save &amp; Next
@@ -219,6 +228,7 @@ export function LyricsPanel() {
             type="button"
             onClick={saveLyrics}
             disabled={!canSaveLyrics}
+            title={generationLocked ? generationLockReason : undefined}
             className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Save className="h-[14px] w-[14px]" />
@@ -293,9 +303,11 @@ export function LyricsPanel() {
                     value={word.word}
                     onChange={(event) => updateWord(word.id, { word: event.target.value })}
                     onClick={(event) => event.stopPropagation()}
+                    disabled={generationLocked}
+                    title={generationLocked ? generationLockReason : undefined}
                     aria-label={`${word.word || "word"} text`}
                     className={cn(
-                      "h-[36px] min-w-0 rounded-[5px] border bg-white px-[10px] text-[13px] font-[700] text-[#26364E] outline-none focus:border-[#F5A623]",
+                      "h-[36px] min-w-0 rounded-[5px] border bg-white px-[10px] text-[13px] font-[700] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]",
                       active ? "border-[#F5A623]" : "border-[#CAD3DF]",
                       invalid ? "border-red-300" : "",
                     )}
@@ -304,6 +316,8 @@ export function LyricsPanel() {
                     label={`${word.word || "word"} start frame`}
                     max={maxFrame}
                     min={0}
+                    disabled={generationLocked}
+                    disabledReason={generationLockReason}
                     value={wordFrame(word.startMs)}
                     onChange={(value) => updateWordFrame(word.id, "startMs", value)}
                     onStep={(delta) => nudgeWordFrame(word, "startMs", delta)}
@@ -312,6 +326,8 @@ export function LyricsPanel() {
                     label={`${word.word || "word"} end frame`}
                     max={maxFrame}
                     min={1}
+                    disabled={generationLocked}
+                    disabledReason={generationLockReason}
                     value={wordFrame(word.endMs)}
                     onChange={(value) => updateWordFrame(word.id, "endMs", value)}
                     onStep={(delta) => nudgeWordFrame(word, "endMs", delta)}
@@ -321,10 +337,13 @@ export function LyricsPanel() {
                       type="button"
                       onClick={(event) => {
                         event.stopPropagation();
+                        if (generationLocked) return;
                         setOpenWordMenuId(openWordMenuId === word.id ? null : word.id);
                       }}
+                      disabled={generationLocked}
+                      title={generationLocked ? generationLockReason : undefined}
                       aria-label={`${word.word || "word"} actions`}
-                      className="flex h-[36px] w-[34px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA]"
+                      className="flex h-[36px] w-[34px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       <MoreVertical className="h-[15px] w-[15px]" />
                     </button>
@@ -375,7 +394,8 @@ export function LyricsPanel() {
       <button
         type="button"
         onClick={addWord}
-        disabled={lines.length === 0 || maxFrame <= 1}
+        disabled={generationLocked || lines.length === 0 || maxFrame <= 1}
+        title={generationLocked ? generationLockReason : undefined}
         className="mx-auto inline-flex h-[34px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Plus className="h-[14px] w-[14px]" />
@@ -500,6 +520,8 @@ function WordFrameStepper({
   label,
   max,
   min,
+  disabled,
+  disabledReason,
   onChange,
   onStep,
   value,
@@ -507,6 +529,8 @@ function WordFrameStepper({
   label: string;
   max: number;
   min: number;
+  disabled?: boolean;
+  disabledReason?: string;
   onChange: (value: string) => void;
   onStep: (delta: number) => void;
   value: number;
@@ -519,7 +543,8 @@ function WordFrameStepper({
           event.stopPropagation();
           onStep(-1);
         }}
-        disabled={value <= min}
+        disabled={disabled || value <= min}
+        title={disabled ? disabledReason : undefined}
         aria-label={`${label} decrease`}
         className="flex w-[30px] shrink-0 items-center justify-center border-r border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
       >
@@ -532,8 +557,10 @@ function WordFrameStepper({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onClick={(event) => event.stopPropagation()}
+        disabled={disabled}
+        title={disabled ? disabledReason : undefined}
         aria-label={label}
-        className="h-full min-w-0 flex-1 border-0 bg-white px-[8px] font-mono text-[13px] font-[800] text-[#26364E] outline-none focus:bg-[#FFF8EB]"
+        className="h-full min-w-0 flex-1 border-0 bg-white px-[8px] font-mono text-[13px] font-[800] text-[#26364E] outline-none focus:bg-[#FFF8EB] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
       />
       <button
         type="button"
@@ -541,7 +568,8 @@ function WordFrameStepper({
           event.stopPropagation();
           onStep(1);
         }}
-        disabled={value >= max}
+        disabled={disabled || value >= max}
+        title={disabled ? disabledReason : undefined}
         aria-label={`${label} increase`}
         className="flex w-[30px] shrink-0 items-center justify-center border-l border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
       >

@@ -4,7 +4,7 @@ import { AlertCircle, RefreshCcw } from "lucide-react";
 import { useEditor } from "./editor-context";
 
 export function StatusBar() {
-  const { generateStoryboardPrompts, latestExport, loadError, project, refresh, saveStatus } = useEditor();
+  const { generateStoryboardPrompts, generationLocked, generationLockReason, latestExport, loadError, project, refresh, saveStatus } = useEditor();
   const blockingError = loadError || project?.pipelineError || latestExport?.error;
   const ready = project?.renderStatus === "ready" || latestExport?.status === "success";
   const continuing = saveStatus === "saving";
@@ -26,7 +26,8 @@ export function StatusBar() {
           <button
             type="button"
             onClick={generateStoryboardPrompts}
-            disabled={continuing}
+            disabled={continuing || generationLocked}
+            title={generationLocked ? generationLockReason : undefined}
             className="flex h-[28px] w-[180px] items-center justify-center gap-[8px] rounded-[8px] bg-[#F5A623] text-[14px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {continuing ? "Working..." : "Continue ->"}

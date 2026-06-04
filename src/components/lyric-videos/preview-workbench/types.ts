@@ -212,6 +212,8 @@ export type EditorContextValue = {
   preparingAudio: boolean;
   creatingStory: boolean;
   castBusy: boolean;
+  generationLocked: boolean;
+  generationLockReason: string;
   setActiveTab: (tab: PanelTab) => void;
   setZoom: (zoom: number) => void;
   updateProjectField: <K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) => void;
