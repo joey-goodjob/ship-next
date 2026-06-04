@@ -1,8 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { S3Provider } from '../src/core/storage/s3';
-import { getAllConfigs } from '../src/modules/config/service';
 
 type SourceCharacter = {
   slug: string;
@@ -42,6 +42,32 @@ const LIBRARY_ID = 'openart-seed';
 const LIBRARY_VERSION = 'v1';
 const KEY_PREFIX = `character-library/${LIBRARY_ID}/${LIBRARY_VERSION}`;
 const PREFERRED_ORDER = ['vera', 'kai', 'luna', 'rosa', 'ace', 'tex', 'ty', 'jayden', 'jay'];
+
+function loadDotEnvLocal(root: string) {
+  try {
+    const raw = readFileSync(path.join(root, '.env.local'), 'utf-8');
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (!match) continue;
+      const [, key, rawValue] = match;
+      if (process.env[key] !== undefined) continue;
+      let value = rawValue.trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      process.env[key] = value;
+    }
+  } catch {
+    // The config service will report missing required values later.
+  }
+}
+
+loadDotEnvLocal(repoRoot);
 
 function hasFlag(name: string) {
   return process.argv.includes(name);
@@ -87,6 +113,7 @@ async function readSourceManifest() {
 }
 
 async function createProvider() {
+  const { getAllConfigs } = await import('../src/modules/config/service');
   const configs = await getAllConfigs();
   const required = ['storage_endpoint', 'storage_access_key', 'storage_secret_key', 'storage_bucket'];
   const missing = required.filter((key) => !configs[key]);

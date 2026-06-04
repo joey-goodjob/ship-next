@@ -640,10 +640,11 @@ ${buildStoryboardCastBlock(params.cast)}
 - planning.needsMotion=true 时，video_prompt 必须有明确可见的镜头运动或主体运动
 - planning.isVocalMontage=true 时，image_prompt/video_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
 	- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
-	- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 必须包含该 cast 的 name/promptFragment 特征，保持人物外貌一致，写清人物动作/情绪/环境/光线/构图，并输出 cast_ids
+	- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 只写该 cast 的 name、主角动作、情绪、环境、光线、构图，不要重复整段 promptFragment，并输出 cast_ids
 - shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、鞋、口袋、尘土、火光、道路纹理等；不要出现完整人物、不要露脸、不要新增角色
 - shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
 - image_prompt 必须保持地点、色彩和视觉元素一致，不要出现文字、歌词、字幕、logo
+- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
 - video_prompt 第一短句必须以 Camera 开头；不要描述字幕；不要让画面变成新镜头内容
 - character_shot 的 video_prompt 写主角动作；insert_shot 的 video_prompt 写物件/局部/粒子/光影运动；landscape_shot 的 video_prompt 写环境运动
 - energyLevel=low 时运动 slow/smooth/subtle；medium 时 steady/controlled/rhythmic；high 时 faster/handheld/stronger
@@ -723,7 +724,7 @@ ${JSON.stringify(fixedScenes)}
 - 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
 
 ### shotType 规则
-- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 必须包含该 cast 的 name/promptFragment 特征，保持人物外貌一致，写清人物动作/情绪/环境/光线/构图，并输出 cast_ids
+- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 只写该 cast 的 name、主角动作、情绪、环境、光线、构图，不要重复整段 promptFragment，并输出 cast_ids
 - shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、道具、光影纹理等；不要出现完整人物、不要露脸、不要新增角色
 - shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
 
@@ -742,6 +743,7 @@ ${JSON.stringify(fixedScenes)}
 ### 视觉一致性
 - image_prompt 必须保持 visual_style 和当前段落 color_tone 的一致
 - 不要出现文字、歌词、字幕、logo
+- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
 
 ### video_prompt 规则
 - video_prompt 第一短句必须以 Camera 开头；不要描述字幕；不要让画面变成新镜头内容

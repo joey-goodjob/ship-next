@@ -1,13 +1,13 @@
 "use client";
 
-import { Expand, Pause, Play, Shuffle, SkipBack, SkipForward, StepBack, StepForward, Type, Volume2, Wand2, ZoomIn, ZoomOut } from "lucide-react";
+import { Expand, Loader2, Pause, Play, Shuffle, SkipBack, SkipForward, StepBack, StepForward, Type, Volume2, Wand2, ZoomIn, ZoomOut } from "lucide-react";
 import { useEditor } from "./editor-context";
 import { usePlayback } from "./playback-context";
 import { formatClock } from "./utils";
 
 export function PlaybackControls() {
   const { setZoom, zoom } = useEditor();
-  const { audioAvailable, currentTime, isPlaying, setCurrentTime, togglePlayback, totalDuration } = usePlayback();
+  const { audioAvailable, currentTime, isAudioLoading, isPlaying, setCurrentTime, togglePlayback, totalDuration } = usePlayback();
 
   return (
     <div className="flex h-[40px] shrink-0 items-center border-t border-[#E8E8E8] bg-[#F8F9FA] px-[16px]">
@@ -33,11 +33,18 @@ export function PlaybackControls() {
           <button
             type="button"
             onClick={togglePlayback}
-            disabled={!audioAvailable}
-            aria-label={isPlaying ? "Pause" : "Play"}
+            disabled={!audioAvailable || isAudioLoading}
+            aria-busy={isAudioLoading}
+            aria-label={isAudioLoading ? "Loading audio" : isPlaying ? "Pause" : "Play"}
             className="flex h-[28px] w-[28px] items-center justify-center text-[#333333] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isPlaying ? <Pause className="h-[20px] w-[20px]" /> : <Play className="h-[20px] w-[20px]" />}
+            {isAudioLoading ? (
+              <Loader2 className="h-[20px] w-[20px] animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="h-[20px] w-[20px]" />
+            ) : (
+              <Play className="h-[20px] w-[20px]" />
+            )}
           </button>
           <button type="button" onClick={() => setCurrentTime(currentTime + 1)} aria-label="Next">
             <StepForward className="h-[16px] w-[16px]" />

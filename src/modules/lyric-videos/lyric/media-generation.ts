@@ -140,11 +140,7 @@ function resolveSceneCast(params: { scene: any; cast: any[] }) {
 function scenePromptWithCast(params: { scene: any; cast: any[] }) {
   const boundCast = resolveSceneCast(params);
   const referenceImageUrls = getCastReferenceImageUrls(boundCast);
-  const prompt = referenceImageUrls.length > 0 && boundCast?.promptFragment
-    ? `${params.scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
-    : boundCast?.promptFragment
-      ? `${params.scene.prompt}\n\nUse this established main character: ${boundCast.name || 'main character'}, ${boundCast.promptFragment}.`
-      : params.scene.prompt;
+  const prompt = String(params.scene.prompt || '').trim();
   const explicitCastIds = Array.isArray(params.scene.castIds) ? params.scene.castIds.filter(Boolean) : [];
   const castIdsForGeneration = explicitCastIds.length > 0 ? explicitCastIds : boundCast?.id ? [boundCast.id] : [];
   return {
@@ -161,18 +157,26 @@ function buildGridSceneImagePrompt(params: {
   scenes: any[];
   gridSize?: number;
   aspectRatio?: string;
+  referenceCast?: any;
+  hasReferenceImage?: boolean;
 }) {
   const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE)));
   const totalPanels = gridSize * gridSize;
   const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
   const frameOrientation = aspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
-  const expectedCanvas = aspectRatio === '9:16'
-    ? 'The whole image should be a vertical 9:16 canvas, approximately 2160x3840 at 4K.'
-    : 'The whole image should be a horizontal 16:9 canvas, approximately 3840x2160 at 4K.';
   const expectedPanel = aspectRatio === '9:16'
     ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
     : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
   const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
+  const referenceCast = params.referenceCast;
+  const mainCharacter = referenceCast
+    ? [
+        `Main character: ${referenceCast.name || 'main character'}.`,
+        params.hasReferenceImage ? 'Use the provided reference image as the primary identity reference.' : '',
+        String(referenceCast.promptFragment || referenceCast.description || '').trim(),
+        `Whenever a panel mentions ${referenceCast.name || 'the main character'}, preserve the same face, hair, outfit, and body proportions.`,
+      ].filter(Boolean).join(' ')
+    : '';
   const panels = params.scenes.map((scene, index) => ({
     panel: index + 1,
     sceneId: scene.id,
@@ -183,14 +187,13 @@ function buildGridSceneImagePrompt(params: {
   const panelLines = panels.map((panel) => `Panel ${panel.panel}: ${panel.prompt}`);
   const compiledPrompt = [
     globalStyle,
-    `Create one exact ${gridSize}x${gridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels, no text.`,
-    expectedCanvas,
+    mainCharacter,
+    `Create one exact ${gridSize}x${gridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels.`,
     expectedPanel,
     `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${aspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
-    `一张包含精确${gridSize}x${gridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。每个面板都必须是${aspectRatio}的${aspectRatio === '9:16' ? '竖图' : '横图'}画幅。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
     '',
     ...panelLines,
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   return {
     compiledPrompt,
@@ -615,15 +618,17 @@ export async function queueSceneImagesGrid(params: {
     const batchScenes = scenes
       .slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE)
       .map((scene: any) => scenePromptWithCast({ scene, cast }));
-    const gridPrompt = buildGridSceneImagePrompt({
-      scenes: batchScenes,
-      gridSize: GRID_SCENE_IMAGE_SIZE,
-      aspectRatio,
-    });
     const batchReferenceCast =
       batchScenes.find((scene: GridImagePanelScene) => scene.boundCast && (scene.referenceImageUrls || []).length > 0)?.boundCast ||
       activeMainCast(cast).find((member: any) => getCastReferenceImageUrls(member).length > 0);
     const referenceImageUrls = getCastReferenceImageUrls(batchReferenceCast);
+    const gridPrompt = buildGridSceneImagePrompt({
+      scenes: batchScenes,
+      gridSize: GRID_SCENE_IMAGE_SIZE,
+      aspectRatio,
+      referenceCast: batchReferenceCast,
+      hasReferenceImage: referenceImageUrls.length > 0,
+    });
     const imageOptions: Record<string, unknown> = {
       aspect_ratio: aspectRatio,
       resolution,

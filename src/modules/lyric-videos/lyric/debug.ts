@@ -66,9 +66,6 @@ export function buildStoryboardGridImagePrompt(
   const totalPanels = normalizedGridSize * normalizedGridSize;
   const normalizedAspectRatio = aspectRatio === '9:16' ? '9:16' : '16:9';
   const frameOrientation = normalizedAspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
-  const expectedCanvas = normalizedAspectRatio === '9:16'
-    ? 'The whole image should be a vertical 9:16 canvas, approximately 2160x3840 at 4K.'
-    : 'The whole image should be a horizontal 16:9 canvas, approximately 3840x2160 at 4K.';
   const expectedPanel = normalizedAspectRatio === '9:16'
     ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
     : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
@@ -81,17 +78,15 @@ export function buildStoryboardGridImagePrompt(
     end_s: scene.end_s,
     image_prompt: scene.image_prompt,
   }));
-  const panelLines = panels.map((panel) => `面板${panel.panel}：${panel.image_prompt}`);
+  const panelLines = panels.map((panel) => `Panel ${panel.panel}: ${panel.image_prompt}`);
   const compiledPrompt = [
     globalStyle,
-    `Create one exact ${normalizedGridSize}x${normalizedGridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels, no text.`,
-    expectedCanvas,
+    `Create one exact ${normalizedGridSize}x${normalizedGridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels.`,
     expectedPanel,
     `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${normalizedAspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
-    `一张包含精确${normalizedGridSize}x${normalizedGridSize}网格的图片，共${totalPanels}个大小相等的面板，面板之间没有间隙、没有边框、没有标签、没有文字。每个面板都必须是${normalizedAspectRatio}的${normalizedAspectRatio === '9:16' ? '竖图' : '横图'}画幅。面板按从左到右、从上到下的顺序编号。未列出的面板全部渲染为纯白色空白，不含任何内容。`,
     '',
     ...panelLines,
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   return {
     compiledPrompt,
