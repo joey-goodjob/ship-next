@@ -35,6 +35,7 @@ export async function POST(
       songAnalysisModel: body.songAnalysisModel,
       storyboardModel: body.storyboardModel,
       imageModel: body.imageModel,
+      mode: body.mode,
       wait: Boolean(body.wait),
       debugStopAfter: body.debug?.stopAfter,
     });

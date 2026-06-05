@@ -159,6 +159,7 @@ export function stageLabel(stage?: string | null) {
   if (stage === "audio_prepare") return "Preparing audio";
   if (stage === "asr_words") return "Recognizing lyrics";
   if (stage === "song_analysis") return "Prompt1 song analysis";
+  if (stage === "direction_ready") return "Direction ready for review";
   if (stage === "prompt_generation") return "Prompt2 storyboard prompts";
   if (stage === "image_generation") return "Image generation";
   if (stage === "finalize_project") return "Finalizing project";

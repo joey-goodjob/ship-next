@@ -22,7 +22,7 @@ export function StatusBar() {
         </div>
       ) : (
         <div className="flex items-center gap-[12px] text-[13px] font-[700] text-[#777777]">
-          <span>{ready ? "Export ready." : "Preview ready! Customize the look & feel or continue:"}</span>
+          <span>{ready ? "Export ready." : "Review the direction, then generate all scenes:"}</span>
           <button
             type="button"
             onClick={generateStoryboardPrompts}
@@ -30,7 +30,7 @@ export function StatusBar() {
             title={generationLocked ? generationLockReason : undefined}
             className="flex h-[28px] w-[180px] items-center justify-center gap-[8px] rounded-[8px] bg-[#F5A623] text-[14px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {continuing ? "Working..." : "Continue ->"}
+            {continuing ? "Working..." : "Generate All Scenes"}
           </button>
         </div>
       )}

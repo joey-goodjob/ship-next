@@ -28,7 +28,7 @@ export function CustomizePanel() {
   const storyLocked = generationLocked || scenesCreated;
   const storyLockReason = generationLocked
     ? generationLockReason
-    : "Language and Story are locked after scenes have been created.";
+    : "Direction settings are locked after scenes have been created.";
 
   function updatePreviewConfig(patch: Partial<LyricPreviewConfig>) {
     updateProjectField("previewConfig", { ...previewConfig, ...patch });
@@ -132,15 +132,15 @@ export function CustomizePanel() {
         />
       </FieldBlock>
 
-      <FieldBlock label="Style" locked={generationLocked} lockReason={generationLockReason}>
+      <FieldBlock label="Style" locked={storyLocked} lockReason={storyLockReason}>
         <div className="grid grid-cols-2 gap-[8px]">
           {STYLE_OPTIONS.map((style) => (
             <button
               key={style}
               type="button"
               onClick={() => updateProjectField("artStyle", style)}
-              disabled={generationLocked}
-              title={generationLocked ? generationLockReason : undefined}
+              disabled={storyLocked}
+              title={storyLocked ? storyLockReason : undefined}
               className={cn(
                 "h-[36px] truncate rounded-[6px] border px-[10px] text-left text-[13px] font-[700] disabled:cursor-not-allowed disabled:opacity-55",
                 project.artStyle === style
@@ -154,15 +154,15 @@ export function CustomizePanel() {
         </div>
       </FieldBlock>
 
-      <FieldBlock label="Palette" locked={generationLocked} lockReason={generationLockReason}>
+      <FieldBlock label="Palette" locked={storyLocked} lockReason={storyLockReason}>
         <div className="grid grid-cols-2 gap-[8px]">
           {PALETTE_OPTIONS.map((palette) => (
             <button
               key={palette.value}
               type="button"
               onClick={() => updateProjectField("palette", palette.value)}
-              disabled={generationLocked}
-              title={generationLocked ? generationLockReason : undefined}
+              disabled={storyLocked}
+              title={storyLocked ? storyLockReason : undefined}
               className={cn(
                 "flex h-[38px] items-center gap-[8px] rounded-[6px] border px-[10px] text-[13px] font-[700] disabled:cursor-not-allowed disabled:opacity-55",
                 project.palette === palette.value
@@ -177,15 +177,15 @@ export function CustomizePanel() {
         </div>
       </FieldBlock>
 
-      <FieldBlock label="Format" locked={generationLocked} lockReason={generationLockReason}>
+      <FieldBlock label="Format" locked={storyLocked} lockReason={storyLockReason}>
         <div className="grid grid-cols-3 gap-[8px]">
           {FORMAT_OPTIONS.map((format) => (
             <button
               key={format}
               type="button"
               onClick={() => updateProjectField("aspectRatio", format)}
-              disabled={generationLocked}
-              title={generationLocked ? generationLockReason : undefined}
+              disabled={storyLocked}
+              title={storyLocked ? storyLockReason : undefined}
               className={cn(
                 "h-[38px] rounded-[6px] border text-[13px] font-[800] disabled:cursor-not-allowed disabled:opacity-55",
                 project.aspectRatio === format

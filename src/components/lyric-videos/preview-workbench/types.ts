@@ -196,6 +196,14 @@ export type GenerationRunResponse = {
   queued?: boolean;
 };
 
+export type VisualGenerationResponse = {
+  project?: LyricVideoProject;
+  scenes?: LyricScene[];
+  queuedImages?: LyricScene[];
+  storyPrompt?: string;
+  generatedStoryboard?: boolean;
+};
+
 export type RetryFailedBatchesResponse = {
   queuedScenes: LyricScene[];
   batches: Array<{

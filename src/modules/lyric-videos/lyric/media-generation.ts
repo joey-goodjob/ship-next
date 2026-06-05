@@ -42,6 +42,7 @@ export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
 const GRID_SCENE_IMAGE_SIZE = 4;
 const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
 const GRID_IMAGE_QUEUE_CONCURRENCY = 4;
+const GRID_IMAGE_SYNC_READY_BATCH_LIMIT = 1;
 
 type GridImagePanelScene = any & {
   finalPrompt?: string;
@@ -1106,10 +1107,19 @@ async function syncGridSceneImageBatch(params: {
   provider: Awaited<ReturnType<typeof createKieProvider>>;
   providerTaskId: string;
   scenes: any[];
+  queryResult?: any;
+  providerQueryMs?: number;
 }) {
+  const batchStartedAt = Date.now();
   const firstGridParams = getGridGenerationParams(params.scenes[0]);
   const grid = firstGridParams?.grid || {};
-  const result = await params.provider.query({ taskId: params.providerTaskId, mediaType: AIMediaType.IMAGE });
+  let providerQueryMs = params.providerQueryMs ?? 0;
+  let result = params.queryResult;
+  if (!result) {
+    const providerQueryStartedAt = Date.now();
+    result = await params.provider.query({ taskId: params.providerTaskId, mediaType: AIMediaType.IMAGE });
+    providerQueryMs = Date.now() - providerQueryStartedAt;
+  }
   const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
 
   if (result.taskStatus === ProviderTaskStatus.FAILED && !sourceImageUrl) {
@@ -1158,12 +1168,15 @@ async function syncGridSceneImageBatch(params: {
     return failed;
   }
 
+  const downloadStartedAt = Date.now();
   const imageBuffer = await fetchBytes(sourceImageUrl);
+  const downloadMs = Date.now() - downloadStartedAt;
   const metadata = await sharp(imageBuffer).metadata();
   if (!metadata.width || !metadata.height) {
     throw new Error('Could not read generated grid image dimensions');
   }
 
+  const cropSaveDbStartedAt = Date.now();
   const gridSize = Math.max(1, Math.floor(Number(grid.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE));
   const synced = [];
   const updatedTaskIds = new Set<string>();
@@ -1227,6 +1240,10 @@ async function syncGridSceneImageBatch(params: {
     projectId: params.projectId,
     userId: params.userId,
     providerTaskId: params.providerTaskId,
+    providerQueryMs,
+    downloadMs,
+    cropSaveDbMs: Date.now() - cropSaveDbStartedAt,
+    batchTotalMs: Date.now() - batchStartedAt,
     sourceImageUrl,
     sourceWidth: metadata.width,
     sourceHeight: metadata.height,
@@ -1396,14 +1413,74 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     gridGroups.set(scene.providerTaskId, group);
   }
 
-  for (const [providerTaskId, scenes] of gridGroups.entries()) {
+  const gridBatchQueries = await Promise.all(
+    Array.from(gridGroups.entries()).map(async ([providerTaskId, scenes]) => {
+      const providerQueryStartedAt = Date.now();
+      try {
+        const result = await provider.query({ taskId: providerTaskId, mediaType: AIMediaType.IMAGE });
+        const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
+        const ready =
+          result.taskStatus === ProviderTaskStatus.SUCCESS ||
+          (result.taskStatus === ProviderTaskStatus.FAILED && Boolean(sourceImageUrl));
+        const failed = result.taskStatus === ProviderTaskStatus.FAILED && !sourceImageUrl;
+        return {
+          providerTaskId,
+          scenes,
+          result,
+          sourceImageUrl,
+          ready,
+          failed,
+          providerQueryMs: Date.now() - providerQueryStartedAt,
+        };
+      } catch (error: any) {
+        return {
+          providerTaskId,
+          scenes,
+          result: null,
+          sourceImageUrl: null,
+          ready: false,
+          failed: true,
+          error,
+          providerQueryMs: Date.now() - providerQueryStartedAt,
+        };
+      }
+    })
+  );
+  const finishedGridBatchQueries = [
+    ...gridBatchQueries.filter((batch) => batch.ready),
+    ...gridBatchQueries.filter((batch) => !batch.ready && batch.failed),
+  ].slice(0, GRID_IMAGE_SYNC_READY_BATCH_LIMIT);
+
+  logLyricStage('scene-images-grid', 'sync-ready-batches', {
+    projectId: params.projectId,
+    userId: params.userId,
+    processingBatchCount: gridGroups.size,
+    readyBatchCount: gridBatchQueries.filter((batch) => batch.ready).length,
+    failedBatchCount: gridBatchQueries.filter((batch) => batch.failed).length,
+    selectedBatchCount: finishedGridBatchQueries.length,
+    syncReadyBatchLimit: GRID_IMAGE_SYNC_READY_BATCH_LIMIT,
+    batches: gridBatchQueries.map((batch) => ({
+      providerTaskId: batch.providerTaskId,
+      sceneCount: batch.scenes.length,
+      providerStatus: batch.result?.taskStatus || null,
+      providerQueryMs: batch.providerQueryMs,
+      hasSourceImageUrl: Boolean(batch.sourceImageUrl),
+      selected: finishedGridBatchQueries.includes(batch),
+    })),
+  });
+
+  for (const batch of finishedGridBatchQueries) {
+    const { providerTaskId, scenes } = batch;
     try {
+      if (batch.error) throw batch.error;
       synced.push(...await syncGridSceneImageBatch({
         userId: params.userId,
         projectId: params.projectId,
         provider,
         providerTaskId,
         scenes,
+        queryResult: batch.result,
+        providerQueryMs: batch.providerQueryMs,
       }));
     } catch (error: any) {
       logLyricStageError('scene-images-grid', 'batch-sync-fail', error, {
@@ -1504,6 +1581,19 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         .returning();
       synced.push(updated);
     }
+  }
+
+  if (synced.length === 0 && normalizedFailedWithImages.length === 0) {
+    logLyricStage('scene-images', 'sync-complete', {
+      projectId: params.projectId,
+      userId: params.userId,
+      syncedCount: 0,
+      allDone: false,
+      hasFailures: false,
+      skippedStatusRefresh: true,
+      scenes: [],
+    });
+    return synced;
   }
 
   const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });

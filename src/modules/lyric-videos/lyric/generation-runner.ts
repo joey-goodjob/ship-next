@@ -44,7 +44,9 @@ import {
 
 export function generationOptions(input: unknown) {
   const body = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
+  const mode = String(body.mode || '').trim();
   return {
+    mode: mode === 'guided' ? 'guided' : 'auto',
     transcribeModel: String(body.transcribeModel || 'scribe_v2'),
     songAnalysisModel: String(body.songAnalysisModel || DEFAULT_SONG_ANALYSIS_MODEL),
     storyboardModel: String(body.storyboardModel || DEFAULT_STORYBOARD_MODEL),
@@ -460,6 +462,58 @@ export async function markGenerationRunDebugStopped(params: {
   });
 }
 
+export async function markGenerationRunDirectionReady(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  storyPrompt: string;
+  outputSnapshot?: unknown;
+}) {
+  await Promise.all([
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'success',
+        currentStage: 'direction_ready',
+        progressPercent: params.progress,
+        completedSteps: Math.max((params.step.sort || 0) + 1, 1),
+        failedSteps: 0,
+        outputSnapshot: safeJson(
+          params.outputSnapshot || {
+            guidedStopped: true,
+            stopAfter: params.step.stage,
+            storyPrompt: params.storyPrompt,
+          }
+        ),
+        completedAt: new Date(),
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set({
+        storyPrompt: params.storyPrompt,
+        scenesStatus: 'lyrics_draft',
+        ...buildProjectGenerationSnapshot(
+          { status: 'success', currentStage: 'direction_ready', progressPercent: params.progress },
+          { pipelineStage: 'direction_ready', pipelineError: null }
+        ),
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ]);
+  logLyricStage('generation-run', 'direction-ready', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+    stopAfter: params.step.stage,
+    progress: params.progress,
+    storyPromptLength: params.storyPrompt.length,
+  });
+}
+
 async function maybeStopAfterGenerationStage(params: {
   userId: string;
   projectId: string;
@@ -731,25 +785,27 @@ export async function executeGenerationRun(params: {
     });
     assertUsableSongAnalysis(songAnalysisResult.songAnalysis);
     const storyActsText = formatStoryActsText(songAnalysisResult.songAnalysis);
-    const shouldPersistStoryActs = Boolean(storyActsText && !(detailsAfterLyrics.project.storyPrompt || '').trim());
+    const existingStoryPrompt = String(detailsAfterLyrics.project.storyPrompt || '').trim();
+    const directionStoryPrompt = existingStoryPrompt || storyActsText || songAnalysisResult.songAnalysis.theme || '';
+    const shouldPersistStoryActs = Boolean(directionStoryPrompt && directionStoryPrompt !== existingStoryPrompt);
     const projectForStoryboard = shouldPersistStoryActs
       ? {
           ...detailsAfterLyrics.project,
-          storyPrompt: storyActsText,
+          storyPrompt: directionStoryPrompt,
         }
       : detailsAfterLyrics.project;
     if (shouldPersistStoryActs) {
       await db()
         .update(lyricVideoProject)
         .set({
-          storyPrompt: storyActsText,
+          storyPrompt: directionStoryPrompt,
           pipelineError: null,
         })
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
     }
     const songAnalysisOutput = {
       ...songAnalysisResult,
-      storyPrompt: storyActsText,
+      storyPrompt: directionStoryPrompt,
       storyPromptPersisted: shouldPersistStoryActs,
     };
     await markGenerationStepSuccess({
@@ -770,6 +826,41 @@ export async function executeGenerationRun(params: {
       songAnalysis: songAnalysisResult.songAnalysis,
     });
     if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
+
+    if (options.mode === 'guided') {
+      const directionOutputSnapshot = debugStopOutput('song_analysis', songAnalysisOutput, debug);
+      const directionOutput =
+        directionOutputSnapshot && typeof directionOutputSnapshot === 'object' && !Array.isArray(directionOutputSnapshot)
+          ? (directionOutputSnapshot as Record<string, unknown>)
+          : { value: directionOutputSnapshot };
+      await markGenerationRunDirectionReady({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        storyPrompt: directionStoryPrompt,
+        outputSnapshot: {
+          ...directionOutput,
+          guidedStopped: true,
+          stopAfter: 'song_analysis',
+          nextAction: 'review_direction',
+        },
+      });
+      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
+      return {
+        run: finalRun?.run,
+        steps: finalRun?.steps || [],
+        project: details?.project,
+        lines: details?.lines || [],
+        words: details?.words || [],
+        scenes: details?.scenes || [],
+        songAnalysis: songAnalysisResult.songAnalysis,
+        directionReady: true,
+        stopAfter: 'song_analysis',
+      };
+    }
 
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
     const fixedScenes = buildFixedStoryboardSceneDraftsFromPersistedScenes({

@@ -103,9 +103,9 @@ export function EditorWorkspace() {
             showBack={false}
             onGenerate={uploadAndTranscribe}
             creditCost={10}
-            generateLabel="Generate lyrics (10 credits)"
-            workingLabel={preparingAudio ? "Preparing clip and lyrics..." : "Uploading audio..."}
-            successLabel="Lyrics generated"
+            generateLabel="Generate direction (10 credits)"
+            workingLabel={preparingAudio ? "Preparing lyrics and story direction..." : "Uploading audio..."}
+            successLabel="Direction ready"
           />
         </div>
       ) : (

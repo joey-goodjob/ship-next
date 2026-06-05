@@ -23,6 +23,7 @@ import type {
   SaveStatus,
   StoryGenerationResponse,
   UploadAudioResponse,
+  VisualGenerationResponse,
 } from "./types";
 import {
   clamp,
@@ -38,6 +39,42 @@ import {
   sortWords,
   wordsFromDetails,
 } from "./utils";
+
+const IMAGE_SYNC_SCENE_FIELDS = [
+  "imageUrl",
+  "imageTaskId",
+  "providerTaskId",
+  "generationParams",
+  "status",
+  "error",
+  "failureCode",
+  "completedAt",
+  "updatedAt",
+];
+
+function mergeImageSyncedScenes(current: LyricScene[], updates: LyricScene[]) {
+  if (!updates.length) return current;
+
+  const updatesById = new Map(updates.map((scene) => [scene.id, scene]));
+  const seenIds = new Set<string>();
+  const merged = current.map((scene) => {
+    const update = updatesById.get(scene.id) as (LyricScene & Record<string, unknown>) | undefined;
+    if (!update) return scene;
+
+    seenIds.add(scene.id);
+    const next: Record<string, unknown> = { ...scene };
+    for (const field of IMAGE_SYNC_SCENE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(update, field)) {
+        next[field] = update[field];
+      }
+    }
+    return next as LyricScene;
+  });
+
+  const appended = updates.filter((scene) => !seenIds.has(scene.id));
+  if (appended.length === 0) return merged;
+  return [...merged, ...appended].sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
+}
 
 export function EditorProvider({
   appName,
@@ -72,6 +109,7 @@ export function EditorProvider({
   const [castBusy, setCastBusy] = useState(false);
   const saveTimerRef = useRef<number | null>(null);
   const imageSyncInFlightRef = useRef(false);
+  const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
@@ -99,6 +137,8 @@ export function EditorProvider({
   }
 
   const refresh = useCallback(async () => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
     setLoadError("");
     try {
       const details = await requestJson<ProjectDetails>(`/api/lyric-videos/${projectId}`);
@@ -119,6 +159,7 @@ export function EditorProvider({
       setLoadError(err?.message || "Project not found");
     } finally {
       setLoading(false);
+      refreshInFlightRef.current = false;
     }
   }, [projectId]);
 
@@ -128,11 +169,12 @@ export function EditorProvider({
 
   useEffect(() => {
     if (!projectIsProcessing(project, runtimeState)) return;
+    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && !scene.imageUrl && scene.status === "processing");
     const timer = window.setInterval(() => {
       refresh();
-    }, 4000);
+    }, hasProcessingScenes ? 20000 : 4000);
     return () => window.clearInterval(timer);
-  }, [project, refresh, runtimeState]);
+  }, [project, refresh, runtimeState, scenes]);
 
   useEffect(() => {
     const hasProcessingCast = cast.some((member) => member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
@@ -179,7 +221,7 @@ export function EditorProvider({
           }
         : previous,
     );
-    console.info("[lyric-video] auto generation started from preview", {
+    console.info("[lyric-video] guided generation started from preview", {
       projectId: project.id,
       audioUrl: project.audioUrl,
       originalAudioUrl: project.originalAudioUrl,
@@ -191,10 +233,10 @@ export function EditorProvider({
     requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ mode: "guided" }),
     })
       .then(async (generated) => {
-        console.info("[lyric-video] auto generation completed from preview", {
+        console.info("[lyric-video] guided generation queued from preview", {
           projectId: project.id,
           lineCount: generated.lines?.length || 0,
           sceneCount: generated.scenes?.length || 0,
@@ -210,16 +252,16 @@ export function EditorProvider({
         if (generated.scenes?.length) setScenes(generated.scenes);
         setLyricsDirty(false);
         setWordsDirty(false);
-        setActiveTab("scenes");
+        setActiveTab("customize");
         await refresh();
         setSaveStatus("saved");
-        toast.success("Generation started. You can leave this page and come back later.");
+        toast.success("Direction generation started. Review it when the editor unlocks.");
       })
       .catch(async (err: any) => {
-        console.error("[lyric-video] auto generation flow failed from preview", err);
+        console.error("[lyric-video] guided generation flow failed from preview", err);
         setSaveStatus("failed");
         await refresh();
-        toast.error(err?.message || "Generate storyboard failed");
+        toast.error(err?.message || "Generate direction failed");
       })
       .finally(() => {
         setPreparingAudio(false);
@@ -267,6 +309,25 @@ export function EditorProvider({
     setZoomState(Number(clamp(zoomValue, 1, 3).toFixed(2)));
   }
 
+  async function flushProjectPatch() {
+    if (saveTimerRef.current) {
+      window.clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const patch = pendingProjectPatchRef.current;
+    if (Object.keys(patch).length === 0) return null;
+
+    pendingProjectPatchRef.current = {};
+    const saved = await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    setProject((previous) => saved || previous);
+    setSaveStatus("saved");
+    return saved;
+  }
+
   function updateProjectField<K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) {
     if (generationLocked) {
       showGenerationLockedToast();
@@ -278,15 +339,8 @@ export function EditorProvider({
 
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     saveTimerRef.current = window.setTimeout(async () => {
-      const patch = pendingProjectPatchRef.current;
-      pendingProjectPatchRef.current = {};
       try {
-        await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-        setSaveStatus("saved");
+        await flushProjectPatch();
       } catch (err: any) {
         setSaveStatus("failed");
         toast.error(err?.message || "Save failed");
@@ -374,13 +428,13 @@ export function EditorProvider({
         }),
       });
 
-      console.info("[lyric-video] requesting one-click lyric video image generation", { projectId });
+      console.info("[lyric-video] requesting guided lyric video direction generation", { projectId });
       const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ mode: "guided" }),
       });
-      console.info("[lyric-video] one-click lyric video image generation queued", {
+      console.info("[lyric-video] guided lyric video direction generation queued", {
         projectId,
         lineCount: generated.lines?.length || 0,
         sceneCount: generated.scenes?.length || 0,
@@ -397,10 +451,10 @@ export function EditorProvider({
       if (generated.scenes?.length) setScenes(generated.scenes);
       setLyricsDirty(false);
       setWordsDirty(false);
-      setActiveTab("scenes");
+      setActiveTab("customize");
       await refresh();
       setSaveStatus("saved");
-      toast.success("Generation started. You can leave this page and come back later.");
+      toast.success("Direction generation started. Review it when the editor unlocks.");
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");
@@ -436,6 +490,7 @@ export function EditorProvider({
     setCreatingStory(true);
     setSaveStatus("saving");
     try {
+      await flushProjectPatch();
       const data = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -472,8 +527,9 @@ export function EditorProvider({
         const saved = await saveLyrics();
         if (!saved) return;
       }
+      const savedProject = await flushProjectPatch();
 
-      let storyPrompt = (project.storyPrompt || "").trim();
+      let storyPrompt = (savedProject?.storyPrompt || project.storyPrompt || "").trim();
       if (!storyPrompt) {
         const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
           method: "POST",
@@ -484,30 +540,34 @@ export function EditorProvider({
         setProject((previous) => story.project || (previous ? { ...previous, storyPrompt } : previous));
       }
 
-      const generated = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/storyboard`, {
+      const generated = await requestJson<VisualGenerationResponse>(`/api/lyric-videos/${project.id}/visuals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storyPrompt }),
+        body: JSON.stringify({
+          storyPrompt,
+          regenerateStoryboard: true,
+        }),
       });
-      setScenes(generated || []);
+      setScenes(generated.scenes || []);
       setProject((previous) =>
-        previous
+        generated.project ||
+        (previous
           ? {
               ...previous,
-              storyPrompt,
-              scenesStatus: "ready",
-              pipelineStage: "storyboard_ready",
+              storyPrompt: generated.storyPrompt || storyPrompt,
+              scenesStatus: (generated.queuedImages?.length || 0) > 0 ? "processing" : "ready",
+              pipelineStage: (generated.queuedImages?.length || 0) > 0 ? "images_processing" : "storyboard_ready",
               pipelineError: null,
             }
-          : previous,
+          : previous),
       );
       setActiveTab("scenes");
       setSaveStatus("saved");
       await refresh();
-      toast.success("Storyboard prompts are ready");
+      toast.success("Scene generation started");
     } catch (err: any) {
       setSaveStatus("failed");
-      toast.error(err?.message || "Generate storyboard failed");
+      toast.error(err?.message || "Generate scenes failed");
     }
   }
 
@@ -695,8 +755,11 @@ export function EditorProvider({
     if (imageSyncInFlightRef.current) return;
     imageSyncInFlightRef.current = true;
     try {
-      await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`);
-      await refresh();
+      const synced = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`);
+      if (synced?.length) {
+        setScenes((previous) => mergeImageSyncedScenes(previous, synced));
+      }
+      void refresh();
     } catch (err: any) {
       toast.error(err?.message || "Sync scene images failed");
     } finally {

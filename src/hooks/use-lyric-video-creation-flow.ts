@@ -159,7 +159,7 @@ export function useLyricVideoCreationFlow() {
       // 前端主链路：
       // 1. 用 upload-audio 返回的 url 创建 `lyric_video_project`
       // 2. 可选写入默认角色 `lyric_video_cast_member`
-      // 3. 调 `/api/lyric-videos/:id/generate`，后端进入 generation-runner 一键生成
+      // 3. 调 `/api/lyric-videos/:id/generate`，后端生成歌词、时间骨架和创意方向
       setError("");
       setStage("creating");
 
@@ -246,13 +246,13 @@ export function useLyricVideoCreationFlow() {
 
       setStage("generating");
       const generateStartedAt = Date.now();
-      logLyricStage("one-click-generate", "start", { projectId: project.id });
+      logLyricStage("guided-generate", "start", { projectId: project.id });
       const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ mode: "guided" }),
       });
-      logLyricStage("one-click-generate", "queued-images", {
+      logLyricStage("guided-generate", "queued", {
         durationMs: Date.now() - generateStartedAt,
         projectId: project.id,
         lineCount: generated.lines?.length || 0,
