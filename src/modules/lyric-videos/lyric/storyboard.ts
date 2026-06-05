@@ -6,9 +6,9 @@ import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { energyLevelForValue, normalizePreprocessLyrics, readAudioAnalysis } from './asr';
-import { safeJson, sceneTextFromLineIds } from './json';
+import { parseJsonField, safeJson, sceneTextFromLineIds } from './json';
 import { getProject, getProjectDetails } from './project';
-import { generateStoryboardWithKieClaude, generateStoryPromptWithKieClaude } from './llm';
+import { formatStoryActsText, generateStoryboardWithKieClaude, generateStoryPromptWithKieClaude, normalizeSongAnalysis } from './llm';
 import {
   DEFAULT_MAX_STORYBOARD_SCENES,
   DEFAULT_STORYBOARD_MODEL,
@@ -1309,6 +1309,20 @@ export async function generateStoryboard(params: {
   }
 }
 
+function storyPromptFromGenerationSteps(steps?: any[]) {
+  const songAnalysisStep = (steps || [])
+    .filter((step) => step.stage === 'song_analysis' && step.outputJson)
+    .slice(-1)[0];
+  if (!songAnalysisStep) return '';
+
+  const output = parseJsonField<any>(songAnalysisStep.outputJson, {});
+  const songAnalysis = output?.songAnalysis || output?.song_analysis || output?.value?.songAnalysis;
+  if (!songAnalysis) return '';
+
+  const normalized = normalizeSongAnalysis(songAnalysis);
+  return formatStoryActsText(normalized);
+}
+
 export async function generateStoryPrompt(params: {
   userId: string;
   projectId: string;
@@ -1319,6 +1333,7 @@ export async function generateStoryPrompt(params: {
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Generate lyrics before creating a story');
   const configs = await getAllConfigs();
+  const latestSongAnalysisStory = storyPromptFromGenerationSteps(details.generationSteps);
 
   const task = await createTask({
     userId: params.userId,
@@ -1343,11 +1358,14 @@ export async function generateStoryPrompt(params: {
       provider: 'kie_codex',
       model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
       lineCount: details.lines.length,
+      source: latestSongAnalysisStory ? 'song_analysis' : 'story_prompt_llm',
     });
-    const storyPrompt = await generateStoryPromptWithKieClaude({
-      lines: details.lines,
-      project: details.project,
-    });
+    const storyPrompt =
+      latestSongAnalysisStory ||
+      (await generateStoryPromptWithKieClaude({
+        lines: details.lines,
+        project: details.project,
+      }));
 
     if (!storyPrompt) {
       throw new Error('Story generation returned empty content');
@@ -1375,6 +1393,7 @@ export async function generateStoryPrompt(params: {
       storyPromptLength: storyPrompt.length,
       storyPromptPreview: storyPrompt,
       storyPromptPersisted: Boolean(project?.storyPrompt),
+      source: latestSongAnalysisStory ? 'song_analysis' : 'story_prompt_llm',
     });
 
     return { storyPrompt, project, taskId: task.id };

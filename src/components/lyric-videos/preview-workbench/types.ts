@@ -98,6 +98,8 @@ export type GenerationStep = {
   status: string;
   progressPercent?: number | null;
   errorMessage?: string | null;
+  errorCode?: string | null;
+  outputJson?: unknown;
   startedAt?: string | Date | null;
   completedAt?: string | Date | null;
   createdAt?: string | Date | null;

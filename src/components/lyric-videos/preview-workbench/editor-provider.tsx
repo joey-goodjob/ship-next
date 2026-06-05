@@ -425,6 +425,13 @@ export function EditorProvider({
       toast.error("Generate lyrics before creating a story");
       return;
     }
+    const scenesCreated =
+      !["empty", "lyrics_draft"].includes(project.scenesStatus || "empty") ||
+      scenes.some((scene) => scene.status !== "lyrics_draft" && String(scene.prompt || "").trim());
+    if (scenesCreated) {
+      toast.info("Language and Story are locked after scenes have been created.");
+      return;
+    }
 
     setCreatingStory(true);
     setSaveStatus("saving");

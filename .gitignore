@@ -32,6 +32,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+/output/
+/debug/lyric-video-e2e.http
 
 # env
 .env*.local

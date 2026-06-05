@@ -19,9 +19,16 @@ import type { LyricPreviewConfig } from "./types";
 import { normalizePreviewConfig } from "./utils";
 
 export function CustomizePanel() {
-  const { createStory, creatingStory, generationLocked, generationLockReason, latestExport, project, updateProjectField } = useEditor();
+  const { createStory, creatingStory, generationLocked, generationLockReason, latestExport, project, scenes, updateProjectField } = useEditor();
   if (!project) return <PanelEmpty title="Project unavailable" description="Refresh the page or open a project from the library." />;
   const previewConfig = normalizePreviewConfig(project.previewConfig);
+  const scenesCreated =
+    !["empty", "lyrics_draft"].includes(project.scenesStatus || "empty") ||
+    scenes.some((scene) => scene.status !== "lyrics_draft" && String(scene.prompt || "").trim());
+  const storyLocked = generationLocked || scenesCreated;
+  const storyLockReason = generationLocked
+    ? generationLockReason
+    : "Language and Story are locked after scenes have been created.";
 
   function updatePreviewConfig(patch: Partial<LyricPreviewConfig>) {
     updateProjectField("previewConfig", { ...previewConfig, ...patch });
@@ -32,14 +39,14 @@ export function CustomizePanel() {
       <FieldBlock
         label="Lyrics Language"
         helper="Main language of the lyrics. Change it if auto-detection was not correct."
-        locked={generationLocked}
-        lockReason={generationLockReason}
+        locked={storyLocked}
+        lockReason={storyLockReason}
       >
         <select
           value={project.language || "auto"}
           onChange={(event) => updateProjectField("language", event.target.value)}
-          disabled={generationLocked}
-          title={generationLocked ? generationLockReason : undefined}
+          disabled={storyLocked}
+          title={storyLocked ? storyLockReason : undefined}
           className="h-[42px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[14px] font-[600] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
         >
           {LANGUAGE_OPTIONS.map((option) => (
@@ -102,8 +109,8 @@ export function CustomizePanel() {
           <button
             type="button"
             onClick={createStory}
-            disabled={creatingStory || generationLocked}
-            title={generationLocked ? generationLockReason : undefined}
+            disabled={creatingStory || storyLocked}
+            title={storyLocked ? storyLockReason : undefined}
             className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[10px] text-[13px] font-[700] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {creatingStory ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Wand2 className="h-[14px] w-[14px]" />}
@@ -111,16 +118,16 @@ export function CustomizePanel() {
           </button>
         }
         helper="Describe the story of your video. Include acts, characters, locations, and visual details."
-        locked={generationLocked}
-        lockReason={generationLockReason}
+        locked={storyLocked}
+        lockReason={storyLockReason}
       >
         <textarea
           value={project.storyPrompt || ""}
           onChange={(event) => updateProjectField("storyPrompt", event.target.value)}
-          disabled={generationLocked}
-          title={generationLocked ? generationLockReason : undefined}
+          disabled={storyLocked}
+          title={storyLocked ? storyLockReason : undefined}
           rows={10}
-          placeholder="A cinematic story about longing, stage lights, and a final chorus."
+          placeholder={"Act 1:\nA cinematic opening that establishes the character, world, and core visual motif.\n\nAct 2:\nThe emotional conflict grows and the visuals shift into a new space."}
           className="min-h-[240px] w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] py-[10px] text-[14px] font-[500] leading-6 text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
         />
       </FieldBlock>

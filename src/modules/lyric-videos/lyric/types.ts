@@ -129,6 +129,10 @@ export type LyricVideoSongAnalysisResult = {
     plot_beat: string;
     visual_anchor: string;
   }>;
+  story_acts: Array<{
+    title: string;
+    description: string;
+  }>;
   location_plan: Array<{
     time_range: string;
     location: string;

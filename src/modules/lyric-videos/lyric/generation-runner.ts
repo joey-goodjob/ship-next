@@ -6,8 +6,9 @@ import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
 import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './audio';
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
+import { buildFailureSnapshot, createLyricVideoError } from './diagnostics';
 import { requestHash, safeJson } from './json';
-import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, generateStoryboardScenesWithKieClaude } from './llm';
+import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, formatStoryActsText, generateStoryboardScenesWithKieClaude } from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
 import { queueSceneImagesGrid } from './media-generation';
@@ -303,8 +304,15 @@ export async function failGenerationRun(params: {
   runId: string;
   step?: any;
   error: any;
+  input?: unknown;
 }) {
   const message = params.error?.message || 'Generation failed';
+  const failureSnapshot = buildFailureSnapshot({
+    stage: params.step?.stage,
+    step: params.step,
+    error: params.error,
+    input: params.input,
+  });
   const updates: Promise<unknown>[] = [
     db()
       .update(lyricVideoGenerationRun)
@@ -343,7 +351,7 @@ export async function failGenerationRun(params: {
           status: 'failed',
           errorCode: params.step.stage,
           errorMessage: message,
-          outputJson: safeJson({ error: message }),
+          outputJson: safeJson(failureSnapshot),
           completedAt: new Date(),
           lockedAt: null,
           lockedBy: null,
@@ -507,31 +515,42 @@ export async function executeGenerationRun(params: {
   const options = generationOptions(params.input);
   const debug = generationDebugOptions(params.input);
   let currentStep: any = undefined;
+  let currentStepInput: unknown = undefined;
 
   try {
     const configs = await getAllConfigs();
 
     currentStep = findGenerationStep(params.steps, 'asr_words');
+    currentStepInput = {
+      request: params.inputSnapshot,
+      audioUrl: params.project.originalAudioUrl || params.project.audioUrl,
+      processedAudioUrl: params.project.processedAudioUrl,
+      trimStartMs: params.project.trimStartMs,
+      trimEndMs: params.project.trimEndMs,
+      transcribeModel: options.transcribeModel,
+    };
     await markGenerationStepRunning({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 5,
-      input: {
-        request: params.inputSnapshot,
-        audioUrl: params.project.originalAudioUrl || params.project.audioUrl,
-        processedAudioUrl: params.project.processedAudioUrl,
-        trimStartMs: params.project.trimStartMs,
-        trimEndMs: params.project.trimEndMs,
-        transcribeModel: options.transcribeModel,
-      },
+      input: currentStepInput,
     });
     if (!(params.project.originalAudioUrl || params.project.audioUrl)) {
-      throw new Error('Upload audio before generation');
+      throw createLyricVideoError('Upload audio before generation', {
+        errorKind: 'input_missing',
+        stage: 'asr_words',
+        diagnostics: { projectId: params.projectId, hasAudioUrl: Boolean(params.project.audioUrl), hasOriginalAudioUrl: Boolean(params.project.originalAudioUrl) },
+      });
     }
     if (!configs.elevenlabs_api_key) {
-      throw new Error('ELEVENLABS_API_KEY is required for ElevenLabs transcription');
+      throw createLyricVideoError('ELEVENLABS_API_KEY is required for ElevenLabs transcription', {
+        errorKind: 'provider_request_failed',
+        stage: 'asr_words',
+        provider: 'elevenlabs',
+        model: options.transcribeModel,
+      });
     }
     const transcriptionProject = await prepareAudioClipForTranscription({
       userId: params.userId,
@@ -546,6 +565,7 @@ export async function executeGenerationRun(params: {
       language: transcriptionProject.language,
       transcribeModel: options.transcribeModel,
     };
+    currentStepInput = audioPrepareSnapshot;
     await Promise.all([
       db()
         .update(lyricVideoGenerationStep)
@@ -591,7 +611,17 @@ export async function executeGenerationRun(params: {
       words: cleanedWords,
     };
     if (asrResult.rawSegments.length === 0) {
-      throw new Error('ElevenLabs transcription returned no lyric segments');
+      throw createLyricVideoError('ElevenLabs transcription returned no lyric segments', {
+        errorKind: 'provider_invalid_response',
+        stage: 'asr_words',
+        provider: 'elevenlabs',
+        model: options.transcribeModel,
+        diagnostics: {
+          raw: result.raw,
+          wordCount: result.words?.length || 0,
+          lineCount: result.lines?.length || 0,
+        },
+      });
     }
     const snapshot = asrSnapshot({
       provider: 'elevenlabs',
@@ -624,10 +654,27 @@ export async function executeGenerationRun(params: {
     });
     const detailsAfterLyrics = await getProjectDetails({ userId: params.userId, id: params.projectId });
     if (!detailsAfterLyrics || detailsAfterLyrics.lines.length === 0) {
-      throw new Error('Lyrics were not persisted after transcription');
+      throw createLyricVideoError('Lyrics were not persisted after transcription', {
+        errorKind: 'persist_failed',
+        stage: 'asr_words',
+        diagnostics: {
+          projectId: params.projectId,
+          expectedLineCount: asrResult.rawSegments.length,
+          persistedLineCount: detailsAfterLyrics?.lines.length || 0,
+          persistedWordCount: detailsAfterLyrics?.words.length || 0,
+        },
+      });
     }
     if (detailsAfterLyrics.scenes.length === 0) {
-      throw new Error('Scene timing skeleton was not persisted after transcription');
+      throw createLyricVideoError('Scene timing skeleton was not persisted after transcription', {
+        errorKind: 'persist_failed',
+        stage: 'asr_words',
+        diagnostics: {
+          projectId: params.projectId,
+          lineCount: detailsAfterLyrics.lines.length,
+          sceneCount: detailsAfterLyrics.scenes.length,
+        },
+      });
     }
     const asrOutput = {
       ...audioPrepareSnapshot,
@@ -668,13 +715,14 @@ export async function executeGenerationRun(params: {
       },
       audioAnalysis: analysisResult.audioAnalysis,
     });
+    currentStepInput = { model: options.songAnalysisModel, preprocess };
     await markGenerationStepRunning({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 50,
-      input: { model: options.songAnalysisModel, preprocess },
+      input: currentStepInput,
     });
     const songAnalysisResult = await analyzeSongWithKieForDebug({
       preprocess,
@@ -682,12 +730,34 @@ export async function executeGenerationRun(params: {
       model: options.songAnalysisModel,
     });
     assertUsableSongAnalysis(songAnalysisResult.songAnalysis);
+    const storyActsText = formatStoryActsText(songAnalysisResult.songAnalysis);
+    const shouldPersistStoryActs = Boolean(storyActsText && !(detailsAfterLyrics.project.storyPrompt || '').trim());
+    const projectForStoryboard = shouldPersistStoryActs
+      ? {
+          ...detailsAfterLyrics.project,
+          storyPrompt: storyActsText,
+        }
+      : detailsAfterLyrics.project;
+    if (shouldPersistStoryActs) {
+      await db()
+        .update(lyricVideoProject)
+        .set({
+          storyPrompt: storyActsText,
+          pipelineError: null,
+        })
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    }
+    const songAnalysisOutput = {
+      ...songAnalysisResult,
+      storyPrompt: storyActsText,
+      storyPromptPersisted: shouldPersistStoryActs,
+    };
     await markGenerationStepSuccess({
       userId: params.userId,
       runId: params.run.id,
       step: currentStep,
       progress: 70,
-      output: debugStopOutput('song_analysis', songAnalysisResult, debug),
+      output: debugStopOutput('song_analysis', songAnalysisOutput, debug),
     });
     const stoppedAfterSongAnalysis = await maybeStopAfterGenerationStage({
       userId: params.userId,
@@ -696,7 +766,7 @@ export async function executeGenerationRun(params: {
       step: currentStep,
       progress: 70,
       debug,
-      outputSnapshot: debugStopOutput('song_analysis', songAnalysisResult, debug),
+      outputSnapshot: debugStopOutput('song_analysis', songAnalysisOutput, debug),
       songAnalysis: songAnalysisResult.songAnalysis,
     });
     if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
@@ -718,22 +788,24 @@ export async function executeGenerationRun(params: {
         fixedScenes,
       }),
     });
+    currentStepInput = {
+      model: options.storyboardModel,
+      fixedScenes,
+      songAnalysis: songAnalysisResult.songAnalysis,
+      storyPrompt: projectForStoryboard.storyPrompt,
+    };
     await markGenerationStepRunning({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 75,
-      input: {
-        model: options.storyboardModel,
-        fixedScenes,
-        songAnalysis: songAnalysisResult.songAnalysis,
-      },
+      input: currentStepInput,
     });
     const storyboard = await generateStoryboardScenesWithKieClaude({
       songAnalysis: songAnalysisResult.songAnalysis,
       fixedScenes,
-      project: detailsAfterLyrics.project,
+      project: projectForStoryboard,
       model: options.storyboardModel,
       cast: detailsAfterLyrics.cast,
     });
@@ -744,7 +816,22 @@ export async function executeGenerationRun(params: {
       runId: params.run.id,
     });
     if (scenes.length === 0) {
-      throw new Error('Storyboard prompts were not persisted');
+      throw createLyricVideoError('Storyboard prompts were not persisted', {
+        errorKind: 'persist_failed',
+        stage: 'prompt_generation',
+        provider: storyboard.provider,
+        model: storyboard.actualModel || options.storyboardModel,
+        diagnostics: {
+          expectedSceneCount: storyboard.scenes?.length || 0,
+          persistedSceneCount: scenes.length,
+          fixedSceneCount: fixedScenes.length,
+          retryMode: storyboard.retryMode,
+          missingSceneIds: storyboard.missingSceneIds,
+          incompleteSceneIds: storyboard.incompleteSceneIds,
+          fallbackSceneIds: storyboard.fallbackSceneIds,
+          warnings: storyboard.warnings,
+        },
+      });
     }
     const promptGenerationOutput = {
       provider: storyboard.provider,
@@ -783,19 +870,20 @@ export async function executeGenerationRun(params: {
     if (stoppedAfterPromptGeneration) return stoppedAfterPromptGeneration;
 
     currentStep = findGenerationStep(params.steps, 'image_generation');
+    currentStepInput = {
+      model: options.imageModel,
+      sceneCount: scenes.length,
+      sceneIds: scenes.map((scene: any) => scene.id),
+      gridSize: 4,
+      batchSize: 16,
+    };
     await markGenerationStepRunning({
       userId: params.userId,
       projectId: params.projectId,
       runId: params.run.id,
       step: currentStep,
       progress: 92,
-      input: {
-        model: options.imageModel,
-        sceneCount: scenes.length,
-        sceneIds: scenes.map((scene: any) => scene.id),
-        gridSize: 4,
-        batchSize: 16,
-      },
+      input: currentStepInput,
     });
     const queuedImages = await queueSceneImagesGrid({
       userId: params.userId,
@@ -808,7 +896,26 @@ export async function executeGenerationRun(params: {
       new Set(queuedImages.map((scene: any) => scene.providerTaskId).filter(Boolean))
     );
     if (imageProviderTaskIds.length === 0) {
-      throw new Error('Scene image grid generation did not queue any provider tasks');
+      throw createLyricVideoError('Scene image grid generation did not queue any provider tasks', {
+        errorKind: 'provider_request_failed',
+        stage: 'image_generation',
+        provider: 'kie',
+        model: options.imageModel || 'nano-banana-2',
+        diagnostics: {
+          queuedSceneCount: queuedImages.length,
+          failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed').length,
+          failedScenes: queuedImages
+            .filter((scene: any) => scene.status === 'failed')
+            .map((scene: any) => ({
+              id: scene.id,
+              sort: scene.sort,
+              failureCode: scene.failureCode,
+              error: scene.error,
+              imageTaskId: scene.imageTaskId,
+              providerTaskId: scene.providerTaskId,
+            })),
+        },
+      });
     }
     const outputSnapshot = {
       songAnalysis: songAnalysisResult.songAnalysis,
@@ -824,8 +931,19 @@ export async function executeGenerationRun(params: {
       imageGeneration: {
         mode: 'grid_4x4',
         queuedSceneCount: queuedImages.length,
+        failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed').length,
         providerTaskIds: imageProviderTaskIds,
         batchCount: imageProviderTaskIds.length,
+        failedScenes: queuedImages
+          .filter((scene: any) => scene.status === 'failed')
+          .map((scene: any) => ({
+            id: scene.id,
+            sort: scene.sort,
+            failureCode: scene.failureCode,
+            error: scene.error,
+            imageTaskId: scene.imageTaskId,
+            providerTaskId: scene.providerTaskId,
+          })),
       },
       durationMs: Date.now() - startedAt,
       projectStatus: {
@@ -873,6 +991,7 @@ export async function executeGenerationRun(params: {
       runId: params.run.id,
       step: currentStep,
       error,
+      input: currentStepInput || params.inputSnapshot,
     });
     throw error;
   }

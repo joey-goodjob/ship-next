@@ -288,6 +288,20 @@ function summarizeSceneImageProgress(scenes: any[]) {
   };
 }
 
+function failedSceneImageDetails(scenes: any[]) {
+  return scenes
+    .filter((scene: any) => scene.status === 'failed' && !scene.imageUrl)
+    .map((scene: any) => ({
+      id: scene.id,
+      sort: scene.sort,
+      providerTaskId: scene.providerTaskId || null,
+      imageTaskId: scene.imageTaskId || null,
+      failureCode: scene.failureCode || null,
+      error: scene.error || null,
+      grid: getGridGenerationParams(scene)?.grid || null,
+    }));
+}
+
 async function finalizeActiveImageGenerationRun(params: {
   userId: string;
   projectId: string;
@@ -1239,6 +1253,9 @@ async function updateSceneImageProjectStatus(params: {
       mode: 'grid_4x4',
       sceneCount: params.scenes.length || 0,
       imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
+      failedCount: 0,
+      failedScenes: [],
+      failedBatches: [],
       projectStatus: {
         scenesStatus: 'ready',
         pipelineStage: 'images_ready',
@@ -1269,6 +1286,16 @@ async function updateSceneImageProjectStatus(params: {
       sceneCount: params.scenes.length || 0,
       imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
       failedCount: params.scenes.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length || 0,
+      failedScenes: failedSceneImageDetails(params.scenes),
+      failedBatches: groupFailedSceneImageBatches(params.scenes).map((batch) => ({
+        batchKey: batch.batchKey,
+        batchIndex: batch.batchIndex,
+        batchNumber: batch.batchNumber,
+        providerTaskId: batch.providerTaskId,
+        imageTaskId: batch.imageTaskId,
+        sceneIds: batch.sceneIds,
+        failedCount: batch.failedCount,
+      })),
       projectStatus: {
         scenesStatus: 'partial_success',
         pipelineStage: 'images_partial_success',

@@ -6,6 +6,7 @@ import { getAllConfigs } from '@/modules/config/service';
 import { isStorageConfigured } from '@/modules/storage/service';
 import { saveAIProviderFiles } from './audio';
 import { audioAnalysisPromptSummary, parseLinesFromText, refineAsrSegmentsWithWords, readAudioAnalysis } from './asr';
+import { attachLyricVideoDiagnostics, createLyricVideoError } from './diagnostics';
 import { chatContentToText, parseJsonLoose, previewText } from './json';
 import {
   audioAnalysisFromLlmPreprocess,
@@ -39,6 +40,16 @@ import {
  * `lyric_video_scene` 的写入仍由 `storyboard.ts` 的 `replaceScenes` 完成。
  */
 
+function providerErrorMessage(label: string, status: number, text: string) {
+  const title = text.match(/<title>(.*?)<\/title>/i)?.[1];
+  const clean = previewText(title || text, 300);
+  return `${label} failed: ${status}${clean ? ` ${clean}` : ''}`;
+}
+
+function isTransientProviderStatus(status: number) {
+  return [408, 429, 500, 502, 503, 504, 520, 522, 524].includes(status);
+}
+
 export async function callKieGeminiChat(params: {
   text: string;
   mediaUrl?: string;
@@ -54,7 +65,12 @@ export async function callKieGeminiChat(params: {
       : configs.kie_chat_endpoint || 'https://api.kie.ai/gemini-2.5-flash/v1/chat/completions';
 
   if (!apiKey) {
-    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+    throw createLyricVideoError('Kie API key is required. Add it in Admin Settings > AI.', {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_gemini',
+      model,
+      diagnostics: { endpoint },
+    });
   }
 
   const content: any[] = [{ type: 'text', text: params.text }];
@@ -98,7 +114,12 @@ export async function callKieGeminiChat(params: {
       model,
       endpoint,
     });
-    throw error;
+    throw attachLyricVideoDiagnostics(error instanceof Error ? error : new Error(String(error || 'Kie Gemini request failed')), {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_gemini',
+      model,
+      diagnostics: { endpoint, durationMs: Date.now() - startedAt, promptLength: params.text.length },
+    });
   }
 
   if (!response.ok) {
@@ -110,7 +131,17 @@ export async function callKieGeminiChat(params: {
       status: response.status,
       errorPreview: text,
     });
-    throw new Error(`Kie Gemini chat failed: ${response.status} ${text}`);
+    throw createLyricVideoError(providerErrorMessage('Kie Gemini chat', response.status, text), {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_gemini',
+      model,
+      diagnostics: {
+        endpoint,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        responsePreview: previewText(text, 1200),
+      },
+    });
   }
 
   const data = await response.json();
@@ -138,10 +169,19 @@ export async function callKieClaudeMessages(params: {
   const model = params.model || configs.kie_claude_model;
 
   if (!apiKey) {
-    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+    throw createLyricVideoError('Kie API key is required. Add it in Admin Settings > AI.', {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_claude',
+      model,
+      diagnostics: { endpoint },
+    });
   }
   if (!model) {
-    throw new Error('Claude model is required when using the Kie Claude endpoint.');
+    throw createLyricVideoError('Claude model is required when using the Kie Claude endpoint.', {
+      errorKind: 'input_missing',
+      provider: 'kie_claude',
+      diagnostics: { endpoint },
+    });
   }
 
   const startedAt = Date.now();
@@ -175,7 +215,12 @@ export async function callKieClaudeMessages(params: {
       model,
       endpoint,
     });
-    throw error;
+    throw attachLyricVideoDiagnostics(error instanceof Error ? error : new Error(String(error || 'Kie Claude request failed')), {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_claude',
+      model,
+      diagnostics: { endpoint, durationMs: Date.now() - startedAt, promptLength: params.text.length },
+    });
   }
 
   if (!response.ok) {
@@ -187,7 +232,17 @@ export async function callKieClaudeMessages(params: {
       status: response.status,
       errorPreview: text,
     });
-    throw new Error(`Kie Claude messages failed: ${response.status} ${text}`);
+    throw createLyricVideoError(providerErrorMessage('Kie Claude messages', response.status, text), {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_claude',
+      model,
+      diagnostics: {
+        endpoint,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        responsePreview: previewText(text, 1200),
+      },
+    });
   }
 
   const data = await response.json();
@@ -218,7 +273,12 @@ export async function callKieCodexResponses(params: {
   const model = params.model || configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL;
 
   if (!apiKey) {
-    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+    throw createLyricVideoError('Kie API key is required. Add it in Admin Settings > AI.', {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_codex',
+      model,
+      diagnostics: { endpoint },
+    });
   }
 
   const startedAt = Date.now();
@@ -243,7 +303,8 @@ export async function callKieCodexResponses(params: {
     reasoning: { effort: params.reasoningEffort || 'medium' },
   });
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
+  const maxAttempts = 2;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       response = await fetch(endpoint, {
         method: 'POST',
@@ -253,16 +314,42 @@ export async function callKieCodexResponses(params: {
         },
         body: requestBody,
       });
+      if (!response.ok && isTransientProviderStatus(response.status) && attempt < maxAttempts) {
+        const text = await response.text();
+        logLyricStage('kie-codex-responses', 'response-retry', {
+          durationMs: Date.now() - startedAt,
+          model,
+          endpoint,
+          status: response.status,
+          attempt,
+          maxAttempts,
+          errorPreview: previewText(text, 500),
+        });
+        await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+        response = undefined;
+        continue;
+      }
       break;
     } catch (error) {
-      lastRequestError = error;
       logLyricStageError('kie-codex-responses', attempt < 3 ? 'request-retry' : 'request-error', error, {
         durationMs: Date.now() - startedAt,
         model,
         endpoint,
         attempt,
       });
-      if (attempt < 3) {
+      lastRequestError = attachLyricVideoDiagnostics(error instanceof Error ? error : new Error(String(error || 'Kie Codex request failed')), {
+        errorKind: 'provider_request_failed',
+        provider: 'kie_codex',
+        model,
+        attempt,
+        diagnostics: {
+          endpoint,
+          durationMs: Date.now() - startedAt,
+          promptLength: params.text.length,
+          maxAttempts,
+        },
+      });
+      if (attempt < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
       }
     }
@@ -281,7 +368,17 @@ export async function callKieCodexResponses(params: {
       status: response.status,
       errorPreview: text,
     });
-    throw new Error(`Kie Codex responses failed: ${response.status} ${text}`);
+    throw createLyricVideoError(providerErrorMessage('Kie Codex responses', response.status, text), {
+      errorKind: 'provider_request_failed',
+      provider: 'kie_codex',
+      model,
+      diagnostics: {
+        endpoint,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        responsePreview: previewText(text, 1200),
+      },
+    });
   }
 
   const data = await response.json();
@@ -318,8 +415,23 @@ export function normalizeSongAnalysis(
   const characters = Array.isArray(parsed?.characters) ? parsed.characters : [];
   const keyProps = Array.isArray(parsed?.key_props) ? parsed.key_props : [];
   const narrativeArc = Array.isArray(parsed?.narrative_arc) ? parsed.narrative_arc : [];
+  const storyActs = Array.isArray(parsed?.story_acts) ? parsed.story_acts : [];
   const locationPlan = Array.isArray(parsed?.location_plan) ? parsed.location_plan : [];
   const emotionArc = Array.isArray(parsed?.emotion_arc) ? parsed.emotion_arc : [];
+  const normalizedNarrativeArc: LyricVideoSongAnalysisResult['narrative_arc'] = narrativeArc
+    .map((item: any) => ({
+      time_range: String(item?.time_range || '').trim(),
+      section_label: String(item?.section_label || '').trim(),
+      plot_beat: String(item?.plot_beat || '').trim(),
+      visual_anchor: String(item?.visual_anchor || '').trim(),
+    }))
+    .filter((item: LyricVideoSongAnalysisResult['narrative_arc'][number]) => item.time_range && item.plot_beat);
+  const normalizedStoryActs: LyricVideoSongAnalysisResult['story_acts'] = storyActs
+    .map((item: any, index: number) => ({
+      title: String(item?.title || `Act ${index + 1}`).trim(),
+      description: String(item?.description || item?.text || item?.plot || '').trim(),
+    }))
+    .filter((item: LyricVideoSongAnalysisResult['story_acts'][number]) => item.description);
   return {
     theme: String(parsed?.theme || '').trim(),
     characters: characters
@@ -337,14 +449,14 @@ export function normalizeSongAnalysis(
         appears_in_sections: stringArray(item?.appears_in_sections),
       }))
       .filter((item: LyricVideoSongAnalysisResult['key_props'][number]) => item.description),
-    narrative_arc: narrativeArc
-      .map((item: any) => ({
-        time_range: String(item?.time_range || '').trim(),
-        section_label: String(item?.section_label || '').trim(),
-        plot_beat: String(item?.plot_beat || '').trim(),
-        visual_anchor: String(item?.visual_anchor || '').trim(),
-      }))
-      .filter((item: LyricVideoSongAnalysisResult['narrative_arc'][number]) => item.time_range && item.plot_beat),
+    narrative_arc: normalizedNarrativeArc,
+    story_acts:
+      normalizedStoryActs.length > 0
+        ? normalizedStoryActs
+        : normalizedNarrativeArc.map((item, index) => ({
+            title: `Act ${index + 1}`,
+            description: [item.plot_beat, item.visual_anchor ? `Visual anchor: ${item.visual_anchor}` : ''].filter(Boolean).join(' '),
+          })),
     location_plan: locationPlan
       .map((item: any) => ({
         time_range: String(item?.time_range || '').trim(),
@@ -365,6 +477,24 @@ export function normalizeSongAnalysis(
     color_palette: stringArray(parsed?.color_palette).slice(0, 5),
     notes: String(parsed?.notes || '').trim(),
   };
+}
+
+export function formatStoryActsText(songAnalysis?: Partial<LyricVideoSongAnalysisResult> | null) {
+  const acts = Array.isArray(songAnalysis?.story_acts) ? songAnalysis.story_acts : [];
+  return acts
+    .map((act, index) => {
+      const title = String(act?.title || `Act ${index + 1}`).trim();
+      const normalizedTitle = /^act\s+\d+\s*:/i.test(title)
+        ? title
+        : /^act\s+\d+$/i.test(title)
+          ? `${title}:`
+          : `Act ${index + 1}: ${title}`;
+      const description = String(act?.description || '').trim();
+      return description ? `${normalizedTitle}\n${description}` : '';
+    })
+    .filter(Boolean)
+    .join('\n\n')
+    .trim();
 }
 
 export function buildSongAnalysisPrompt(preprocess: LyricVideoLlmPreprocessResult) {
@@ -399,6 +529,12 @@ ${JSON.stringify(preprocess)}
       "section_label": "verse1 / chorus1 / bridge 等",
       "plot_beat": "这个段落在讲什么具体故事事件（主角在做什么、为什么、结果是什么）",
       "visual_anchor": "这个段落最核心的一个视觉画面"
+    }
+  ],
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "英文视觉叙事段落。覆盖一个较大的歌曲区间，不是单个镜头；包含主角动作、场景、视觉母题和情绪推进。"
     }
   ],
   "location_plan": [
@@ -445,6 +581,13 @@ ${JSON.stringify(preprocess)}
 - 不能只写情绪描述（如"主角感到自由"），要写动作和事件（如"主角把旧地图撕碎扔向天空"）
 - 相邻段落之间要有因果关系或对比关系
 
+### story_acts
+- 产出 3-5 个 Act，作为用户在 Customize > Story 里看到和编辑的 MV 故事编排
+- 每个 Act 要覆盖一个较大的叙事段落，不能是一条 scene 或一个镜头
+- description 必须用英文自然段，80-120 words，写清楚人物动作、地点、视觉母题、情绪推进和转场方向
+- Acts 之间要形成完整起承转合，后续 Prompt2 会根据这些 Acts 拆成很多 scenes
+- 不要在 description 里写字幕、歌词文字、屏幕文字或 UI 文案
+
 ### location_plan（关键改动）
 - 至少包含 3 种视觉上有明显差异的空间
 - 必须有冷暖色调的对比（不能全暖或全冷）
@@ -470,7 +613,13 @@ export async function analyzeSongWithKieForDebug(params: {
     throw new Error(`Unsupported LLM provider: ${provider}`);
   }
   if (!params.preprocess || !Array.isArray(params.preprocess.lines) || params.preprocess.lines.length === 0) {
-    throw new Error('preprocess.lines is required for song analysis');
+    throw createLyricVideoError('preprocess.lines is required for song analysis', {
+      errorKind: 'input_missing',
+      stage: 'song_analysis',
+      provider,
+      model: params.model,
+      diagnostics: { hasPreprocess: Boolean(params.preprocess), lineCount: params.preprocess?.lines?.length || 0 },
+    });
   }
 
   const prompt = buildSongAnalysisPrompt(params.preprocess);
@@ -503,12 +652,35 @@ export async function analyzeSongWithKieForDebug(params: {
         warnings.push('Prompt1 returned unusable song analysis; retried once.');
         continue;
       }
-      throw error;
+      throw attachLyricVideoDiagnostics(error instanceof Error ? error : new Error(String(error || 'Prompt1 validation failed')), {
+        errorKind: 'provider_invalid_response',
+        stage: 'song_analysis',
+        provider,
+        model: params.model || result.model,
+        attempt,
+        diagnostics: {
+          attempts: 2,
+          warnings,
+          rawText: result.content,
+          raw: result.raw,
+          normalizedSongAnalysis: songAnalysis,
+          contentPreview: previewText(result.content, 1200),
+        },
+      });
     }
   }
 
   if (!result || !songAnalysis) {
-    throw lastValidationError || new Error('Song analysis returned no usable JSON content');
+    throw attachLyricVideoDiagnostics(
+      lastValidationError instanceof Error ? lastValidationError : new Error('Song analysis returned no usable JSON content'),
+      {
+        errorKind: 'provider_invalid_response',
+        stage: 'song_analysis',
+        provider,
+        model: params.model,
+        diagnostics: { warnings },
+      }
+    );
   }
 
   return {
@@ -671,6 +843,7 @@ ${buildStoryboardCastBlock(params.cast)}
 
 ## 要求
 - 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
+- Story direction 是 Act-level 故事编排，只用于保持连续性和视觉母题；不要把 Act 当成 scene，不要按 Act 数量生成镜头
 - lyric scene 根据 text 的歌词语义设计画面
 - instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
 - planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
@@ -753,6 +926,7 @@ ${JSON.stringify(fixedScenes)}
 
 ### 基本规则
 - 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
+- Story direction 是 Act-level 故事编排，只用于保持连续性和视觉母题；不要把 Act 当成 scene，不要按 Act 数量生成镜头
 - lyric scene 根据 text 的歌词语义设计画面
 - instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
 - planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
@@ -803,7 +977,13 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
   cast?: any[];
 }) {
   if (!params.preprocess || !Array.isArray(params.preprocess.lines) || params.preprocess.lines.length === 0) {
-    throw new Error('preprocess.lines is required for Prompt 2');
+    throw createLyricVideoError('preprocess.lines is required for Prompt 2', {
+      errorKind: 'input_missing',
+      stage: 'prompt_generation',
+      provider: 'kie_codex',
+      model: params.model,
+      diagnostics: { hasPreprocess: Boolean(params.preprocess), lineCount: params.preprocess?.lines?.length || 0 },
+    });
   }
 
   const model = params.model || DEFAULT_STORYBOARD_MODEL;
@@ -873,6 +1053,7 @@ export function assertUsableSongAnalysis(songAnalysis: LyricVideoSongAnalysisRes
       songAnalysis.visual_style ||
       songAnalysis.characters.length > 0 ||
       songAnalysis.narrative_arc.length > 0 ||
+      songAnalysis.story_acts.length > 0 ||
       songAnalysis.location_plan.length > 0 ||
       songAnalysis.emotion_arc.length > 0
   );
@@ -1003,7 +1184,13 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   cast?: any[];
 }) {
   if (params.fixedScenes.length === 0) {
-    throw new Error('No fixed scenes available for storyboard prompt generation');
+    throw createLyricVideoError('No fixed scenes available for storyboard prompt generation', {
+      errorKind: 'input_missing',
+      stage: 'prompt_generation',
+      provider: 'kie_codex',
+      model: params.model,
+      diagnostics: { fixedSceneCount: params.fixedScenes.length },
+    });
   }
 
   const model = params.model || DEFAULT_STORYBOARD_MODEL;
@@ -1053,7 +1240,21 @@ export async function generateStoryboardScenesWithKieClaude(params: {
     });
     promptScenes = buildPromptSceneMap(fullRetry.repairScenes);
     if (completePromptSceneCount({ fixedScenes: params.fixedScenes, promptScenes }) === 0) {
-      throw new Error('Storyboard prompt generation returned no valid scenes');
+      throw createLyricVideoError('Storyboard prompt generation returned no valid scenes', {
+        errorKind: 'provider_invalid_response',
+        stage: 'prompt_generation',
+        provider: 'kie_codex',
+        model,
+        diagnostics: {
+          fixedSceneCount: params.fixedScenes.length,
+          firstRawText: firstAttempt.content,
+          firstRaw: firstAttempt.raw,
+          retryRawText: fullRetry.result.content,
+          retryRaw: fullRetry.result.raw,
+          retryAttempts,
+          warnings,
+        },
+      });
     }
   }
 
@@ -1194,6 +1395,7 @@ export async function generateStoryboardWithKieClaude(params: {
       characters: [],
       key_props: [],
       narrative_arc: [],
+      story_acts: [],
       location_plan: [],
       emotion_arc: [],
       visual_style: params.project.artStyle || 'cinematic lyric video',
@@ -1247,11 +1449,22 @@ export async function generateStoryPromptWithKieClaude(params: {
   const lyrics = params.lines
     .map((line, index) => `${index + 1}. ${line.text}`)
     .join('\n');
-  const prompt = `Write an English visual story prompt for a lyric video.
-Use the lyrics, title, style, palette, and format to create a cinematic concept that an image/storyboard generator can follow.
-Return only the story text, no markdown, no headings, no bullet points.
-Length: 120-180 English words.
-Requirements: consistent characters and setting, clear visual arc from beginning to ending, recurring motifs, emotionally matched to the lyrics, no text, no typography, no subtitles in the images.
+  const prompt = `Write an English act-based visual story brief for a lyric video.
+Use the lyrics, title, style, palette, and format to create a cinematic concept that an image/storyboard generator can later split into many scenes.
+Return only JSON, no markdown.
+
+JSON shape:
+{
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "80-120 English words. A broad visual story segment, not a single shot."
+    }
+  ]
+}
+
+Requirements: 3-5 acts, consistent characters and setting, clear visual arc from beginning to ending, recurring motifs, emotionally matched to the lyrics, no text, no typography, no subtitles in the images.
+Do not write scene prompts. Each act should cover a larger part of the song and guide many downstream scenes.
 
 Project title: ${params.project.title}
 Lyrics language: ${params.project.language || 'auto'}
@@ -1268,7 +1481,9 @@ ${lyrics}`;
     model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
     reasoningEffort: 'medium',
   });
-  return result.content.replace(/^["']|["']$/g, '').trim();
+  const parsed = parseJsonLoose<any>(result.content, {});
+  const storyText = formatStoryActsText(normalizeSongAnalysis(parsed));
+  return storyText || result.content.replace(/^["']|["']$/g, '').trim();
 }
 
 export function buildHeuristicStoryboard(params: { lines: any[]; project: any; storyPrompt?: string }) {
@@ -1299,7 +1514,11 @@ export function buildHeuristicStoryboard(params: { lines: any[]; project: any; s
 export async function createKieProvider() {
   const configs = await getAllConfigs();
   if (!configs.kie_api_key) {
-    throw new Error('Kie API key is required. Add it in Admin Settings > AI.');
+    throw createLyricVideoError('Kie API key is required. Add it in Admin Settings > AI.', {
+      errorKind: 'provider_request_failed',
+      provider: 'kie',
+      diagnostics: { source: 'createKieProvider' },
+    });
   }
   return new KieProvider({
     apiKey: configs.kie_api_key,

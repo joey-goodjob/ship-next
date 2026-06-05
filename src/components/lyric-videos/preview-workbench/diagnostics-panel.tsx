@@ -123,6 +123,29 @@ function stepTiming(step?: GenerationStep | null) {
   };
 }
 
+function parseStepOutput(step?: GenerationStep | null) {
+  const value = step?.outputJson;
+  if (!value) return null;
+  if (typeof value === "object") return value as Record<string, unknown>;
+  if (typeof value !== "string") return null;
+  try {
+    return JSON.parse(value) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function stepFailureSummary(step?: GenerationStep | null) {
+  const output = parseStepOutput(step);
+  if (!output || output.failure !== true) return null;
+  return {
+    errorKind: String(output.errorKind || step?.errorCode || "generation_failed"),
+    stage: String(output.stage || step?.stage || ""),
+    message: String(output.message || step?.errorMessage || "Generation failed"),
+    diagnostics: output.diagnostics || null,
+  };
+}
+
 function buildImageDiagnostics(scenes: LyricScene[]) {
   const total = scenes.length;
   const success = scenes.filter(sceneHasImage).length;
@@ -228,7 +251,9 @@ function buildReport(params: {
         stage,
         status: step?.status || "pending",
         progressPercent: step?.progressPercent || 0,
+        errorCode: step?.errorCode || null,
         errorMessage: step?.errorMessage || null,
+        failure: stepFailureSummary(step),
         startedAt: timing.startedAt,
         completedAt: timing.completedAt,
         durationMs: timing.durationMs,
@@ -360,6 +385,11 @@ export function DiagnosticsPanel() {
                     </p>
                   ) : null}
                   {step?.errorMessage ? <p className="mt-[4px] line-clamp-2 text-[11px] font-[750] text-red-600">{step.errorMessage}</p> : null}
+                  {stepFailureSummary(step) ? (
+                    <p className="mt-[3px] truncate text-[11px] font-[800] text-red-500">
+                      {stepFailureSummary(step)?.errorKind}
+                    </p>
+                  ) : null}
                 </div>
                 <StatusBadge status={step?.status || "pending"} />
               </div>
