@@ -8,7 +8,14 @@ import { getUuid } from '@/lib/hash';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { fetchBytes, saveGeneratedFile } from './audio';
-import { createKieProvider } from './llm';
+import {
+  createLyricVideoImageProviderSelection,
+  createLyricVideoImageQueryProvider,
+  configuredLyricVideoImageProviderName,
+  lyricVideoImageProviderFromGenerationParams,
+  type LyricVideoImageProviderName,
+  type LyricVideoImageProviderSelection,
+} from './image-provider';
 import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
@@ -39,8 +46,10 @@ function normalizeKieImageResolution(model: string, resolution: unknown) {
 }
 
 export const DEFAULT_SCENE_IMAGE_BATCH_LIMIT = 16;
-const GRID_SCENE_IMAGE_SIZE = 4;
-const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
+export const GRID_SCENE_IMAGE_SIZE = 3;
+export const GRID_SCENE_IMAGE_MODE = 'grid_3x3';
+export const GRID_SCENE_IMAGE_RESOLUTION = '2K';
+export const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
 const GRID_IMAGE_QUEUE_CONCURRENCY = 4;
 const GRID_IMAGE_SYNC_READY_BATCH_LIMIT = 1;
 
@@ -58,6 +67,10 @@ type GridImageBatchDescriptor = {
   scenes: GridImagePanelScene[];
   gridPrompt: ReturnType<typeof buildGridSceneImagePrompt>;
   imageOptions: Record<string, unknown>;
+  provider: LyricVideoImageProviderSelection['provider'];
+  providerName: LyricVideoImageProviderName;
+  model: string;
+  fallbackReason?: string;
   referenceImageUrl: string;
   referenceImageUrls: string[];
   castId?: string;
@@ -159,16 +172,31 @@ function buildGridSceneImagePrompt(params: {
   scenes: any[];
   gridSize?: number;
   aspectRatio?: string;
+  resolution?: string;
   referenceCast?: any;
   hasReferenceImage?: boolean;
 }) {
   const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE)));
   const totalPanels = gridSize * gridSize;
   const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
+  const resolution = String(params.resolution || GRID_SCENE_IMAGE_RESOLUTION).trim().toUpperCase();
+  const baseLandscapeWidth = resolution === '1K' ? 1024 : resolution === '4K' ? 3840 : 2048;
+  const baseLandscapeHeight = resolution === '1K' ? 576 : resolution === '4K' ? 2160 : 1152;
+  const sourceWidth = aspectRatio === '9:16' ? baseLandscapeHeight : baseLandscapeWidth;
+  const sourceHeight = aspectRatio === '9:16' ? baseLandscapeWidth : baseLandscapeHeight;
+  const panelWidth = Math.round(sourceWidth / gridSize);
+  const panelHeight = Math.round(sourceHeight / gridSize);
   const frameOrientation = aspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
   const expectedPanel = aspectRatio === '9:16'
-    ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
-    : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
+    ? `Each panel must be a 9:16 vertical portrait frame, approximately ${panelWidth}x${panelHeight} when cropped from a ${resolution} ${gridSize}x${gridSize} grid.`
+    : `Each panel must be a 16:9 landscape frame, approximately ${panelWidth}x${panelHeight} when cropped from a ${resolution} ${gridSize}x${gridSize} grid.`;
+  const layoutRules = [
+    `The final image canvas itself must be ${aspectRatio}.`,
+    `Divide the canvas into exactly ${gridSize} columns and exactly ${gridSize} rows: ${totalPanels} equal rectangular cells.`,
+    `Draw thin straight black divider lines at every 1/${gridSize} grid boundary so the ${gridSize}x${gridSize} layout is visually unambiguous.`,
+    'Do not create a collage, masonry layout, contact sheet, stacked strips, overlapping frames, variable-size panels, 2-column layout, 4-column layout, or any layout other than the requested square grid.',
+    'Do not crop, merge, rotate, or resize individual cells differently. All cell edges must align perfectly.',
+  ];
   const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
   const referenceCast = params.referenceCast;
   const mainCharacter = referenceCast
@@ -190,7 +218,8 @@ function buildGridSceneImagePrompt(params: {
   const compiledPrompt = [
     globalStyle,
     mainCharacter,
-    `Create one exact ${gridSize}x${gridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels.`,
+    `Create one exact ${gridSize}x${gridSize} storyboard grid, ${totalPanels} equal panels, no labels.`,
+    ...layoutRules,
     expectedPanel,
     `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${aspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
     '',
@@ -201,6 +230,7 @@ function buildGridSceneImagePrompt(params: {
     compiledPrompt,
     gridSize,
     aspectRatio,
+    resolution,
     totalPanels,
     panelCount: panels.length,
     panels,
@@ -211,7 +241,7 @@ function getGridGenerationParams(scene: any) {
   const parsed = scene.generationParams && typeof scene.generationParams === 'object'
     ? scene.generationParams as Record<string, any>
     : parseJsonField<Record<string, any>>(scene.generationParams, {});
-  return parsed?.mode === 'grid_4x4' && parsed.grid ? parsed : null;
+  return (parsed?.mode === GRID_SCENE_IMAGE_MODE || parsed?.mode === 'grid_4x4') && parsed.grid ? parsed : null;
 }
 
 function sceneHasImage(scene: any) {
@@ -434,12 +464,13 @@ export async function queueSceneImages(params: {
   const configs = await getAllConfigs();
   const defaultModel = resolveKieImageModel(configs, params.model);
   const characterImageModel = configs.kie_character_image_model || 'nano-banana-2';
-  const provider = await createKieProvider();
+  const configuredProvider = configuredLyricVideoImageProviderName(configs);
   const queued = [];
   logLyricStage('scene-images', 'queue-start', {
     projectId: params.projectId,
     userId: params.userId,
-    model: defaultModel,
+    provider: configuredProvider,
+    model: configuredProvider === 'wavespeed' ? configs.wavespeed_image_model : defaultModel,
     sceneCount: scenes.length,
     sceneIds: scenes.map((scene: any) => scene.id),
     clearExistingImages: params.clearExistingImages,
@@ -462,6 +493,15 @@ export async function queueSceneImages(params: {
       imageOptions.image_input = referenceImageUrls;
       imageOptions.output_format = 'jpg';
     }
+    const providerSelection = await createLyricVideoImageProviderSelection({
+      configs,
+      model,
+      needsReferenceImage: referenceImageUrls.length > 0,
+      defaultKieModel: defaultModel,
+      defaultKieCharacterModel: characterImageModel,
+    });
+    const normalizedImageOptions = providerSelection.normalizeOptions(imageOptions);
+    const actualModel = providerSelection.model;
     const prompt = referenceImageUrls.length > 0 && boundCast?.promptFragment
       ? `${scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
       : scene.prompt;
@@ -469,25 +509,27 @@ export async function queueSceneImages(params: {
     const task = await createTask({
       userId: params.userId,
       mediaType: 'image',
-      provider: 'kie',
-      model,
+      provider: providerSelection.providerName,
+      model: actualModel,
       prompt,
       costCredits: 5,
       options: {
         projectId: params.projectId,
         sceneId: scene.id,
-        ...imageOptions,
+        provider: providerSelection.providerName,
+        fallbackReason: providerSelection.fallbackReason,
+        ...normalizedImageOptions,
         castId: boundCast?.id,
       },
     });
 
     try {
-      const result = await provider.generate({
+      const result = await providerSelection.provider.generate({
         params: {
           mediaType: AIMediaType.IMAGE,
-          model,
+          model: actualModel,
           prompt,
-          options: imageOptions,
+          options: normalizedImageOptions,
         },
       });
       await updateTask({
@@ -508,9 +550,16 @@ export async function queueSceneImages(params: {
           lastAttemptAt: new Date(),
           completedAt: null,
           failureCode: null,
-          imageModel: model,
+          imageModel: actualModel,
           imagePromptSnapshot: prompt,
-          generationParams: safeJson({ model, castId: boundCast?.id, referenceImageUrl, referenceImageUrls }),
+          generationParams: safeJson({
+            provider: providerSelection.providerName,
+            fallbackReason: providerSelection.fallbackReason,
+            model: actualModel,
+            castId: boundCast?.id,
+            referenceImageUrl,
+            referenceImageUrls,
+          }),
           error: null,
         })
         .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
@@ -522,6 +571,7 @@ export async function queueSceneImages(params: {
         sceneId: updated.id,
         taskId: task.id,
         providerTaskId: result.taskId,
+        provider: providerSelection.providerName,
         status: updated.status,
         hasImageUrl: Boolean(updated.imageUrl),
         promptLength: prompt.length,
@@ -590,7 +640,7 @@ export async function queueSceneImagesGrid(params: {
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
 }) {
-  // 主链路默认使用的批量图片入口：把最多 16 个 scene 合成一个 4x4 grid prompt，
+  // 主链路默认使用的批量图片入口：把最多 9 个 scene 合成一个 3x3 grid prompt，
   // 降低供应商调用次数。每个 scene 会记录同一个 providerTaskId 和自己的 panel 信息。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
@@ -611,8 +661,9 @@ export async function queueSceneImagesGrid(params: {
 
   const model = params.model || 'nano-banana-2';
   const aspectRatio = details.project.aspectRatio === '9:16' ? '9:16' : '16:9';
-  const resolution = '4K';
-  const provider = await createKieProvider();
+  const resolution = GRID_SCENE_IMAGE_RESOLUTION;
+  const configs = await getAllConfigs();
+  const configuredProvider = configuredLyricVideoImageProviderName(configs);
   const queued: any[] = [];
   const queuedBatchRecords: any[] = [];
   const cast = Array.isArray(details.cast) ? details.cast : [];
@@ -620,7 +671,8 @@ export async function queueSceneImagesGrid(params: {
   logLyricStage('scene-images-grid', 'queue-start', {
     projectId: params.projectId,
     userId: params.userId,
-    model,
+    provider: configuredProvider,
+    model: configuredProvider === 'wavespeed' ? configs.wavespeed_image_model : model,
     aspectRatio,
     resolution,
     sceneCount: scenes.length,
@@ -642,6 +694,7 @@ export async function queueSceneImagesGrid(params: {
       scenes: batchScenes,
       gridSize: GRID_SCENE_IMAGE_SIZE,
       aspectRatio,
+      resolution,
       referenceCast: batchReferenceCast,
       hasReferenceImage: referenceImageUrls.length > 0,
     });
@@ -653,12 +706,23 @@ export async function queueSceneImagesGrid(params: {
     if (referenceImageUrls.length > 0) {
       imageOptions.image_input = referenceImageUrls;
     }
+    const providerSelection = await createLyricVideoImageProviderSelection({
+      configs,
+      model,
+      needsReferenceImage: referenceImageUrls.length > 0,
+      defaultKieModel: model,
+      defaultKieCharacterModel: configs.kie_character_image_model || 'nano-banana-2',
+    });
     descriptors.push({
       batchIndex,
       start,
       scenes: batchScenes,
       gridPrompt,
-      imageOptions,
+      imageOptions: providerSelection.normalizeOptions(imageOptions),
+      provider: providerSelection.provider,
+      providerName: providerSelection.providerName,
+      model: providerSelection.model,
+      fallbackReason: providerSelection.fallbackReason,
       referenceImageUrl: referenceImageUrls[0] || '',
       referenceImageUrls,
       castId: batchReferenceCast?.id,
@@ -672,13 +736,15 @@ export async function queueSceneImagesGrid(params: {
       task = await createTask({
         userId: params.userId,
         mediaType: 'image',
-        provider: 'kie',
-        model,
+        provider: descriptor.providerName,
+        model: descriptor.model,
         prompt: gridPrompt.compiledPrompt,
         costCredits: descriptor.scenes.length * 5,
         options: {
           projectId: params.projectId,
-          mode: 'grid_4x4',
+          provider: descriptor.providerName,
+          fallbackReason: descriptor.fallbackReason,
+          mode: GRID_SCENE_IMAGE_MODE,
           batchIndex,
           sceneIds: descriptor.scenes.map((scene: any) => scene.id),
           gridSize: GRID_SCENE_IMAGE_SIZE,
@@ -695,13 +761,14 @@ export async function queueSceneImagesGrid(params: {
         taskId: task.id,
         sceneCount: descriptor.scenes.length,
         sceneIds: descriptor.scenes.map((scene: any) => scene.id),
+        provider: descriptor.providerName,
         queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
         hasReferenceImage: descriptor.referenceImageUrls.length > 0,
       });
-      const result = await provider.generate({
+      const result = await descriptor.provider.generate({
         params: {
           mediaType: AIMediaType.IMAGE,
-          model,
+          model: descriptor.model,
           prompt: gridPrompt.compiledPrompt,
           options: descriptor.imageOptions,
         },
@@ -716,6 +783,7 @@ export async function queueSceneImagesGrid(params: {
       const batchRecord = {
         batchIndex,
         providerTaskId: result.taskId,
+        provider: descriptor.providerName,
         taskId: task.id,
         panelCount: descriptor.scenes.length,
         sceneOffset: descriptor.start,
@@ -752,11 +820,13 @@ export async function queueSceneImagesGrid(params: {
             lastAttemptAt: new Date(),
             completedAt: null,
             failureCode: null,
-            imageModel: model,
+            imageModel: descriptor.model,
             imagePromptSnapshot: scene.finalPrompt || scene.prompt,
             generationParams: safeJson({
-              mode: 'grid_4x4',
-              model,
+              mode: GRID_SCENE_IMAGE_MODE,
+              provider: descriptor.providerName,
+              fallbackReason: descriptor.fallbackReason,
+              model: descriptor.model,
               castId: castIds[0],
               castIds,
               referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
@@ -775,6 +845,7 @@ export async function queueSceneImagesGrid(params: {
         userId: params.userId,
         batchIndex,
         providerTaskId: result.taskId,
+        provider: descriptor.providerName,
         sceneCount: descriptor.scenes.length,
         sceneIds: descriptor.scenes.map((scene: any) => scene.id),
         promptLength: gridPrompt.compiledPrompt.length,
@@ -821,11 +892,13 @@ export async function queueSceneImagesGrid(params: {
             lastAttemptAt: new Date(),
             completedAt: null,
             failureCode: 'queue_failed',
-            imageModel: model,
+            imageModel: descriptor.model,
             imagePromptSnapshot: scene.finalPrompt || scene.prompt,
             generationParams: safeJson({
-              mode: 'grid_4x4',
-              model,
+              mode: GRID_SCENE_IMAGE_MODE,
+              provider: descriptor.providerName,
+              fallbackReason: descriptor.fallbackReason,
+              model: descriptor.model,
               castId: castIds[0],
               castIds,
               referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
@@ -995,7 +1068,7 @@ export async function retryFailedSceneImageBatches(params: {
   const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
   const summary = summarizeSceneImageProgress(refreshed?.scenes || details.scenes);
   const outputSnapshot = {
-    mode: 'grid_4x4',
+    mode: GRID_SCENE_IMAGE_MODE,
     retry: true,
     retriedBatchCount: queuedBatches.length,
     retriedSceneCount: queuedScenes.length,
@@ -1104,7 +1177,7 @@ export async function generateVisualsFromStory(params: {
 async function syncGridSceneImageBatch(params: {
   userId: string;
   projectId: string;
-  provider: Awaited<ReturnType<typeof createKieProvider>>;
+  provider: LyricVideoImageProviderSelection['provider'];
   providerTaskId: string;
   scenes: any[];
   queryResult?: any;
@@ -1178,12 +1251,37 @@ async function syncGridSceneImageBatch(params: {
 
   const cropSaveDbStartedAt = Date.now();
   const gridSize = Math.max(1, Math.floor(Number(grid.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE));
+  const totalPanels = gridSize * gridSize;
   const synced = [];
   const updatedTaskIds = new Set<string>();
   for (const scene of params.scenes) {
     const sceneGridParams = getGridGenerationParams(scene);
     const sceneGrid = sceneGridParams?.grid || {};
-    const panel = Math.max(1, Math.floor(Number(sceneGrid.panel || 1) || 1));
+    const panel = Math.floor(Number(sceneGrid.panel || 1) || 1);
+    if (panel < 1 || panel > totalPanels) {
+      const mergedGenerationParams = {
+        ...sceneGridParams,
+        grid: {
+          ...sceneGrid,
+          sourceImageUrl,
+          sourceWidth: metadata.width,
+          sourceHeight: metadata.height,
+        },
+      };
+      const [updated] = await db()
+        .update(lyricVideoScene)
+        .set({
+          status: 'failed',
+          completedAt: null,
+          failureCode: 'invalid_grid_panel',
+          error: `Grid panel ${panel} is outside ${gridSize}x${gridSize}`,
+          generationParams: safeJson(mergedGenerationParams),
+        })
+        .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)))
+        .returning();
+      synced.push(updated);
+      continue;
+    }
     const row = Math.floor((panel - 1) / gridSize);
     const col = (panel - 1) % gridSize;
     const left = Math.round((col * metadata.width) / gridSize);
@@ -1267,7 +1365,7 @@ async function updateSceneImageProjectStatus(params: {
 
   if (allDone) {
     const outputSnapshot = {
-      mode: 'grid_4x4',
+      mode: GRID_SCENE_IMAGE_MODE,
       sceneCount: params.scenes.length || 0,
       imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
       failedCount: 0,
@@ -1299,7 +1397,7 @@ async function updateSceneImageProjectStatus(params: {
       .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
   } else if (!hasProcessing && (hasFailures || hasImages)) {
     const outputSnapshot = {
-      mode: 'grid_4x4',
+      mode: GRID_SCENE_IMAGE_MODE,
       sceneCount: params.scenes.length || 0,
       imageCount: params.scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length || 0,
       failedCount: params.scenes.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length || 0,
@@ -1394,7 +1492,15 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     return normalizedFailedWithImages;
   }
 
-  const provider = await createKieProvider();
+  const configs = await getAllConfigs();
+  const queryProviders = new Map<LyricVideoImageProviderName, LyricVideoImageProviderSelection['provider']>();
+  async function getQueryProvider(providerName: LyricVideoImageProviderName) {
+    const existing = queryProviders.get(providerName);
+    if (existing) return existing;
+    const provider = await createLyricVideoImageQueryProvider({ providerName, configs });
+    queryProviders.set(providerName, provider);
+    return provider;
+  }
   const processing = details.scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   const gridProcessing = processing.filter((scene: any) => getGridGenerationParams(scene));
   const singleProcessing = processing.filter((scene: any) => !getGridGenerationParams(scene));
@@ -1406,17 +1512,21 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     sceneIds: processing.map((scene: any) => scene.id),
   });
 
-  const gridGroups = new Map<string, any[]>();
+  const gridGroups = new Map<string, { providerName: LyricVideoImageProviderName; providerTaskId: string; scenes: any[] }>();
   for (const scene of gridProcessing) {
-    const group = gridGroups.get(scene.providerTaskId) || [];
-    group.push(scene);
-    gridGroups.set(scene.providerTaskId, group);
+    const providerName = lyricVideoImageProviderFromGenerationParams(scene.generationParams);
+    const providerTaskId = String(scene.providerTaskId);
+    const key = `${providerName}:${providerTaskId}`;
+    const group = gridGroups.get(key) || { providerName, providerTaskId, scenes: [] };
+    group.scenes.push(scene);
+    gridGroups.set(key, group);
   }
 
   const gridBatchQueries = await Promise.all(
-    Array.from(gridGroups.entries()).map(async ([providerTaskId, scenes]) => {
+    Array.from(gridGroups.values()).map(async ({ providerName, providerTaskId, scenes }) => {
       const providerQueryStartedAt = Date.now();
       try {
+        const provider = await getQueryProvider(providerName);
         const result = await provider.query({ taskId: providerTaskId, mediaType: AIMediaType.IMAGE });
         const sourceImageUrl = result.taskInfo?.images?.[0]?.imageUrl;
         const ready =
@@ -1424,6 +1534,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           (result.taskStatus === ProviderTaskStatus.FAILED && Boolean(sourceImageUrl));
         const failed = result.taskStatus === ProviderTaskStatus.FAILED && !sourceImageUrl;
         return {
+          providerName,
           providerTaskId,
           scenes,
           result,
@@ -1434,6 +1545,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         };
       } catch (error: any) {
         return {
+          providerName,
           providerTaskId,
           scenes,
           result: null,
@@ -1461,6 +1573,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     syncReadyBatchLimit: GRID_IMAGE_SYNC_READY_BATCH_LIMIT,
     batches: gridBatchQueries.map((batch) => ({
       providerTaskId: batch.providerTaskId,
+      provider: batch.providerName,
       sceneCount: batch.scenes.length,
       providerStatus: batch.result?.taskStatus || null,
       providerQueryMs: batch.providerQueryMs,
@@ -1473,6 +1586,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     const { providerTaskId, scenes } = batch;
     try {
       if (batch.error) throw batch.error;
+      const provider = await getQueryProvider(batch.providerName);
       synced.push(...await syncGridSceneImageBatch({
         userId: params.userId,
         projectId: params.projectId,
@@ -1486,6 +1600,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
       logLyricStageError('scene-images-grid', 'batch-sync-fail', error, {
         projectId: params.projectId,
         userId: params.userId,
+        provider: batch.providerName,
         providerTaskId,
         sceneIds: scenes.map((scene: any) => scene.id),
       });
@@ -1502,6 +1617,8 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
 
   for (const scene of singleProcessing) {
     try {
+      const providerName = lyricVideoImageProviderFromGenerationParams(scene.generationParams);
+      const provider = await getQueryProvider(providerName);
       const result = await provider.query({ taskId: scene.providerTaskId, mediaType: AIMediaType.IMAGE });
       if (result.taskStatus === ProviderTaskStatus.SUCCESS) {
         const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
@@ -1529,6 +1646,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           projectId: params.projectId,
           userId: params.userId,
           sceneId: updated.id,
+          provider: providerName,
           providerTaskId: scene.providerTaskId,
           providerStatus: result.taskStatus,
           status: updated.status,
@@ -1561,6 +1679,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           projectId: params.projectId,
           userId: params.userId,
           sceneId: updated.id,
+          provider: providerName,
           providerTaskId: scene.providerTaskId,
           providerStatus: result.taskStatus,
           status: updated.status,

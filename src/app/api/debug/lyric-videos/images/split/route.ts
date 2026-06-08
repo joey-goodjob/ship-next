@@ -19,7 +19,13 @@ export async function POST(req: Request) {
           ? [body.taskId]
           : [];
     const aspectRatio = body?.aspectRatio === '9:16' || body?.aspect_ratio === '9:16' ? '9:16' : '16:9';
-    const gridSize = Math.max(1, Math.min(5, Math.floor(Number(body?.gridSize || body?.grid_size || 4) || 4)));
+    const gridSize = Math.max(
+      1,
+      Math.min(
+        5,
+        Math.floor(Number(body?.gridSize || body?.grid_size || service.GRID_SCENE_IMAGE_SIZE) || service.GRID_SCENE_IMAGE_SIZE)
+      )
+    );
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,

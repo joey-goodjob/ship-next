@@ -72,6 +72,15 @@ export const envConfigs: Record<string, string> = {
   kie_codex_model: process.env.KIE_CODEX_MODEL ?? 'gpt-5-5',
   kie_image_model: process.env.KIE_IMAGE_MODEL ?? 'z-image',
   kie_character_image_model: process.env.KIE_CHARACTER_IMAGE_MODEL ?? 'nano-banana-2',
+  wavespeed_api_key: process.env.WAVESPEED_API_KEY ?? '',
+  wavespeed_base_url:
+    process.env.WAVESPEED_BASE_URL ??
+    'https://api.wavespeed.ai/api/v3',
+  wavespeed_image_model:
+    process.env.WAVESPEED_IMAGE_MODEL ??
+    'openai/gpt-image-2/text-to-image',
+  wavespeed_image_quality: process.env.WAVESPEED_IMAGE_QUALITY ?? 'medium',
+  lyric_video_image_provider: process.env.LYRIC_VIDEO_IMAGE_PROVIDER ?? 'kie',
   groq_api_key: process.env.GROQ_API_KEY ?? '',
   groq_base_url: process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
   groq_transcribe_model: process.env.GROQ_TRANSCRIBE_MODEL ?? 'whisper-large-v3',

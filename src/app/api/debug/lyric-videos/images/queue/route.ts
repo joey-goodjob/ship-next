@@ -13,8 +13,14 @@ export async function POST(req: Request) {
     const body = await req.json();
     const model = typeof body?.model === 'string' ? body.model : undefined;
     const aspectRatio = body?.aspectRatio === '9:16' || body?.aspect_ratio === '9:16' ? '9:16' : '16:9';
-    const resolution = body?.resolution || '4K';
-    const gridSize = Math.max(1, Math.min(5, Math.floor(Number(body?.gridSize || body?.grid_size || 4) || 4)));
+    const resolution = body?.resolution || service.GRID_SCENE_IMAGE_RESOLUTION;
+    const gridSize = Math.max(
+      1,
+      Math.min(
+        5,
+        Math.floor(Number(body?.gridSize || body?.grid_size || service.GRID_SCENE_IMAGE_SIZE) || service.GRID_SCENE_IMAGE_SIZE)
+      )
+    );
     const data = await withDebugFixture({
       fixtureKey: body?.fixtureKey,
       cache: body?.cache,

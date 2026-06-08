@@ -59,3 +59,4 @@ export * from './gemini';
 export * from './fal';
 export * from './groq';
 export * from './elevenlabs';
+export * from './wavespeed';

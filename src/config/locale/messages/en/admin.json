@@ -325,6 +325,7 @@
       "elevenlabs": { "title": "ElevenLabs / Speech to Text", "description": "ElevenLabs Scribe speech-to-text API" },
       "groq": { "title": "Groq / Whisper", "description": "Groq speech-to-text transcription API" },
       "kie": { "title": "Kie / Kling", "description": "Kie AI image, video, and Gemini chat API" },
+      "wavespeed": { "title": "WaveSpeed", "description": "WaveSpeed GPT Image 2 API" },
       "gemini": { "title": "Gemini", "description": "Google Gemini API" },
       "fal": { "title": "Fal", "description": "Fal AI API" }
     },
@@ -401,6 +402,11 @@
       "kie_codex_model": "Codex Model",
       "kie_image_model": "Image Model",
       "kie_character_image_model": "Character Image Model",
+      "wavespeed_api_key": "API Key",
+      "wavespeed_base_url": "Base URL",
+      "wavespeed_image_model": "Image Model",
+      "wavespeed_image_quality": "Image Quality",
+      "lyric_video_image_provider": "Lyric Video Image Provider",
       "gemini_api_key": "API Key",
       "fal_api_key": "API Key"
     },
