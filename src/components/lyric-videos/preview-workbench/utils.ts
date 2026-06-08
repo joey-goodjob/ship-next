@@ -90,6 +90,10 @@ export function projectIsProcessing(project: LyricVideoProject | null, runtimeSt
   );
 }
 
+export function sceneImageIsPending(scene: LyricScene) {
+  return Boolean((scene.providerTaskId || scene.imageTaskId) && !scene.imageUrl && scene.status !== "failed");
+}
+
 const ACTIVE_GENERATION_STATUSES = ["queued", "running", "waiting_provider"];
 
 export const GENERATION_LOCK_REASON =
@@ -117,7 +121,7 @@ export function sceneGridParams(scene: LyricScene) {
       params = null;
     }
   }
-  if (params?.mode !== "grid_4x4" || !params.grid || typeof params.grid !== "object") return null;
+  if (!params || !["grid_3x3", "grid_4x4"].includes(String(params.mode || "")) || !params.grid || typeof params.grid !== "object") return null;
   return params.grid as Record<string, unknown>;
 }
 
@@ -184,6 +188,7 @@ export function deriveGenerationProgress(params: {
   const imageStep = stepByStage(generationSteps, "image_generation");
   const currentStage = runtimeState?.currentStage || generationRun?.currentStage || project?.pipelineStage;
   const generationStatus = runtimeState?.generationStatus || generationRun?.status || project?.generationStatus || "idle";
+  const directionReady = generationStatus === "success" && currentStage === "direction_ready";
   const retryable = failed > 0 && processing === 0;
   const isActive = Boolean(runtimeState?.isGenerationActive) || ["queued", "running", "waiting_provider"].includes(generationStatus || "") || processing > 0;
   const progressPercent = Math.max(
@@ -197,7 +202,9 @@ export function deriveGenerationProgress(params: {
       ? `Images ${success}/${total}${processing ? `, processing ${processing}` : ""}${failed ? `, failed ${failed}` : ""}`
       : "Images not queued yet";
   const primary =
-    failed > 0 && processing === 0
+    directionReady
+      ? "方向已生成，等待生成全部场景"
+      : failed > 0 && processing === 0
       ? `Image generation partial ${success}/${total}, failed ${failed}, retry available`
       : total > 0 && (processing > 0 || generationStatus === "waiting_provider")
         ? `Image generation ${success}/${total}${failed ? `, failed ${failed}` : ""}`
@@ -214,6 +221,7 @@ export function deriveGenerationProgress(params: {
     retryable,
     isActive,
     progressPercent,
+    directionReady,
     generationStatus,
     currentStage: stageLabel(currentStage),
     songAnalysisStatus: songAnalysisStep?.status || "pending",

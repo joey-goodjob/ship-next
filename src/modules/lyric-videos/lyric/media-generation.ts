@@ -52,6 +52,7 @@ export const GRID_SCENE_IMAGE_RESOLUTION = '2K';
 export const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IMAGE_SIZE;
 const GRID_IMAGE_QUEUE_CONCURRENCY = 4;
 const GRID_IMAGE_SYNC_READY_BATCH_LIMIT = 1;
+const GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS = 2;
 
 type GridImagePanelScene = any & {
   finalPrompt?: string;
@@ -331,6 +332,471 @@ function failedSceneImageDetails(scenes: any[]) {
       error: scene.error || null,
       grid: getGridGenerationParams(scene)?.grid || null,
     }));
+}
+
+function canAutoRetryGridBatch(scenes: any[]) {
+  if (scenes.length === 0) return false;
+  return scenes.every((scene: any) => Number(scene.attemptCount || 0) < GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS);
+}
+
+function generationStageSort(stage: string) {
+  const index = (GENERATION_STAGES as readonly string[]).indexOf(stage);
+  return index >= 0 ? index : GENERATION_STAGES.length;
+}
+
+function generationStepByStage(steps: any[], stage: string) {
+  return steps.find((step: any) => step.stage === stage);
+}
+
+async function getGenerationLedgerByRunId(params: {
+  userId: string;
+  projectId: string;
+  runId?: string | null;
+}) {
+  if (!params.runId) return null;
+
+  const [run] = await db()
+    .select()
+    .from(lyricVideoGenerationRun)
+    .where(
+      and(
+        eq(lyricVideoGenerationRun.id, params.runId),
+        eq(lyricVideoGenerationRun.projectId, params.projectId),
+        eq(lyricVideoGenerationRun.userId, params.userId)
+      )
+    )
+    .limit(1);
+  if (!run) return null;
+
+  const existingSteps = await db()
+    .select()
+    .from(lyricVideoGenerationStep)
+    .where(and(eq(lyricVideoGenerationStep.runId, run.id), eq(lyricVideoGenerationStep.userId, params.userId)));
+  const existingStages = new Set(existingSteps.map((step: any) => step.stage));
+  const missingStages = GENERATION_STAGES.filter((stage) => !existingStages.has(stage));
+  if (missingStages.length > 0) {
+    await db()
+      .insert(lyricVideoGenerationStep)
+      .values(
+        missingStages.map((stage) => ({
+          id: getUuid(),
+          runId: run.id,
+          projectId: params.projectId,
+          userId: params.userId,
+          stage,
+          status: 'pending',
+          sort: generationStageSort(stage),
+          progressPercent: 0,
+          maxAttempts: 3,
+        }))
+      );
+  }
+
+  const steps = await db()
+    .select()
+    .from(lyricVideoGenerationStep)
+    .where(and(eq(lyricVideoGenerationStep.runId, run.id), eq(lyricVideoGenerationStep.userId, params.userId)));
+
+  return {
+    run,
+    steps: steps.sort((a: any, b: any) => generationStageSort(a.stage) - generationStageSort(b.stage)),
+  };
+}
+
+async function createVisualsGenerationLedger(params: {
+  userId: string;
+  projectId: string;
+  details: any;
+  storyPrompt: string;
+}) {
+  return db().transaction(async (tx: any) => {
+    const now = new Date();
+    const runId = getUuid();
+    const inputSnapshot = {
+      mode: 'visuals',
+      source: 'generate_all_scenes',
+      lineCount: params.details.lines.length,
+      sceneCount: params.details.scenes.length,
+      storyPromptLength: params.storyPrompt.length,
+    };
+    const [run] = await tx
+      .insert(lyricVideoGenerationRun)
+      .values({
+        id: runId,
+        projectId: params.projectId,
+        userId: params.userId,
+        status: 'running',
+        currentStage: 'prompt_generation',
+        progressPercent: 70,
+        totalSteps: GENERATION_STAGES.length,
+        completedSteps: 2,
+        failedSteps: 0,
+        inputSnapshot: safeJson(inputSnapshot),
+        startedAt: now,
+      })
+      .returning();
+    const steps = await tx
+      .insert(lyricVideoGenerationStep)
+      .values(
+        GENERATION_STAGES.map((stage) => {
+          const isDirectionPrerequisite = stage === 'asr_words' || stage === 'song_analysis';
+          return {
+            id: getUuid(),
+            runId,
+            projectId: params.projectId,
+            userId: params.userId,
+            stage,
+            status: isDirectionPrerequisite ? 'success' : stage === 'prompt_generation' ? 'queued' : 'pending',
+            sort: generationStageSort(stage),
+            progressPercent: isDirectionPrerequisite ? 100 : 0,
+            maxAttempts: 3,
+            inputJson: stage === 'prompt_generation' ? safeJson(inputSnapshot) : undefined,
+            outputJson: isDirectionPrerequisite ? safeJson({ recoveredForVisuals: true }) : undefined,
+            startedAt: isDirectionPrerequisite ? now : undefined,
+            completedAt: isDirectionPrerequisite ? now : undefined,
+          };
+        })
+      )
+      .returning();
+
+    await tx
+      .update(lyricVideoProject)
+      .set({
+        ...buildProjectGenerationSnapshot(run, {
+          activeRunId: run.id,
+          pipelineStage: 'storyboard_generating',
+          pipelineError: null,
+        }),
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+    logLyricStage('visuals', 'ledger-created', {
+      projectId: params.projectId,
+      userId: params.userId,
+      runId: run.id,
+      stepCount: steps.length,
+    });
+
+    return { run, steps };
+  });
+}
+
+async function ensureVisualsGenerationLedger(params: {
+  userId: string;
+  projectId: string;
+  details: any;
+  storyPrompt: string;
+}) {
+  const existing = await getGenerationLedgerByRunId({
+    userId: params.userId,
+    projectId: params.projectId,
+    runId: params.details.project.activeRunId,
+  });
+  if (existing) return existing;
+  return createVisualsGenerationLedger(params);
+}
+
+function visualsStepOrThrow(steps: any[], stage: 'prompt_generation' | 'image_generation' | 'finalize_project') {
+  const step = generationStepByStage(steps, stage);
+  if (!step) throw new Error(`Generation step not found: ${stage}`);
+  return step;
+}
+
+async function markVisualsStepRunning(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  input?: unknown;
+}) {
+  const patch: Record<string, unknown> = {
+    status: 'running',
+    progressPercent: params.progress,
+    attemptCount: Number(params.step.attemptCount || 0) + 1,
+    startedAt: new Date(),
+    completedAt: null,
+    errorCode: null,
+    errorMessage: null,
+    lockedAt: new Date(),
+    lockedBy: 'api:visuals',
+  };
+  if (params.input !== undefined) patch.inputJson = safeJson(params.input);
+
+  await Promise.all([
+    db()
+      .update(lyricVideoGenerationStep)
+      .set(patch)
+      .where(and(eq(lyricVideoGenerationStep.id, params.step.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'running',
+        currentStage: params.step.stage,
+        progressPercent: params.progress,
+        completedAt: null,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'running', currentStage: params.step.stage, progressPercent: params.progress },
+          { pipelineStage: params.step.stage === 'prompt_generation' ? 'storyboard_generating' : 'images_queueing', pipelineError: null }
+        )
+      )
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ]);
+
+  logLyricStage('visuals', 'step-running', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+    stage: params.step.stage,
+    progress: params.progress,
+  });
+}
+
+async function markVisualsStepSuccess(params: {
+  userId: string;
+  runId: string;
+  step: any;
+  progress: number;
+  output?: unknown;
+}) {
+  await Promise.all([
+    db()
+      .update(lyricVideoGenerationStep)
+      .set({
+        status: 'success',
+        progressPercent: 100,
+        outputJson: params.output === undefined ? undefined : safeJson(params.output),
+        completedAt: new Date(),
+        lockedAt: null,
+        lockedBy: null,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationStep.id, params.step.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'running',
+        currentStage: params.step.stage,
+        completedSteps: Math.max(generationStageSort(params.step.stage) + 1, 1),
+        progressPercent: params.progress,
+        completedAt: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+  ]);
+
+  logLyricStage('visuals', 'step-success', {
+    userId: params.userId,
+    runId: params.runId,
+    stage: params.step.stage,
+    progress: params.progress,
+  });
+}
+
+async function markVisualsImageWaitingProvider(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  steps: any[];
+  output: unknown;
+}) {
+  const imageStep = visualsStepOrThrow(params.steps, 'image_generation');
+  const finalizeStep = generationStepByStage(params.steps, 'finalize_project');
+  const updates: Promise<unknown>[] = [
+    db()
+      .update(lyricVideoGenerationStep)
+      .set({
+        status: 'waiting_provider',
+        progressPercent: 95,
+        outputJson: safeJson(params.output),
+        lockedAt: null,
+        lockedBy: null,
+        completedAt: null,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationStep.id, imageStep.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'waiting_provider',
+        currentStage: 'image_generation',
+        completedSteps: Math.max(generationStageSort('image_generation') + 1, 1),
+        progressPercent: 95,
+        completedAt: null,
+        errorCode: null,
+        errorMessage: null,
+        outputSnapshot: safeJson(params.output),
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'processing',
+        ...buildProjectGenerationSnapshot(
+          { status: 'waiting_provider', currentStage: 'image_generation', progressPercent: 95 },
+          { pipelineStage: 'images_processing', pipelineError: null }
+        ),
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ];
+
+  if (finalizeStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'pending',
+          progressPercent: 0,
+          outputJson: null,
+          completedAt: null,
+          lockedAt: null,
+          lockedBy: null,
+          errorCode: null,
+          errorMessage: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, finalizeStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  await Promise.all(updates);
+
+  logLyricStage('visuals', 'image-waiting-provider', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId,
+  });
+}
+
+async function markVisualsFinalizeSuccess(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  steps: any[];
+  output: unknown;
+}) {
+  const imageStep = generationStepByStage(params.steps, 'image_generation');
+  const finalizeStep = visualsStepOrThrow(params.steps, 'finalize_project');
+  const now = new Date();
+  const updates: Promise<unknown>[] = [
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'success',
+        currentStage: 'finalize_project',
+        completedSteps: GENERATION_STAGES.length,
+        failedSteps: 0,
+        progressPercent: 100,
+        outputSnapshot: safeJson(params.output),
+        completedAt: now,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoGenerationStep)
+      .set({
+        status: 'success',
+        progressPercent: 100,
+        outputJson: safeJson(params.output),
+        completedAt: now,
+        lockedAt: null,
+        lockedBy: null,
+        errorCode: null,
+        errorMessage: null,
+      })
+      .where(and(eq(lyricVideoGenerationStep.id, finalizeStep.id), eq(lyricVideoGenerationStep.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set({
+        scenesStatus: 'ready',
+        ...buildProjectGenerationSnapshot(
+          { status: 'success', currentStage: 'finalize_project', progressPercent: 100 },
+          { pipelineStage: 'images_ready', pipelineError: null }
+        ),
+        lastGeneratedAt: now,
+      })
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ];
+
+  if (imageStep) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'success',
+          progressPercent: 100,
+          outputJson: safeJson(params.output),
+          completedAt: now,
+          lockedAt: null,
+          lockedBy: null,
+          errorCode: null,
+          errorMessage: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, imageStep.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  await Promise.all(updates);
+}
+
+async function markVisualsGenerationFailed(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  steps: any[];
+  stage: 'prompt_generation' | 'image_generation';
+  error: any;
+}) {
+  const step = generationStepByStage(params.steps, params.stage);
+  const message = params.error?.message || 'Generate visuals failed';
+  const updates: Promise<unknown>[] = [
+    db()
+      .update(lyricVideoGenerationRun)
+      .set({
+        status: 'failed',
+        currentStage: params.stage,
+        failedSteps: 1,
+        errorCode: params.stage,
+        errorMessage: message,
+        completedAt: new Date(),
+      })
+      .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId))),
+    db()
+      .update(lyricVideoProject)
+      .set(
+        buildProjectGenerationSnapshot(
+          { status: 'failed', currentStage: params.stage, progressPercent: params.stage === 'prompt_generation' ? 70 : 90, errorMessage: message },
+          { pipelineStage: `${params.stage}_failed`, pipelineError: message }
+        )
+      )
+      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
+  ];
+
+  if (step) {
+    updates.push(
+      db()
+        .update(lyricVideoGenerationStep)
+        .set({
+          status: 'failed',
+          errorCode: params.stage,
+          errorMessage: message,
+          completedAt: new Date(),
+          lockedAt: null,
+          lockedBy: null,
+        })
+        .where(and(eq(lyricVideoGenerationStep.id, step.id), eq(lyricVideoGenerationStep.userId, params.userId)))
+    );
+  }
+
+  await Promise.all(updates);
 }
 
 async function finalizeActiveImageGenerationRun(params: {
@@ -1126,52 +1592,166 @@ export async function generateVisualsFromStory(params: {
 
   const storyPrompt = (params.storyPrompt || details.project.storyPrompt || '').trim();
   if (!storyPrompt) throw new Error('Create a story before creating visuals');
+  logLyricStage('visuals', 'service-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    pipelineStage: details.project.pipelineStage,
+    lyricsStatus: details.project.lyricsStatus,
+    scenesStatus: details.project.scenesStatus,
+    renderStatus: details.project.renderStatus,
+    lineCount: details.lines.length,
+    sceneCount: details.scenes.length,
+    storyPromptLength: storyPrompt.length,
+    regenerateStoryboard: Boolean(params.regenerateStoryboard),
+    regenerateImages: Boolean(params.regenerateImages),
+    model: params.model,
+  });
 
-  const shouldGenerateStoryboard =
-    params.regenerateStoryboard ||
-    details.scenes.length === 0 ||
-    details.scenes.some((scene: any) => scene.status === 'lyrics_draft' || !String(scene.prompt || '').trim());
-  let scenes = details.scenes;
-  if (shouldGenerateStoryboard) {
-    scenes = await generateStoryboard({
+  const ledger = await ensureVisualsGenerationLedger({
+    userId: params.userId,
+    projectId: params.projectId,
+    details,
+    storyPrompt,
+  });
+  let currentVisualsStage: 'prompt_generation' | 'image_generation' = 'prompt_generation';
+
+  try {
+    const shouldGenerateStoryboard =
+      params.regenerateStoryboard ||
+      details.scenes.length === 0 ||
+      details.scenes.some((scene: any) => scene.status === 'lyrics_draft' || !String(scene.prompt || '').trim());
+    let scenes = details.scenes;
+    const promptStep = visualsStepOrThrow(ledger.steps, 'prompt_generation');
+    await markVisualsStepRunning({
       userId: params.userId,
       projectId: params.projectId,
-      storyPrompt,
-    });
-  } else if (params.storyPrompt && params.storyPrompt.trim() !== details.project.storyPrompt) {
-    await db()
-      .update(lyricVideoProject)
-      .set({
+      runId: ledger.run.id,
+      step: promptStep,
+      progress: 75,
+      input: {
         storyPrompt,
-        pipelineError: null,
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
-  }
+        regenerateStoryboard: Boolean(params.regenerateStoryboard),
+        existingSceneCount: details.scenes.length,
+        mode: 'generate_all_scenes',
+      },
+    });
 
-  const scenesToQueue = params.regenerateImages
-    ? scenes
-    : scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
-
-  const queuedImages =
-    scenesToQueue.length > 0
-      ? await queueSceneImagesGrid({
-          userId: params.userId,
-          projectId: params.projectId,
-          sceneIds: scenesToQueue.map((scene: any) => scene.id),
-          model: params.model,
-          clearExistingImages: Boolean(params.regenerateImages),
+    if (shouldGenerateStoryboard) {
+      scenes = await generateStoryboard({
+        userId: params.userId,
+        projectId: params.projectId,
+        storyPrompt,
+      });
+    } else if (params.storyPrompt && params.storyPrompt.trim() !== details.project.storyPrompt) {
+      await db()
+        .update(lyricVideoProject)
+        .set({
+          storyPrompt,
+          pipelineError: null,
         })
-      : [];
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+    }
 
-  const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+    await markVisualsStepSuccess({
+      userId: params.userId,
+      runId: ledger.run.id,
+      step: promptStep,
+      progress: 90,
+      output: {
+        generatedStoryboard: Boolean(shouldGenerateStoryboard),
+        sceneCount: scenes.length,
+        storyPromptLength: storyPrompt.length,
+      },
+    });
 
-  return {
-    project: refreshed?.project || details.project,
-    scenes: refreshed?.scenes || scenes,
-    queuedImages,
-    storyPrompt,
-    generatedStoryboard: Boolean(shouldGenerateStoryboard),
-  };
+    const scenesToQueue = params.regenerateImages
+      ? scenes
+      : scenes.filter((scene: any) => !scene.imageUrl && scene.status !== 'processing');
+
+    currentVisualsStage = 'image_generation';
+    const imageStep = visualsStepOrThrow(ledger.steps, 'image_generation');
+    const imageInput = {
+      model: params.model,
+      sceneCount: scenesToQueue.length,
+      sceneIds: scenesToQueue.map((scene: any) => scene.id),
+      gridSize: GRID_SCENE_IMAGE_SIZE,
+      batchSize: GRID_SCENE_IMAGE_BATCH_SIZE,
+      mode: GRID_SCENE_IMAGE_MODE,
+    };
+    await markVisualsStepRunning({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: ledger.run.id,
+      step: imageStep,
+      progress: 92,
+      input: imageInput,
+    });
+
+    const queuedImages =
+      scenesToQueue.length > 0
+        ? await queueSceneImagesGrid({
+            userId: params.userId,
+            projectId: params.projectId,
+            sceneIds: scenesToQueue.map((scene: any) => scene.id),
+            model: params.model,
+            clearExistingImages: Boolean(params.regenerateImages),
+          })
+        : [];
+
+    const imageOutput = {
+      ...imageInput,
+      queuedSceneCount: queuedImages.length,
+      processingSceneCount: queuedImages.filter((scene: any) => scene.status === 'processing' && !scene.imageUrl).length,
+      failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length,
+      providerTaskIds: Array.from(new Set(queuedImages.map((scene: any) => scene.providerTaskId).filter(Boolean))),
+    };
+
+    if (scenesToQueue.length > 0) {
+      await markVisualsImageWaitingProvider({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: ledger.run.id,
+        steps: ledger.steps,
+        output: imageOutput,
+      });
+    } else {
+      await markVisualsFinalizeSuccess({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: ledger.run.id,
+        steps: ledger.steps,
+        output: {
+          ...imageOutput,
+          skippedImageQueue: true,
+          projectStatus: {
+            scenesStatus: 'ready',
+            pipelineStage: 'images_ready',
+            generationStatus: 'success',
+          },
+        },
+      });
+    }
+
+    const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+
+    return {
+      project: refreshed?.project || details.project,
+      scenes: refreshed?.scenes || scenes,
+      queuedImages,
+      storyPrompt,
+      generatedStoryboard: Boolean(shouldGenerateStoryboard),
+    };
+  } catch (error: any) {
+    await markVisualsGenerationFailed({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: ledger.run.id,
+      steps: ledger.steps,
+      stage: currentVisualsStage,
+      error,
+    });
+    throw error;
+  }
 }
 
 async function syncGridSceneImageBatch(params: {
@@ -1475,6 +2055,26 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (processingRows.length === 0) {
+    const autoRetryableFailedBatches = groupFailedSceneImageBatches(details.scenes).filter((batch) => canAutoRetryGridBatch(batch.scenes));
+    if (autoRetryableFailedBatches.length > 0) {
+      logLyricStage('scene-images-grid', 'sync-auto-retry-failed-batches', {
+        projectId: params.projectId,
+        userId: params.userId,
+        batchCount: autoRetryableFailedBatches.length,
+        batches: autoRetryableFailedBatches.map((batch) => ({
+          batchKey: batch.batchKey,
+          providerTaskId: batch.providerTaskId,
+          sceneIds: batch.sceneIds,
+          attemptCounts: batch.scenes.map((scene: any) => Number(scene.attemptCount || 0)),
+        })),
+      });
+      const retry = await retryFailedSceneImageBatches({
+        userId: params.userId,
+        projectId: params.projectId,
+        batchKeys: autoRetryableFailedBatches.map((batch) => batch.batchKey),
+      });
+      return retry.queuedScenes;
+    }
     const status = await updateSceneImageProjectStatus({
       userId: params.userId,
       projectId: params.projectId,
@@ -1558,9 +2158,11 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
       }
     })
   );
+  const autoRetryGridBatchQueries = gridBatchQueries.filter((batch) => !batch.ready && batch.failed && canAutoRetryGridBatch(batch.scenes));
   const finishedGridBatchQueries = [
+    ...autoRetryGridBatchQueries,
     ...gridBatchQueries.filter((batch) => batch.ready),
-    ...gridBatchQueries.filter((batch) => !batch.ready && batch.failed),
+    ...gridBatchQueries.filter((batch) => !batch.ready && batch.failed && !autoRetryGridBatchQueries.includes(batch)),
   ].slice(0, GRID_IMAGE_SYNC_READY_BATCH_LIMIT);
 
   logLyricStage('scene-images-grid', 'sync-ready-batches', {
@@ -1569,6 +2171,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     processingBatchCount: gridGroups.size,
     readyBatchCount: gridBatchQueries.filter((batch) => batch.ready).length,
     failedBatchCount: gridBatchQueries.filter((batch) => batch.failed).length,
+    autoRetryableFailedBatchCount: autoRetryGridBatchQueries.length,
     selectedBatchCount: finishedGridBatchQueries.length,
     syncReadyBatchLimit: GRID_IMAGE_SYNC_READY_BATCH_LIMIT,
     batches: gridBatchQueries.map((batch) => ({
@@ -1585,6 +2188,24 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
   for (const batch of finishedGridBatchQueries) {
     const { providerTaskId, scenes } = batch;
     try {
+      if (batch.failed && !batch.sourceImageUrl && canAutoRetryGridBatch(scenes)) {
+        logLyricStage('scene-images-grid', 'batch-auto-retry', {
+          projectId: params.projectId,
+          userId: params.userId,
+          provider: batch.providerName,
+          providerTaskId,
+          sceneIds: scenes.map((scene: any) => scene.id),
+          attemptCounts: scenes.map((scene: any) => Number(scene.attemptCount || 0)),
+          maxAttempts: GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS,
+        });
+        synced.push(...await queueSceneImagesGrid({
+          userId: params.userId,
+          projectId: params.projectId,
+          sceneIds: scenes.map((scene: any) => scene.id),
+          clearExistingImages: false,
+        }));
+        continue;
+      }
       if (batch.error) throw batch.error;
       const provider = await getQueryProvider(batch.providerName);
       synced.push(...await syncGridSceneImageBatch({

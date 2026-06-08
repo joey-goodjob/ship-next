@@ -35,6 +35,7 @@ import {
   normalizeWordsForSave,
   projectIsProcessing,
   requestJson,
+  sceneImageIsPending,
   secondsToMs,
   sortWords,
   wordsFromDetails,
@@ -168,11 +169,11 @@ export function EditorProvider({
   }, [refresh]);
 
   useEffect(() => {
-    if (!projectIsProcessing(project, runtimeState)) return;
-    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && !scene.imageUrl && scene.status === "processing");
+    const hasPendingSceneImages = scenes.some(sceneImageIsPending);
+    if (!projectIsProcessing(project, runtimeState) && !hasPendingSceneImages) return;
     const timer = window.setInterval(() => {
       refresh();
-    }, hasProcessingScenes ? 20000 : 4000);
+    }, hasPendingSceneImages ? 20000 : 4000);
     return () => window.clearInterval(timer);
   }, [project, refresh, runtimeState, scenes]);
 
@@ -531,6 +532,9 @@ export function EditorProvider({
 
       let storyPrompt = (savedProject?.storyPrompt || project.storyPrompt || "").trim();
       if (!storyPrompt) {
+        console.info("[lyric-video] generate-all-scenes needs story prompt; requesting story", {
+          projectId: project.id,
+        });
         const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -540,6 +544,14 @@ export function EditorProvider({
         setProject((previous) => story.project || (previous ? { ...previous, storyPrompt } : previous));
       }
 
+      console.info("[lyric-video] generate-all-scenes requesting visuals", {
+        projectId: project.id,
+        currentStage: runtimeState?.currentStage || generationRun?.currentStage || project.pipelineStage,
+        storyPromptLength: storyPrompt.length,
+        lineCount: lines.length,
+        sceneCount: scenes.length,
+        regenerateStoryboard: true,
+      });
       const generated = await requestJson<VisualGenerationResponse>(`/api/lyric-videos/${project.id}/visuals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -547,6 +559,14 @@ export function EditorProvider({
           storyPrompt,
           regenerateStoryboard: true,
         }),
+      });
+      console.info("[lyric-video] generate-all-scenes visuals response", {
+        projectId: project.id,
+        generatedStoryboard: generated.generatedStoryboard,
+        sceneCount: generated.scenes?.length || 0,
+        queuedImagesCount: generated.queuedImages?.length || 0,
+        pipelineStage: generated.project?.pipelineStage,
+        scenesStatus: generated.project?.scenesStatus,
       });
       setScenes(generated.scenes || []);
       setProject((previous) =>

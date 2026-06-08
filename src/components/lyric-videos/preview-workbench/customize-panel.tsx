@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Lock, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_CAPTION_FONT_SIZE,
@@ -36,57 +36,66 @@ export function CustomizePanel() {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <FieldBlock
-        label="Lyrics Language"
-        helper="Main language of the lyrics. Change it if auto-detection was not correct."
-        locked={storyLocked}
-        lockReason={storyLockReason}
-      >
-        <select
-          value={project.language || "auto"}
-          onChange={(event) => updateProjectField("language", event.target.value)}
-          disabled={storyLocked}
-          title={storyLocked ? storyLockReason : undefined}
-          className="h-[42px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[14px] font-[600] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
-        >
-          {LANGUAGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </FieldBlock>
-
-      <FieldBlock label="Subtitles" locked={generationLocked} lockReason={generationLockReason}>
-        <div className="rounded-[6px] border border-[#E8E8E8] bg-[#F8FAFC] p-[12px]">
-          <button
-            type="button"
-            onClick={() => updatePreviewConfig({ captionsEnabled: !previewConfig.captionsEnabled })}
-            disabled={generationLocked}
-            title={generationLocked ? generationLockReason : undefined}
-            className={cn(
-              "flex h-[38px] w-full items-center justify-between rounded-[6px] border px-[11px] text-[13px] font-[800] disabled:cursor-not-allowed disabled:opacity-60",
-              previewConfig.captionsEnabled
-                ? "border-[#F5A623] bg-amber-50 text-[#1A1A2E]"
-                : "border-[#D9DDE3] bg-white text-[#667085] hover:bg-[#F8F9FA]",
-            )}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[12px]">
+        <section>
+          <div className="mb-[8px] flex h-[20px] items-center justify-between gap-3">
+            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[#334155]">
+              Lyrics Language
+              {storyLocked ? (
+                <span title={storyLockReason} aria-label="Locked">
+                  <Lock className="h-[12px] w-[12px] text-[#61708A]" />
+                </span>
+              ) : null}
+            </label>
+          </div>
+          <select
+            value={project.language || "auto"}
+            onChange={(event) => updateProjectField("language", event.target.value)}
+            disabled={storyLocked}
+            title={storyLocked ? storyLockReason : "Main language of the lyrics."}
+            className="h-[42px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[14px] font-[600] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
           >
-            <span>{previewConfig.captionsEnabled ? "Subtitles on" : "Subtitles off"}</span>
-            <span
+            {LANGUAGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </section>
+
+        <section>
+          <div className="mb-[8px] flex h-[20px] items-center justify-between gap-3">
+            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[#334155]">
+              Subtitles
+              {generationLocked ? (
+                <span title={generationLockReason} aria-label="Locked">
+                  <Lock className="h-[12px] w-[12px] text-[#61708A]" />
+                </span>
+              ) : null}
+            </label>
+            <button
+              type="button"
+              onClick={() => updatePreviewConfig({ captionsEnabled: !previewConfig.captionsEnabled })}
+              disabled={generationLocked}
+              title={generationLocked ? generationLockReason : undefined}
               className={cn(
-                "flex h-[20px] w-[34px] items-center rounded-full p-[2px] transition-colors",
+                "flex h-[20px] w-[34px] shrink-0 items-center rounded-full p-[2px] transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                 previewConfig.captionsEnabled ? "justify-end bg-[#F5A623]" : "justify-start bg-[#CBD5E1]",
               )}
-              aria-hidden="true"
+              aria-label={previewConfig.captionsEnabled ? "Turn subtitles off" : "Turn subtitles on"}
+              aria-pressed={previewConfig.captionsEnabled}
             >
               <span className="size-[16px] rounded-full bg-white shadow-sm" />
-            </span>
-          </button>
-          <div className={cn("mt-[12px]", !previewConfig.captionsEnabled && "opacity-50")}>
-            <div className="mb-[8px] flex items-center justify-between text-[12px] font-[800] text-[#526173]">
-              <span>Size</span>
-              <span>{previewConfig.fontSize}px</span>
-            </div>
+            </button>
+          </div>
+          <div
+            className={cn(
+              "grid h-[42px] grid-cols-[auto_minmax(90px,1fr)_42px] items-center gap-[10px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px]",
+              (!previewConfig.captionsEnabled || generationLocked) && "bg-[#F8FAFC]",
+              !previewConfig.captionsEnabled && "opacity-60",
+            )}
+          >
+            <span className="text-[13px] font-[800] text-[#526173]">Size</span>
             <input
               type="range"
               min={MIN_CAPTION_FONT_SIZE}
@@ -96,12 +105,13 @@ export function CustomizePanel() {
               disabled={!previewConfig.captionsEnabled || generationLocked}
               title={generationLocked ? generationLockReason : undefined}
               onChange={(event) => updatePreviewConfig({ fontSize: Number(event.target.value) })}
-              className="h-[20px] w-full accent-[#F5A623] disabled:cursor-not-allowed"
+              className="h-[20px] min-w-0 accent-[#F5A623] disabled:cursor-not-allowed"
               aria-label="Subtitle size"
             />
+            <span className="text-right text-[12px] font-[800] tabular-nums text-[#526173]">{previewConfig.fontSize}px</span>
           </div>
-        </div>
-      </FieldBlock>
+        </section>
+      </div>
 
       <FieldBlock
         label="Story"

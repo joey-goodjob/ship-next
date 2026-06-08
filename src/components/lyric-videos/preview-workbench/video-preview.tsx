@@ -28,6 +28,7 @@ export function VideoPreview() {
   const hasImage = Boolean(currentScene?.imageUrl);
   const hasLyrics = lines.length > 0 || words.length > 0 || project?.lyricsStatus === "ready";
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
+  const directionReady = runtimeState?.currentStage === "direction_ready" || generationRun?.currentStage === "direction_ready" || project?.pipelineStage === "direction_ready";
   const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
   const captionText = useMemo(() => {
     const currentMs = secondsToMs(currentTime);
@@ -80,9 +81,11 @@ export function VideoPreview() {
           </>
         ) : (
           <PreviewPlaceholder
-            title={currentScene ? "Scene image pending" : hasLyrics ? "Scene timing pending" : "No scene image yet"}
+            title={directionReady ? "Direction ready" : currentScene ? "Scene image pending" : hasLyrics ? "Scene timing pending" : "No scene image yet"}
             description={
-              currentScene
+              directionReady
+                ? "Review the Story panel, then click Generate All Scenes to create Prompt2 scenes and queue images."
+                : currentScene
                 ? currentScene.status === "failed"
                   ? currentScene.error || "Image generation failed."
                   : "Scene timing is ready. Images will appear after image generation starts."

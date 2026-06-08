@@ -37,7 +37,7 @@ function stageLabel(stage: string) {
   if (stage === "uploading") return "Uploading your audio...";
   if (stage === "waiting-auth") return "Keeping your upload ready...";
   if (stage === "creating") return "Creating your lyric video project...";
-  if (stage === "generating") return "Creating lyrics and story direction...";
+  if (stage === "generating") return "Waiting for Prompt1 story direction...";
   if (stage === "redirecting") return "Opening the preview editor...";
   return "Preparing your preview...";
 }
@@ -186,7 +186,7 @@ export function LyricVideoHomeTool() {
             <Loader2 className="mx-auto size-8 animate-spin text-[#fbbf24]" />
             <p className="mt-4 text-base font-black text-slate-950">{stageLabel(stage)}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-              We will open the preview editor shortly so you can review the direction before scene generation starts.
+              The preview editor opens after the first LLM pass creates the story acts.
             </p>
           </div>
         </div>

@@ -306,6 +306,7 @@ export function DiagnosticsPanel() {
   const castDiagnostics = useMemo(() => buildCastDiagnostics(cast), [cast]);
   const sceneErrors = useMemo(() => buildSceneErrors(scenes), [scenes]);
   const shouldSyncImages = imageDiagnostics.processingSceneIds.length > 0;
+  const directionReviewPaused = Boolean(progress.directionReady);
   const report = useMemo(
     () =>
       buildReport({
@@ -368,6 +369,14 @@ export function DiagnosticsPanel() {
       </section>
 
       <DiagnosticsSection title="流程步骤" icon={Clock3}>
+        {directionReviewPaused ? (
+          <div className="mb-[10px] rounded-[6px] border border-amber-200 bg-amber-50 px-[11px] py-[10px] text-amber-800">
+            <p className="text-[13px] font-[900]">方向审核暂停</p>
+            <p className="mt-[3px] text-[12px] font-[700] leading-[18px]">
+              Prompt1 已完成。点击底部 Generate All Scenes 后，Prompt2、图片生成和完成项目会继续写入这里。
+            </p>
+          </div>
+        ) : null}
         <div className="divide-y divide-[#EEF1F5]">
           {generationStages.map(({ label, stage }) => {
             const step = stepByStage(generationSteps, stage);

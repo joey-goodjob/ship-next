@@ -37,6 +37,11 @@ type GenerationRunResponse = {
   words?: unknown[];
   scenes?: unknown[];
   project?: LyricVideoProject;
+  songAnalysis?: {
+    story_acts?: unknown[];
+  } | null;
+  directionReady?: boolean;
+  stopAfter?: string;
 };
 
 type GenerateOptions = {
@@ -88,6 +93,17 @@ function resolvePublicAssetUrl(url: string) {
   if (!url || /^https?:\/\//.test(url)) return url;
   if (typeof window === "undefined") return url;
   return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
+function assertPrompt1DirectionReady(generated: GenerationRunResponse) {
+  const reachedSongAnalysis = generated.directionReady === true || generated.stopAfter === "song_analysis";
+  const hasStoryDirection =
+    Boolean(generated.project?.storyPrompt?.trim()) ||
+    (Array.isArray(generated.songAnalysis?.story_acts) && generated.songAnalysis.story_acts.length > 0);
+
+  if (!reachedSongAnalysis || !hasStoryDirection) {
+    throw new Error("Prompt1 story direction is not ready yet");
+  }
 }
 
 /**
@@ -159,7 +175,7 @@ export function useLyricVideoCreationFlow() {
       // 前端主链路：
       // 1. 用 upload-audio 返回的 url 创建 `lyric_video_project`
       // 2. 可选写入默认角色 `lyric_video_cast_member`
-      // 3. 调 `/api/lyric-videos/:id/generate`，后端生成歌词、时间骨架和创意方向
+      // 3. 调 `/api/lyric-videos/:id/generate` 并等待 Prompt1 产出故事方向后再进预览页
       setError("");
       setStage("creating");
 
@@ -246,18 +262,23 @@ export function useLyricVideoCreationFlow() {
 
       setStage("generating");
       const generateStartedAt = Date.now();
-      logLyricStage("guided-generate", "start", { projectId: project.id });
+      logLyricStage("guided-generate", "wait-start", { projectId: project.id });
       const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "guided" }),
+        body: JSON.stringify({ mode: "guided", wait: true }),
       });
-      logLyricStage("guided-generate", "queued", {
+      assertPrompt1DirectionReady(generated);
+      logLyricStage("guided-generate", "direction-ready", {
         durationMs: Date.now() - generateStartedAt,
         projectId: project.id,
         lineCount: generated.lines?.length || 0,
         wordCount: generated.words?.length || 0,
         sceneCount: generated.scenes?.length || 0,
+        storyActsCount: generated.songAnalysis?.story_acts?.length || 0,
+        directionReady: generated.directionReady,
+        stopAfter: generated.stopAfter,
+        hasStoryPrompt: Boolean(generated.project?.storyPrompt),
         pipelineStage: generated.project?.pipelineStage,
         lyricsStatus: generated.project?.lyricsStatus,
         scenesStatus: generated.project?.scenesStatus,
