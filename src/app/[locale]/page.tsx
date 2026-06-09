@@ -12,7 +12,7 @@ import { Footer } from "@/blocks/footer";
  */
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground">
       <Header />
       <Hero />
       <Features />

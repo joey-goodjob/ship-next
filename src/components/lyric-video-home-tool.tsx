@@ -48,6 +48,7 @@ export function LyricVideoHomeTool() {
   const {
     stage,
     error,
+    uploadProgress,
     isWorking,
     generateFromFile,
     preparePendingAuth,
@@ -163,14 +164,19 @@ export function LyricVideoHomeTool() {
 
   return (
     <div id="create" className="relative scroll-mt-24">
-      <CharacterPresetPicker
-        presets={CHARACTER_PRESETS}
-        selectedSlug={selectedCharacterSlug}
-        disabled={isWorking}
-        onChange={setSelectedCharacterSlug}
-      />
       <AudioUploadTrim
         compact
+        presentation="home-card"
+        creationStage={stage}
+        uploadProgress={uploadProgress}
+        afterTrimSlot={
+          <CharacterPresetPicker
+            presets={CHARACTER_PRESETS}
+            selectedSlug={selectedCharacterSlug}
+            disabled={isWorking}
+            onChange={setSelectedCharacterSlug}
+          />
+        }
         showBack={false}
         showCredits={false}
         onGenerate={handleGenerate}

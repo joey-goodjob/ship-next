@@ -497,6 +497,259 @@ export function formatStoryActsText(songAnalysis?: Partial<LyricVideoSongAnalysi
     .trim();
 }
 
+export type PreviewStoryDraft = Pick<LyricVideoSongAnalysisResult, 'theme' | 'story_acts' | 'visual_style' | 'color_palette'>;
+
+export type ProductionDirectionDetail = Pick<
+  LyricVideoSongAnalysisResult,
+  'key_props' | 'narrative_arc' | 'location_plan' | 'emotion_arc' | 'notes'
+>;
+
+function compactEnergyForPrompt(values: number[], bucketSeconds = 5) {
+  const buckets: Array<{ start_s: number; end_s: number; avg: number; peak: number }> = [];
+  for (let index = 0; index < values.length; index += bucketSeconds) {
+    const slice = values.slice(index, index + bucketSeconds).map((value) => Number(value) || 0);
+    if (slice.length === 0) continue;
+    const avg = slice.reduce((sum, value) => sum + value, 0) / slice.length;
+    const peak = Math.max(...slice);
+    buckets.push({
+      start_s: index,
+      end_s: index + slice.length,
+      avg: Number(avg.toFixed(4)),
+      peak: Number(peak.toFixed(4)),
+    });
+  }
+  return buckets;
+}
+
+function preprocessForPreviewStory(preprocess: LyricVideoLlmPreprocessResult) {
+  return {
+    song: preprocess.song,
+    duration_s: preprocess.duration_s,
+    bpm: preprocess.bpm,
+    key: preprocess.key,
+    lines: preprocess.lines,
+    energy_summary_5s: compactEnergyForPrompt(preprocess.energy_per_second || []),
+  };
+}
+
+export function normalizePreviewStoryDraft(parsed: any): PreviewStoryDraft {
+  const normalized = normalizeSongAnalysis(parsed || {});
+  return {
+    theme: normalized.theme,
+    story_acts: normalized.story_acts,
+    visual_style: normalized.visual_style,
+    color_palette: normalized.color_palette,
+  };
+}
+
+export function normalizeProductionDirectionDetail(parsed: any): ProductionDirectionDetail {
+  const normalized = normalizeSongAnalysis(parsed || {});
+  return {
+    key_props: normalized.key_props,
+    narrative_arc: normalized.narrative_arc,
+    location_plan: normalized.location_plan,
+    emotion_arc: normalized.emotion_arc,
+    notes: normalized.notes,
+  };
+}
+
+export function mergeSongAnalysisParts(params: {
+  previewStoryDraft?: Partial<PreviewStoryDraft> | null;
+  productionDirectionDetail?: Partial<ProductionDirectionDetail> | null;
+  fallback?: Partial<LyricVideoSongAnalysisResult> | null;
+}): LyricVideoSongAnalysisResult {
+  return normalizeSongAnalysis({
+    ...(params.fallback || {}),
+    ...(params.previewStoryDraft || {}),
+    ...(params.productionDirectionDetail || {}),
+    characters: params.fallback?.characters || [],
+  });
+}
+
+export function buildPreviewStoryPrompt(preprocess: LyricVideoLlmPreprocessResult) {
+  return `你是一位音乐视觉化导演。根据以下歌曲数据，快速生成用户进入 preview 时需要审核的 MV 故事方向。
+
+## 歌曲数据
+${JSON.stringify(preprocessForPreviewStory(preprocess))}
+
+## 输出要求
+只输出以下 JSON，不要输出其他内容：
+
+{
+  "theme": "一句话概括这首歌的核心主题",
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "English visual narrative paragraph, 80-120 words."
+    }
+  ],
+  "visual_style": "整体画面风格",
+  "color_palette": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"]
+}
+
+### story_acts
+- 产出 3-5 个 Act，作为用户在 Preview / Customize > Story 里看到和编辑的 MV 故事编排
+- 每个 Act 覆盖一个较大的叙事段落，不能是一条 scene 或一个镜头
+- description 必须用英文自然段，80-120 words
+- 写清楚人物动作、地点、视觉母题、情绪推进和转场方向
+- Acts 之间要形成完整起承转合
+- 不要写字幕、歌词文字、屏幕文字或 UI 文案
+
+### visual_style / color_palette
+- visual_style 要具体（如 "35mm film realism in a winter city"），不要只写泛泛的 cinematic
+- color_palette 必须 5 个 hex 色值，至少 1 个冷色、1 个暖色
+- 要与歌词情绪和 energy_summary_5s 匹配
+
+### 全局
+- 这是 preview 前的快速故事草案，只输出用户需要审核的字段
+- 不要输出 narrative_arc、location_plan、key_props、emotion_arc、characters 或 notes`;
+}
+
+export function buildProductionDirectionPrompt(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  previewStoryDraft: PreviewStoryDraft;
+  storyPrompt: string;
+  cast?: any[];
+}) {
+  const castBlock = Array.isArray(params.cast) && params.cast.length > 0
+    ? JSON.stringify(
+        params.cast.map((member: any) => ({
+          id: member.id,
+          name: member.name,
+          description: member.description,
+          promptFragment: member.promptFragment,
+        }))
+      )
+    : 'No user-selected cast is available. Do not invent detailed character identity; focus on action, space, props, and mood.';
+  return `你是一位音乐视频导演。用户已经在 preview 里看到并可能确认/编辑了故事方向。现在只把这个故事扩展成后续生图需要的执行细节。
+
+## 歌曲数据
+${JSON.stringify(params.preprocess)}
+
+## 已确认的 Preview Story Draft
+${JSON.stringify(params.previewStoryDraft)}
+
+## 当前用户确认的 Story Prompt
+${params.storyPrompt}
+
+## 用户选择的角色
+${castBlock}
+
+## 输出要求
+只输出以下 JSON，不要输出其他内容：
+
+{
+  "narrative_arc": [
+    {
+      "time_range": "0s-28s",
+      "section_label": "verse1 / chorus1 / bridge 等",
+      "plot_beat": "这个段落的具体故事事件：主角在做什么、为什么、结果是什么",
+      "visual_anchor": "这个段落最核心的视觉画面"
+    }
+  ],
+  "location_plan": [
+    {
+      "time_range": "0s-28s",
+      "location": "具体场景描述（地点类型、空间特征、环境元素）",
+      "lighting": "光线条件（时段、方向、强度、色温）",
+      "color_tone": "这个段落的主色调偏移",
+      "spatial_feel": "开阔/封闭/过渡"
+    }
+  ],
+  "key_props": [
+    {
+      "id": "prop_1",
+      "description": "道具外观、材质、颜色、尺寸",
+      "symbolic_meaning": "它在故事里代表什么情感或转折",
+      "state_progression": "这个道具从开头到结尾的状态变化",
+      "appears_in_sections": ["verse1", "chorus2", "outro"]
+    }
+  ],
+  "emotion_arc": [
+    {
+      "time_range": "0s-29s",
+      "emotion": "当前段落的情绪关键词",
+      "intensity": 0.4
+    }
+  ],
+  "notes": "任何影响后续 image_prompt 的执行备注"
+}
+
+### 约束
+- 不要改写 theme、story_acts、visual_style、color_palette
+- narrative_arc 必须服从当前用户确认的 Story Prompt，不要另写一个新故事
+- location_plan 必须跟 narrative_arc 的故事节点对齐，不能随意切换空间
+- key_props 至少 2 个、至多 4 个，必须是有叙事功能的具体物件
+- 每个 key_prop 要在不同段落至少出现 2 次，state_progression 必须体现变化
+- emotion_arc 要覆盖整首歌，intensity 范围 0-1，并参考 energy_per_second
+- 不要写字幕、歌词文字、屏幕文字、UI 文案、logo 或品牌`;
+}
+
+export async function generatePreviewStoryWithKie(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  model?: string;
+}) {
+  const result = await callKieCodexResponses({
+    text: buildPreviewStoryPrompt(params.preprocess),
+    model: params.model,
+    reasoningEffort: 'medium',
+  });
+  const previewStoryDraft = normalizePreviewStoryDraft(parseJsonLoose<any>(result.content, {}));
+  if (!previewStoryDraft.theme && previewStoryDraft.story_acts.length === 0) {
+    throw createLyricVideoError('Preview story returned no usable JSON content', {
+      errorKind: 'provider_invalid_response',
+      stage: 'song_analysis',
+      provider: 'kie_codex',
+      model: params.model || result.model,
+      diagnostics: { contentPreview: previewText(result.content, 500) },
+    });
+  }
+  return {
+    provider: 'kie_codex',
+    model: params.model || result.model,
+    actualModel: result.model,
+    previewStoryDraft,
+    rawText: result.content,
+    raw: result.raw,
+  };
+}
+
+export async function generateProductionDirectionWithKie(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  previewStoryDraft: PreviewStoryDraft;
+  storyPrompt: string;
+  model?: string;
+  cast?: any[];
+}) {
+  const result = await callKieCodexResponses({
+    text: buildProductionDirectionPrompt(params),
+    model: params.model,
+    reasoningEffort: 'low',
+  });
+  const productionDirectionDetail = normalizeProductionDirectionDetail(parseJsonLoose<any>(result.content, {}));
+  if (
+    productionDirectionDetail.narrative_arc.length === 0 &&
+    productionDirectionDetail.location_plan.length === 0 &&
+    productionDirectionDetail.key_props.length === 0
+  ) {
+    throw createLyricVideoError('Production direction returned no usable execution detail', {
+      errorKind: 'provider_invalid_response',
+      stage: 'song_analysis',
+      provider: 'kie_codex',
+      model: params.model || result.model,
+      diagnostics: { contentPreview: previewText(result.content, 500) },
+    });
+  }
+  return {
+    provider: 'kie_codex',
+    model: params.model || result.model,
+    actualModel: result.model,
+    productionDirectionDetail,
+    rawText: result.content,
+    raw: result.raw,
+  };
+}
+
 export function buildSongAnalysisPrompt(preprocess: LyricVideoLlmPreprocessResult) {
   return `你是一位音乐视觉化导演。根据以下歌曲数据，分析这首歌并输出创意方向。
 
@@ -1510,6 +1763,7 @@ export async function generateStoryboardWithKieClaude(params: {
   lines: any[];
   project: any;
   storyPrompt?: string;
+  songAnalysis?: LyricVideoSongAnalysisResult;
   fixedScenes?: FixedStoryboardSceneDraft[];
   cast?: any[];
 }): Promise<StoryboardScene[]> {
@@ -1544,18 +1798,20 @@ export async function generateStoryboardWithKieClaude(params: {
   if (!configs.kie_api_key) return fallback;
 
   const prompt = buildStoryboardScenesPrompt({
-    songAnalysis: {
-      theme: params.storyPrompt || params.project.storyPrompt || params.project.title || 'emotional lyric video',
-      characters: [],
-      key_props: [],
-      narrative_arc: [],
-      story_acts: [],
-      location_plan: [],
-      emotion_arc: [],
-      visual_style: params.project.artStyle || 'cinematic lyric video',
-      color_palette: String(params.project.palette || '').split(',').map((color) => color.trim()).filter(Boolean),
-      notes: audioAnalysisPromptSummary(params.project),
-    },
+    songAnalysis:
+      params.songAnalysis ||
+      {
+        theme: params.storyPrompt || params.project.storyPrompt || params.project.title || 'emotional lyric video',
+        characters: [],
+        key_props: [],
+        narrative_arc: [],
+        story_acts: [],
+        location_plan: [],
+        emotion_arc: [],
+        visual_style: params.project.artStyle || 'cinematic lyric video',
+        color_palette: String(params.project.palette || '').split(',').map((color) => color.trim()).filter(Boolean),
+        notes: audioAnalysisPromptSummary(params.project),
+      },
     scenes: fixedScenes,
     project: params.project,
     storyPrompt: params.storyPrompt,

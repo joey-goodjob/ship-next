@@ -16,6 +16,7 @@ import {
   type LyricVideoImageProviderName,
   type LyricVideoImageProviderSelection,
 } from './image-provider';
+import { ensureProductionDirectionDetail } from './direction-detail';
 import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
@@ -1592,6 +1593,12 @@ export async function generateVisualsFromStory(params: {
 
   const storyPrompt = (params.storyPrompt || details.project.storyPrompt || '').trim();
   if (!storyPrompt) throw new Error('Create a story before creating visuals');
+  const directionDetail = await ensureProductionDirectionDetail({
+    userId: params.userId,
+    projectId: params.projectId,
+    storyPrompt,
+    model: params.model,
+  });
   logLyricStage('visuals', 'service-start', {
     projectId: params.projectId,
     userId: params.userId,
@@ -1602,6 +1609,9 @@ export async function generateVisualsFromStory(params: {
     lineCount: details.lines.length,
     sceneCount: details.scenes.length,
     storyPromptLength: storyPrompt.length,
+    directionDetailStatus: directionDetail.status,
+    directionDetailReused: directionDetail.reused,
+    directionDetailStoryPromptHash: directionDetail.storyPromptHash,
     regenerateStoryboard: Boolean(params.regenerateStoryboard),
     regenerateImages: Boolean(params.regenerateImages),
     model: params.model,
@@ -1641,6 +1651,7 @@ export async function generateVisualsFromStory(params: {
         userId: params.userId,
         projectId: params.projectId,
         storyPrompt,
+        songAnalysis: directionDetail.songAnalysis,
       });
     } else if (params.storyPrompt && params.storyPrompt.trim() !== details.project.storyPrompt) {
       await db()

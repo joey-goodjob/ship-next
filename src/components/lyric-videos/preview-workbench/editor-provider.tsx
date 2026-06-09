@@ -113,6 +113,7 @@ export function EditorProvider({
   const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
+  const autoDirectionDetailProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
 
   const totalDuration = useMemo(() => {
@@ -299,6 +300,39 @@ export function EditorProvider({
         setCreatingStory(false);
       });
   }, [creatingStory, generationLocked, lines.length, project, scenes.length]);
+
+  useEffect(() => {
+    const storyPrompt = (project?.storyPrompt || "").trim();
+    const shouldPrewarmDirectionDetail =
+      project &&
+      storyPrompt &&
+      lines.length > 0 &&
+      scenes.length === 0 &&
+      !generationLocked &&
+      autoDirectionDetailProjectRef.current !== project.id;
+    if (!shouldPrewarmDirectionDetail) return;
+
+    autoDirectionDetailProjectRef.current = project.id;
+    requestJson(`/api/lyric-videos/${project.id}/direction-detail`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ storyPrompt }),
+    })
+      .then((data: any) => {
+        console.info("[lyric-video] direction detail prewarmed", {
+          projectId: project.id,
+          reused: data?.reused,
+          status: data?.status,
+          storyPromptHash: data?.storyPromptHash,
+        });
+      })
+      .catch((err: any) => {
+        console.warn("[lyric-video] direction detail prewarm failed; visuals will retry", {
+          projectId: project.id,
+          error: err?.message || String(err || "unknown"),
+        });
+      });
+  }, [generationLocked, lines.length, project, scenes.length]);
 
   useEffect(() => {
     return () => {

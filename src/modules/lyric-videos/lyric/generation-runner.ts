@@ -8,7 +8,15 @@ import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './aud
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
 import { buildFailureSnapshot, createLyricVideoError } from './diagnostics';
 import { parseJsonField, requestHash, safeJson } from './json';
-import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, formatStoryActsText, generateStoryboardScenesWithKieClaude, generateVideoPromptsForScenes } from './llm';
+import {
+  assertUsableSongAnalysis,
+  analyzeSongWithKieForDebug,
+  formatStoryActsText,
+  generatePreviewStoryWithKie,
+  generateStoryboardScenesWithKieClaude,
+  generateVideoPromptsForScenes,
+  mergeSongAnalysisParts,
+} from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
 import { GRID_SCENE_IMAGE_BATCH_SIZE, GRID_SCENE_IMAGE_MODE, GRID_SCENE_IMAGE_SIZE, queueSceneImagesGrid } from './media-generation';
@@ -841,6 +849,93 @@ export async function executeGenerationRun(params: {
       progress: 50,
       input: currentStepInput,
     });
+    if (options.mode === 'guided') {
+      const previewStoryResult = await generatePreviewStoryWithKie({
+        preprocess,
+        model: options.songAnalysisModel,
+      });
+      const previewSongAnalysis = mergeSongAnalysisParts({
+        previewStoryDraft: previewStoryResult.previewStoryDraft,
+      });
+      assertUsableSongAnalysis(previewSongAnalysis);
+      const storyActsText = formatStoryActsText(previewSongAnalysis);
+      const existingStoryPrompt = String(detailsAfterLyrics.project.storyPrompt || '').trim();
+      const directionStoryPrompt = existingStoryPrompt || storyActsText || previewSongAnalysis.theme || '';
+      const shouldPersistStoryActs = Boolean(directionStoryPrompt && directionStoryPrompt !== existingStoryPrompt);
+      if (shouldPersistStoryActs) {
+        await db()
+          .update(lyricVideoProject)
+          .set({
+            storyPrompt: directionStoryPrompt,
+            pipelineError: null,
+          })
+          .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+      }
+      const songAnalysisOutput = {
+        provider: previewStoryResult.provider,
+        model: previewStoryResult.model,
+        actualModel: previewStoryResult.actualModel,
+        previewStoryDraft: previewStoryResult.previewStoryDraft,
+        songAnalysis: previewSongAnalysis,
+        storyPrompt: directionStoryPrompt,
+        storyPromptPersisted: shouldPersistStoryActs,
+        rawText: previewStoryResult.rawText,
+        raw: previewStoryResult.raw,
+      };
+      await markGenerationStepSuccess({
+        userId: params.userId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        output: debugStopOutput('song_analysis', songAnalysisOutput, debug),
+      });
+      const stoppedAfterSongAnalysis = await maybeStopAfterGenerationStage({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        debug,
+        outputSnapshot: debugStopOutput('song_analysis', songAnalysisOutput, debug),
+        songAnalysis: previewSongAnalysis,
+      });
+      if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
+
+      const directionOutputSnapshot = debugStopOutput('song_analysis', songAnalysisOutput, debug);
+      const directionOutput =
+        directionOutputSnapshot && typeof directionOutputSnapshot === 'object' && !Array.isArray(directionOutputSnapshot)
+          ? (directionOutputSnapshot as Record<string, unknown>)
+          : { value: directionOutputSnapshot };
+      await markGenerationRunDirectionReady({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        storyPrompt: directionStoryPrompt,
+        outputSnapshot: {
+          ...directionOutput,
+          guidedStopped: true,
+          stopAfter: 'song_analysis',
+          nextAction: 'review_direction',
+          prewarmAction: 'direction_detail',
+        },
+      });
+      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
+      return {
+        run: finalRun?.run,
+        steps: finalRun?.steps || [],
+        project: details?.project,
+        lines: details?.lines || [],
+        words: details?.words || [],
+        scenes: details?.scenes || [],
+        songAnalysis: previewSongAnalysis,
+        directionReady: true,
+        stopAfter: 'song_analysis',
+      };
+    }
+
     const songAnalysisResult = await analyzeSongWithKieForDebug({
       preprocess,
       provider: 'kie_codex',
@@ -889,41 +984,6 @@ export async function executeGenerationRun(params: {
       songAnalysis: songAnalysisResult.songAnalysis,
     });
     if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
-
-    if (options.mode === 'guided') {
-      const directionOutputSnapshot = debugStopOutput('song_analysis', songAnalysisOutput, debug);
-      const directionOutput =
-        directionOutputSnapshot && typeof directionOutputSnapshot === 'object' && !Array.isArray(directionOutputSnapshot)
-          ? (directionOutputSnapshot as Record<string, unknown>)
-          : { value: directionOutputSnapshot };
-      await markGenerationRunDirectionReady({
-        userId: params.userId,
-        projectId: params.projectId,
-        runId: params.run.id,
-        step: currentStep,
-        progress: 70,
-        storyPrompt: directionStoryPrompt,
-        outputSnapshot: {
-          ...directionOutput,
-          guidedStopped: true,
-          stopAfter: 'song_analysis',
-          nextAction: 'review_direction',
-        },
-      });
-      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
-      const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
-      return {
-        run: finalRun?.run,
-        steps: finalRun?.steps || [],
-        project: details?.project,
-        lines: details?.lines || [],
-        words: details?.words || [],
-        scenes: details?.scenes || [],
-        songAnalysis: songAnalysisResult.songAnalysis,
-        directionReady: true,
-        stopAfter: 'song_analysis',
-      };
-    }
 
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
     const promptGenerationStep = currentStep;

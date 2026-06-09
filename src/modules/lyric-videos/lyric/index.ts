@@ -15,6 +15,7 @@ export * from './asr';
 export * from './storyboard';
 export * from './llm';
 export * from './generation-runner';
+export * from './direction-detail';
 export * from './media-generation';
 export * from './cast';
 export * from './render';

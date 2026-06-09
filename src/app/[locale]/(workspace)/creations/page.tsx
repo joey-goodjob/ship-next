@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock, Film, Loader2, Music2, Plus, Search, Sparkles } from "lucide-react";
-import { Link, useRouter } from "@/core/i18n/navigation";
+import { CalendarClock, Film, Music2, Plus, Search, Sparkles } from "lucide-react";
+import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 type LyricVideoProject = {
@@ -75,13 +74,10 @@ function ProjectStatus({ label, value }: { label: string; value: string }) {
 
 export default function LyricVideosPage() {
   const t = useTranslations("dashboard.lyric_videos");
-  const router = useRouter();
   const [projects, setProjects] = useState<LyricVideoProject[]>([]);
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [title, setTitle] = useState("");
 
   async function loadProjects() {
     setLoading(true);
@@ -110,28 +106,6 @@ export default function LyricVideosPage() {
     });
   }, [projects, query]);
 
-  async function createProject(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const cleanTitle = title.trim();
-    if (!cleanTitle || creating) return;
-
-    setCreating(true);
-    setError("");
-    try {
-      const project = await readApi<LyricVideoProject>("/api/lyric-videos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: cleanTitle }),
-      });
-      setTitle("");
-      router.push(`/dashboard/lyric-videos/${project.id}/preview`);
-    } catch (err: any) {
-      setError(err?.message || t("failed"));
-    } finally {
-      setCreating(false);
-    }
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
       <section className="flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-end md:justify-between">
@@ -144,22 +118,13 @@ export default function LyricVideosPage() {
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("description")}</p>
         </div>
 
-        <form onSubmit={createProject} className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[420px] sm:flex-row">
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder={t("project_title_placeholder")}
-            className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
-          />
-          <button
-            type="submit"
-            disabled={creating || !title.trim()}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#F5A623] px-4 text-sm font-bold text-white transition hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {creating ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-            {creating ? t("creating") : t("new_project")}
-          </button>
-        </form>
+        <Link
+          href="/create"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#F5A623] px-4 text-sm font-bold text-white transition hover:bg-[#E6981F] sm:w-auto"
+        >
+          <Plus className="size-4" />
+          {t("create_project")}
+        </Link>
       </section>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -204,7 +169,7 @@ export default function LyricVideosPage() {
           {filteredProjects.map((project) => (
             <Link
               key={project.id}
-              href={`/dashboard/lyric-videos/${project.id}/preview`}
+              href={`/lyric-videos/${project.id}/preview`}
               className="group flex min-h-52 flex-col justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
             >
               <div>

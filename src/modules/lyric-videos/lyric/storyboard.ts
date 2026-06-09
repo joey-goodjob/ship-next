@@ -21,6 +21,7 @@ import {
   type LyricWordInput,
   type LyricVideoLlmPreprocessResult,
   type LyricVideoPreprocessResult,
+  type LyricVideoSongAnalysisResult,
   type PreprocessEnergySegment,
   type PreprocessLyricLine,
   type PreprocessScene,
@@ -1354,6 +1355,7 @@ export async function generateStoryboard(params: {
   userId: string;
   projectId: string;
   storyPrompt?: string;
+  songAnalysis?: LyricVideoSongAnalysisResult;
 }) {
   // 正式生成分镜：读取项目详情 -> 调 llm.ts 的 generateStoryboardWithKieClaude
   // -> replaceScenes 重写 `lyric_video_scene`。
@@ -1392,6 +1394,7 @@ export async function generateStoryboard(params: {
       lines: details.lines,
       project: details.project,
       storyPrompt: params.storyPrompt,
+      songAnalysis: params.songAnalysis,
       fixedScenes,
       cast: details.cast,
     });

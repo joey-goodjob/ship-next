@@ -6,26 +6,38 @@
     "contact": "联系"
   },
   "hero": {
+    "badge": "AI 驱动的歌词视频创作",
     "headline_start": "用 AI 制作歌词视频",
     "headline_accent": "只需几分钟。",
-    "subheadline": "免费预览 · 完全可自定义 · 不套模板",
+    "subheadline": "上传一个音频文件，立即获得歌词视频预览。",
     "upload_title": "上传歌曲，立即获得视频预览",
     "cta": "上传你的歌曲",
+    "secondary_cta": "试试看 demo",
     "file_note": "最大 100MB · 支持 MP3、WAV、FLAC、AAC、OGG、M4A",
+    "quick_points": {
+      "free_preview": "免费预览",
+      "no_templates": "不套模板",
+      "fully_customizable": "完全可自定义"
+    },
     "benefits": {
       "free_preview": {
         "title": "免费预览",
-        "description": "购买前就能创建和编辑视频，无需信用卡。"
+        "description": "购买前就能创建并预览视频，无需信用卡。"
       },
       "customizable": {
         "title": "完全可自定义",
-        "description": "在编辑器里修改故事、风格、字体、场景和时间。"
+        "description": "编辑故事、风格、字体、场景和时间，让视频贴合你的想法。"
       },
       "languages": {
         "title": "90+ 语言",
         "description": "AI 自动为全球歌曲准备歌词转写。"
+      },
+      "secure_private": {
+        "title": "安全且私密",
+        "description": "你的音频和数据会加密处理，不会被分享。"
       }
-    }
+    },
+    "loved_by": "深受创作者、音乐人和营销团队喜爱。"
   },
   "featured": {
     "title": "看看你能创作什么",

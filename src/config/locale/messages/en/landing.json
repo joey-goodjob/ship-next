@@ -6,26 +6,38 @@
     "contact": "Contact"
   },
   "hero": {
+    "badge": "AI-powered lyric video creation",
     "headline_start": "Create lyric videos with AI",
     "headline_accent": "in minutes.",
-    "subheadline": "Free preview · Fully customizable · No templates",
+    "subheadline": "Upload one audio file and get an instant lyric video preview.",
     "upload_title": "Upload your song to get an instant preview",
     "cta": "Upload your song",
+    "secondary_cta": "Try a demo",
     "file_note": "Max 100MB · Formats: MP3, WAV, FLAC, AAC, OGG, M4A",
+    "quick_points": {
+      "free_preview": "Free preview",
+      "no_templates": "No templates",
+      "fully_customizable": "Fully customizable"
+    },
     "benefits": {
       "free_preview": {
         "title": "Free preview",
-        "description": "Create and edit your video before purchasing. No credit card required."
+        "description": "Create and preview your video before purchasing. No credit card."
       },
       "customizable": {
         "title": "Fully customizable",
-        "description": "Change the story, art style, fonts, scenes, and timing in the editor."
+        "description": "Edit story, style, fonts, scenes, and timing to match your vision."
       },
       "languages": {
         "title": "90+ languages",
         "description": "AI transcription prepares lyrics automatically for songs around the world."
+      },
+      "secure_private": {
+        "title": "Private & secure",
+        "description": "Your audio and data are encrypted and never shared."
       }
-    }
+    },
+    "loved_by": "Loved by creators, musicians, and marketers worldwide."
   },
   "featured": {
     "title": "See what you can create",

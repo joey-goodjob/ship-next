@@ -5,7 +5,7 @@ import { Coins, Home, PlusCircle, Settings, Video } from "lucide-react";
 import { envConfigs } from "@/config";
 import { AppLayout } from "@/components/app-layout";
 
-export default function DashboardLayout({
+export default function WorkspaceLayout({
   children,
 }: {
   children: React.ReactNode;

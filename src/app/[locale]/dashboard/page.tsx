@@ -6,5 +6,5 @@ export default async function DashboardIndex({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect({ href: "/dashboard/lyric-videos", locale });
+  redirect({ href: "/create", locale });
 }
