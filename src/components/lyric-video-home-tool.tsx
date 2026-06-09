@@ -5,7 +5,6 @@ import type { FormEvent } from "react";
 import { Loader2, Music2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim } from "@/components/audio-upload-trim";
-import { CharacterPresetPicker } from "@/components/character-preset-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,29 +16,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { signIn, signUp, useSession } from "@/core/auth/client";
 import { Link, useRouter } from "@/core/i18n/navigation";
-import { useLyricVideoCreationFlow } from "@/hooks/use-lyric-video-creation-flow";
-import {
-  CHARACTER_PRESETS,
-  DEFAULT_CHARACTER_PRESET_SLUG,
-  getCharacterPreset,
-  type CharacterPreset,
-} from "@/lib/character-presets";
+import { useLyricVideoCreationFlow, writeHomeUploadedAudio } from "@/hooks/use-lyric-video-creation-flow";
 
-type PendingGenerate = {
+type PendingUpload = {
   file: File;
   startTime: number;
   endTime: number;
   options: { useEntireAudio: boolean; durationSeconds: number };
-  selectedCharacter: CharacterPreset | null;
 };
 
 function stageLabel(stage: string) {
   if (stage === "uploading") return "Uploading your audio...";
-  if (stage === "waiting-auth") return "Keeping your upload ready...";
-  if (stage === "creating") return "Creating your lyric video project...";
-  if (stage === "generating") return "Waiting for Prompt1 story direction...";
-  if (stage === "redirecting") return "Opening the preview editor...";
-  return "Preparing your preview...";
+  if (stage === "redirecting") return "Opening the creator...";
+  return "Preparing your song...";
 }
 
 export function LyricVideoHomeTool() {
@@ -50,12 +39,10 @@ export function LyricVideoHomeTool() {
     error,
     uploadProgress,
     isWorking,
-    generateFromFile,
-    preparePendingAuth,
-    resumePending,
+    uploadOnly,
     resetCreationState,
   } = useLyricVideoCreationFlow();
-  const pendingGenerateRef = useRef<PendingGenerate | null>(null);
+  const pendingUploadRef = useRef<PendingUpload | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [authLoading, setAuthLoading] = useState(false);
@@ -63,51 +50,56 @@ export function LyricVideoHomeTool() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedCharacterSlug, setSelectedCharacterSlug] = useState(DEFAULT_CHARACTER_PRESET_SLUG);
-  const selectedCharacter = getCharacterPreset(selectedCharacterSlug) || CHARACTER_PRESETS[0] || null;
 
   useEffect(() => {
-    if (isPending || !session?.user) return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("continue") !== "lyric-video") return;
+    if (!session?.user) return;
+    if (authOpen && pendingUploadRef.current) setAuthOpen(false);
+  }, [authOpen, session?.user]);
 
-    resumePending().then((resumed) => {
-      if (!resumed) return;
-      params.delete("continue");
-      const nextQuery = params.toString();
-      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}#create`;
-      window.history.replaceState(null, "", nextUrl);
+  async function uploadAndContinue(pending: PendingUpload) {
+    const uploaded = await uploadOnly(pending.file);
+    writeHomeUploadedAudio({
+      ...uploaded,
+      filename: uploaded.filename || pending.file.name,
+      size: uploaded.size || pending.file.size,
+      contentType: uploaded.contentType || pending.file.type || "audio/mpeg",
     });
-  }, [isPending, resumePending, session?.user]);
+    pendingUploadRef.current = null;
+    router.push("/create?source=home-upload");
+  }
 
   async function handleGenerate(
-    file: File,
+    file: File | null,
     startTime: number,
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) {
+    if (!file) {
+      toast.error("Choose an audio file first");
+      return;
+    }
+
     resetCreationState();
 
     if (!session?.user) {
-      pendingGenerateRef.current = { file, startTime, endTime, options, selectedCharacter };
+      pendingUploadRef.current = { file, startTime, endTime, options };
       setAuthMode("sign-in");
       setAuthError("");
       setAuthOpen(true);
-      throw new Error("Sign in to generate your lyric preview");
+      throw new Error("Sign in to upload your song");
     }
 
-    await generateFromFile(file, startTime, endTime, options, selectedCharacter);
+    await uploadAndContinue({ file, startTime, endTime, options });
   }
 
   async function continueAfterAuth() {
-    const pending = pendingGenerateRef.current;
+    const pending = pendingUploadRef.current;
     if (!pending) return;
     setAuthOpen(false);
     try {
-      await generateFromFile(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
-      pendingGenerateRef.current = null;
+      await uploadAndContinue(pending);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create lyric video");
+      toast.error(err?.message || "Failed to upload your song");
     }
   }
 
@@ -136,27 +128,12 @@ export function LyricVideoHomeTool() {
   }
 
   async function continueWithFullSignIn() {
-    const pending = pendingGenerateRef.current;
-    if (!pending) {
-      router.push("/sign-in?callbackUrl=/%3Fcontinue%3Dlyric-video%23create");
-      return;
-    }
-
-    try {
-      await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
-      window.location.assign("/sign-in?callbackUrl=/%3Fcontinue%3Dlyric-video%23create");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to keep your upload ready");
-    }
+    router.push("/sign-in?callbackUrl=/create");
   }
 
   async function continueWithSocial(provider: "google" | "github") {
-    const pending = pendingGenerateRef.current;
     try {
-      if (pending) {
-        await preparePendingAuth(pending.file, pending.startTime, pending.endTime, pending.options, pending.selectedCharacter);
-      }
-      await signIn.social({ provider, callbackURL: "/?continue=lyric-video#create" });
+      await signIn.social({ provider, callbackURL: "/create" });
     } catch (err: any) {
       toast.error(err?.message || "Failed to start sign in");
     }
@@ -169,30 +146,22 @@ export function LyricVideoHomeTool() {
         presentation="home-card"
         creationStage={stage}
         uploadProgress={uploadProgress}
-        afterTrimSlot={
-          <CharacterPresetPicker
-            presets={CHARACTER_PRESETS}
-            selectedSlug={selectedCharacterSlug}
-            disabled={isWorking}
-            onChange={setSelectedCharacterSlug}
-          />
-        }
         showBack={false}
         showCredits={false}
         onGenerate={handleGenerate}
         creditCost={10}
-        generateLabel="Generate direction (10 credits)"
-        workingLabel={stage === "idle" ? "Creating preview..." : stageLabel(stage)}
-        successLabel="Direction ready"
+        generateLabel="Upload song"
+        workingLabel={stage === "idle" ? "Preparing your song..." : stageLabel(stage)}
+        successLabel="Song uploaded"
       />
 
       {isWorking ? (
-        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-white/88 px-6 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-md border border-slate-200 bg-white p-5 text-center shadow-lg">
-            <Loader2 className="mx-auto size-8 animate-spin text-[#fbbf24]" />
-            <p className="mt-4 text-base font-black text-slate-950">{stageLabel(stage)}</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-              The preview editor opens after the first LLM pass creates the story acts.
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-brand-panel/88 px-6 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-md border border-brand-line bg-brand-panel p-5 text-center shadow-lg">
+            <Loader2 className="mx-auto size-8 animate-spin text-brand-accent" />
+            <p className="mt-4 text-base font-black text-brand-ink">{stageLabel(stage)}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-brand-muted">
+              The creator opens after your audio is safely stored.
             </p>
           </div>
         </div>
@@ -208,11 +177,11 @@ export function LyricVideoHomeTool() {
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Music2 className="size-5 text-[#fbbf24]" />
-              Sign in to generate
+              <Music2 className="size-5 text-brand-accent" />
+              Sign in to upload
             </DialogTitle>
             <DialogDescription>
-              Your audio and trim selection stay on this page while you sign in.
+              Use email sign-in here to keep your selected song on this page.
             </DialogDescription>
           </DialogHeader>
 
@@ -251,10 +220,10 @@ export function LyricVideoHomeTool() {
             <Button
               type="submit"
               disabled={authLoading}
-              className="h-11 w-full gap-2 rounded-md bg-[#fbbf24] font-black text-slate-950 hover:bg-[#f59e0b]"
+              className="h-11 w-full gap-2 rounded-md bg-brand-accent font-black text-brand-ink hover:bg-brand-accent-hover"
             >
               {authLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {authMode === "sign-in" ? "Sign in and continue" : "Create account and continue"}
+              {authMode === "sign-in" ? "Sign in and upload" : "Create account and upload"}
             </Button>
           </form>
 
@@ -267,10 +236,10 @@ export function LyricVideoHomeTool() {
             </Button>
           </div>
 
-          <div className="flex flex-col gap-2 text-center text-sm text-slate-500">
+          <div className="flex flex-col gap-2 text-center text-sm text-brand-muted">
             <button
               type="button"
-              className="font-semibold text-slate-800 underline underline-offset-4"
+              className="font-semibold text-brand-ink underline underline-offset-4"
               onClick={() => {
                 setAuthError("");
                 setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in");

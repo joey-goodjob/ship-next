@@ -28,15 +28,15 @@ export function SiteFooter({
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-white text-slate-950">
+    <footer className="bg-brand-panel text-brand-ink">
       <div className="mx-auto max-w-[1320px] px-6 pb-10 pt-14 sm:px-10 sm:pt-16 lg:px-16">
         {tagline && (
-          <p className="mb-10 text-center font-serif text-3xl italic leading-[1.15] tracking-tight text-slate-950 sm:text-4xl">
+          <p className="mb-10 text-center font-serif text-3xl italic leading-[1.15] tracking-tight text-brand-ink sm:text-4xl">
             {tagline}
           </p>
         )}
 
-        <div className="mx-auto mb-12 h-px w-32 bg-slate-200" />
+        <div className="mx-auto mb-12 h-px w-32 bg-brand-line" />
 
         {columns && columns.length > 0 && (
           <div
@@ -51,7 +51,7 @@ export function SiteFooter({
           >
             <div className="space-y-6">
               <span className="text-[34px] font-extrabold tracking-tight">
-                Lyric<span className="text-[#fbbf24]">Video AI</span>
+                Lyric<span className="text-brand-accent">Video AI</span>
               </span>
               <p className="font-black">Follow us on</p>
               <div className="flex gap-2">
@@ -62,19 +62,19 @@ export function SiteFooter({
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex size-9 items-center justify-center rounded-md bg-slate-950 text-white"
+                    className="flex size-9 items-center justify-center rounded-md bg-brand-ink text-brand-panel"
                   >
                     <s.icon className="size-[17px]" />
                   </a>
                 ))}
               </div>
-              <p className="text-sm font-semibold text-slate-500">
+              <p className="text-sm font-semibold text-brand-muted">
                 {copyright || `All rights reserved © ${year}`}
               </p>
             </div>
             {columns.map((col) => (
               <div key={col.title} className="space-y-5">
-                <h4 className="text-[15px] font-black uppercase tracking-wide text-slate-950">
+                <h4 className="text-[15px] font-black uppercase tracking-wide text-brand-ink">
                   {col.title}
                 </h4>
                 <ul className="space-y-2">
@@ -85,14 +85,14 @@ export function SiteFooter({
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-base text-slate-950 transition-colors hover:text-[#fbbf24]"
+                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </a>
                       ) : (
                         <Link
                           href={link.href}
-                          className="text-base text-slate-950 transition-colors hover:text-[#fbbf24]"
+                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </Link>

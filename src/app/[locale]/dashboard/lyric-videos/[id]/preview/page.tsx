@@ -6,5 +6,5 @@ export default async function LegacyLyricVideoPreviewPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  redirect({ href: `/lyric-videos/${id}/preview`, locale });
+  redirect({ href: `/creations/${id}/preview`, locale });
 }

@@ -11,11 +11,13 @@ type ApiResponse<T> = {
   data?: T;
 };
 
-type UploadAudioResponse = {
+export type UploadedAudio = {
   url: string;
   key: string;
   filename: string;
   size: number;
+  contentType?: string;
+  checksum?: string;
   deduped?: boolean;
 };
 
@@ -53,7 +55,7 @@ type GenerateOptions = {
 };
 
 type PendingLyricVideoPayload = {
-  uploaded: UploadAudioResponse;
+  uploaded: UploadedAudio;
   filename: string;
   fileType: string;
   fileSize: number;
@@ -74,6 +76,7 @@ export type LyricVideoCreationStage =
   | "failed";
 
 const PENDING_KEY = "lyric-video-pending-upload";
+const HOME_UPLOAD_KEY = "lyric-video-home-upload";
 
 async function requestJson<T>(url: string, init?: RequestInit) {
   const response = await fetch(url, init);
@@ -126,7 +129,7 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
 
   try {
     onProgress?.(0);
-    const uploaded = await new Promise<UploadAudioResponse>((resolve, reject) => {
+    const uploaded = await new Promise<UploadedAudio>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", "/api/storage/upload-audio");
       xhr.responseType = "json";
@@ -137,7 +140,7 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
       };
 
       xhr.onload = () => {
-        const body = (xhr.response || {}) as ApiResponse<UploadAudioResponse>;
+        const body = (xhr.response || {}) as ApiResponse<UploadedAudio>;
         if (xhr.status < 200 || xhr.status >= 300 || body.code !== 0 || !body.data) {
           reject(new Error(body.message || "Audio upload failed"));
           return;
@@ -157,6 +160,8 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
       key: uploaded.key,
       filename: uploaded.filename,
       size: uploaded.size,
+      contentType: uploaded.contentType,
+      checksum: uploaded.checksum,
       deduped: uploaded.deduped,
     });
     return uploaded;
@@ -164,6 +169,30 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
     logLyricStageError("upload-audio", "fail", error, { durationMs: Date.now() - startedAt });
     throw error;
   }
+}
+
+export function readHomeUploadedAudio(): UploadedAudio | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.sessionStorage.getItem(HOME_UPLOAD_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as UploadedAudio;
+    if (!parsed?.url || !parsed.key || !parsed.filename) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function writeHomeUploadedAudio(uploaded: UploadedAudio) {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(HOME_UPLOAD_KEY, JSON.stringify(uploaded));
+}
+
+export function clearHomeUploadedAudio() {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(HOME_UPLOAD_KEY);
 }
 
 function readPendingPayload(): PendingLyricVideoPayload | null {
@@ -235,6 +264,7 @@ export function useLyricVideoCreationFlow() {
           audioDurationMs: originalDurationMs,
           audioMimeType: payload.fileType || "audio/mpeg",
           audioSizeBytes: payload.uploaded.size || payload.fileSize,
+          audioChecksum: payload.uploaded.checksum,
           trimStartMs,
           trimEndMs,
           aspectRatio: payload.options.aspectRatio,
@@ -320,29 +350,47 @@ export function useLyricVideoCreationFlow() {
 
       clearPendingPayload();
       setStage("redirecting");
-      router.push(`/lyric-videos/${project.id}/preview`);
+      router.push(`/creations/${project.id}/preview`);
     },
     [router],
   );
 
-  const generateFromFile = useCallback(
+  const uploadOnly = useCallback(async (file: File) => {
+    try {
+      setError("");
+      setStage("uploading");
+      setUploadProgress(0);
+      const uploaded = await uploadAudioFile(file, setUploadProgress);
+      setStage("idle");
+      setUploadProgress(null);
+      return {
+        ...uploaded,
+        filename: uploaded.filename || file.name,
+        size: uploaded.size || file.size,
+        contentType: uploaded.contentType || file.type || "audio/mpeg",
+      };
+    } catch (err: any) {
+      setStage("failed");
+      setUploadProgress(null);
+      setError(err?.message || "Audio upload failed");
+      throw err;
+    }
+  }, []);
+
+  const generateFromUploaded = useCallback(
     async (
-      file: File,
+      uploaded: UploadedAudio,
       startTime: number,
       endTime: number,
       options: GenerateOptions,
       selectedCharacter?: CharacterPreset | null,
     ) => {
       try {
-        setError("");
-        setStage("uploading");
-        setUploadProgress(0);
-        const uploaded = await uploadAudioFile(file, setUploadProgress);
         const payload: PendingLyricVideoPayload = {
           uploaded,
-          filename: uploaded.filename || file.name,
-          fileType: file.type || "audio/mpeg",
-          fileSize: uploaded.size || file.size,
+          filename: uploaded.filename,
+          fileType: uploaded.contentType || "audio/mpeg",
+          fileSize: uploaded.size,
           startTime,
           endTime,
           options,
@@ -359,6 +407,20 @@ export function useLyricVideoCreationFlow() {
       }
     },
     [createProjectAndGenerate],
+  );
+
+  const generateFromFile = useCallback(
+    async (
+      file: File,
+      startTime: number,
+      endTime: number,
+      options: GenerateOptions,
+      selectedCharacter?: CharacterPreset | null,
+    ) => {
+      const uploaded = await uploadOnly(file);
+      await generateFromUploaded(uploaded, startTime, endTime, options, selectedCharacter);
+    },
+    [generateFromUploaded, uploadOnly],
   );
 
   const preparePendingAuth = useCallback(
@@ -422,6 +484,8 @@ export function useLyricVideoCreationFlow() {
     error,
     uploadProgress,
     isWorking: stage !== "idle" && stage !== "failed",
+    uploadOnly,
+    generateFromUploaded,
     generateFromFile,
     preparePendingAuth,
     resumePending,

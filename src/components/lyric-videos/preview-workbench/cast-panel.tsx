@@ -79,14 +79,14 @@ export function CastPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-[16px]">
-      <div className="flex flex-wrap items-center justify-center gap-[8px] border-b border-[#E8E8E8] pb-[16px]">
+    <div className="cast-panel flex flex-col gap-[16px]">
+      <div className="flex flex-wrap items-center justify-center gap-[8px] border-b border-[var(--editor-line)] pb-[16px]">
         <button
           type="button"
           onClick={generateCastCandidates}
           disabled={castBusy || directionLocked}
           title={directionLocked ? directionLockReason : undefined}
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {castBusy ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Wand2 className="h-[15px] w-[15px]" />}
           Generate candidates
@@ -96,7 +96,7 @@ export function CastPanel() {
           onClick={beginCreate}
           disabled={directionLocked}
           title={directionLocked ? directionLockReason : undefined}
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[12px] text-[13px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] bg-[var(--editor-accent)] px-[12px] text-[13px] font-[800] text-[var(--editor-accent-ink)] hover:bg-[var(--editor-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="h-[15px] w-[15px]" />
           Add character
@@ -104,9 +104,9 @@ export function CastPanel() {
       </div>
 
       {formOpen ? (
-        <section className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px]">
+        <section className="rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[14px]">
           <div className="mb-[10px] flex items-center justify-between">
-            <p className="text-[13px] font-[800] text-[#1A1A2E]">{editingId ? "Edit character" : "Create character"}</p>
+            <p className="text-[13px] font-[800] text-[var(--editor-text)]">{editingId ? "Edit character" : "Create character"}</p>
             <button
               type="button"
               onClick={() => {
@@ -114,7 +114,7 @@ export function CastPanel() {
                 setEditingId(null);
               }}
               aria-label="Close character form"
-              className="text-[#667085] hover:text-[#1A1A2E]"
+              className="text-[var(--editor-muted)] hover:text-[var(--editor-text)]"
             >
               <X className="h-[16px] w-[16px]" />
             </button>
@@ -125,7 +125,7 @@ export function CastPanel() {
             disabled={directionLocked}
             title={directionLocked ? directionLockReason : undefined}
             placeholder="Elena"
-            className="mb-[8px] h-[38px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] text-[13px] font-[700] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+            className="mb-[8px] h-[38px] w-full rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[11px] text-[13px] font-[700] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
           />
           <textarea
             value={draftDescription}
@@ -134,7 +134,7 @@ export function CastPanel() {
             title={directionLocked ? directionLockReason : undefined}
             rows={5}
             placeholder="Describe the face, hair, build, outfit, accessories, and overall vibe."
-            className="w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[11px] py-[9px] text-[13px] font-[500] leading-5 text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+            className="w-full resize-y rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[11px] py-[9px] text-[13px] font-[500] leading-5 text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
           />
           <div className="mt-[10px] flex justify-end gap-[8px]">
             <button
@@ -143,7 +143,7 @@ export function CastPanel() {
                 setFormOpen(false);
                 setEditingId(null);
               }}
-              className="h-[34px] rounded-[6px] border border-[#D9DDE3] px-[12px] text-[13px] font-[800] text-[#667085] hover:bg-white"
+              className="h-[34px] rounded-[6px] border border-[var(--editor-line)] px-[12px] text-[13px] font-[800] text-[var(--editor-muted)] hover:bg-[var(--editor-panel)]"
             >
               Cancel
             </button>
@@ -152,7 +152,7 @@ export function CastPanel() {
               onClick={submitCharacter}
               disabled={castBusy || directionLocked}
               title={directionLocked ? directionLockReason : undefined}
-              className="inline-flex h-[34px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[800] text-white hover:bg-[#2B2B45] disabled:opacity-50"
+              className="inline-flex h-[34px] items-center gap-[7px] rounded-[6px] bg-[var(--editor-text)] px-[12px] text-[13px] font-[800] text-[var(--editor-bg)] hover:bg-[var(--editor-muted)] disabled:opacity-50"
             >
               {castBusy ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Save className="h-[14px] w-[14px]" />}
               {editingId ? "Save" : "Create & generate"}
@@ -167,42 +167,42 @@ export function CastPanel() {
           description="Generate a few main character candidates from the song, or create one manually."
         />
       ) : (
-        <div className="flex flex-col divide-y divide-[#E8E8E8]">
+        <div className="flex flex-col divide-y divide-[var(--editor-line)]">
           {cast.map((member) => {
             const processing = castImageIsProcessing(member);
             const active = member.status === "active";
             const failed = member.status === "failed";
             return (
               <article key={member.id} className="flex gap-[12px] py-[14px]">
-                <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[#EEF2F7]">
+                <div className="flex h-[88px] w-[88px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
                   {member.referenceImageUrl ? (
                     <img src={member.referenceImageUrl} alt={member.name} className="h-full w-full object-cover" />
                   ) : processing ? (
-                    <Loader2 className="h-[22px] w-[22px] animate-spin text-[#F5A623]" />
+                    <Loader2 className="h-[22px] w-[22px] animate-spin text-[var(--editor-accent)]" />
                   ) : (
-                    <Users className="h-[24px] w-[24px] text-[#94A3B8]" />
+                    <Users className="h-[24px] w-[24px] text-[var(--editor-subtle)]" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-[10px]">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-[6px]">
-                        <p className="truncate text-[14px] font-[900] text-[#1A1A2E]">{member.name}</p>
+                        <p className="truncate text-[14px] font-[900] text-[var(--editor-text)]">{member.name}</p>
                         <span
                           className={cn(
                             "rounded-[999px] px-[7px] py-[2px] text-[10px] font-[800] uppercase",
                             active
-                              ? "bg-emerald-50 text-emerald-700"
+                              ? "bg-[var(--editor-accent-soft)] text-[var(--editor-text)]"
                               : failed
-                                ? "bg-red-50 text-red-600"
-                                : "bg-[#F1F5F9] text-[#64748B]",
+                                ? "bg-[var(--editor-danger-soft)] text-[var(--editor-danger)]"
+                                : "bg-[var(--editor-panel-strong)] text-[var(--editor-muted)]",
                           )}
                         >
                           {processing ? "processing" : active ? "main" : member.status}
                         </span>
                       </div>
-                      <p className="mt-[6px] line-clamp-3 text-[12px] font-[500] leading-5 text-[#526173]">{member.description}</p>
-                      {member.error ? <p className="mt-[6px] text-[12px] font-[700] text-red-600">{member.error}</p> : null}
+                      <p className="mt-[6px] line-clamp-3 text-[12px] font-[500] leading-5 text-[var(--editor-muted)]">{member.description}</p>
+                      {member.error ? <p className="mt-[6px] text-[12px] font-[700] text-[var(--editor-danger)]">{member.error}</p> : null}
                     </div>
                   </div>
                   <div className="mt-[10px] flex flex-wrap gap-[7px]">
@@ -211,7 +211,7 @@ export function CastPanel() {
                       onClick={() => updateCastMember(member.id, { selectAsMain: true })}
                       disabled={active || directionLocked}
                       title={directionLocked ? directionLockReason : undefined}
-                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[var(--editor-line)] px-[9px] text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:opacity-45"
                     >
                       <Check className="h-[13px] w-[13px]" />
                       Select
@@ -221,7 +221,7 @@ export function CastPanel() {
                       onClick={() => beginEdit(member)}
                       disabled={directionLocked}
                       title={directionLocked ? directionLockReason : undefined}
-                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[var(--editor-line)] px-[9px] text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       <Edit3 className="h-[13px] w-[13px]" />
                       Edit
@@ -231,7 +231,7 @@ export function CastPanel() {
                       onClick={() => regenerateCastImage(member.id)}
                       disabled={castBusy || processing || directionLocked}
                       title={directionLocked ? directionLockReason : undefined}
-                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[9px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:opacity-45"
+                      className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[var(--editor-line)] px-[9px] text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:opacity-45"
                     >
                       <RefreshCcw className="h-[13px] w-[13px]" />
                       Regenerate
@@ -241,7 +241,7 @@ export function CastPanel() {
                       onClick={() => deleteCastMember(member.id)}
                       disabled={directionLocked}
                       title={directionLocked ? directionLockReason : undefined}
-                      className="inline-flex h-[31px] items-center justify-center rounded-[6px] border border-[#F0D8D8] px-[9px] text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-45"
+                      className="inline-flex h-[31px] items-center justify-center rounded-[6px] border border-[var(--editor-danger)] px-[9px] text-[var(--editor-danger)] hover:bg-[var(--editor-danger-soft)] disabled:cursor-not-allowed disabled:opacity-45"
                       aria-label={`Delete ${member.name}`}
                     >
                       <Trash2 className="h-[13px] w-[13px]" />

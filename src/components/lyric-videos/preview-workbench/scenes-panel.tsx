@@ -16,13 +16,13 @@ export function ScenesPanel() {
   const promptReadyCount = scenes.filter((scene) => String(scene.prompt || "").trim()).length;
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-[16px] flex flex-col gap-[10px] border-b border-[#E8E8E8] pb-[16px]">
-        <div className="rounded-[6px] border border-[#DDE5EF] bg-[#F8FAFC] px-[12px] py-[10px]">
+    <div className="scenes-panel flex flex-col">
+      <div className="mb-[16px] flex flex-col gap-[10px] border-b border-[var(--editor-line)] pb-[16px]">
+        <div className="rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-[12px] py-[10px]">
           <div className="flex flex-wrap items-center justify-between gap-[8px]">
             <div className="min-w-0">
-              <p className="text-[13px] font-[900] text-[#26364E]">{progress.primary}</p>
-              <p className="mt-[3px] text-[12px] font-[650] text-[#61708A]">
+              <p className="text-[13px] font-[900] text-[var(--editor-text)]">{progress.primary}</p>
+              <p className="mt-[3px] text-[12px] font-[650] text-[var(--editor-muted)]">
                 Prompt1 {progress.songAnalysisStatus} · Prompt2 {progress.promptStatus} · {progress.imageText}
               </p>
             </div>
@@ -32,14 +32,14 @@ export function ScenesPanel() {
                 onClick={retryFailedImageBatches}
                 disabled={generationLocked}
                 title={generationLocked ? generationLockReason : undefined}
-                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[#F5A623] px-[10px] text-[12px] font-[900] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[var(--editor-accent)] px-[10px] text-[12px] font-[900] text-[var(--editor-accent-ink)] hover:bg-[var(--editor-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RefreshCcw className="h-[13px] w-[13px]" />
                 Retry {progress.failedBatches} failed batch{progress.failedBatches === 1 ? "" : "es"}
               </button>
             ) : null}
           </div>
-          {progress.error ? <p className="mt-[7px] line-clamp-2 text-[12px] font-[700] text-red-600">{progress.error}</p> : null}
+          {progress.error ? <p className="mt-[7px] line-clamp-2 text-[12px] font-[700] text-[var(--editor-danger)]">{progress.error}</p> : null}
         </div>
         <div className="flex flex-wrap items-center justify-center gap-[8px]">
         <button
@@ -47,7 +47,7 @@ export function ScenesPanel() {
           onClick={() => setBatchGenerationOpen(true)}
           disabled={promptReadyCount === 0 || generationLocked}
           title={generationLocked ? generationLockReason : undefined}
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Wand2 className="h-[15px] w-[15px]" />
           Batch Generation
@@ -80,31 +80,31 @@ export function ScenesPanel() {
                   }
                 }}
                 className={cn(
-                  "group flex min-h-[82px] cursor-pointer items-center gap-[12px] border-b border-[#E1E6EE] py-[10px] outline-none",
-                  active ? "bg-[#FFF8EB]" : "bg-white hover:bg-[#F8F9FA]",
+                  "group flex min-h-[82px] cursor-pointer items-center gap-[12px] border-b border-[var(--editor-line)] py-[10px] outline-none",
+                  active ? "bg-[var(--editor-accent-soft)]" : "bg-[var(--editor-panel)] hover:bg-[var(--editor-bg)]",
                 )}
               >
-                <div className="h-[54px] w-[92px] shrink-0 overflow-hidden rounded-[4px] bg-[#E8EEF7]">
+                <div className="h-[54px] w-[92px] shrink-0 overflow-hidden rounded-[4px] bg-[var(--editor-panel-strong)]">
                   {scene.imageUrl ? (
                     <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] font-[800] uppercase text-[#8A94A6]">
+                    <div className="flex h-full w-full items-center justify-center text-[10px] font-[800] uppercase text-[var(--editor-subtle)]">
                       {sceneStatusLabel(scene)}
                     </div>
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="mb-[5px] flex min-w-0 flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[#61708A]">
+                  <div className="mb-[5px] flex min-w-0 flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[var(--editor-muted)]">
                     <span>Scene {index + 1}</span>
                     <span className="font-mono">
                       {formatMs(scene.startMs)} - {formatMs(scene.endMs)}
                     </span>
                     <span className="font-mono">{formatDurationMs(durationMs)}</span>
                   </div>
-                  <p className="line-clamp-2 text-[15px] font-[700] leading-[20px] text-[#1A1A2E]">{title}</p>
+                  <p className="line-clamp-2 text-[15px] font-[700] leading-[20px] text-[var(--editor-text)]">{title}</p>
                   {scene.status === "failed" && !scene.imageUrl ? (
-                    <p className="mt-[4px] line-clamp-1 text-[12px] font-[700] text-red-600">
+                    <p className="mt-[4px] line-clamp-1 text-[12px] font-[700] text-[var(--editor-danger)]">
                       {scene.error || "Image generation failed"}
                     </p>
                   ) : null}
@@ -116,7 +116,7 @@ export function ScenesPanel() {
                     onClick={(event) => event.stopPropagation()}
                     disabled={generationLocked}
                     title={generationLocked ? generationLockReason : undefined}
-                    className="h-[36px] rounded-[6px] border border-[#CAD3DF] bg-white px-[11px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="h-[36px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[11px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     Edit
                   </button>
@@ -126,7 +126,7 @@ export function ScenesPanel() {
                     aria-label={`Scene ${index + 1} more options`}
                     disabled={generationLocked}
                     title={generationLocked ? generationLockReason : undefined}
-                    className="flex h-[36px] w-[32px] items-center justify-center rounded-[6px] border border-[#CAD3DF] bg-white text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="flex h-[36px] w-[32px] items-center justify-center rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     <MoreVertical className="h-[16px] w-[16px]" />
                   </button>
@@ -196,17 +196,17 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
   }
 
   return (
-    <div className="fixed inset-0 z-[10000] flex flex-col bg-white text-[#1A1A2E]">
-      <header className="flex h-[84px] shrink-0 items-start justify-between border-b border-[#E8E8E8] px-[22px] py-[18px]">
+    <div className="fixed inset-0 z-[10000] flex flex-col bg-[var(--editor-panel)] text-[var(--editor-text)]">
+      <header className="flex h-[84px] shrink-0 items-start justify-between border-b border-[var(--editor-line)] px-[22px] py-[18px]">
         <div>
-          <h2 className="text-[24px] font-[800] leading-[28px] text-[#334155]">Batch Generation</h2>
-          <p className="mt-[7px] text-[14px] font-[600] text-[#4E6384]">Video: {project?.title || "Lyric video"}</p>
+          <h2 className="text-[24px] font-[800] leading-[28px] text-[var(--editor-text)]">Batch Generation</h2>
+          <p className="mt-[7px] text-[14px] font-[600] text-[var(--editor-muted)]">Video: {project?.title || "Lyric video"}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close batch generation"
-          className="flex h-[36px] w-[36px] items-center justify-center rounded-[6px] text-[#61708A] hover:bg-[#F8F9FA]"
+          className="flex h-[36px] w-[36px] items-center justify-center rounded-[6px] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)]"
         >
           <X className="h-[20px] w-[20px]" />
         </button>
@@ -221,10 +221,10 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
               onChange={(event) => toggleAll(event.target.checked)}
               disabled={generationLocked}
               title={generationLocked ? generationLockReason : undefined}
-              className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
+              className="h-[20px] w-[20px] rounded-[4px] border-[var(--editor-line)] text-[var(--editor-accent)]"
               aria-label="Select all scenes"
             />
-            <ChevronDown className="h-[16px] w-[16px] text-[#4E6384]" />
+            <ChevronDown className="h-[16px] w-[16px] text-[var(--editor-muted)]" />
           </label>
 
           <div>
@@ -236,7 +236,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                <section
 	                  key={scene.id}
 	                  data-batch-scene-row
-	                  className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-[14px] gap-y-[12px] border-b border-[#DDE5EF] py-[16px] md:grid-cols-[32px_minmax(140px,180px)_minmax(0,1fr)_minmax(0,1fr)] md:gap-[16px] xl:grid-cols-[44px_220px_minmax(390px,1fr)_minmax(390px,1fr)]"
+	                  className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-[14px] gap-y-[12px] border-b border-[var(--editor-line)] py-[16px] md:grid-cols-[32px_minmax(140px,180px)_minmax(0,1fr)_minmax(0,1fr)] md:gap-[16px] xl:grid-cols-[44px_220px_minmax(390px,1fr)_minmax(390px,1fr)]"
 	                >
 	                  <div className="pt-[2px] md:pt-[92px]">
                     <input
@@ -245,28 +245,28 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                       onChange={(event) => toggleScene(scene.id, event.target.checked)}
                       disabled={generationLocked}
                       title={generationLocked ? generationLockReason : undefined}
-                      className="h-[20px] w-[20px] rounded-[4px] border-[#B7C5D8] text-[#F5A623]"
+                      className="h-[20px] w-[20px] rounded-[4px] border-[var(--editor-line)] text-[var(--editor-accent)]"
                       aria-label={`Select scene ${index + 1}`}
                     />
                   </div>
 
 	                  <div className="min-w-0 pt-0 md:pt-[74px]">
-                    <div className="mb-[8px] flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[#61708A]">
+                    <div className="mb-[8px] flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[var(--editor-muted)]">
                       <span>Scene {index + 1}</span>
                       <span className="font-mono">
                         {formatMs(scene.startMs)} - {formatMs(scene.endMs)}
                       </span>
                       <span className="font-mono">{formatDurationMs(durationMs)}</span>
                     </div>
-	                    <p className="max-w-[230px] text-[16px] font-[700] leading-[24px] text-[#26364E]">{title}</p>
-	                    <span className="mt-[14px] inline-flex rounded-[5px] bg-[#EEF3F8] px-[6px] py-[3px] text-[10px] font-[800] text-[#334155]">
+	                    <p className="max-w-[230px] text-[16px] font-[700] leading-[24px] text-[var(--editor-text)]">{title}</p>
+	                    <span className="mt-[14px] inline-flex rounded-[5px] bg-[var(--editor-panel-strong)] px-[6px] py-[3px] text-[10px] font-[800] text-[var(--editor-text)]">
 	                      5 credits
 	                    </span>
 	                  </div>
 
-	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[#D8E0EA] bg-[#F8FAFC] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-3 md:row-start-1">
+	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-3 md:row-start-1">
 	                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
-	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[#26364E]">
+	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
 	                        <ImageIcon className="h-[15px] w-[15px] shrink-0" />
 	                        <span className="truncate xl:hidden">Still Image</span>
 	                        <span className="hidden truncate xl:inline">Create Still Image</span>
@@ -274,7 +274,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                      <button
 	                        type="button"
 	                        disabled
-	                        className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[#E9EEF6] px-[9px] text-[11px] font-[800] text-[#61708A] disabled:cursor-not-allowed"
+	                        className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] disabled:cursor-not-allowed"
 	                      >
 	                        <RefreshCcw className="h-[12px] w-[12px]" />
 	                        <span className="xl:hidden">Retry</span>
@@ -291,13 +291,13 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                        disabled={generationLocked}
 	                        title={generationLocked ? generationLockReason : undefined}
 	                        aria-label={`Scene ${index + 1} image prompt`}
-	                        className="min-h-[162px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+	                        className="min-h-[162px] w-full resize-y rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
 	                      />
-	                      <div className="aspect-video w-full overflow-hidden rounded-[5px] bg-[#E8EEF7]">
+	                      <div className="aspect-video w-full overflow-hidden rounded-[5px] bg-[var(--editor-panel-strong)]">
 	                        {scene.imageUrl ? (
 	                          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
 	                        ) : (
-	                          <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[#8A94A6]">
+	                          <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
 	                            {sceneStatusLabel(scene)}
 	                          </div>
 	                        )}
@@ -305,19 +305,19 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                    </div>
 	                  </div>
 
-	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[#D8E0EA] bg-[#F8FAFC] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-4 md:row-start-1">
+	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-4 md:row-start-1">
 	                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
-	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[#26364E]">
+	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
 	                        <Clapperboard className="h-[15px] w-[15px] shrink-0" />
 	                        <span className="truncate xl:hidden">Animate</span>
 	                        <span className="hidden truncate xl:inline">Animate the Image</span>
 	                      </div>
 	                      <button
 	                        type="button"
-	                        className="inline-flex h-[28px] w-[142px] shrink-0 items-center justify-between rounded-[5px] border border-[#CAD3DF] bg-white px-[9px] text-[11px] font-[800] text-[#334155]"
+	                        className="inline-flex h-[28px] w-[142px] shrink-0 items-center justify-between rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[9px] text-[11px] font-[800] text-[var(--editor-text)]"
 	                      >
 	                        Video Model
-	                        <ChevronDown className="h-[13px] w-[13px] text-[#61708A]" />
+	                        <ChevronDown className="h-[13px] w-[13px] text-[var(--editor-muted)]" />
 	                      </button>
 	                    </div>
 	                    <textarea
@@ -326,9 +326,9 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                      disabled={generationLocked}
 	                      title={generationLocked ? generationLockReason : undefined}
 	                      aria-label={`Scene ${index + 1} video prompt`}
-	                      className="min-h-[210px] w-full resize-y rounded-[5px] border border-[#CAD3DF] bg-white px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+	                      className="min-h-[210px] w-full resize-y rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
 	                    />
-	                    <div className="mt-[8px] flex items-center justify-between rounded-[5px] border border-dashed border-[#CAD3DF] bg-white px-[10px] py-[7px] text-[11px] font-[800] text-[#61708A]">
+	                    <div className="mt-[8px] flex items-center justify-between rounded-[5px] border border-dashed border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[7px] text-[11px] font-[800] text-[var(--editor-muted)]">
 	                      <span className="inline-flex items-center gap-[6px]">
 	                        <Play className="h-[12px] w-[12px]" />
 	                        Video preview placeholder
@@ -345,8 +345,8 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
         </div>
       </main>
 
-      <footer className="flex min-h-[92px] shrink-0 flex-col items-stretch justify-center gap-[10px] border-t border-[#E8E8E8] bg-white px-[16px] py-[12px] sm:flex-row sm:items-center sm:justify-end sm:gap-[18px] sm:px-[22px]">
-        <button type="button" onClick={onClose} className="h-[42px] px-[10px] text-[15px] font-[800] text-[#4E6384]">
+      <footer className="flex min-h-[92px] shrink-0 flex-col items-stretch justify-center gap-[10px] border-t border-[var(--editor-line)] bg-[var(--editor-panel)] px-[16px] py-[12px] sm:flex-row sm:items-center sm:justify-end sm:gap-[18px] sm:px-[22px]">
+        <button type="button" onClick={onClose} className="h-[42px] px-[10px] text-[15px] font-[800] text-[var(--editor-muted)]">
           Cancel
         </button>
         <div className="flex flex-col items-stretch gap-[6px] sm:items-end">
@@ -355,12 +355,12 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
             onClick={submitBatchGeneration}
             disabled={!project || selectedCount === 0 || submitting || generationLocked}
             title={generationLocked ? generationLockReason : undefined}
-            className="inline-flex h-[42px] items-center justify-center gap-[8px] rounded-[6px] bg-[#F5A623] px-[16px] text-[15px] font-[800] text-white hover:bg-[#E6981F] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-[42px] items-center justify-center gap-[8px] rounded-[6px] bg-[var(--editor-accent)] px-[16px] text-[15px] font-[800] text-[var(--editor-accent-ink)] hover:bg-[var(--editor-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? <Loader2 className="h-[16px] w-[16px] animate-spin" /> : <ImageIcon className="h-[16px] w-[16px]" />}
             Generate {selectedCount} Scene Images ({creditCost} credits)
           </button>
-          <span className="text-right text-[10px] font-[600] text-[#61708A]">Estimated time to generate: ~20 minutes</span>
+          <span className="text-right text-[10px] font-[600] text-[var(--editor-muted)]">Estimated time to generate: ~20 minutes</span>
         </div>
       </footer>
     </div>

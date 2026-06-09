@@ -35,15 +35,15 @@ export function CustomizePanel() {
   }
 
   return (
-    <div className="flex flex-col gap-[22px]">
+    <div className="customize-panel flex flex-col gap-[22px]">
       <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[12px]">
         <section>
           <div className="mb-[8px] flex h-[20px] items-center justify-between gap-3">
-            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[#334155]">
+            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[var(--editor-text)]">
               Lyrics Language
               {storyLocked ? (
                 <span title={storyLockReason} aria-label="Locked">
-                  <Lock className="h-[12px] w-[12px] text-[#61708A]" />
+                  <Lock className="h-[12px] w-[12px] text-[var(--editor-muted)]" />
                 </span>
               ) : null}
             </label>
@@ -53,7 +53,7 @@ export function CustomizePanel() {
             onChange={(event) => updateProjectField("language", event.target.value)}
             disabled={storyLocked}
             title={storyLocked ? storyLockReason : "Main language of the lyrics."}
-            className="h-[42px] w-full rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] text-[14px] font-[600] text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+            className="h-[42px] w-full rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px] text-[14px] font-[600] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
           >
             {LANGUAGE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -65,11 +65,11 @@ export function CustomizePanel() {
 
         <section>
           <div className="mb-[8px] flex h-[20px] items-center justify-between gap-3">
-            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[#334155]">
+            <label className="inline-flex items-center gap-[5px] text-[13px] font-[800] text-[var(--editor-text)]">
               Subtitles
               {generationLocked ? (
                 <span title={generationLockReason} aria-label="Locked">
-                  <Lock className="h-[12px] w-[12px] text-[#61708A]" />
+                  <Lock className="h-[12px] w-[12px] text-[var(--editor-muted)]" />
                 </span>
               ) : null}
             </label>
@@ -80,22 +80,22 @@ export function CustomizePanel() {
               title={generationLocked ? generationLockReason : undefined}
               className={cn(
                 "flex h-[20px] w-[34px] shrink-0 items-center rounded-full p-[2px] transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-                previewConfig.captionsEnabled ? "justify-end bg-[#F5A623]" : "justify-start bg-[#CBD5E1]",
+                previewConfig.captionsEnabled ? "justify-end bg-[var(--editor-accent)]" : "justify-start bg-[var(--editor-line)]",
               )}
               aria-label={previewConfig.captionsEnabled ? "Turn subtitles off" : "Turn subtitles on"}
               aria-pressed={previewConfig.captionsEnabled}
             >
-              <span className="size-[16px] rounded-full bg-white shadow-sm" />
+              <span className="size-[16px] rounded-full bg-[var(--editor-panel)] shadow-sm" />
             </button>
           </div>
           <div
             className={cn(
-              "grid h-[42px] grid-cols-[auto_minmax(90px,1fr)_42px] items-center gap-[10px] rounded-[6px] border border-[#D9DDE3] bg-white px-[12px]",
-              (!previewConfig.captionsEnabled || generationLocked) && "bg-[#F8FAFC]",
+              "grid h-[42px] grid-cols-[auto_minmax(90px,1fr)_42px] items-center gap-[10px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px]",
+              (!previewConfig.captionsEnabled || generationLocked) && "bg-[var(--editor-panel-soft)]",
               !previewConfig.captionsEnabled && "opacity-60",
             )}
           >
-            <span className="text-[13px] font-[800] text-[#526173]">Size</span>
+            <span className="text-[13px] font-[800] text-[var(--editor-muted)]">Size</span>
             <input
               type="range"
               min={MIN_CAPTION_FONT_SIZE}
@@ -105,10 +105,10 @@ export function CustomizePanel() {
               disabled={!previewConfig.captionsEnabled || generationLocked}
               title={generationLocked ? generationLockReason : undefined}
               onChange={(event) => updatePreviewConfig({ fontSize: Number(event.target.value) })}
-              className="h-[20px] min-w-0 accent-[#F5A623] disabled:cursor-not-allowed"
+              className="h-[20px] min-w-0 accent-[var(--editor-accent)] disabled:cursor-not-allowed"
               aria-label="Subtitle size"
             />
-            <span className="text-right text-[12px] font-[800] tabular-nums text-[#526173]">{previewConfig.fontSize}px</span>
+            <span className="text-right text-[12px] font-[800] tabular-nums text-[var(--editor-muted)]">{previewConfig.fontSize}px</span>
           </div>
         </section>
       </div>
@@ -121,7 +121,7 @@ export function CustomizePanel() {
             onClick={createStory}
             disabled={creatingStory || storyLocked}
             title={storyLocked ? storyLockReason : undefined}
-            className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[#D9DDE3] px-[10px] text-[13px] font-[700] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-[31px] items-center gap-[6px] rounded-[6px] border border-[var(--editor-line)] px-[10px] text-[13px] font-[700] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {creatingStory ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Wand2 className="h-[14px] w-[14px]" />}
             {creatingStory ? "Creating..." : "Create new story"}
@@ -138,7 +138,7 @@ export function CustomizePanel() {
           title={storyLocked ? storyLockReason : undefined}
           rows={10}
           placeholder={"Act 1:\nA cinematic opening that establishes the character, world, and core visual motif.\n\nAct 2:\nThe emotional conflict grows and the visuals shift into a new space."}
-          className="min-h-[240px] w-full resize-y rounded-[6px] border border-[#D9DDE3] bg-white px-[12px] py-[10px] text-[14px] font-[500] leading-6 text-[#334155] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+          className="min-h-[240px] w-full resize-y rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px] py-[10px] text-[14px] font-[500] leading-6 text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
         />
       </FieldBlock>
 
@@ -154,8 +154,8 @@ export function CustomizePanel() {
               className={cn(
                 "h-[36px] truncate rounded-[6px] border px-[10px] text-left text-[13px] font-[700] disabled:cursor-not-allowed disabled:opacity-55",
                 project.artStyle === style
-                  ? "border-[#F5A623] bg-amber-50 text-[#1A1A2E]"
-                  : "border-[#E8E8E8] bg-white text-[#667085] hover:bg-[#F8F9FA]",
+                  ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] text-[var(--editor-text)]"
+                  : "border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)]",
               )}
             >
               {style}
@@ -176,8 +176,8 @@ export function CustomizePanel() {
               className={cn(
                 "flex h-[38px] items-center gap-[8px] rounded-[6px] border px-[10px] text-[13px] font-[700] disabled:cursor-not-allowed disabled:opacity-55",
                 project.palette === palette.value
-                  ? "border-[#F5A623] bg-amber-50 text-[#1A1A2E]"
-                  : "border-[#E8E8E8] bg-white text-[#667085] hover:bg-[#F8F9FA]",
+                  ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] text-[var(--editor-text)]"
+                  : "border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)]",
               )}
             >
               <span className="size-[14px] rounded-full" style={{ backgroundColor: palette.color }} />
@@ -199,8 +199,8 @@ export function CustomizePanel() {
               className={cn(
                 "h-[38px] rounded-[6px] border text-[13px] font-[800] disabled:cursor-not-allowed disabled:opacity-55",
                 project.aspectRatio === format
-                  ? "border-[#F5A623] bg-amber-50 text-[#1A1A2E]"
-                  : "border-[#E8E8E8] bg-white text-[#667085] hover:bg-[#F8F9FA]",
+                  ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] text-[var(--editor-text)]"
+                  : "border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)]",
               )}
             >
               {format}

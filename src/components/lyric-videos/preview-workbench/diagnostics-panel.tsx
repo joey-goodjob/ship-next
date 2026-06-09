@@ -44,11 +44,11 @@ function StatusBadge({ status }: { status?: string | null }) {
     <span
       className={cn(
         "inline-flex h-[22px] shrink-0 items-center rounded-[999px] px-[8px] text-[10px] font-[900]",
-        tone === "success" ? "bg-emerald-50 text-emerald-700" : null,
-        tone === "running" ? "bg-sky-50 text-sky-700" : null,
-        tone === "waiting" ? "bg-amber-50 text-amber-700" : null,
-        tone === "failed" ? "bg-red-50 text-red-600" : null,
-        tone === "neutral" ? "bg-slate-100 text-slate-600" : null,
+        tone === "success" ? "bg-[var(--editor-accent-soft)] text-[var(--editor-text)]" : null,
+        tone === "running" ? "bg-[var(--editor-panel-strong)] text-[var(--editor-text)]" : null,
+        tone === "waiting" ? "bg-[var(--editor-accent-soft)] text-[var(--editor-text)]" : null,
+        tone === "failed" ? "bg-[var(--editor-danger-soft)] text-[var(--editor-danger)]" : null,
+        tone === "neutral" ? "bg-[var(--editor-panel-strong)] text-[var(--editor-muted)]" : null,
       )}
     >
       {statusLabel(status)}
@@ -339,30 +339,30 @@ export function DiagnosticsPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
-      <section className="border-b border-[#E8E8E8] pb-[16px]">
+    <div className="diagnostics-panel flex flex-col gap-[18px]">
+      <section className="border-b border-[var(--editor-line)] pb-[16px]">
         <div className="mb-[10px] flex items-center justify-between gap-[10px]">
           <div className="min-w-0">
-            <p className="text-[13px] font-[900] text-[#1A1A2E]">当前状态</p>
-            <p className="mt-[3px] truncate text-[12px] font-[650] text-[#667085]">{project?.title || "Lyric video"}</p>
+            <p className="text-[13px] font-[900] text-[var(--editor-text)]">当前状态</p>
+            <p className="mt-[3px] truncate text-[12px] font-[650] text-[var(--editor-muted)]">{project?.title || "Lyric video"}</p>
           </div>
           <StatusBadge status={progress.generationStatus} />
         </div>
-        <div className="rounded-[6px] border border-[#DDE5EF] bg-[#F8FAFC] px-[12px] py-[11px]">
+        <div className="rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-[12px] py-[11px]">
           <div className="flex items-start gap-[9px]">
             {progress.failed > 0 && progress.processing === 0 ? (
-              <AlertTriangle className="mt-[1px] h-[16px] w-[16px] shrink-0 text-red-600" />
+              <AlertTriangle className="mt-[1px] h-[16px] w-[16px] shrink-0 text-[var(--editor-danger)]" />
             ) : progress.isActive ? (
-              <Clock3 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-sky-700" />
+              <Clock3 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-[var(--editor-accent)]" />
             ) : (
-              <CheckCircle2 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-emerald-700" />
+              <CheckCircle2 className="mt-[1px] h-[16px] w-[16px] shrink-0 text-[var(--editor-accent)]" />
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-[900] leading-[20px] text-[#26364E]">{progress.primary}</p>
-              <p className="mt-[4px] text-[12px] font-[650] leading-[18px] text-[#61708A]">
+              <p className="text-[14px] font-[900] leading-[20px] text-[var(--editor-text)]">{progress.primary}</p>
+              <p className="mt-[4px] text-[12px] font-[650] leading-[18px] text-[var(--editor-muted)]">
                 {progress.currentStage} · {Math.round(progress.progressPercent)}%
               </p>
-              {progress.error ? <p className="mt-[7px] line-clamp-3 text-[12px] font-[750] leading-[18px] text-red-600">{progress.error}</p> : null}
+              {progress.error ? <p className="mt-[7px] line-clamp-3 text-[12px] font-[750] leading-[18px] text-[var(--editor-danger)]">{progress.error}</p> : null}
             </div>
           </div>
         </div>
@@ -370,32 +370,32 @@ export function DiagnosticsPanel() {
 
       <DiagnosticsSection title="流程步骤" icon={Clock3}>
         {directionReviewPaused ? (
-          <div className="mb-[10px] rounded-[6px] border border-amber-200 bg-amber-50 px-[11px] py-[10px] text-amber-800">
+          <div className="mb-[10px] rounded-[6px] border border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] px-[11px] py-[10px] text-[var(--editor-text)]">
             <p className="text-[13px] font-[900]">方向审核暂停</p>
             <p className="mt-[3px] text-[12px] font-[700] leading-[18px]">
               Prompt1 已完成。点击底部 Generate All Scenes 后，Prompt2、图片生成和完成项目会继续写入这里。
             </p>
           </div>
         ) : null}
-        <div className="divide-y divide-[#EEF1F5]">
+        <div className="divide-y divide-[var(--editor-line)]">
           {generationStages.map(({ label, stage }) => {
             const step = stepByStage(generationSteps, stage);
             const timing = stepTiming(step);
             return (
               <div key={stage} className="flex min-h-[46px] items-center gap-[10px] py-[9px]">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-[850] text-[#26364E]">{label}</p>
-                  <p className="mt-[2px] truncate text-[11px] font-[700] text-[#7B8797]">
+                  <p className="truncate text-[13px] font-[850] text-[var(--editor-text)]">{label}</p>
+                  <p className="mt-[2px] truncate text-[11px] font-[700] text-[var(--editor-muted)]">
                     {stage} · {Math.round(step?.progressPercent || 0)}% · {timing.prefix} {timing.durationLabel}
                   </p>
                   {step?.startedAt || step?.completedAt ? (
-                    <p className="mt-[2px] truncate text-[11px] font-[650] text-[#9AA5B5]">
+                    <p className="mt-[2px] truncate text-[11px] font-[650] text-[var(--editor-subtle)]">
                       开始 {timing.startedLabel} · 完成 {timing.completedLabel}
                     </p>
                   ) : null}
-                  {step?.errorMessage ? <p className="mt-[4px] line-clamp-2 text-[11px] font-[750] text-red-600">{step.errorMessage}</p> : null}
+                  {step?.errorMessage ? <p className="mt-[4px] line-clamp-2 text-[11px] font-[750] text-[var(--editor-danger)]">{step.errorMessage}</p> : null}
                   {stepFailureSummary(step) ? (
-                    <p className="mt-[3px] truncate text-[11px] font-[800] text-red-500">
+                    <p className="mt-[3px] truncate text-[11px] font-[800] text-[var(--editor-danger)]">
                       {stepFailureSummary(step)?.errorKind}
                     </p>
                   ) : null}
@@ -432,7 +432,7 @@ export function DiagnosticsPanel() {
             ["失败批次", imageDiagnostics.failedBatches],
           ]}
         />
-        <p className="mt-[10px] truncate text-[11px] font-[700] text-[#7B8797]">
+        <p className="mt-[10px] truncate text-[11px] font-[700] text-[var(--editor-muted)]">
           panel 范围: {imageDiagnostics.minPanel ?? "n/a"} - {imageDiagnostics.maxPanel ?? "n/a"} · processing batches:{" "}
           {imageDiagnostics.processingBatchCount}
         </p>
@@ -448,7 +448,7 @@ export function DiagnosticsPanel() {
             ["失败", castDiagnostics.failed],
           ]}
         />
-        <p className="mt-[10px] line-clamp-2 text-[12px] font-[750] text-[#526173]">
+        <p className="mt-[10px] line-clamp-2 text-[12px] font-[750] text-[var(--editor-muted)]">
           主角: {castDiagnostics.activeMainName || "未选择"} · reference:{" "}
           {castDiagnostics.activeMainHasReference ? "已准备" : "缺少或未完成"}
         </p>
@@ -458,7 +458,9 @@ export function DiagnosticsPanel() {
         <div
           className={cn(
             "flex items-start gap-[9px] rounded-[6px] border px-[11px] py-[10px]",
-            shouldSyncImages ? "border-amber-200 bg-amber-50 text-amber-800" : "border-emerald-200 bg-emerald-50 text-emerald-800",
+            shouldSyncImages
+              ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] text-[var(--editor-text)]"
+              : "border-[var(--editor-line)] bg-[var(--editor-panel-soft)] text-[var(--editor-text)]",
           )}
         >
           {shouldSyncImages ? <AlertTriangle className="mt-[1px] h-[16px] w-[16px] shrink-0" /> : <CheckCircle2 className="mt-[1px] h-[16px] w-[16px] shrink-0" />}
@@ -475,11 +477,11 @@ export function DiagnosticsPanel() {
 
       {sceneErrors.length > 0 ? (
         <DiagnosticsSection title="最近错误" icon={XCircle}>
-          <div className="divide-y divide-[#F0E0E0] rounded-[6px] border border-[#F0D8D8] bg-red-50">
+          <div className="divide-y divide-[var(--editor-danger)] rounded-[6px] border border-[var(--editor-danger)] bg-[var(--editor-danger-soft)]">
             {sceneErrors.map((item) => (
               <div key={`${item.sceneId}-${item.sceneNumber}`} className="px-[10px] py-[8px]">
-                <p className="truncate text-[12px] font-[900] text-red-700">Scene {item.sceneNumber}</p>
-                <p className="mt-[2px] line-clamp-2 text-[11px] font-[700] leading-[17px] text-red-600">{item.error}</p>
+                <p className="truncate text-[12px] font-[900] text-[var(--editor-danger)]">Scene {item.sceneNumber}</p>
+                <p className="mt-[2px] line-clamp-2 text-[11px] font-[700] leading-[17px] text-[var(--editor-danger)]">{item.error}</p>
               </div>
             ))}
           </div>
@@ -489,7 +491,7 @@ export function DiagnosticsPanel() {
       <button
         type="button"
         onClick={copyDiagnostics}
-        className="inline-flex h-[38px] w-full items-center justify-center gap-[8px] rounded-[6px] bg-[#1A1A2E] px-[12px] text-[13px] font-[900] text-white hover:bg-[#2B2B45]"
+        className="inline-flex h-[38px] w-full items-center justify-center gap-[8px] rounded-[6px] bg-[var(--editor-text)] px-[12px] text-[13px] font-[900] text-[var(--editor-bg)] hover:bg-[var(--editor-muted)]"
       >
         <Clipboard className="h-[15px] w-[15px]" />
         复制诊断信息
@@ -508,10 +510,10 @@ function DiagnosticsSection({
   title: string;
 }) {
   return (
-    <section className="border-b border-[#E8E8E8] pb-[16px] last:border-b-0">
+    <section className="border-b border-[var(--editor-line)] pb-[16px] last:border-b-0">
       <div className="mb-[10px] flex items-center gap-[7px]">
-        <Icon className="h-[15px] w-[15px] text-[#F5A623]" />
-        <p className="text-[13px] font-[900] text-[#1A1A2E]">{title}</p>
+        <Icon className="h-[15px] w-[15px] text-[var(--editor-accent)]" />
+        <p className="text-[13px] font-[900] text-[var(--editor-text)]">{title}</p>
       </div>
       {children}
     </section>
@@ -522,9 +524,9 @@ function MetricGrid({ items }: { items: Array<[string, number]> }) {
   return (
     <div className="grid grid-cols-2 gap-[8px]">
       {items.map(([label, value]) => (
-        <div key={label} className="min-w-0 rounded-[6px] border border-[#E1E6EE] bg-white px-[10px] py-[8px]">
-          <p className="truncate text-[11px] font-[800] text-[#7B8797]">{label}</p>
-          <p className="mt-[2px] text-[18px] font-[950] leading-[22px] text-[#26364E]">{value}</p>
+        <div key={label} className="min-w-0 rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[8px]">
+          <p className="truncate text-[11px] font-[800] text-[var(--editor-muted)]">{label}</p>
+          <p className="mt-[2px] text-[18px] font-[950] leading-[22px] text-[var(--editor-text)]">{value}</p>
         </div>
       ))}
     </div>

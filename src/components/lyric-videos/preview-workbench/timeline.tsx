@@ -48,7 +48,7 @@ export function Timeline({ height }: { height: number }) {
   }
 
   return (
-    <div className="shrink-0 overflow-x-auto bg-[#FAFAFA]" style={{ height }}>
+    <div className="timeline shrink-0 overflow-x-auto bg-[var(--editor-panel-soft)]" style={{ height }}>
       <div
         ref={timelineRef}
         className="relative h-full min-w-full touch-none"
@@ -65,8 +65,8 @@ export function Timeline({ height }: { height: number }) {
               className="absolute top-0 flex h-[20px] -translate-x-1/2 flex-col items-center"
               style={{ left: `${(tick / totalDuration) * 100}%` }}
             >
-              <span className="font-mono text-[11px] leading-[13px] text-[#888888]">{formatClock(tick)}</span>
-              <span className="mt-[2px] h-[4px] w-[1px] bg-[#CCCCCC]" />
+              <span className="font-mono text-[11px] leading-[13px] text-[var(--editor-subtle)]">{formatClock(tick)}</span>
+              <span className="mt-[2px] h-[4px] w-[1px] bg-[var(--editor-line)]" />
             </div>
           ))}
         </div>
@@ -76,7 +76,7 @@ export function Timeline({ height }: { height: number }) {
         </div>
 
         <div className="absolute left-0 right-0" style={{ top: lyricTop, height: lyricHeight }}>
-          <div className="absolute inset-x-0 top-[13px] h-[1px] bg-[#DDE8F4]" />
+          <div className="absolute inset-x-0 top-[13px] h-[1px] bg-[var(--editor-line)]" />
           <TimelineWords
             items={words.length > 0 ? words : lines}
             activeWordId={currentWord?.id}
@@ -86,8 +86,8 @@ export function Timeline({ height }: { height: number }) {
           />
         </div>
 
-        <div className="absolute bottom-0 top-0 w-[2px] bg-[#E53935]" style={{ left: `${playheadPct}%` }}>
-          <span className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[10px] border-x-transparent border-t-[#E53935]" />
+        <div className="absolute bottom-0 top-0 w-[2px] bg-[var(--editor-danger)]" style={{ left: `${playheadPct}%` }}>
+          <span className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[10px] border-x-transparent border-t-[var(--editor-danger)]" />
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@ const TimelineScenes = memo(function TimelineScenes({
   totalDuration: number;
 }) {
   if (scenes.length === 0) {
-    return <div className="absolute inset-x-0 top-0 bg-[#E9EDF3]" style={{ height: sceneHeight }} />;
+    return <div className="absolute inset-x-0 top-0 bg-[var(--editor-panel-strong)]" style={{ height: sceneHeight }} />;
   }
   return scenes.map((scene) => {
     const left = (msToSeconds(scene.startMs) / totalDuration) * 100;
@@ -115,13 +115,13 @@ const TimelineScenes = memo(function TimelineScenes({
     return (
       <div
         key={scene.id}
-        className={cn("absolute top-0 overflow-hidden border-r border-white", active ? "outline outline-[2px] outline-[#F5A623]" : "")}
+        className={cn("absolute top-0 overflow-hidden border-r border-[var(--editor-bg)]", active ? "outline outline-[2px] outline-[var(--editor-accent)]" : "")}
         style={{ left: `${left}%`, width: `${Math.max(width, 1.5)}%`, height: sceneHeight }}
       >
         {scene.imageUrl ? (
           <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#E8EEF7] text-[10px] font-[800] uppercase text-[#8A94A6]">
+          <div className="flex h-full w-full items-center justify-center bg-[var(--editor-panel-strong)] text-[10px] font-[800] uppercase text-[var(--editor-subtle)]">
             {scene.status}
           </div>
         )}
@@ -152,8 +152,8 @@ const TimelineWords = memo(function TimelineWords({
         key={item.id || index}
         className={cn(
           "absolute top-[5px] min-w-[2px] rounded-[2px]",
-          hasWords ? "bg-[#4A90D9]/75" : "bg-[#4A90D9]/70",
-          active ? "outline outline-[2px] outline-[#F5A623]" : "",
+          hasWords ? "bg-[var(--editor-accent)]/75" : "bg-[var(--editor-accent)]/70",
+          active ? "outline outline-[2px] outline-[var(--editor-accent)]" : "",
         )}
         style={{ left: `${left}%`, width: `${Math.max(width, 0.4)}%`, height: Math.min(16, lyricHeight - 8) }}
       />

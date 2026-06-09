@@ -23,10 +23,10 @@ export function SidePanel({ width }: { width: number }) {
 
   return (
     <aside
-      className="h-full shrink-0 overflow-hidden border-l border-[#E8E8E8] bg-white"
+      className="side-panel h-full shrink-0 overflow-hidden border-l border-[var(--editor-line)] bg-[var(--editor-panel)]"
       style={{ width }}
     >
-      <div className="flex h-[52px] items-end gap-[24px] border-b border-[#E8E8E8] px-[24px]">
+      <div className="flex h-[52px] items-end gap-[24px] border-b border-[var(--editor-line)] px-[24px]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -36,8 +36,8 @@ export function SidePanel({ width }: { width: number }) {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex h-[52px] items-center gap-[7px] border-b-[2px] text-[14px] font-[800] outline-none focus-visible:rounded-[4px] focus-visible:ring-2 focus-visible:ring-[#D8E8FF]",
-                active ? "border-[#1A1A2E] text-[#1A1A2E]" : "border-transparent text-[#999999]",
+                "flex h-[52px] items-center gap-[7px] border-b-[2px] text-[14px] font-[800] outline-none focus-visible:rounded-[4px] focus-visible:ring-2 focus-visible:ring-[var(--editor-accent-soft)]",
+                active ? "border-[var(--editor-text)] text-[var(--editor-text)]" : "border-transparent text-[var(--editor-subtle)]",
               )}
             >
               <Icon className="h-[15px] w-[15px]" />

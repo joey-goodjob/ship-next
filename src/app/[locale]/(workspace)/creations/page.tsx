@@ -169,7 +169,7 @@ export default function LyricVideosPage() {
           {filteredProjects.map((project) => (
             <Link
               key={project.id}
-              href={`/lyric-videos/${project.id}/preview`}
+              href={`/creations/${project.id}/preview`}
               className="group flex min-h-52 flex-col justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
             >
               <div>

@@ -18,15 +18,15 @@ export function CharacterPresetPicker({
   const selected = presets.find((preset) => preset.slug === selectedSlug) || presets[0];
 
   return (
-    <section className="w-full border-t border-slate-200 pt-7 text-left" aria-labelledby="character-preset-title">
-      <span className="inline-flex h-11 items-center justify-center rounded-[10px] bg-teal-600 px-4 text-sm font-black text-white shadow-[0_10px_22px_rgba(13,148,136,0.22)]">
+    <section className="w-full border-t border-brand-line pt-7 text-left" aria-labelledby="character-preset-title">
+      <span className="inline-flex h-11 items-center justify-center rounded-[10px] bg-brand-accent px-4 text-sm font-black text-brand-accent-ink shadow-[0_10px_22px_var(--brand-accent-shadow)]">
         Step 2
       </span>
       <div className="mt-5">
-        <h3 id="character-preset-title" className="text-3xl font-black tracking-[-0.012em] text-[#050b24]">
+        <h3 id="character-preset-title" className="text-3xl font-black tracking-[-0.012em] text-brand-ink">
           Choose your main actor
         </h3>
-        <p className="mt-3 text-base font-semibold text-slate-500">Select the main actor for your lyric video.</p>
+        <p className="mt-3 text-base font-semibold text-brand-muted">Select the main actor for your lyric video.</p>
       </div>
 
       <div className="mt-6">
@@ -44,20 +44,20 @@ export function CharacterPresetPicker({
               >
                 <span
                   className={cn(
-                    "relative mx-auto flex size-[76px] items-center justify-center rounded-full border-2 bg-slate-100 p-0.5 transition",
+                    "relative mx-auto flex size-[76px] items-center justify-center rounded-full border-2 bg-brand-soft p-0.5 transition",
                     active
-                      ? "border-teal-500 shadow-[0_0_0_4px_rgba(20,184,166,0.16)]"
-                      : "border-slate-200 group-hover:border-teal-300 group-focus-visible:border-teal-500",
+                      ? "border-brand-accent ring-4 ring-brand-accent/15"
+                      : "border-brand-line group-hover:border-brand-accent group-focus-visible:border-brand-accent",
                   )}
                 >
                   <img src={preset.thumbnailUrl} alt={preset.name} className="size-full rounded-full object-cover" />
                   {active ? (
-                    <span className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-teal-600 text-white shadow-sm">
+                    <span className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-brand-accent text-brand-accent-ink shadow-sm">
                       <Check className="size-4 stroke-[3]" />
                     </span>
                   ) : null}
                 </span>
-                <span className={cn("mt-3 block truncate text-sm font-black", active ? "text-teal-700" : "text-[#050b24]")}>
+                <span className={cn("mt-3 block truncate text-sm font-black", active ? "text-brand-accent-hover" : "text-brand-ink")}>
                   {preset.name}
                 </span>
               </button>
@@ -66,7 +66,7 @@ export function CharacterPresetPicker({
         </div>
 
         {selected ? (
-          <div className="mt-6 grid gap-5 rounded-[16px] border border-slate-200 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)] sm:grid-cols-[190px_1fr] sm:p-6">
+          <div className="mt-6 grid gap-5 rounded-[16px] border border-brand-line bg-brand-panel p-4 shadow-[0_12px_34px_var(--brand-elevation-shadow-soft)] sm:grid-cols-[190px_1fr] sm:p-6">
             <img
               src={selected.thumbnailUrl}
               alt=""
@@ -74,12 +74,12 @@ export function CharacterPresetPicker({
             />
             <div className="min-w-0 self-center">
               <div className="flex flex-wrap items-center gap-3">
-                <h4 className="text-2xl font-black tracking-[-0.012em] text-[#050b24]">{selected.name}</h4>
-                <span className="inline-flex rounded-full border border-teal-100 bg-teal-50 px-4 py-1.5 text-sm font-black text-teal-700">
+                <h4 className="text-2xl font-black tracking-[-0.012em] text-brand-ink">{selected.name}</h4>
+                <span className="inline-flex rounded-full border border-brand-accent/25 bg-brand-accent-soft px-4 py-1.5 text-sm font-black text-brand-accent-hover">
                   Selected main actor
                 </span>
               </div>
-              <p className="mt-4 text-lg font-semibold leading-8 text-slate-600">{selected.description}</p>
+              <p className="mt-4 text-lg font-semibold leading-8 text-brand-muted">{selected.description}</p>
             </div>
           </div>
         ) : null}

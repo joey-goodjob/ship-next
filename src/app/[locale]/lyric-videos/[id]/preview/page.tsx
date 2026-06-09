@@ -1,17 +1,16 @@
-import { envConfigs } from "@/config";
-import { PreviewWorkbench } from "@/components/lyric-videos/preview-workbench";
+import { redirect } from "@/core/i18n/navigation";
 
 export default async function LyricVideoPreviewPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
   searchParams?: Promise<{ debugLock?: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const query = searchParams ? await searchParams : {};
-  const debugGenerationLocked =
-    process.env.NODE_ENV !== "production" && ["1", "true", "yes"].includes(String(query.debugLock || "").toLowerCase());
+  const debugLock = String(query.debugLock || "");
+  const suffix = debugLock ? `?debugLock=${encodeURIComponent(debugLock)}` : "";
 
-  return <PreviewWorkbench projectId={id} appName={envConfigs.app_name} debugGenerationLocked={debugGenerationLocked} />;
+  redirect({ href: `/creations/${id}/preview${suffix}`, locale });
 }
