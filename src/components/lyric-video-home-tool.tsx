@@ -50,6 +50,9 @@ export function LyricVideoHomeTool() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const displayStage = isRedirecting ? "redirecting" : stage;
+  const displayWorking = isWorking || isRedirecting;
 
   useEffect(() => {
     if (!session?.user) return;
@@ -65,6 +68,7 @@ export function LyricVideoHomeTool() {
       contentType: uploaded.contentType || pending.file.type || "audio/mpeg",
     });
     pendingUploadRef.current = null;
+    setIsRedirecting(true);
     router.push("/create?source=home-upload");
   }
 
@@ -80,6 +84,7 @@ export function LyricVideoHomeTool() {
     }
 
     resetCreationState();
+    setIsRedirecting(false);
 
     if (!session?.user) {
       pendingUploadRef.current = { file, startTime, endTime, options };
@@ -99,6 +104,7 @@ export function LyricVideoHomeTool() {
     try {
       await uploadAndContinue(pending);
     } catch (err: any) {
+      setIsRedirecting(false);
       toast.error(err?.message || "Failed to upload your song");
     }
   }
@@ -144,22 +150,25 @@ export function LyricVideoHomeTool() {
       <AudioUploadTrim
         compact
         presentation="home-card"
-        creationStage={stage}
+        creationStage={displayStage}
         uploadProgress={uploadProgress}
         showBack={false}
         showCredits={false}
+        showTrimControls={false}
+        autoGenerateOnReady
+        completionState="idle"
         onGenerate={handleGenerate}
         creditCost={10}
         generateLabel="Upload song"
-        workingLabel={stage === "idle" ? "Preparing your song..." : stageLabel(stage)}
+        workingLabel={displayStage === "idle" ? "Preparing your song..." : stageLabel(displayStage)}
         successLabel="Song uploaded"
       />
 
-      {isWorking ? (
+      {displayWorking ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-brand-panel/88 px-6 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-md border border-brand-line bg-brand-panel p-5 text-center shadow-lg">
             <Loader2 className="mx-auto size-8 animate-spin text-brand-accent" />
-            <p className="mt-4 text-base font-black text-brand-ink">{stageLabel(stage)}</p>
+            <p className="mt-4 text-base font-black text-brand-ink">{stageLabel(displayStage)}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-brand-muted">
               The creator opens after your audio is safely stored.
             </p>

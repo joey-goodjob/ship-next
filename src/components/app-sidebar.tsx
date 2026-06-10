@@ -10,11 +10,11 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 export interface NavItem {
   href: string;
@@ -25,17 +25,15 @@ export interface NavItem {
 }
 
 export function AppSidebar({
-  brand,
-  brandHref = "/",
   navItems,
   footerNavItems,
   footer,
+  className,
 }: {
-  brand: React.ReactNode;
-  brandHref?: string;
   navItems: NavItem[];
   footerNavItems?: NavItem[];
   footer?: React.ReactNode;
+  className?: string;
 }) {
   const pathname = usePathname();
   const locale = useLocale();
@@ -53,22 +51,11 @@ export function AppSidebar({
   }
 
   return (
-    <Sidebar variant="inset">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link
-              href={brandHref}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              <span className="flex-1 font-serif italic text-lg leading-none">
-                {brand}
-              </span>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-
+    <Sidebar
+      variant="inset"
+      collapsible="icon"
+      className={cn("!top-16 !bottom-auto !h-[calc(100svh-4rem)]", className)}
+    >
       <SidebarContent>
         {groups.map((group, gi) => (
           <SidebarGroup key={gi}>

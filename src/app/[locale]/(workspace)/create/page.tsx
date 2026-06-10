@@ -6,6 +6,7 @@ import { Music2 } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim, type UploadedAudioSource } from "@/components/audio-upload-trim";
 import { CharacterPresetPicker } from "@/components/character-preset-picker";
+import { Typewriter } from "@/components/ui/typewriter-text";
 import {
   clearHomeUploadedAudio,
   readHomeUploadedAudio,
@@ -17,10 +18,9 @@ import {
   DEFAULT_CHARACTER_PRESET_SLUG,
   getCharacterPreset,
 } from "@/lib/character-presets";
-import { cn } from "@/lib/utils";
 
-const RESOLUTION_OPTIONS = ["1080p", "720p"] as const;
-const ASPECT_RATIO_OPTIONS = ["16:9", "9:16"] as const;
+const DEFAULT_RESOLUTION = "1080p";
+const DEFAULT_ASPECT_RATIO = "16:9";
 
 function titleFromFilename(filename: string) {
   return filename.replace(/\.[^/.]+$/, "").trim() || "Untitled lyric video";
@@ -39,9 +39,8 @@ function uploadedToAudioSource(uploaded: UploadedAudio): UploadedAudioSource {
 
 export default function DashboardCreatePage() {
   const t = useTranslations("dashboard.create");
-  const [projectName, setProjectName] = useState("");
-  const [resolution, setResolution] = useState<(typeof RESOLUTION_OPTIONS)[number]>("1080p");
-  const [aspectRatio, setAspectRatio] = useState<(typeof ASPECT_RATIO_OPTIONS)[number]>("16:9");
+  const rawTitleLoop = t.raw("title_loop");
+  const titleLoop = Array.isArray(rawTitleLoop) ? rawTitleLoop.filter((item): item is string => typeof item === "string") : [t("title")];
   const [selectedCharacterSlug, setSelectedCharacterSlug] = useState(DEFAULT_CHARACTER_PRESET_SLUG);
   const [homeUploadedAudio, setHomeUploadedAudio] = useState<UploadedAudio | null>(null);
   const {
@@ -58,7 +57,6 @@ export default function DashboardCreatePage() {
     const uploaded = readHomeUploadedAudio();
     if (!uploaded) return;
     setHomeUploadedAudio(uploaded);
-    setProjectName((current) => current || titleFromFilename(uploaded.filename));
   }, []);
 
   useEffect(() => {
@@ -74,17 +72,13 @@ export default function DashboardCreatePage() {
     options: { useEntireAudio: boolean; durationSeconds: number },
     uploadedAudio?: UploadedAudioSource | null,
   ) {
-    if (!projectName.trim()) {
-      toast.error(t("name_required"));
-      return;
-    }
-
+    const projectTitle = titleFromFilename(uploadedAudio?.filename || file?.name || "");
     const selectedCharacter = getCharacterPreset(selectedCharacterSlug);
     const generateOptions = {
       ...options,
-      projectTitle: projectName.trim(),
-      resolution,
-      aspectRatio,
+      projectTitle,
+      resolution: DEFAULT_RESOLUTION,
+      aspectRatio: DEFAULT_ASPECT_RATIO,
     };
 
     try {
@@ -118,71 +112,15 @@ export default function DashboardCreatePage() {
           <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-md bg-brand-accent text-brand-accent-ink shadow-[0_0_32px_var(--brand-accent-shadow)]">
             <Music2 className="size-7" />
           </div>
-          <h1 className="text-4xl font-black leading-tight text-brand-ink sm:text-5xl">{t("title")}</h1>
+          <h1 className="mx-auto min-h-[5.75rem] max-w-4xl text-4xl font-black leading-tight text-brand-ink sm:min-h-[3.75rem] sm:text-5xl">
+            <Typewriter text={titleLoop.length > 0 ? titleLoop : t("title")} speed={70} deleteSpeed={35} delay={1500} loop />
+          </h1>
           <p className="mt-4 text-sm font-medium leading-6 text-brand-muted sm:text-base">{t("description")}</p>
         </div>
 
-        <section className="mb-6 rounded-lg border border-brand-line bg-brand-panel p-5 shadow-[0_18px_60px_var(--brand-elevation-shadow)] sm:p-6">
-          <label className="block text-sm font-semibold text-brand-muted">
-            {t("project_name")} <span className="text-destructive">*</span>
-            <input
-              value={projectName}
-              onChange={(event) => setProjectName(event.target.value)}
-              placeholder={t("project_name_placeholder")}
-              disabled={isWorking}
-              className="mt-3 h-12 w-full rounded-md border border-brand-line bg-brand-panel-strong px-4 text-base font-semibold text-brand-ink outline-none transition placeholder:text-brand-muted/60 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20 disabled:opacity-60"
-            />
-          </label>
-
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <fieldset>
-              <legend className="mb-3 text-sm font-semibold text-brand-muted">{t("resolution")}</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {RESOLUTION_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    disabled={isWorking}
-                    onClick={() => setResolution(option)}
-                    className={cn(
-                      "h-11 rounded-md border text-sm font-black transition",
-                      resolution === option
-                        ? "border-brand-accent bg-brand-accent-soft text-brand-ink"
-                        : "border-brand-line bg-brand-panel-strong text-brand-muted hover:border-brand-accent/50 hover:text-brand-ink",
-                    )}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend className="mb-3 text-sm font-semibold text-brand-muted">{t("aspect_ratio")}</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {ASPECT_RATIO_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    disabled={isWorking}
-                    onClick={() => setAspectRatio(option)}
-                    className={cn(
-                      "h-11 rounded-md border text-sm font-black transition",
-                      aspectRatio === option
-                        ? "border-brand-accent bg-brand-accent-soft text-brand-ink"
-                        : "border-brand-line bg-brand-panel-strong text-brand-muted hover:border-brand-accent/50 hover:text-brand-ink",
-                    )}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-          </div>
-        </section>
-
         <AudioUploadTrim
           compact
+          presentation="home-card"
           creationStage={stage}
           uploadProgress={uploadProgress}
           showBack={false}

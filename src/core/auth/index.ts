@@ -178,7 +178,8 @@ export function getAuth(configs?: Record<string, string>) {
                   return;
                 }
                 const appName = all.app_name || envConfigs.app_name;
-                const logo = all.app_logo || '';
+                const configuredLogo = all.app_logo || '/logo.png';
+                const logo = configuredLogo === '/logo.png' ? '/logo-email.png' : configuredLogo;
                 const logoUrl = logo.startsWith('http')
                   ? logo
                   : logo

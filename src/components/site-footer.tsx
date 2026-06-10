@@ -1,5 +1,6 @@
 import { Link } from "@/core/i18n/navigation";
 import type { ComponentType, SVGProps } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 import { LocaleSelector } from "@/components/locale-selector";
 
@@ -50,9 +51,7 @@ export function SiteFooter({
             )}
           >
             <div className="space-y-6">
-              <span className="text-[34px] font-extrabold tracking-tight">
-                Lyric<span className="text-brand-accent">Video AI</span>
-              </span>
+              <BrandLogo variant="footer" showName />
               <p className="font-black">Follow us on</p>
               <div className="flex gap-2">
                 {socials?.map((s) => (

@@ -4,11 +4,15 @@
     "create": "创建",
     "creations": "Creations",
     "credits": "积分",
+    "help": "帮助",
+    "pricing": "价格",
+    "upgrade": "升级",
     "settings": "设置",
     "home": "首页"
   },
   "create": {
     "title": "Create",
+    "title_loop": ["Ready to create your music video?", "准备好创建你的音乐视频了吗？"],
     "description": "上传歌曲、命名项目，并启动歌词视频的故事方向生成。",
     "project_name": "项目名称",
     "project_name_placeholder": "请输入项目名称...",

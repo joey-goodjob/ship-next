@@ -2,8 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { Coins, Home, PlusCircle, Settings, Video } from "lucide-react";
-import { envConfigs } from "@/config";
 import { AppLayout } from "@/components/app-layout";
+import { AppTopbar } from "@/components/app-topbar";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function WorkspaceLayout({
   children,
@@ -42,9 +43,21 @@ export default function WorkspaceLayout({
     <AppLayout
       navItems={navItems}
       footerNavItems={footerNavItems}
-      brand={envConfigs.app_name}
+      brand={<BrandLogo variant="sidebar" showName />}
+      mobileBrand={<BrandLogo variant="topbar" showName />}
       brandHref="/create"
       profileHref="/settings/profile"
+      topbar={({ brand, brandHref, user }) => (
+        <AppTopbar
+          brand={brand}
+          brandHref={brandHref}
+          helpLink={{ href: "/#faq", label: t("nav.help") }}
+          pricingLink={{ href: "/pricing", label: t("nav.pricing") }}
+          upgradeLabel={t("nav.upgrade")}
+          creditLabel={t("nav.credits")}
+          user={user}
+        />
+      )}
     >
       {children}
     </AppLayout>

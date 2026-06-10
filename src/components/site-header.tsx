@@ -2,8 +2,9 @@
 
 import { Link } from "@/core/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Menu, Play, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleSelector } from "@/components/locale-selector";
@@ -57,16 +58,8 @@ export function SiteHeader({
     <header className="sticky top-0 z-50 w-full border-b border-brand-line/80 bg-brand-panel/92 text-brand-ink backdrop-blur-md">
       <div className="mx-auto grid h-[88px] max-w-[1180px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="relative flex size-10 items-center justify-center rounded-full border-[4px] border-brand-ink bg-brand-panel shadow-[0_8px_22px_var(--brand-elevation-shadow-soft)]">
-            <span className="absolute -right-1 top-1 flex size-5 items-center justify-center rounded-full bg-brand-accent-soft">
-              <Play className="ml-0.5 size-3 fill-brand-accent text-brand-accent" />
-            </span>
-            <span className="relative size-2 rounded-full bg-brand-accent" />
-          </span>
-          <span className="text-[26px] font-extrabold tracking-[-0.012em] text-brand-ink">
-            LyricVideo <span className="text-brand-accent">AI</span>
-          </span>
+        <Link href="/" className="flex w-fit items-center rounded-md p-1 transition-transform active:scale-95">
+          <BrandLogo variant="header" showName />
         </Link>
 
         {/* Desktop nav */}

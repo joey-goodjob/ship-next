@@ -4,11 +4,15 @@
     "create": "Create",
     "creations": "Creations",
     "credits": "Credits",
+    "help": "Help",
+    "pricing": "Pricing",
+    "upgrade": "Upgrade",
     "settings": "Settings",
     "home": "Home"
   },
   "create": {
     "title": "Create",
+    "title_loop": ["Ready to create your music video?", "准备好创建你的音乐视频了吗？"],
     "description": "Upload a song, name the project, and start a lyric video direction pass.",
     "project_name": "Project name",
     "project_name_placeholder": "Enter a project name...",

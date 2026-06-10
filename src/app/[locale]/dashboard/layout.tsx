@@ -2,8 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { Coins, Home, PlusCircle, Settings, Video } from "lucide-react";
-import { envConfigs } from "@/config";
 import { AppLayout } from "@/components/app-layout";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function DashboardLayout({
   children,
@@ -42,7 +42,7 @@ export default function DashboardLayout({
     <AppLayout
       navItems={navItems}
       footerNavItems={footerNavItems}
-      brand={envConfigs.app_name}
+      brand={<BrandLogo variant="sidebar" showName />}
       brandHref="/create"
       profileHref="/settings/profile"
     >
