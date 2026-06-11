@@ -1,0 +1,116 @@
+{
+  "id": "openart-seed",
+  "version": "v1",
+  "keyPrefix": "character-library/openart-seed/v1",
+  "uploadedAt": "2026-06-03T12:47:49.344Z",
+  "characters": [
+    {
+      "slug": "vera",
+      "name": "Vera",
+      "role": "main",
+      "description": "Pop diva and dance-pop singer with blonde hair fading into soft pink ends, layered gold jewelry, plain black crop top, high-waisted black stage pants, retro microphone, and purple studio flash mood.",
+      "promptFragment": "fictional music video main character, Pop diva and dance-pop singer with blonde hair fading into soft pink ends, layered gold jewelry, plain black crop top, high-waisted black stage pants, retro microphone, and purple studio flash mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/vera/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/vera/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/vera/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "kai",
+      "name": "Kai",
+      "role": "main",
+      "description": "Male R&B and alt-rap performer with shoulder-length dark locs, navy athletic sweatshirt with bright blue sleeve stripes, clean white trousers, plain black belt, pendant necklace, and soft pink studio mood.",
+      "promptFragment": "fictional music video main character, Male R&B and alt-rap performer with shoulder-length dark locs, navy athletic sweatshirt with bright blue sleeve stripes, clean white trousers, plain black belt, pendant necklace, and soft pink studio mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/kai/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/kai/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/kai/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "luna",
+      "name": "Luna",
+      "role": "main",
+      "description": "Hyperpop and K-pop inspired female performer with long vivid aqua-blue hair, translucent pink butterfly hair clips, pastel checkerboard crop top, pastel pink pants, and teal studio flash mood.",
+      "promptFragment": "fictional music video main character, Hyperpop and K-pop inspired female performer with long vivid aqua-blue hair, translucent pink butterfly hair clips, pastel checkerboard crop top, pastel pink pants, and teal studio flash mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/luna/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/luna/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/luna/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "rosa",
+      "name": "Rosa",
+      "role": "main",
+      "description": "Cyberpop female performer with vivid orange wavy hair, metallic silver crop top, oversized futuristic cargo pants, chunky pale boots, wrist tech cuffs, and neon cyan/coral mood.",
+      "promptFragment": "fictional music video main character, Cyberpop female performer with vivid orange wavy hair, metallic silver crop top, oversized futuristic cargo pants, chunky pale boots, wrist tech cuffs, and neon cyan/coral mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/rosa/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/rosa/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/rosa/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "ace",
+      "name": "Ace",
+      "role": "main",
+      "description": "Dance-pop DJ performer with platinum blond short hair, white oval sunglasses, black headphones around the neck, white ribbed tank top, light denim jeans, and cool blue studio flash mood.",
+      "promptFragment": "fictional music video main character, Dance-pop DJ performer with platinum blond short hair, white oval sunglasses, black headphones around the neck, white ribbed tank top, light denim jeans, and cool blue studio flash mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ace/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ace/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ace/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "tex",
+      "name": "Tex",
+      "role": "main",
+      "description": "Mature country-pop performer with a cream western suit, vest, cream cowboy hat, subtle patterned shirt, warm retro studio lighting, and relaxed charismatic stage presence.",
+      "promptFragment": "fictional music video main character, Mature country-pop performer with a cream western suit, vest, cream cowboy hat, subtle patterned shirt, warm retro studio lighting, and relaxed charismatic stage presence.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/tex/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/tex/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/tex/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "ty",
+      "name": "Ty",
+      "role": "main",
+      "description": "Young male hip-hop performer with short textured curls, blank green baseball cap, plain black t-shirt, silver chain, abstract tattooed forearms, and warm orange studio flash mood.",
+      "promptFragment": "fictional music video main character, Young male hip-hop performer with short textured curls, blank green baseball cap, plain black t-shirt, silver chain, abstract tattooed forearms, and warm orange studio flash mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ty/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ty/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/ty/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "jayden",
+      "name": "Jayden",
+      "role": "main",
+      "description": "Male street DJ and pop-rap performer with short textured dark hair, trimmed beard, oversized sunglasses, black studded leather jacket, pink tee, loose dark trousers, and slim chains.",
+      "promptFragment": "fictional music video main character, Male street DJ and pop-rap performer with short textured dark hair, trimmed beard, oversized sunglasses, black studded leather jacket, pink tee, loose dark trousers, and slim chains.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jayden/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jayden/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jayden/ai-reference.png"
+      ]
+    },
+    {
+      "slug": "jay",
+      "name": "Jay",
+      "role": "main",
+      "description": "Indie R&B male vocalist with short textured dark hair, neat beard, soft sky-blue hoodie, black drawstrings, calm vulnerable expression, and warm beige/green film-grain studio mood.",
+      "promptFragment": "fictional music video main character, Indie R&B male vocalist with short textured dark hair, neat beard, soft sky-blue hoodie, black drawstrings, calm vulnerable expression, and warm beige/green film-grain studio mood.",
+      "thumbnailUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jay/showcase.png",
+      "referenceImageUrl": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jay/ai-reference.png",
+      "referenceImageUrls": [
+        "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/character-library/openart-seed/v1/jay/ai-reference.png"
+      ]
+    }
+  ]
+}
