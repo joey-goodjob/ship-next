@@ -74,10 +74,23 @@ export function formatDurationMs(ms: number) {
   return `${Math.max(0, ms / 1000).toFixed(2)}s`;
 }
 
-export function getAspectRatio(aspectRatio?: string) {
-  if (aspectRatio === "9:16") return "9 / 16";
-  if (aspectRatio === "1:1") return "1 / 1";
-  return "16 / 9";
+export function getPreviewStageStyle(aspectRatio?: string) {
+  if (aspectRatio === "9:16") {
+    return {
+      aspectRatio: "9 / 16",
+      height: "min(100%, 760px)",
+      maxHeight: "100%",
+      maxWidth: "min(100%, 560px)",
+      width: "auto",
+    };
+  }
+
+  return {
+    aspectRatio: "16 / 9",
+    height: "auto",
+    maxHeight: "100%",
+    width: "min(100%, 1540px)",
+  };
 }
 
 export function projectIsProcessing(project: LyricVideoProject | null, runtimeState?: RuntimeState | null) {
@@ -88,6 +101,10 @@ export function projectIsProcessing(project: LyricVideoProject | null, runtimeSt
     ["queued", "running", "waiting_provider"].includes(project.generationStatus || "") ||
     [project.lyricsStatus, project.scenesStatus, project.renderStatus].some((status) => activeStatuses.includes(status || ""))
   );
+}
+
+export function sceneImageIsPending(scene: LyricScene) {
+  return Boolean((scene.providerTaskId || scene.imageTaskId) && !scene.imageUrl && scene.status !== "failed");
 }
 
 const ACTIVE_GENERATION_STATUSES = ["queued", "running", "waiting_provider"];
@@ -117,7 +134,7 @@ export function sceneGridParams(scene: LyricScene) {
       params = null;
     }
   }
-  if (params?.mode !== "grid_4x4" || !params.grid || typeof params.grid !== "object") return null;
+  if (!params || !["grid_3x3", "grid_4x4"].includes(String(params.mode || "")) || !params.grid || typeof params.grid !== "object") return null;
   return params.grid as Record<string, unknown>;
 }
 
@@ -184,6 +201,7 @@ export function deriveGenerationProgress(params: {
   const imageStep = stepByStage(generationSteps, "image_generation");
   const currentStage = runtimeState?.currentStage || generationRun?.currentStage || project?.pipelineStage;
   const generationStatus = runtimeState?.generationStatus || generationRun?.status || project?.generationStatus || "idle";
+  const directionReady = generationStatus === "success" && currentStage === "direction_ready";
   const retryable = failed > 0 && processing === 0;
   const isActive = Boolean(runtimeState?.isGenerationActive) || ["queued", "running", "waiting_provider"].includes(generationStatus || "") || processing > 0;
   const progressPercent = Math.max(
@@ -197,7 +215,9 @@ export function deriveGenerationProgress(params: {
       ? `Images ${success}/${total}${processing ? `, processing ${processing}` : ""}${failed ? `, failed ${failed}` : ""}`
       : "Images not queued yet";
   const primary =
-    failed > 0 && processing === 0
+    directionReady
+      ? "方向已生成，等待生成全部场景"
+      : failed > 0 && processing === 0
       ? `Image generation partial ${success}/${total}, failed ${failed}, retry available`
       : total > 0 && (processing > 0 || generationStatus === "waiting_provider")
         ? `Image generation ${success}/${total}${failed ? `, failed ${failed}` : ""}`
@@ -214,6 +234,7 @@ export function deriveGenerationProgress(params: {
     retryable,
     isActive,
     progressPercent,
+    directionReady,
     generationStatus,
     currentStage: stageLabel(currentStage),
     songAnalysisStatus: songAnalysisStep?.status || "pending",

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { asrTimingDebugSummary, cleanAsrWordsForLyrics, refineAsrSegmentsWithWords } from '../src/modules/lyric-videos/lyric/asr';
-import { buildFixedStoryboardSceneDrafts } from '../src/modules/lyric-videos/lyric/storyboard';
+import { buildFixedStoryboardSceneDrafts, sceneDurationMs } from '../src/modules/lyric-videos/lyric/storyboard';
 import { parseElevenLabsTranscriptionResponse } from '../src/core/ai/elevenlabs';
 
 type Fixture = {
@@ -16,6 +16,35 @@ type Fixture = {
 
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
+}
+
+type SceneDurationDistribution = {
+  count: number;
+  minMs: number;
+  maxMs: number;
+  lt1500: number;
+  b1500_2999: number;
+  b3000_6500: number;
+  gt6500: number;
+};
+
+function summarizeSceneDurations(scenes: Array<{ startMs: number; endMs: number }>): SceneDurationDistribution {
+  const durations = scenes.map((scene) => sceneDurationMs(scene));
+  return {
+    count: scenes.length,
+    minMs: durations.length ? Math.min(...durations) : 0,
+    maxMs: durations.length ? Math.max(...durations) : 0,
+    lt1500: durations.filter((duration) => duration < 1500).length,
+    b1500_2999: durations.filter((duration) => duration >= 1500 && duration < 3000).length,
+    b3000_6500: durations.filter((duration) => duration >= 3000 && duration <= 6500).length,
+    gt6500: durations.filter((duration) => duration > 6500).length,
+  };
+}
+
+function assertNoAbsoluteShortScenes(label: string, scenes: Array<{ startMs: number; endMs: number }>) {
+  const distribution = summarizeSceneDurations(scenes);
+  assert(distribution.lt1500 === 0, `${label}: should not leave scenes shorter than 1.5s, got ${distribution.lt1500}`);
+  return distribution;
 }
 
 function runPipeline(fixture: Fixture, rawWords: any[]) {
@@ -202,21 +231,18 @@ async function assertElevenLabsWordSentenceSplitting() {
     audioAnalysis,
     words: parsed.words,
   });
-  assert(fixedScenes.length > finalLines.length, 'MV fixed scenes should be richer than the lyric sentence timeline');
+  const distribution = assertNoAbsoluteShortScenes('ElevenLabs fixed scenes', fixedScenes);
+  console.info('[test-asr-scene-fixture] ElevenLabs scene duration distribution:', distribution);
 
   const introScenes = fixedScenes.filter((scene) => scene.text === '[intro]');
-  assert(introScenes.length >= 2, 'Intro silence should become multiple instrumental scenes');
+  assert(introScenes.length >= 1, 'Intro silence should become an instrumental scene');
 
   const vocalMontageScenes = fixedScenes.filter((scene) => scene.planning?.isVocalMontage);
-  assert(vocalMontageScenes.length >= 3, 'Long Oh/La vocal section should split into beat-based montage scenes');
-
+  assert(vocalMontageScenes.length >= 1, 'Long Oh/La vocal section should keep vocal montage planning metadata');
   assert(
-    !fixedScenes.some((scene) => /i can feel it now/i.test(scene.text) && /pulling in my chest/i.test(scene.text)),
-    'Multi-sentence scene should split repeated "I can feel it now" away from "Pulling in my chest"'
+    distribution.gt6500 <= Math.max(2, Math.ceil(distribution.count * 0.1)),
+    `Slow-song fixture should not create many >6.5s scenes, got ${distribution.gt6500}/${distribution.count}`
   );
-
-  const lateChorusScenes = fixedScenes.filter((scene) => (scene.startMs || 0) >= 129000 && (scene.endMs || 0) <= 137000);
-  assert(lateChorusScenes.length >= 2, '6.94s multi-sentence chorus should split into multiple MV scenes');
 
   const movingForwardRepeatIds = fixedScenes
     .filter((scene) => /open sky tonight, i'm moving forward/i.test(scene.text))
@@ -237,6 +263,7 @@ async function main() {
 
   const baseline = runPipeline(fixture, rawWords);
   assertNoShortSingleWordOpeningScene('baseline fixture', baseline);
+  const baselineDistribution = assertNoAbsoluteShortScenes('baseline fixture', baseline.fixedScenes);
 
   const syntheticBadWords = rawWords.map((word) => ({ ...word }));
   syntheticBadWords[0] = {
@@ -246,9 +273,12 @@ async function main() {
   };
   const repaired = runPipeline(fixture, syntheticBadWords);
   assertNoShortSingleWordOpeningScene('synthetic long-leading-word fixture', repaired);
+  const repairedDistribution = assertNoAbsoluteShortScenes('synthetic long-leading-word fixture', repaired.fixedScenes);
 
   console.info('[test-asr-scene-fixture] baseline summary:', baseline.debugSummary);
+  console.info('[test-asr-scene-fixture] baseline scene duration distribution:', baselineDistribution);
   console.info('[test-asr-scene-fixture] repaired summary:', repaired.debugSummary);
+  console.info('[test-asr-scene-fixture] repaired scene duration distribution:', repairedDistribution);
   await assertElevenLabsWordSentenceSplitting();
   console.info('[test-asr-scene-fixture] passed');
 }

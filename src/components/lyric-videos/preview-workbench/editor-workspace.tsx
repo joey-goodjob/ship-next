@@ -10,7 +10,7 @@ import { useEditor } from "./editor-context";
 import { HorizontalResizeHandle, VerticalResizeHandle } from "./resize-handles";
 import { PlaybackControls } from "./playback-controls";
 import { SidePanel } from "./side-panel";
-import { StatusBar } from "./status-bar";
+import { TimelineActionOverlay } from "./timeline-action-overlay";
 import { Timeline } from "./timeline";
 import { TopNavBar } from "./top-nav-bar";
 import { VideoPreview } from "./video-preview";
@@ -71,37 +71,47 @@ export function EditorWorkspace() {
     window.addEventListener("pointerup", stop, { once: true });
   }
 
+  async function handleUploadAndTranscribe(
+    file: File | null,
+    startTime: number,
+    endTime: number,
+    options: { useEntireAudio: boolean; durationSeconds: number },
+  ) {
+    if (!file) throw new Error("Choose an audio file first");
+    await uploadAndTranscribe(file, startTime, endTime, options);
+  }
+
   const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex h-[100dvh] w-screen flex-col overflow-hidden bg-white font-sans">
+    <div className="editor-workspace fixed inset-0 z-[9999] flex h-[100dvh] w-screen flex-col overflow-hidden bg-[var(--editor-panel)] font-sans">
       <TopNavBar />
       {loading && !project ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center bg-[#F8F9FA]">
-          <div className="flex flex-col items-center gap-3 text-[#667085]">
-            <Loader2 className="size-8 animate-spin text-[#F5A623]" />
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--editor-bg)]">
+          <div className="flex flex-col items-center gap-3 text-[var(--editor-muted)]">
+            <Loader2 className="size-8 animate-spin text-[var(--editor-accent)]" />
             <span className="text-sm font-bold">Loading project...</span>
           </div>
         </div>
       ) : loadError && !project ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center bg-[#F8F9FA] px-6 text-center">
-          <div className="max-w-md rounded-[8px] border border-red-200 bg-white p-6 shadow-sm">
-            <AlertCircle className="mx-auto mb-3 size-8 text-red-500" />
-            <h1 className="text-lg font-bold text-[#1A1A2E]">Project not available</h1>
-            <p className="mt-2 text-sm leading-6 text-[#667085]">{loadError}</p>
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--editor-bg)] px-6 text-center">
+          <div className="max-w-md rounded-[8px] border border-[var(--editor-danger)] bg-[var(--editor-panel)] p-6 shadow-sm">
+            <AlertCircle className="mx-auto mb-3 size-8 text-[var(--editor-danger)]" />
+            <h1 className="text-lg font-bold text-[var(--editor-text)]">Project not available</h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--editor-muted)]">{loadError}</p>
             <Link
               href="/"
-              className="mt-4 inline-flex h-9 items-center rounded-[6px] bg-[#F5A623] px-4 text-sm font-bold text-white"
+              className="mt-4 inline-flex h-9 items-center rounded-[6px] bg-[var(--editor-accent)] px-4 text-sm font-bold text-[var(--editor-accent-ink)]"
             >
               Back home
             </Link>
           </div>
         </div>
       ) : project && !hasAudio ? (
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#F8F9FA]">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--editor-bg)]">
           <AudioUploadTrim
             showBack={false}
-            onGenerate={uploadAndTranscribe}
+            onGenerate={handleUploadAndTranscribe}
             creditCost={10}
             generateLabel="Generate direction (10 credits)"
             workingLabel={preparingAudio ? "Preparing lyrics and story direction..." : "Uploading audio..."}
@@ -117,8 +127,10 @@ export function EditorWorkspace() {
           </div>
           <HorizontalResizeHandle onPointerDown={startTimelineResize} />
           <PlaybackControls />
-          <Timeline height={timelineHeight} />
-          <StatusBar />
+          <div className="relative shrink-0" style={{ height: timelineHeight }}>
+            <Timeline height={timelineHeight} />
+            <TimelineActionOverlay />
+          </div>
         </>
       )}
     </div>

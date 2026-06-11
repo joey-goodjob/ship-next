@@ -2,8 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { LayoutDashboard, Users, Shield, KeyRound, DollarSign, CreditCard, Coins, FolderOpen, FileText, Settings, Home, Ticket } from "lucide-react";
-import { envConfigs } from "@/config";
 import { AppLayout } from "@/components/app-layout";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function AdminLayout({
   children,
@@ -35,7 +35,7 @@ export default function AdminLayout({
     <AppLayout
       navItems={navItems}
       footerNavItems={footerNavItems}
-      brand={envConfigs.app_name}
+      brand={<BrandLogo variant="sidebar" showName />}
       brandHref="/admin"
       profileHref="/settings/profile"
       requirePermission="admin.*"

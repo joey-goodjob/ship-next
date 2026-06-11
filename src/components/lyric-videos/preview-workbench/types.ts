@@ -1,5 +1,7 @@
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
-export type PanelTab = "customize" | "lyrics" | "cast" | "scenes" | "diagnostics";
+export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "diagnostics";
+export type StoryReviewStatus = "idle" | "unconfirmed" | "dirty" | "confirmed";
+export type StoryChangeSource = "manual_edit" | "ai_rewrite" | "ai_new_story" | null;
 
 export type ApiResponse<T> = {
   code: number;
@@ -84,6 +86,14 @@ export type LyricScene = {
   sort?: number;
 };
 
+export type LyricScenePatch = {
+  text?: string;
+  prompt?: string;
+  negativePrompt?: string | null;
+  motionPrompt?: string | null;
+  castIds?: string[];
+};
+
 export type GenerationRun = {
   id: string;
   status: string;
@@ -151,12 +161,22 @@ export type LyricCastMember = {
   providerTaskId?: string | null;
   imageModel?: string | null;
   imagePromptSnapshot?: string | null;
-  generationParams?: string | null;
+  generationParams?: string | Record<string, unknown> | null;
   completedAt?: string | null;
   failureCode?: string | null;
   error?: string | null;
   status: string;
   sort: number;
+};
+
+export type CreateCastMemberInput = {
+  name: string;
+  role?: string;
+  description: string;
+  promptFragment?: string;
+  referenceImageUrl?: string | null;
+  generationParams?: Record<string, unknown>;
+  status?: string;
 };
 
 export type ProjectDetails = {
@@ -247,8 +267,14 @@ export type EditorContextValue = {
   castBusy: boolean;
   generationLocked: boolean;
   generationLockReason: string;
+  storyChangeSource: StoryChangeSource;
+  storyReviewStatus: StoryReviewStatus;
   setActiveTab: (tab: PanelTab) => void;
   setZoom: (zoom: number) => void;
+  confirmStoryPrompt: () => void;
+  applyStoryPromptChanges: () => void;
+  cancelStoryPromptChanges: () => void;
+  editStoryPrompt: () => void;
   updateProjectField: <K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) => void;
   setLines: (lines: LyricLine[]) => void;
   setWords: (words: LyricWord[]) => void;
@@ -258,12 +284,13 @@ export type EditorContextValue = {
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) => Promise<void>;
-  createStory: () => Promise<void>;
+  createStory: (feedback?: string) => Promise<void>;
   generateStoryboardPrompts: () => Promise<void>;
-  generateCastCandidates: () => Promise<void>;
-  createCastMember: (params: { name: string; description: string; promptFragment?: string }) => Promise<LyricCastMember | null>;
+  createCastMember: (params: CreateCastMemberInput) => Promise<LyricCastMember | null>;
   updateCastMember: (castId: string, data: Partial<LyricCastMember> & { selectAsMain?: boolean }) => Promise<LyricCastMember | null>;
-  deleteCastMember: (castId: string) => Promise<void>;
+  deleteCastMember: (castId: string) => Promise<boolean>;
+  updateScene: (sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) => Promise<LyricScene | null>;
+  updateSceneCastIds: (sceneId: string, castIds: string[]) => Promise<LyricScene | null>;
   regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
   syncCastImages: () => Promise<void>;
   queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;

@@ -6,5 +6,5 @@ export default async function LegacyLyricVideoUploadPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect({ href: "/#create", locale });
+  redirect({ href: "/create", locale });
 }

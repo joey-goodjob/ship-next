@@ -3,6 +3,7 @@ import { getAuth } from '@/core/auth';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
+import { pickLyricVideoCreateProjectInput } from './create-project-input';
 
 async function getUserId() {
   const auth = getAuth();
@@ -31,16 +32,17 @@ export async function POST(req: Request) {
   const startedAt = Date.now();
   try {
     const body = await req.json();
+    const createInput = pickLyricVideoCreateProjectInput(body);
     logLyricStage('create-project', 'route-start', {
       userId,
-      title: body.title,
-      hasAudioUrl: Boolean(body.audioUrl),
-      audioFilename: body.audioFilename,
-      audioDurationMs: body.audioDurationMs,
-      trimStartMs: body.trimStartMs,
-      trimEndMs: body.trimEndMs,
+      title: createInput.title,
+      hasAudioUrl: Boolean(createInput.audioUrl),
+      audioFilename: createInput.audioFilename,
+      audioDurationMs: createInput.audioDurationMs,
+      trimStartMs: createInput.trimStartMs,
+      trimEndMs: createInput.trimEndMs,
     });
-    const project = await service.createProject({ userId, ...body });
+    const project = await service.createProject({ ...createInput, userId });
     logLyricStage('create-project', 'route-success', {
       durationMs: Date.now() - startedAt,
       projectId: project.id,

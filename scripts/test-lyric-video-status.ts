@@ -85,6 +85,119 @@ function assertRuntimeState() {
 
   {
     const state = deriveRuntimeState({
+      project: baseProject({
+        activeRunId: 'run_direction',
+        generationStatus: 'success',
+        generationProgress: 70,
+        pipelineStage: 'direction_ready',
+        scenesStatus: 'lyrics_draft',
+      }),
+      generationRun: run({
+        id: 'run_direction',
+        status: 'success',
+        currentStage: 'direction_ready',
+        progressPercent: 70,
+      }),
+      generationSteps: [
+        step({ stage: 'asr_words', status: 'success', progressPercent: 100 }),
+        step({ stage: 'song_analysis', status: 'success', progressPercent: 100 }),
+        step({ stage: 'prompt_generation', status: 'pending', progressPercent: 0 }),
+      ],
+    });
+    assert.equal(state.generationStatus, 'success');
+    assert.equal(state.currentStage, 'direction_ready');
+    assert.equal(state.progressPercent, 70);
+    assert.equal(state.isGenerationActive, false);
+    assert.equal(state.isGenerationLocked, false);
+    assert.equal(state.scenesStatus, 'lyrics_draft');
+  }
+
+  {
+    const state = deriveRuntimeState({
+      project: baseProject({
+        activeRunId: 'run_visuals',
+        generationStatus: 'running',
+        generationProgress: 75,
+        pipelineStage: 'storyboard_generating',
+      }),
+      generationRun: run({
+        id: 'run_visuals',
+        status: 'running',
+        currentStage: 'prompt_generation',
+        progressPercent: 75,
+      }),
+      generationSteps: [
+        step({ stage: 'prompt_generation', status: 'running', progressPercent: 75 }),
+        step({ stage: 'image_generation', status: 'pending', progressPercent: 0 }),
+      ],
+    });
+    assert.equal(state.generationStatus, 'running');
+    assert.equal(state.currentStage, 'prompt_generation');
+    assert.equal(state.isGenerationActive, true);
+    assert.equal(state.isGenerationLocked, true);
+  }
+
+  {
+    const state = deriveRuntimeState({
+      project: baseProject({
+        activeRunId: 'run_images',
+        generationStatus: 'waiting_provider',
+        generationProgress: 95,
+        pipelineStage: 'images_processing',
+        scenesStatus: 'processing',
+      }),
+      generationRun: run({
+        id: 'run_images',
+        status: 'waiting_provider',
+        currentStage: 'image_generation',
+        progressPercent: 95,
+      }),
+      generationSteps: [
+        step({ stage: 'prompt_generation', status: 'success', progressPercent: 100 }),
+        step({ stage: 'image_generation', status: 'waiting_provider', progressPercent: 95 }),
+        step({ stage: 'finalize_project', status: 'pending', progressPercent: 0 }),
+      ],
+      scenes: [{ id: 'scene_1', status: 'processing', providerTaskId: 'provider_1', imageUrl: null }],
+    });
+    assert.equal(state.generationStatus, 'waiting_provider');
+    assert.equal(state.currentStage, 'image_generation');
+    assert.equal(state.isGenerationActive, true);
+    assert.equal(state.isGenerationLocked, true);
+    assert.deepEqual(state.sceneImageSummary, { total: 1, success: 0, processing: 1, failed: 0 });
+  }
+
+  {
+    const state = deriveRuntimeState({
+      project: baseProject({
+        activeRunId: 'run_done',
+        generationStatus: 'success',
+        generationProgress: 100,
+        pipelineStage: 'images_ready',
+        scenesStatus: 'ready',
+      }),
+      generationRun: run({
+        id: 'run_done',
+        status: 'success',
+        currentStage: 'finalize_project',
+        progressPercent: 100,
+      }),
+      generationSteps: [
+        step({ stage: 'prompt_generation', status: 'success', progressPercent: 100 }),
+        step({ stage: 'image_generation', status: 'success', progressPercent: 100 }),
+        step({ stage: 'finalize_project', status: 'success', progressPercent: 100 }),
+      ],
+      scenes: [{ id: 'scene_1', status: 'success', imageUrl: 'https://example.com/scene.png' }],
+    });
+    assert.equal(state.generationStatus, 'success');
+    assert.equal(state.currentStage, 'finalize_project');
+    assert.equal(state.progressPercent, 100);
+    assert.equal(state.isGenerationActive, false);
+    assert.equal(state.isGenerationLocked, false);
+    assert.deepEqual(state.sceneImageSummary, { total: 1, success: 1, processing: 0, failed: 0 });
+  }
+
+  {
+    const state = deriveRuntimeState({
       project: baseProject({ renderStatus: 'ready' }),
       scenes: [
         { id: 'scene_1', status: 'success', imageUrl: 'https://example.com/1.png' },

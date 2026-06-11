@@ -1,0 +1,16 @@
+{
+  "bodyBg": "color(srgb 1 1 1) none repeat scroll 0% 0% / auto padding-box border-box",
+  "bodyClass": "",
+  "bodyColor": "rgb(0, 0, 0)",
+  "h1": {
+    "color": "rgb(0, 0, 0)",
+    "fontFamily": "SUSE, sans-serif",
+    "fontSize": "30px",
+    "lineHeight": "36px",
+    "text": "Create lyric videoswith AI in minutes."
+  },
+  "htmlClass": "show--consent",
+  "scrollHeight": 9640,
+  "title": "LyricEdits | AI Lyric Video Generator",
+  "url": "https://lyricedits.ai/"
+}

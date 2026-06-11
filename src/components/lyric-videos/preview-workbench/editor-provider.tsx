@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
 import type {
+  CreateCastMemberInput,
   EditorContextValue,
   GenerationRun,
   GenerationRunResponse,
@@ -14,6 +15,7 @@ import type {
   LyricExport,
   LyricLine,
   LyricScene,
+  LyricScenePatch,
   LyricVideoProject,
   LyricWord,
   PanelTab,
@@ -21,6 +23,8 @@ import type {
   RetryFailedBatchesResponse,
   RuntimeState,
   SaveStatus,
+  StoryChangeSource,
+  StoryReviewStatus,
   StoryGenerationResponse,
   UploadAudioResponse,
   VisualGenerationResponse,
@@ -35,6 +39,7 @@ import {
   normalizeWordsForSave,
   projectIsProcessing,
   requestJson,
+  sceneImageIsPending,
   secondsToMs,
   sortWords,
   wordsFromDetails,
@@ -51,6 +56,22 @@ const IMAGE_SYNC_SCENE_FIELDS = [
   "completedAt",
   "updatedAt",
 ];
+
+export function mergeProjectWithLocalPatch({
+  inFlightPatch,
+  pendingPatch,
+  serverProject,
+}: {
+  inFlightPatch: Partial<LyricVideoProject>;
+  pendingPatch: Partial<LyricVideoProject>;
+  serverProject: LyricVideoProject;
+}) {
+  return {
+    ...serverProject,
+    ...inFlightPatch,
+    ...pendingPatch,
+  };
+}
 
 function mergeImageSyncedScenes(current: LyricScene[], updates: LyricScene[]) {
   if (!updates.length) return current;
@@ -107,12 +128,18 @@ export function EditorProvider({
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
   const [castBusy, setCastBusy] = useState(false);
+  const [confirmedStoryPrompt, setConfirmedStoryPrompt] = useState<string | null>(null);
+  const [storyChangeSource, setStoryChangeSource] = useState<StoryChangeSource>(null);
+  const [storyReviewBaseline, setStoryReviewBaseline] = useState("");
   const saveTimerRef = useRef<number | null>(null);
   const imageSyncInFlightRef = useRef(false);
   const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
+  const autoDirectionDetailProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
+  const projectPatchInFlightRef = useRef<Partial<LyricVideoProject>>({});
+  const storyReviewProjectRef = useRef<string | null>(null);
 
   const totalDuration = useMemo(() => {
     const candidates = [
@@ -131,9 +158,40 @@ export function EditorProvider({
     [debugGenerationLocked, generationRun, project, runtimeState],
   );
   const generationLockReason = GENERATION_LOCK_REASON;
+  const storyReviewStatus = useMemo<StoryReviewStatus>(() => {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) return "idle";
+    if (confirmedStoryPrompt !== null) {
+      return storyPrompt === confirmedStoryPrompt ? "confirmed" : "dirty";
+    }
+    if (storyReviewBaseline && storyPrompt !== storyReviewBaseline) return "dirty";
+    return "unconfirmed";
+  }, [confirmedStoryPrompt, project?.storyPrompt, storyReviewBaseline]);
 
   function showGenerationLockedToast() {
     toast.info(generationLockReason);
+  }
+
+  function mergeIncomingProject(serverProject: LyricVideoProject) {
+    return mergeProjectWithLocalPatch({
+      serverProject,
+      inFlightPatch: projectPatchInFlightRef.current,
+      pendingPatch: pendingProjectPatchRef.current,
+    });
+  }
+
+  function clearInFlightProjectPatch(patch: Partial<LyricVideoProject>) {
+    const nextPatch = { ...projectPatchInFlightRef.current };
+    for (const key of Object.keys(patch) as Array<keyof LyricVideoProject>) {
+      if (Object.is(nextPatch[key], patch[key])) {
+        delete nextPatch[key];
+      }
+    }
+    projectPatchInFlightRef.current = nextPatch;
+  }
+
+  function hasLocalProjectPatch() {
+    return Object.keys(pendingProjectPatchRef.current).length > 0 || Object.keys(projectPatchInFlightRef.current).length > 0;
   }
 
   const refresh = useCallback(async () => {
@@ -143,7 +201,7 @@ export function EditorProvider({
     try {
       const details = await requestJson<ProjectDetails>(`/api/lyric-videos/${projectId}`);
       if (!details?.project) throw new Error("Project not found");
-      setProject(details.project);
+      setProject(mergeIncomingProject(details.project));
       setRuntimeState(details.runtimeState || null);
       setGenerationRun(details.generationRun || null);
       setGenerationSteps(details.generationSteps || []);
@@ -154,7 +212,7 @@ export function EditorProvider({
       setExports(details.exports || []);
       setLyricsDirty(false);
       setWordsDirty(false);
-      setSaveStatus("saved");
+      setSaveStatus(hasLocalProjectPatch() ? "saving" : "saved");
     } catch (err: any) {
       setLoadError(err?.message || "Project not found");
     } finally {
@@ -168,11 +226,33 @@ export function EditorProvider({
   }, [refresh]);
 
   useEffect(() => {
-    if (!projectIsProcessing(project, runtimeState)) return;
-    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && !scene.imageUrl && scene.status === "processing");
+    if (!project) {
+      storyReviewProjectRef.current = null;
+      setConfirmedStoryPrompt(null);
+      setStoryChangeSource(null);
+      setStoryReviewBaseline("");
+      return;
+    }
+
+    if (storyReviewProjectRef.current !== project.id) {
+      storyReviewProjectRef.current = project.id;
+      setConfirmedStoryPrompt(null);
+      setStoryChangeSource(null);
+      setStoryReviewBaseline(project.storyPrompt || "");
+      return;
+    }
+
+    if (!storyReviewBaseline && confirmedStoryPrompt === null && project.storyPrompt?.trim()) {
+      setStoryReviewBaseline(project.storyPrompt);
+    }
+  }, [confirmedStoryPrompt, project, storyReviewBaseline]);
+
+  useEffect(() => {
+    const hasPendingSceneImages = scenes.some(sceneImageIsPending);
+    if (!projectIsProcessing(project, runtimeState) && !hasPendingSceneImages) return;
     const timer = window.setInterval(() => {
       refresh();
-    }, hasProcessingScenes ? 20000 : 4000);
+    }, hasPendingSceneImages ? 20000 : 4000);
     return () => window.clearInterval(timer);
   }, [project, refresh, runtimeState, scenes]);
 
@@ -242,7 +322,7 @@ export function EditorProvider({
           sceneCount: generated.scenes?.length || 0,
           firstScene: generated.scenes?.[0],
         });
-        setProject((previous) => generated.project || previous);
+        setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
         if (generated.run) setGenerationRun(generated.run);
         if (generated.steps) setGenerationSteps(generated.steps);
         if (generated.lines?.length) setLinesState(generated.lines);
@@ -287,7 +367,10 @@ export function EditorProvider({
       body: JSON.stringify({}),
     })
       .then((data) => {
-        setProject((previous) => data.project || (previous ? { ...previous, storyPrompt: data.storyPrompt } : previous));
+        setProject((previous) => {
+          const incomingProject = data.project || (previous ? { ...previous, storyPrompt: data.storyPrompt } : null);
+          return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+        });
         setSaveStatus("saved");
         toast.success("Story created");
       })
@@ -298,6 +381,39 @@ export function EditorProvider({
         setCreatingStory(false);
       });
   }, [creatingStory, generationLocked, lines.length, project, scenes.length]);
+
+  useEffect(() => {
+    const storyPrompt = (project?.storyPrompt || "").trim();
+    const shouldPrewarmDirectionDetail =
+      project &&
+      storyPrompt &&
+      lines.length > 0 &&
+      scenes.length === 0 &&
+      !generationLocked &&
+      autoDirectionDetailProjectRef.current !== project.id;
+    if (!shouldPrewarmDirectionDetail) return;
+
+    autoDirectionDetailProjectRef.current = project.id;
+    requestJson(`/api/lyric-videos/${project.id}/direction-detail`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ storyPrompt }),
+    })
+      .then((data: any) => {
+        console.info("[lyric-video] direction detail prewarmed", {
+          projectId: project.id,
+          reused: data?.reused,
+          status: data?.status,
+          storyPromptHash: data?.storyPromptHash,
+        });
+      })
+      .catch((err: any) => {
+        console.warn("[lyric-video] direction detail prewarm failed; visuals will retry", {
+          projectId: project.id,
+          error: err?.message || String(err || "unknown"),
+        });
+      });
+  }, [generationLocked, lines.length, project, scenes.length]);
 
   useEffect(() => {
     return () => {
@@ -318,20 +434,33 @@ export function EditorProvider({
     if (Object.keys(patch).length === 0) return null;
 
     pendingProjectPatchRef.current = {};
-    const saved = await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
-    setProject((previous) => saved || previous);
-    setSaveStatus("saved");
-    return saved;
+    projectPatchInFlightRef.current = { ...projectPatchInFlightRef.current, ...patch };
+    try {
+      const saved = await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      clearInFlightProjectPatch(patch);
+      const mergedProject = saved ? mergeIncomingProject(saved) : null;
+      if (mergedProject) setProject(mergedProject);
+      setSaveStatus(hasLocalProjectPatch() ? "saving" : "saved");
+      return mergedProject || saved;
+    } catch (error) {
+      clearInFlightProjectPatch(patch);
+      pendingProjectPatchRef.current = { ...patch, ...pendingProjectPatchRef.current };
+      setProject((previous) => (previous ? mergeIncomingProject(previous) : previous));
+      throw error;
+    }
   }
 
   function updateProjectField<K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) {
     if (generationLocked) {
       showGenerationLockedToast();
       return;
+    }
+    if (key === "storyPrompt") {
+      setStoryChangeSource("manual_edit");
     }
     setProject((previous) => (previous ? { ...previous, [key]: value } : previous));
     pendingProjectPatchRef.current = { ...pendingProjectPatchRef.current, [key]: value };
@@ -346,6 +475,36 @@ export function EditorProvider({
         toast.error(err?.message || "Save failed");
       }
     }, 600);
+  }
+
+  function confirmStoryPrompt() {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) {
+      toast.info("Add a story before confirming.");
+      return;
+    }
+    setConfirmedStoryPrompt(storyPrompt);
+    setStoryChangeSource(null);
+    setStoryReviewBaseline(storyPrompt);
+  }
+
+  function applyStoryPromptChanges() {
+    confirmStoryPrompt();
+  }
+
+  function editStoryPrompt() {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) return;
+    setConfirmedStoryPrompt(null);
+    setStoryChangeSource(null);
+    setStoryReviewBaseline(storyPrompt);
+  }
+
+  function cancelStoryPromptChanges() {
+    const fallbackStoryPrompt = confirmedStoryPrompt ?? storyReviewBaseline;
+    if (!fallbackStoryPrompt.trim()) return;
+    updateProjectField("storyPrompt", fallbackStoryPrompt);
+    setStoryChangeSource(null);
   }
 
   function setLines(nextLines: LyricLine[]) {
@@ -441,7 +600,7 @@ export function EditorProvider({
         firstScene: generated.scenes?.[0],
       });
 
-      setProject((previous) => generated.project || previous);
+      setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
       if (generated.run) setGenerationRun(generated.run);
       if (generated.steps) setGenerationSteps(generated.steps);
       if (generated.lines?.length) setLinesState(generated.lines);
@@ -465,7 +624,7 @@ export function EditorProvider({
     }
   }
 
-  async function createStory() {
+  async function createStory(feedback?: string) {
     if (generationLocked) {
       showGenerationLockedToast();
       return;
@@ -494,9 +653,27 @@ export function EditorProvider({
       const data = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ feedback: feedback || undefined }),
       });
-      setProject(data.project || { ...project, storyPrompt: data.storyPrompt });
+      const nextStoryPrompt = data.project?.storyPrompt || data.storyPrompt || "";
+      const hadPriorStory = Boolean(project.storyPrompt?.trim());
+      setProject(mergeIncomingProject(data.project || { ...project, storyPrompt: data.storyPrompt }));
+      if (hadPriorStory) {
+        setStoryChangeSource(feedback?.trim() ? "ai_rewrite" : "ai_new_story");
+        // Previously had a story → mark new story as "dirty" so user must
+        // re-confirm before generating scenes. Keep the old baseline/confirmed
+        // value so new story ≠ baseline → dirty.
+        if (confirmedStoryPrompt === null) {
+          // No prior confirm — keep storyReviewBaseline as-is (old story text).
+          // new story ≠ old baseline → dirty.
+        }
+        // If confirmedStoryPrompt !== null, new story ≠ confirmedStoryPrompt → dirty.
+      } else {
+        // First-time generation — set baseline to new story → "unconfirmed"
+        setConfirmedStoryPrompt(null);
+        setStoryChangeSource(null);
+        setStoryReviewBaseline(nextStoryPrompt);
+      }
       setSaveStatus("saved");
       toast.success("Story created");
     } catch (err: any) {
@@ -531,15 +708,29 @@ export function EditorProvider({
 
       let storyPrompt = (savedProject?.storyPrompt || project.storyPrompt || "").trim();
       if (!storyPrompt) {
+        console.info("[lyric-video] generate-all-scenes needs story prompt; requesting story", {
+          projectId: project.id,
+        });
         const story = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
         });
         storyPrompt = story.storyPrompt;
-        setProject((previous) => story.project || (previous ? { ...previous, storyPrompt } : previous));
+        setProject((previous) => {
+          const incomingProject = story.project || (previous ? { ...previous, storyPrompt } : null);
+          return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+        });
       }
 
+      console.info("[lyric-video] generate-all-scenes requesting visuals", {
+        projectId: project.id,
+        currentStage: runtimeState?.currentStage || generationRun?.currentStage || project.pipelineStage,
+        storyPromptLength: storyPrompt.length,
+        lineCount: lines.length,
+        sceneCount: scenes.length,
+        regenerateStoryboard: true,
+      });
       const generated = await requestJson<VisualGenerationResponse>(`/api/lyric-videos/${project.id}/visuals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -548,19 +739,29 @@ export function EditorProvider({
           regenerateStoryboard: true,
         }),
       });
+      console.info("[lyric-video] generate-all-scenes visuals response", {
+        projectId: project.id,
+        generatedStoryboard: generated.generatedStoryboard,
+        sceneCount: generated.scenes?.length || 0,
+        queuedImagesCount: generated.queuedImages?.length || 0,
+        pipelineStage: generated.project?.pipelineStage,
+        scenesStatus: generated.project?.scenesStatus,
+      });
       setScenes(generated.scenes || []);
-      setProject((previous) =>
-        generated.project ||
-        (previous
-          ? {
-              ...previous,
-              storyPrompt: generated.storyPrompt || storyPrompt,
-              scenesStatus: (generated.queuedImages?.length || 0) > 0 ? "processing" : "ready",
-              pipelineStage: (generated.queuedImages?.length || 0) > 0 ? "images_processing" : "storyboard_ready",
-              pipelineError: null,
-            }
-          : previous),
-      );
+      setProject((previous) => {
+        const incomingProject =
+          generated.project ||
+          (previous
+            ? {
+                ...previous,
+                storyPrompt: generated.storyPrompt || storyPrompt,
+                scenesStatus: (generated.queuedImages?.length || 0) > 0 ? "processing" : "ready",
+                pipelineStage: (generated.queuedImages?.length || 0) > 0 ? "images_processing" : "storyboard_ready",
+                pipelineError: null,
+              }
+            : null);
+        return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+      });
       setActiveTab("scenes");
       setSaveStatus("saved");
       await refresh();
@@ -571,33 +772,7 @@ export function EditorProvider({
     }
   }
 
-  async function generateCastCandidates() {
-    if (generationLocked) {
-      showGenerationLockedToast();
-      return;
-    }
-    if (!project || castBusy) return;
-    setCastBusy(true);
-    setSaveStatus("saving");
-    try {
-      const generated = await requestJson<LyricCastMember[]>(`/api/lyric-videos/${project.id}/cast/candidates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      setCast(generated || []);
-      setActiveTab("cast");
-      setSaveStatus("saved");
-      toast.success("Character candidates queued");
-    } catch (err: any) {
-      setSaveStatus("failed");
-      toast.error(err?.message || "Generate characters failed");
-    } finally {
-      setCastBusy(false);
-    }
-  }
-
-  async function createCastMember(params: { name: string; description: string; promptFragment?: string }) {
+  async function createCastMember(params: CreateCastMemberInput) {
     if (generationLocked) {
       showGenerationLockedToast();
       return null;
@@ -637,13 +812,9 @@ export function EditorProvider({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      setCast((previous) =>
-        data.selectAsMain
-          ? previous.map((item) => (item.id === updated.id ? updated : { ...item, status: item.status === "deleted" ? item.status : "inactive" }))
-          : previous.map((item) => (item.id === updated.id ? updated : item)),
-      );
+      setCast((previous) => previous.map((item) => (item.id === updated.id ? updated : item)));
       setSaveStatus("saved");
-      toast.success(data.selectAsMain ? "Main character selected" : "Character saved");
+      toast.success(data.role ? "Character role updated" : data.selectAsMain ? "Primary character selected" : "Character saved");
       return updated;
     } catch (err: any) {
       setSaveStatus("failed");
@@ -655,18 +826,36 @@ export function EditorProvider({
   async function deleteCastMember(castId: string) {
     if (generationLocked) {
       showGenerationLockedToast();
-      return;
+      return false;
     }
-    if (!project) return;
-    setSaveStatus("saving");
+    if (!project) return false;
+    const previousCast = cast;
+    const previousScenes = scenes;
     try {
-      await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
+      const activeCount = cast.filter((member) => member.status === "active" && String(member.role || "").toLowerCase() !== "inactive").length;
+      const deletingActive = cast.some((member) => member.id === castId && member.status === "active" && String(member.role || "").toLowerCase() !== "inactive");
+      if (deletingActive && activeCount <= 1) {
+        toast.error("Each project needs at least one active character.");
+        return false;
+      }
       setCast((previous) => previous.filter((item) => item.id !== castId));
+      setScenes((previous) =>
+        previous.map((scene) => ({
+          ...scene,
+          castIds: (scene.castIds || []).filter((id) => id !== castId),
+        })),
+      );
+      setSaveStatus("saving");
+      await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
       setSaveStatus("saved");
       toast.success("Character deleted");
+      return true;
     } catch (err: any) {
+      setCast(previousCast);
+      setScenes(previousScenes);
       setSaveStatus("failed");
       toast.error(err?.message || "Delete character failed");
+      return false;
     }
   }
 
@@ -705,6 +894,34 @@ export function EditorProvider({
     } catch (err: any) {
       toast.error(err?.message || "Sync character images failed");
     }
+  }
+
+  async function updateScene(sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setSaveStatus("saved");
+      if (options?.successMessage !== null) toast.success(options?.successMessage || "Scene saved");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || options?.errorMessage || "Update scene failed");
+      return null;
+    }
+  }
+
+  async function updateSceneCastIds(sceneId: string, castIds: string[]) {
+    return updateScene(sceneId, { castIds }, { successMessage: "Scene cast updated", errorMessage: "Update scene cast failed" });
   }
 
   async function queueSceneImages(sceneIds: string[]) {
@@ -889,18 +1106,25 @@ export function EditorProvider({
       castBusy,
       generationLocked,
       generationLockReason,
+      storyChangeSource,
+      storyReviewStatus,
       setActiveTab,
       setZoom,
+      confirmStoryPrompt,
+      applyStoryPromptChanges,
+      cancelStoryPromptChanges,
+      editStoryPrompt,
       updateProjectField,
       setLines,
       setWords,
       uploadAndTranscribe,
       createStory,
       generateStoryboardPrompts,
-      generateCastCandidates,
       createCastMember,
       updateCastMember,
       deleteCastMember,
+      updateScene,
+      updateSceneCastIds,
       regenerateCastImage,
       syncCastImages,
       queueSceneImages,
@@ -932,11 +1156,15 @@ export function EditorProvider({
       projectId,
       saveStatus,
       scenes,
+      storyChangeSource,
       words,
       wordsDirty,
       zoom,
+      storyReviewStatus,
       refresh,
       retryFailedImageBatches,
+      updateScene,
+      updateSceneCastIds,
     ],
   );
 

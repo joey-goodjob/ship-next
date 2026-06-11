@@ -147,26 +147,26 @@ export function LyricsPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-[16px]" onClick={() => setOpenWordMenuId(null)}>
+    <div className="lyrics-panel flex flex-col gap-[16px]" onClick={() => setOpenWordMenuId(null)}>
       {currentScene ? (
-        <div className="rounded-[8px] border border-[#DDE5EF] bg-[#F8FBFF] p-[10px]">
+        <div className="rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[10px]">
           <div className="flex items-start justify-between gap-[10px]">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-[8px]">
-                <span className="text-[14px] font-[900] text-[#1A1A2E]">Scene {sceneIndex + 1}</span>
+                <span className="text-[14px] font-[900] text-[var(--editor-text)]">Scene {sceneIndex + 1}</span>
                 {generationLocked ? (
                   <span title={generationLockReason} aria-label="Locked">
-                    <Lock className="h-[13px] w-[13px] text-[#61708A]" />
+                    <Lock className="h-[13px] w-[13px] text-[var(--editor-muted)]" />
                   </span>
                 ) : null}
-                <span className="rounded-full border border-[#D8E2EE] bg-white px-[7px] py-[2px] font-mono text-[11px] font-[800] text-[#61708A]">
+                <span className="rounded-full border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[7px] py-[2px] font-mono text-[11px] font-[800] text-[var(--editor-muted)]">
                   {formatMs(segmentStartMs)} - {formatMs(segmentEndMs)}
                 </span>
-                <span className="text-[11px] font-[800] text-[#8A94A6]">
+                <span className="text-[11px] font-[800] text-[var(--editor-subtle)]">
                   {visibleWords.length} {visibleWords.length === 1 ? "word" : "words"}
                 </span>
               </div>
-              <p className="mt-[6px] max-h-[40px] overflow-hidden text-[12px] font-[700] leading-5 text-[#4E6384]">
+              <p className="mt-[6px] max-h-[40px] overflow-hidden text-[12px] font-[700] leading-5 text-[var(--editor-muted)]">
                 {sceneText || "No recognized words in this scene yet."}
               </p>
             </div>
@@ -180,7 +180,7 @@ export function LyricsPanel() {
                 }}
                 disabled={!previousScene}
                 aria-label="Previous scene"
-                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-35"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <StepBack className="h-[14px] w-[14px]" />
               </button>
@@ -192,7 +192,7 @@ export function LyricsPanel() {
                 }}
                 disabled={!nextScene}
                 aria-label="Next scene"
-                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-35"
+                className="flex h-[30px] w-[30px] items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <StepForward className="h-[14px] w-[14px]" />
               </button>
@@ -205,7 +205,7 @@ export function LyricsPanel() {
               onClick={saveLyrics}
               disabled={!canSaveLyrics}
               title={generationLocked ? generationLockReason : undefined}
-              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Save className="h-[14px] w-[14px]" />
               Save
@@ -215,7 +215,7 @@ export function LyricsPanel() {
               onClick={saveAndNext}
               disabled={!canSaveLyrics || !nextScene}
               title={generationLocked ? generationLockReason : undefined}
-              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] bg-[#1A1A2E] px-[10px] text-[12px] font-[800] text-white hover:bg-[#2D2D44] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] bg-[var(--editor-text)] px-[10px] text-[12px] font-[800] text-[var(--editor-bg)] hover:bg-[var(--editor-muted)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Save &amp; Next
               <StepForward className="h-[14px] w-[14px]" />
@@ -229,7 +229,7 @@ export function LyricsPanel() {
             onClick={saveLyrics}
             disabled={!canSaveLyrics}
             title={generationLocked ? generationLockReason : undefined}
-            className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[10px] text-[12px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-[32px] items-center gap-[7px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Save className="h-[14px] w-[14px]" />
             Save
@@ -238,15 +238,15 @@ export function LyricsPanel() {
       )}
 
       {lyricsProcessing ? (
-        <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[8px] border border-dashed border-[#E8E8E8] bg-[#FAFAFA] px-8 text-center">
-          <Loader2 className="mb-3 size-8 animate-spin text-[#F5A623]" />
-          <p className="text-[14px] font-[800] text-[#1A1A2E]">Preparing lyrics</p>
-          <p className="mt-2 max-w-sm text-[13px] font-[500] leading-6 text-[#667085]">
+        <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[8px] border border-dashed border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-8 text-center">
+          <Loader2 className="mb-3 size-8 animate-spin text-[var(--editor-accent)]" />
+          <p className="text-[14px] font-[800] text-[var(--editor-text)]">Preparing lyrics</p>
+          <p className="mt-2 max-w-sm text-[13px] font-[500] leading-6 text-[var(--editor-muted)]">
             The selected audio clip is being trimmed and transcribed.
           </p>
         </div>
       ) : lyricsFailed ? (
-        <div className="rounded-[8px] border border-red-200 bg-red-50 p-[14px] text-red-700">
+        <div className="rounded-[8px] border border-[var(--editor-danger)] bg-[var(--editor-danger-soft)] p-[14px] text-[var(--editor-danger)]">
           <div className="flex items-center gap-[8px] text-[13px] font-[800]">
             <AlertCircle className="h-[15px] w-[15px]" />
             Lyrics generation failed
@@ -254,10 +254,10 @@ export function LyricsPanel() {
           <p className="mt-[8px] text-[12px] font-[600] leading-5">{project?.pipelineError || "Please try uploading the clip again."}</p>
         </div>
       ) : lines.length === 0 ? (
-        <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[8px] border border-dashed border-[#E8E8E8] bg-[#FAFAFA] px-8 text-center">
-          <FileText className="mb-3 size-8 text-[#F5A623]" />
-          <p className="text-[14px] font-[800] text-[#1A1A2E]">No lyrics yet</p>
-          <p className="mt-2 max-w-sm text-[13px] font-[500] leading-6 text-[#667085]">
+        <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[8px] border border-dashed border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-8 text-center">
+          <FileText className="mb-3 size-8 text-[var(--editor-accent)]" />
+          <p className="text-[14px] font-[800] text-[var(--editor-text)]">No lyrics yet</p>
+          <p className="mt-2 max-w-sm text-[13px] font-[500] leading-6 text-[var(--editor-muted)]">
             Upload an audio clip first, then ElevenLabs will generate timed lyrics here.
           </p>
         </div>
@@ -278,7 +278,7 @@ export function LyricsPanel() {
           />
 
           <div className="mx-auto w-full max-w-[560px]">
-            <div className="grid grid-cols-[minmax(132px,1fr)_142px_142px_36px] gap-[8px] px-[2px] pb-[8px] text-[12px] font-[800] text-[#405372] max-[560px]:grid-cols-[minmax(116px,1fr)_112px_112px_34px]">
+            <div className="grid grid-cols-[minmax(132px,1fr)_142px_142px_36px] gap-[8px] px-[2px] pb-[8px] text-[12px] font-[800] text-[var(--editor-muted)] max-[560px]:grid-cols-[minmax(116px,1fr)_112px_112px_34px]">
               <span>Word</span>
               <span>Start Frame</span>
               <span>End Frame</span>
@@ -295,8 +295,8 @@ export function LyricsPanel() {
                   onClick={() => setCurrentTime(msToSeconds(word.startMs))}
                   className={cn(
                     "grid grid-cols-[minmax(132px,1fr)_142px_142px_36px] items-center gap-[8px] rounded-[6px] outline-none max-[560px]:grid-cols-[minmax(116px,1fr)_112px_112px_34px]",
-                    active ? "bg-[#FFF8EB]" : "hover:bg-[#F8F9FA]",
-                    invalid ? "border-red-300 bg-red-50" : "",
+                    active ? "bg-[var(--editor-accent-soft)]" : "hover:bg-[var(--editor-bg)]",
+                    invalid ? "border-[var(--editor-danger)] bg-[var(--editor-danger-soft)]" : "",
                   )}
                 >
                   <input
@@ -307,9 +307,9 @@ export function LyricsPanel() {
                     title={generationLocked ? generationLockReason : undefined}
                     aria-label={`${word.word || "word"} text`}
                     className={cn(
-                      "h-[36px] min-w-0 rounded-[5px] border bg-white px-[10px] text-[13px] font-[700] text-[#26364E] outline-none focus:border-[#F5A623] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]",
-                      active ? "border-[#F5A623]" : "border-[#CAD3DF]",
-                      invalid ? "border-red-300" : "",
+                      "h-[36px] min-w-0 rounded-[5px] border bg-[var(--editor-panel)] px-[10px] text-[13px] font-[700] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]",
+                      active ? "border-[var(--editor-accent)]" : "border-[var(--editor-line)]",
+                      invalid ? "border-[var(--editor-danger)]" : "",
                     )}
                   />
                   <WordFrameStepper
@@ -343,19 +343,19 @@ export function LyricsPanel() {
                       disabled={generationLocked}
                       title={generationLocked ? generationLockReason : undefined}
                       aria-label={`${word.word || "word"} actions`}
-                      className="flex h-[36px] w-[34px] items-center justify-center rounded-[5px] border border-[#CAD3DF] bg-white text-[#61708A] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="flex h-[36px] w-[34px] items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       <MoreVertical className="h-[15px] w-[15px]" />
                     </button>
                     {openWordMenuId === word.id ? (
                       <div
-                        className="absolute right-0 top-[40px] z-20 w-[112px] rounded-[6px] border border-[#DDE5EF] bg-white p-[4px] shadow-[0_8px_20px_rgba(15,23,42,0.12)]"
+                        className="absolute right-0 top-[40px] z-20 w-[112px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] p-[4px] shadow-[0_8px_20px_rgba(15,23,42,0.12)]"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <button
                           type="button"
                           onClick={() => deleteWord(word.id)}
-                          className="flex h-[30px] w-full items-center rounded-[4px] px-[8px] text-left text-[12px] font-[800] text-red-600 hover:bg-red-50"
+                          className="flex h-[30px] w-full items-center rounded-[4px] px-[8px] text-left text-[12px] font-[800] text-[var(--editor-danger)] hover:bg-[var(--editor-danger-soft)]"
                         >
                           Delete word
                         </button>
@@ -368,25 +368,25 @@ export function LyricsPanel() {
             </div>
 
             {visibleWords.length === 0 ? (
-              <div className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px] text-center text-[13px] font-[700] leading-6 text-[#667085]">
+              <div className="rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[14px] text-center text-[13px] font-[700] leading-6 text-[var(--editor-muted)]">
                 No words in this scene yet. Add a word to start timing this section.
               </div>
             ) : null}
           </div>
 
           {invalidSceneWords.length > 0 ? (
-            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-red-200 bg-red-50 px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-red-700">
+            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-[var(--editor-danger)] bg-[var(--editor-danger-soft)] px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-[var(--editor-danger)]">
               Fix empty words and frame ranges in this scene before saving.
             </p>
           ) : null}
           {invalidSceneWords.length === 0 && invalidHiddenWords > 0 ? (
-            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-amber-200 bg-amber-50 px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-amber-800">
+            <p className="mx-auto w-full max-w-[560px] rounded-[6px] border border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] px-[10px] py-[8px] text-[12px] font-[700] leading-5 text-[var(--editor-text)]">
               {invalidHiddenWords} issue{invalidHiddenWords === 1 ? "" : "s"} in other scenes will not block this scene.
             </p>
           ) : null}
         </>
       ) : lines.length > 0 && !lyricsProcessing ? (
-        <div className="rounded-[8px] border border-[#E8E8E8] bg-[#FAFAFA] p-[14px] text-[13px] font-[600] leading-6 text-[#667085]">
+        <div className="rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[14px] text-[13px] font-[600] leading-6 text-[var(--editor-muted)]">
           This project has line-level lyrics only. Add a word to start frame-level timing.
         </div>
       ) : null}
@@ -396,7 +396,7 @@ export function LyricsPanel() {
         onClick={addWord}
         disabled={generationLocked || lines.length === 0 || maxFrame <= 1}
         title={generationLocked ? generationLockReason : undefined}
-        className="mx-auto inline-flex h-[34px] items-center gap-[7px] rounded-[6px] border border-[#CAD3DF] bg-white px-[12px] text-[13px] font-[800] text-[#334155] hover:bg-[#F8F9FA] disabled:cursor-not-allowed disabled:opacity-50"
+        className="mx-auto inline-flex h-[34px] items-center gap-[7px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[12px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Plus className="h-[14px] w-[14px]" />
         Add word
@@ -457,24 +457,24 @@ function LyricsMiniWaveform({
   }
 
   return (
-    <div className="rounded-[6px] border border-[#DDE5EF] bg-white p-[8px]">
+    <div className="rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] p-[8px]">
       <div className="flex items-stretch gap-[8px]">
         <button
           type="button"
           onClick={() => (isPlaying ? onPause() : onPlayScene())}
           aria-label={isPlaying ? "Pause lyrics" : "Play lyrics"}
-          className="flex h-[54px] w-[42px] shrink-0 items-center justify-center rounded-[6px] border border-[#D8E2EE] bg-white text-[#405372] hover:bg-[#F8F9FA]"
+          className="flex h-[54px] w-[42px] shrink-0 items-center justify-center rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)]"
         >
           {isPlaying ? <Pause className="h-[20px] w-[20px]" /> : <Play className="h-[20px] w-[20px]" />}
         </button>
         <div
           ref={trackRef}
-          className="relative h-[54px] flex-1 touch-none overflow-hidden rounded-[5px] border border-[#D8E2EE] bg-[#F4F8FF]"
+          className="relative h-[54px] flex-1 touch-none overflow-hidden rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)]"
           onPointerDown={handlePointerDown}
         >
           <div className="absolute inset-x-0 top-1/2 flex h-[42px] -translate-y-1/2 items-center gap-[2px] px-[2px]">
             {bars.map((height, index) => (
-              <span key={index} className="flex-1 rounded-full bg-[#69A9FF]" style={{ height: `${height}%` }} />
+              <span key={index} className="flex-1 rounded-full bg-[var(--editor-accent)]" style={{ height: `${height}%` }} />
             ))}
           </div>
 
@@ -491,8 +491,8 @@ function LyricsMiniWaveform({
                   setCurrentTime(msToSeconds(word.startMs));
                 }}
                 className={cn(
-                  "absolute top-[4px] h-[46px] overflow-hidden rounded-[4px] border px-[6px] text-left text-[12px] font-[800] leading-[46px] text-[#37506F] outline-none",
-                  active ? "border-[#F5A623] bg-[#E6F1FF]/95 text-[#1F3350]" : "border-[#74ADF3] bg-[#BFD9FF]/72 hover:bg-[#D9E9FF]",
+                  "absolute top-[4px] h-[46px] overflow-hidden rounded-[4px] border px-[6px] text-left text-[12px] font-[800] leading-[46px] text-[var(--editor-muted)] outline-none",
+                  active ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)]/95 text-[var(--editor-text)]" : "border-[var(--editor-line)] bg-[var(--editor-panel-strong)]/72 hover:bg-[var(--editor-panel-strong)]",
                 )}
                 style={{ left: `${left}%`, width: `${Math.max(5, right - left)}%` }}
               >
@@ -501,13 +501,13 @@ function LyricsMiniWaveform({
             );
           })}
 
-          <div className="absolute bottom-0 top-0 z-10 w-[2px] bg-[#FF4757]" style={{ left: `${playheadPct}%` }}>
-            <span className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#FF4757]" />
+          <div className="absolute bottom-0 top-0 z-10 w-[2px] bg-[var(--editor-danger)]" style={{ left: `${playheadPct}%` }}>
+            <span className="absolute left-1/2 top-0 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[9px] border-x-transparent border-t-[var(--editor-danger)]" />
           </div>
         </div>
       </div>
 
-      <div className="ml-[50px] mt-[6px] flex justify-between font-mono text-[11px] font-[700] text-[#61708A]">
+      <div className="ml-[50px] mt-[6px] flex justify-between font-mono text-[11px] font-[700] text-[var(--editor-muted)]">
         {ticks.map((tick) => (
           <span key={tick}>{formatClock((durationMs * tick) / 1000, true)}</span>
         ))}
@@ -536,7 +536,7 @@ function WordFrameStepper({
   value: number;
 }) {
   return (
-    <div className="flex h-[36px] min-w-0 overflow-hidden rounded-[5px] border border-[#CAD3DF] bg-white">
+    <div className="flex h-[36px] min-w-0 overflow-hidden rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)]">
       <button
         type="button"
         onClick={(event) => {
@@ -546,7 +546,7 @@ function WordFrameStepper({
         disabled={disabled || value <= min}
         title={disabled ? disabledReason : undefined}
         aria-label={`${label} decrease`}
-        className="flex w-[30px] shrink-0 items-center justify-center border-r border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
+        className="flex w-[30px] shrink-0 items-center justify-center border-r border-[var(--editor-line)] text-[var(--editor-subtle)] hover:bg-[var(--editor-bg)] disabled:opacity-35"
       >
         <StepBack className="h-[14px] w-[14px]" />
       </button>
@@ -560,7 +560,7 @@ function WordFrameStepper({
         disabled={disabled}
         title={disabled ? disabledReason : undefined}
         aria-label={label}
-        className="h-full min-w-0 flex-1 border-0 bg-white px-[8px] font-mono text-[13px] font-[800] text-[#26364E] outline-none focus:bg-[#FFF8EB] disabled:cursor-not-allowed disabled:bg-[#EEF3F8] disabled:text-[#61708A]"
+        className="h-full min-w-0 flex-1 border-0 bg-[var(--editor-panel)] px-[8px] font-mono text-[13px] font-[800] text-[var(--editor-text)] outline-none focus:bg-[var(--editor-accent-soft)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
       />
       <button
         type="button"
@@ -571,7 +571,7 @@ function WordFrameStepper({
         disabled={disabled || value >= max}
         title={disabled ? disabledReason : undefined}
         aria-label={`${label} increase`}
-        className="flex w-[30px] shrink-0 items-center justify-center border-l border-[#DDE5EF] text-[#8AA0BC] hover:bg-[#F8F9FA] disabled:opacity-35"
+        className="flex w-[30px] shrink-0 items-center justify-center border-l border-[var(--editor-line)] text-[var(--editor-subtle)] hover:bg-[var(--editor-bg)] disabled:opacity-35"
       >
         <StepForward className="h-[14px] w-[14px]" />
       </button>

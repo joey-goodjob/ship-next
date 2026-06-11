@@ -11,7 +11,7 @@ async function getUserId() {
 }
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = await getUserId();
@@ -19,11 +19,17 @@ export async function POST(
 
   const startedAt = Date.now();
   const { id } = await params;
+  let feedback: string | undefined;
   try {
-    logLyricStage('story-prompt', 'route-start', { userId, projectId: id });
+    const body = await req.json().catch(() => ({}));
+    feedback = typeof body.feedback === 'string' ? body.feedback.trim() : undefined;
+  } catch { /* empty body is fine */ }
+  try {
+    logLyricStage('story-prompt', 'route-start', { userId, projectId: id, feedback });
     const data = await service.generateStoryPrompt({
       userId,
       projectId: id,
+      feedback: feedback || undefined,
     });
     logLyricStage('story-prompt', 'route-success', {
       durationMs: Date.now() - startedAt,

@@ -91,6 +91,16 @@ export const testSpecs: Record<string, TestSpec> = {
       { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '2K' },
     ],
   },
+  wavespeed: {
+    group: 'wavespeed',
+    fields: [
+      { name: 'prompt', label: 'Prompt', type: 'textarea', defaultValue: 'cinematic lyric video still, musician under stage lights, no text', required: true },
+      { name: 'aspect_ratio', label: 'Aspect ratio', type: 'text', defaultValue: '16:9' },
+      { name: 'resolution', label: 'Resolution', type: 'text', defaultValue: '1k' },
+      { name: 'quality', label: 'Quality', type: 'text', defaultValue: 'medium' },
+      { name: 'output_format', label: 'Output format', type: 'text', defaultValue: 'png' },
+    ],
+  },
   groq: {
     group: 'groq',
     fields: [

@@ -69,6 +69,7 @@ export function getSettingGroups(): SettingGroup[] {
     // AI
     { name: 'replicate', title: 'Replicate', description: 'Replicate AI API', tab: 'ai' },
     { name: 'kie', title: 'Kie / Kling', description: 'Kie AI image, video, and Gemini chat API', tab: 'ai' },
+    { name: 'wavespeed', title: 'WaveSpeed', description: 'WaveSpeed GPT Image 2 API', tab: 'ai' },
     { name: 'elevenlabs', title: 'ElevenLabs / Speech to Text', description: 'ElevenLabs Scribe speech-to-text API', tab: 'ai' },
     { name: 'groq', title: 'Groq / Whisper', description: 'Groq speech-to-text transcription API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
@@ -200,6 +201,20 @@ export function getSettings(): Setting[] {
     { name: 'kie_codex_model', title: 'Codex Model', type: 'text', placeholder: 'gpt-5-5', group: 'kie', tab: 'ai' },
     { name: 'kie_image_model', title: 'Image Model', type: 'text', placeholder: 'z-image', group: 'kie', tab: 'ai' },
     { name: 'kie_character_image_model', title: 'Character Image Model', type: 'text', placeholder: 'nano-banana-2', group: 'kie', tab: 'ai' },
+
+    // ─── AI / WaveSpeed ──────────────────────────────────────────────
+    { name: 'wavespeed_api_key', title: 'API Key', type: 'password', placeholder: 'ws_xxx', group: 'wavespeed', tab: 'ai' },
+    { name: 'wavespeed_base_url', title: 'Base URL', type: 'text', placeholder: 'https://api.wavespeed.ai/api/v3', group: 'wavespeed', tab: 'ai' },
+    { name: 'wavespeed_image_model', title: 'Image Model', type: 'text', placeholder: 'openai/gpt-image-2/text-to-image', group: 'wavespeed', tab: 'ai' },
+    { name: 'wavespeed_image_quality', title: 'Image Quality', type: 'text', placeholder: 'medium', group: 'wavespeed', tab: 'ai' },
+    {
+      name: 'lyric_video_image_provider', title: 'Lyric Video Image Provider', type: 'select',
+      options: [
+        { label: 'Kie', value: 'kie' },
+        { label: 'WaveSpeed', value: 'wavespeed' },
+      ],
+      group: 'wavespeed', tab: 'ai', defaultValue: 'kie',
+    },
 
     // ─── AI / ElevenLabs ─────────────────────────────────────────────
     { name: 'elevenlabs_api_key', title: 'API Key', type: 'password', placeholder: 'sk_xxx', group: 'elevenlabs', tab: 'ai' },

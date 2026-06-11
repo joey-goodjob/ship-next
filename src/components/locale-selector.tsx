@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/core/i18n/navigation";
 import { localeNames, locales } from "@/config/locale";
-import { Languages, Check, Globe, ChevronDown } from "lucide-react";
+import { Check, Globe, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,7 +40,7 @@ export function LocaleSelector({
       >
         {variant === "icon" ? (
           <>
-            <Languages className="size-4" />
+            <Globe className="size-5" />
             <span className="sr-only">Switch language</span>
           </>
         ) : (

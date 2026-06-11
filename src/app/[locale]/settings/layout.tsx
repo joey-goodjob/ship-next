@@ -2,8 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { LayoutDashboard, User, CreditCard, Key, Receipt, Coins, Home } from "lucide-react";
-import { envConfigs } from "@/config";
 import { AppLayout } from "@/components/app-layout";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function SettingsLayout({
   children,
@@ -27,7 +27,12 @@ export default function SettingsLayout({
   ];
 
   return (
-    <AppLayout navItems={navItems} footerNavItems={footerNavItems} brand={envConfigs.app_name} brandHref="/settings">
+    <AppLayout
+      navItems={navItems}
+      footerNavItems={footerNavItems}
+      brand={<BrandLogo variant="sidebar" showName />}
+      brandHref="/settings"
+    >
       {children}
     </AppLayout>
   );

@@ -8,6 +8,7 @@ import sharp from 'sharp';
 import { asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, titleFromFilename } from './asr';
 import { fetchBytes, runLibrosaAnalysisForLocalFile, saveAIProviderFiles, saveLocalPublicFile } from './audio';
 import { parseJsonField } from './json';
+import { GRID_SCENE_IMAGE_RESOLUTION, GRID_SCENE_IMAGE_SIZE } from './media-generation';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm } from './storyboard';
 import {
   type AudioAnalysisResult,
@@ -59,16 +60,31 @@ export function normalizeDebugImageScenes(params: {
 
 export function buildStoryboardGridImagePrompt(
   scenes: ReturnType<typeof normalizeDebugImageScenes>,
-  gridSize = 5,
-  aspectRatio = '16:9'
+  gridSize = GRID_SCENE_IMAGE_SIZE,
+  aspectRatio = '16:9',
+  resolution = GRID_SCENE_IMAGE_RESOLUTION
 ) {
-  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(gridSize) || 5)));
+  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(gridSize) || GRID_SCENE_IMAGE_SIZE)));
   const totalPanels = normalizedGridSize * normalizedGridSize;
   const normalizedAspectRatio = aspectRatio === '9:16' ? '9:16' : '16:9';
+  const normalizedResolution = String(resolution || GRID_SCENE_IMAGE_RESOLUTION).trim().toUpperCase();
+  const baseLandscapeWidth = normalizedResolution === '1K' ? 1024 : normalizedResolution === '4K' ? 3840 : 2048;
+  const baseLandscapeHeight = normalizedResolution === '1K' ? 576 : normalizedResolution === '4K' ? 2160 : 1152;
+  const sourceWidth = normalizedAspectRatio === '9:16' ? baseLandscapeHeight : baseLandscapeWidth;
+  const sourceHeight = normalizedAspectRatio === '9:16' ? baseLandscapeWidth : baseLandscapeHeight;
+  const panelWidth = Math.round(sourceWidth / normalizedGridSize);
+  const panelHeight = Math.round(sourceHeight / normalizedGridSize);
   const frameOrientation = normalizedAspectRatio === '9:16' ? 'vertical portrait' : 'landscape';
   const expectedPanel = normalizedAspectRatio === '9:16'
-    ? 'Each panel must be a 9:16 vertical frame, approximately 540x960 when cropped from a 4K 4x4 grid.'
-    : 'Each panel must be a 16:9 landscape frame, approximately 960x540 when cropped from a 4K 4x4 grid.';
+    ? `Each panel must be a 9:16 vertical portrait frame, approximately ${panelWidth}x${panelHeight} when cropped from a ${normalizedResolution} ${normalizedGridSize}x${normalizedGridSize} grid.`
+    : `Each panel must be a 16:9 landscape frame, approximately ${panelWidth}x${panelHeight} when cropped from a ${normalizedResolution} ${normalizedGridSize}x${normalizedGridSize} grid.`;
+  const layoutRules = [
+    `The final image canvas itself must be ${normalizedAspectRatio}.`,
+    `Divide the canvas into exactly ${normalizedGridSize} columns and exactly ${normalizedGridSize} rows: ${totalPanels} equal rectangular cells.`,
+    `Draw thin straight black divider lines at every 1/${normalizedGridSize} grid boundary so the ${normalizedGridSize}x${normalizedGridSize} layout is visually unambiguous.`,
+    'Do not create a collage, masonry layout, contact sheet, stacked strips, overlapping frames, variable-size panels, 2-column layout, 4-column layout, or any layout other than the requested square grid.',
+    'Do not crop, merge, rotate, or resize individual cells differently. All cell edges must align perfectly.',
+  ];
   const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
   const panels = scenes.map((scene, index) => ({
     panel: index + 1,
@@ -81,7 +97,8 @@ export function buildStoryboardGridImagePrompt(
   const panelLines = panels.map((panel) => `Panel ${panel.panel}: ${panel.image_prompt}`);
   const compiledPrompt = [
     globalStyle,
-    `Create one exact ${normalizedGridSize}x${normalizedGridSize} storyboard grid, ${totalPanels} equal panels, no gaps, no borders, no labels.`,
+    `Create one exact ${normalizedGridSize}x${normalizedGridSize} storyboard grid, ${totalPanels} equal panels, no labels.`,
+    ...layoutRules,
     expectedPanel,
     `Panels are ordered left to right, top to bottom. Every panel is a ${frameOrientation} ${normalizedAspectRatio} frame. Empty unused panels must be pure white blank panels with no content.`,
     '',
@@ -92,6 +109,7 @@ export function buildStoryboardGridImagePrompt(
     compiledPrompt,
     gridSize: normalizedGridSize,
     aspectRatio: normalizedAspectRatio,
+    resolution: normalizedResolution,
     totalPanels,
     panelCount: panels.length,
     panels,
@@ -120,7 +138,7 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
     throw new Error('scenes is required for debug image generation');
   }
 
-  const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || 5))));
+  const gridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE)));
   const batchSize = gridSize * gridSize;
   const scenes = normalizeDebugImageScenes({
     scenes: params.scenes,
@@ -134,7 +152,7 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   const configs = await getAllConfigs();
   const model = resolveKieImageModel(configs, params.model);
   const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
-  const resolution = params.resolution || '4K';
+  const resolution = params.resolution || GRID_SCENE_IMAGE_RESOLUTION;
   const provider = await createKieImageProviderForDebug();
   const sceneBatches = [];
   for (let start = 0; start < scenes.length; start += batchSize) {
@@ -147,7 +165,7 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   const allPanels = [];
   for (const [batchIndex, batchScenes] of sceneBatches.entries()) {
     const sceneOffset = batchIndex * batchSize;
-    const gridPrompt = buildStoryboardGridImagePrompt(batchScenes, gridSize, aspectRatio);
+    const gridPrompt = buildStoryboardGridImagePrompt(batchScenes, gridSize, aspectRatio, resolution);
     const panels = gridPrompt.panels.map((panel) => ({
       ...panel,
       batchIndex,
@@ -315,7 +333,7 @@ export async function splitStoryboardGridImageForDebug(params: {
     throw new Error('taskIds is required for debug image split');
   }
 
-  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || 4) || 4)));
+  const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(params.gridSize || GRID_SCENE_IMAGE_SIZE) || GRID_SCENE_IMAGE_SIZE)));
   const totalPanels = normalizedGridSize * normalizedGridSize;
   const aspectRatio = params.aspectRatio === '9:16' ? '9:16' : '16:9';
   const fixtureKey = sanitizeDebugPathPart(params.fixtureKey);

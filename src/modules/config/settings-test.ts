@@ -23,6 +23,7 @@ import { ReplicateProvider } from '@/core/ai/replicate';
 import { GeminiProvider } from '@/core/ai/gemini';
 import { FalProvider } from '@/core/ai/fal';
 import { KieProvider } from '@/core/ai/kie';
+import { WaveSpeedProvider, WAVESPEED_GPT_IMAGE_2_MODEL } from '@/core/ai/wavespeed';
 import { GroqProvider } from '@/core/ai/groq';
 import { ElevenLabsProvider } from '@/core/ai/elevenlabs';
 import { AIMediaType } from '@/core/ai/types';
@@ -58,6 +59,8 @@ export async function runTest(
         return await testReplicate(inputs, configs);
       case 'kie':
         return await testKie(inputs, configs);
+      case 'wavespeed':
+        return await testWaveSpeed(inputs, configs);
       case 'groq':
         return await testGroq(inputs, configs);
       case 'elevenlabs':
@@ -412,6 +415,35 @@ async function testKie(inputs: Record<string, string>, configs: Record<string, s
   return {
     success: true,
     message: 'Kie accepted the request',
+    details: { 'Task ID': result.taskId, Status: result.taskStatus },
+  };
+}
+
+async function testWaveSpeed(inputs: Record<string, string>, configs: Record<string, string>): Promise<TestResult> {
+  const missing = need(configs, ['wavespeed_api_key']);
+  if (missing) return { success: false, message: missing };
+
+  const provider = new WaveSpeedProvider({
+    apiKey: configs.wavespeed_api_key,
+    baseUrl: configs.wavespeed_base_url,
+    imageModel: configs.wavespeed_image_model || WAVESPEED_GPT_IMAGE_2_MODEL,
+  });
+  const result = await provider.generate({
+    params: {
+      mediaType: AIMediaType.IMAGE,
+      model: configs.wavespeed_image_model || WAVESPEED_GPT_IMAGE_2_MODEL,
+      prompt: inputs.prompt,
+      options: {
+        aspect_ratio: inputs.aspect_ratio || '16:9',
+        resolution: inputs.resolution || '1k',
+        quality: inputs.quality || configs.wavespeed_image_quality || 'medium',
+        output_format: inputs.output_format || 'png',
+      },
+    },
+  });
+  return {
+    success: true,
+    message: 'WaveSpeed accepted the request',
     details: { 'Task ID': result.taskId, Status: result.taskStatus },
   };
 }

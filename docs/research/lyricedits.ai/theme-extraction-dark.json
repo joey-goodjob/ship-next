@@ -1,0 +1,1660 @@
+{
+  "bodyClass": "",
+  "colorSummary": [
+    {
+      "color": "rgb(255, 255, 255)",
+      "sources": [
+        "color",
+        "border",
+        "backgroundColor"
+      ]
+    },
+    {
+      "color": "rgb(9, 9, 11)",
+      "sources": [
+        "backgroundColor",
+        "color"
+      ]
+    },
+    {
+      "color": "rgb(229, 231, 235)",
+      "sources": [
+        "border"
+      ]
+    },
+    {
+      "color": "none",
+      "sources": [
+        "shadow"
+      ]
+    },
+    {
+      "color": "rgb(161, 161, 170)",
+      "sources": [
+        "color"
+      ]
+    },
+    {
+      "color": "rgb(212, 212, 216)",
+      "sources": [
+        "color"
+      ]
+    },
+    {
+      "color": "rgb(39, 39, 42)",
+      "sources": [
+        "backgroundColor",
+        "border"
+      ]
+    },
+    {
+      "color": "rgb(24, 24, 27)",
+      "sources": [
+        "color",
+        "backgroundColor"
+      ]
+    },
+    {
+      "color": "rgb(251, 191, 36)",
+      "sources": [
+        "backgroundColor",
+        "border"
+      ]
+    },
+    {
+      "color": "color(srgb 0.984314 0.74902 0.141176)",
+      "sources": [
+        "color"
+      ]
+    },
+    {
+      "color": "rgb(63, 63, 70)",
+      "sources": [
+        "border"
+      ]
+    },
+    {
+      "color": "rgb(0, 0, 0)",
+      "sources": [
+        "color",
+        "backgroundColor"
+      ]
+    },
+    {
+      "color": "color(srgb 0.247059 0.247059 0.27451 / 0.7)",
+      "sources": [
+        "border"
+      ]
+    },
+    {
+      "color": "color(srgb 1 1 1)",
+      "sources": [
+        "backgroundColor"
+      ]
+    },
+    {
+      "color": "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "sources": [
+        "shadow"
+      ]
+    },
+    {
+      "color": "rgb(235, 243, 246)",
+      "sources": [
+        "color",
+        "border"
+      ]
+    },
+    {
+      "color": "rgb(22, 26, 28)",
+      "sources": [
+        "backgroundColor",
+        "color",
+        "border"
+      ]
+    },
+    {
+      "color": "rgba(0, 0, 2, 0.3) 0px 10px 30px 0px",
+      "sources": [
+        "shadow"
+      ]
+    },
+    {
+      "color": "rgb(174, 187, 197)",
+      "sources": [
+        "color",
+        "border"
+      ]
+    },
+    {
+      "color": "rgb(34, 42, 48)",
+      "sources": [
+        "border"
+      ]
+    },
+    {
+      "color": "rgb(244, 244, 245)",
+      "sources": [
+        "backgroundColor",
+        "border"
+      ]
+    }
+  ],
+  "fonts": [
+    "SUSE, sans-serif",
+    "primeicons",
+    "\"Playwrite CU\", cursive",
+    "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\""
+  ],
+  "htmlClass": "show--consent dark cc--darkmode",
+  "prefersDark": false,
+  "rootVars": {
+    "--cc-btn-primary-hover-bg": "#98a7b6",
+    "--cc-btn-primary-hover-border-color": "#98a7b6",
+    "--cc-btn-secondary-border-color": "#242c31",
+    "--cc-btn-secondary-hover-bg": "#353d43",
+    "--cc-cookie-category-block-hover-bg": "#242c31",
+    "--cc-font-family": "-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\",\"Segoe UI Symbol\"",
+    "--cc-link-color": "#c2d0e0",
+    "--cc-modal-border-radius": ".5rem",
+    "--cc-modal-margin": "1rem",
+    "--cc-modal-transition-duration": ".25s",
+    "--cc-toggle-off-knob-bg": "#161a1c",
+    "--cc-toggle-on-knob-bg": "#161a1c",
+    "--p-accordion-content-border-width": "0",
+    "--p-accordion-header-background": "#18181b",
+    "--p-accordion-header-color": "#a1a1aa",
+    "--p-accordion-header-first-border-width": "0",
+    "--p-accordion-header-hover-background": "#18181b",
+    "--p-accordion-header-hover-color": "#ffffff",
+    "--p-accordion-header-last-active-bottom-border-radius": "0",
+    "--p-amber-300": "#fcd34d",
+    "--p-amber-400": "#fbbf24",
+    "--p-amber-600": "#d97706",
+    "--p-amber-700": "#b45309",
+    "--p-anchor-gutter": "2px",
+    "--p-blue-100": "#dbeafe",
+    "--p-blue-500": "#3b82f6",
+    "--p-blue-600": "#2563eb",
+    "--p-border-radius-md": "6px",
+    "--p-border-radius-xl": "12px",
+    "--p-border-radius-xs": "2px",
+    "--p-button-badge-size": "1rem",
+    "--p-button-border-radius": "6px",
+    "--p-button-contrast-active-color": "#09090b",
+    "--p-button-contrast-color": "#09090b",
+    "--p-button-contrast-hover-border-color": "#f4f4f5",
+    "--p-button-danger-border-color": "#f87171",
+    "--p-button-danger-color": "#450a0a",
+    "--p-button-danger-focus-ring-color": "#f87171",
+    "--p-button-danger-hover-background": "#fca5a5",
+    "--p-button-gap": "0.5rem",
+    "--p-button-help-active-background": "#e9d5ff",
+    "--p-button-help-active-border-color": "#e9d5ff",
+    "--p-button-help-active-color": "#3b0764",
+    "--p-button-help-color": "#3b0764",
+    "--p-button-help-focus-ring-color": "#c084fc",
+    "--p-button-help-hover-color": "#3b0764",
+    "--p-button-info-active-color": "#082f49",
+    "--p-button-info-border-color": "#38bdf8",
+    "--p-button-info-hover-color": "#082f49",
+    "--p-button-label-font-weight": "500",
+    "--p-button-lg-font-size": "1.125rem",
+    "--p-button-lg-icon-only-width": "3rem",
+    "--p-button-lg-padding-x": "0.875rem",
+    "--p-button-link-active-color": "#fbbf24",
+    "--p-button-link-hover-color": "#fbbf24",
+    "--p-button-outlined-contrast-border-color": "#71717a",
+    "--p-button-outlined-danger-color": "#f87171",
+    "--p-button-outlined-danger-hover-background": "color-mix(in srgb,#f87171,transparent 96%)",
+    "--p-button-outlined-help-active-background": "color-mix(in srgb,#c084fc,transparent 84%)",
+    "--p-button-outlined-help-color": "#c084fc",
+    "--p-button-outlined-info-active-background": "color-mix(in srgb,#38bdf8,transparent 84%)",
+    "--p-button-outlined-plain-border-color": "#52525b",
+    "--p-button-outlined-plain-hover-background": "#27272a",
+    "--p-button-outlined-primary-color": "#fbbf24",
+    "--p-button-outlined-secondary-border-color": "#3f3f46",
+    "--p-button-outlined-secondary-hover-background": "rgba(255,255,255,0.04)",
+    "--p-button-padding-x": "0.75rem",
+    "--p-button-primary-border-color": "#fbbf24",
+    "--p-button-primary-hover-background": "#fcd34d",
+    "--p-button-primary-hover-border-color": "#fcd34d",
+    "--p-button-secondary-active-background": "#52525b",
+    "--p-button-success-focus-ring-shadow": "none",
+    "--p-button-success-hover-color": "#052e16",
+    "--p-button-text-contrast-hover-background": "#27272a",
+    "--p-button-text-info-color": "#38bdf8",
+    "--p-button-text-plain-hover-background": "#27272a",
+    "--p-button-text-primary-hover-background": "color-mix(in srgb,#fbbf24,transparent 96%)",
+    "--p-button-text-secondary-color": "#a1a1aa",
+    "--p-button-text-success-active-background": "color-mix(in srgb,#4ade80,transparent 84%)",
+    "--p-button-text-success-color": "#4ade80",
+    "--p-button-text-warn-color": "#fb923c",
+    "--p-button-text-warn-hover-background": "color-mix(in srgb,#fb923c,transparent 96%)",
+    "--p-button-warn-active-border-color": "#fed7aa",
+    "--p-button-warn-color": "#431407",
+    "--p-button-warn-focus-ring-color": "#fb923c",
+    "--p-card-body-gap": "0.5rem",
+    "--p-card-border-radius": "12px",
+    "--p-card-caption-gap": "0.5rem",
+    "--p-cyan-100": "#cffafe",
+    "--p-cyan-500": "#06b6d4",
+    "--p-divider-horizontal-content-padding": "0 0.5rem",
+    "--p-divider-horizontal-padding": "0 1rem",
+    "--p-drawer-background": "#18181b",
+    "--p-drawer-content-padding": "0 1.25rem 1.25rem 1.25rem",
+    "--p-drawer-footer-padding": "1.25rem",
+    "--p-emerald-600": "#059669",
+    "--p-fileupload-border-radius": "6px",
+    "--p-fileupload-content-gap": "1rem",
+    "--p-fileupload-content-highlight-border-color": "#fbbf24",
+    "--p-fileupload-file-info-gap": "0.5rem",
+    "--p-fileupload-header-border-color": "",
+    "--p-fileupload-header-color": "#ffffff",
+    "--p-fileupload-transition-duration": "0.2s",
+    "--p-focus-ring-width": "1px",
+    "--p-form-field-float-label-invalid-color": "#f87171",
+    "--p-form-field-focus-ring-shadow": "none",
+    "--p-form-field-lg-padding-x": "0.875rem",
+    "--p-form-field-padding-y": "0.5rem",
+    "--p-form-field-sm-padding-y": "0.375rem",
+    "--p-fuchsia-100": "#fae8ff",
+    "--p-fuchsia-200": "#f5d0fe",
+    "--p-fuchsia-700": "#a21caf",
+    "--p-gray-400": "#9ca3af",
+    "--p-gray-800": "#1f2937",
+    "--p-green-200": "#bbf7d0",
+    "--p-green-400": "#4ade80",
+    "--p-green-600": "#16a34a",
+    "--p-green-950": "#052e16",
+    "--p-highlight-color": "rgba(255,255,255,.87)",
+    "--p-indigo-600": "#4f46e5",
+    "--p-indigo-700": "#4338ca",
+    "--p-indigo-950": "#1e1b4b",
+    "--p-lime-800": "#3f6212",
+    "--p-lime-900": "#365314",
+    "--p-lime-950": "#1a2e05",
+    "--p-list-gap": "2px",
+    "--p-list-option-group-background": "transparent",
+    "--p-list-option-selected-focus-color": "rgba(255,255,255,.87)",
+    "--p-navigation-item-active-background": "#27272a",
+    "--p-navigation-item-border-radius": "4px",
+    "--p-navigation-list-gap": "2px",
+    "--p-navigation-submenu-label-padding": "0.5rem 0.75rem",
+    "--p-neutral-200": "#e5e5e5",
+    "--p-neutral-300": "#d4d4d4",
+    "--p-neutral-700": "#404040",
+    "--p-neutral-800": "#262626",
+    "--p-orange-50": "#fff7ed",
+    "--p-overlay-modal-border-radius": "12px",
+    "--p-overlay-modal-shadow": "0 20px 25px -5px rgba(0,0,0,0.1),0 8px 10px -6px rgba(0,0,0,0.1)",
+    "--p-overlay-select-background": "#18181b",
+    "--p-pink-300": "#f9a8d4",
+    "--p-pink-400": "#f472b6",
+    "--p-pink-700": "#be185d",
+    "--p-pink-800": "#9d174d",
+    "--p-pink-950": "#500724",
+    "--p-primary-300": "#fcd34d",
+    "--p-primary-800": "#92400e",
+    "--p-primary-950": "#451a03",
+    "--p-primary-contrast-color": "#18181b",
+    "--p-red-200": "#fecaca",
+    "--p-red-50": "#fef2f2",
+    "--p-red-600": "#dc2626",
+    "--p-red-800": "#991b1b",
+    "--p-rose-300": "#fda4af",
+    "--p-rose-500": "#f43f5e",
+    "--p-rose-600": "#e11d48",
+    "--p-rose-800": "#9f1239",
+    "--p-sky-100": "#e0f2fe",
+    "--p-sky-200": "#bae6fd",
+    "--p-sky-300": "#7dd3fc",
+    "--p-sky-400": "#38bdf8",
+    "--p-slate-300": "#cbd5e1",
+    "--p-slate-800": "#1e293b",
+    "--p-stone-400": "#a8a29e",
+    "--p-stone-50": "#fafaf9",
+    "--p-surface-100": "#f4f4f5",
+    "--p-surface-700": "#3f3f46",
+    "--p-surface-950": "#09090b",
+    "--p-teal-400": "#2dd4bf",
+    "--p-teal-700": "#0f766e",
+    "--p-teal-900": "#134e4a",
+    "--p-text-hover-color": "#ffffff",
+    "--p-text-muted-color": "#a1a1aa",
+    "--p-toast-blur": "10px",
+    "--p-toast-close-button-border-radius": "50%",
+    "--p-toast-close-button-width": "1.75rem",
+    "--p-toast-contrast-background": "#ffffff",
+    "--p-toast-error-background": "color-mix(in srgb,#ef4444,transparent 84%)",
+    "--p-toast-info-close-button-focus-ring-color": "#3b82f6",
+    "--p-toast-info-shadow": "0px 4px 8px 0px color-mix(in srgb,#3b82f6,transparent 96%)",
+    "--p-toast-secondary-close-button-hover-background": "#3f3f46",
+    "--p-toast-success-detail-color": "#ffffff",
+    "--p-toast-summary-font-size": "1rem",
+    "--p-toast-transition-duration": "0.2s",
+    "--p-toast-warn-color": "#eab308",
+    "--p-toast-width": "25rem",
+    "--p-tooltip-background": "#3f3f46",
+    "--p-tooltip-border-radius": "6px",
+    "--p-tooltip-max-width": "12.5rem",
+    "--p-violet-500": "#8b5cf6",
+    "--p-violet-700": "#6d28d9",
+    "--p-violet-900": "#4c1d95",
+    "--p-yellow-300": "#fde047",
+    "--p-yellow-400": "#facc15",
+    "--tw-drop-shadow": "",
+    "--tw-gradient-to-position": "",
+    "--tw-pan-x": "",
+    "--tw-ring-color": "rgb(59 130 246 / .5)",
+    "--tw-saturate": "",
+    "--tw-scale-y": "1"
+  },
+  "sampled": [
+    {
+      "background": "rgb(9, 9, 11) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(9, 9, 11)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "show--consent dark cc--darkmode",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 6520,
+        "w": 1425,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "html",
+      "tag": "html",
+      "text": "LyricEdits | AI Lyric Video Generator<link href=\"https://fonts.googleapis.com/css2?family=SUSE:wght@100..800&amp;display"
+    },
+    {
+      "background": "rgb(9, 9, 11) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(9, 9, 11)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 6520,
+        "w": 1425,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "body",
+      "tag": "body",
+      "text": "StudioPricingContactLog inSign up Create lyric videoswith AI in minutes.Free preview · Fully customizable · No templates"
+    },
+    {
+      "background": "rgb(9, 9, 11) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(9, 9, 11)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "sticky top-0 bg-surface-0 dark:bg-zinc-950 z-50",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 72,
+        "w": 1425,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "header",
+      "tag": "header",
+      "text": "StudioPricingContactLog inSign up"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-3xl sm:text-4xl md:text-5xl font-bold",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "48px",
+      "fontWeight": "700",
+      "lineHeight": "48px",
+      "rect": {
+        "h": 96,
+        "w": 1029,
+        "x": 198,
+        "y": 92
+      },
+      "selector": "h1",
+      "tag": "h1",
+      "text": "Create lyric videoswith AI in minutes."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-1 mx-auto max-w-2xl text-lg sm:text-xl",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 28,
+        "w": 672,
+        "x": 377,
+        "y": 281
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "Upload your song to get an instant preview"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-center text-3xl font-bold mb-3",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 1345,
+        "x": 40,
+        "y": 740
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "See what you can create"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2 justify-center",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 0,
+        "w": 1160,
+        "x": 113,
+        "y": 1785
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": ""
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-5xl sm:text-6xl font-extrabold uppercase leading-[0.95] tracking-tight",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "60px",
+      "fontWeight": "800",
+      "lineHeight": "60px",
+      "rect": {
+        "h": 180,
+        "w": 672,
+        "x": 357,
+        "y": 1809
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "You alreadyknow thisfeeling."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 544,
+        "x": 113,
+        "y": 3301
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "The AI Lyric Video Maker for Music"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2 justify-center",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 1160,
+        "x": 113,
+        "y": 3796
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "Used by Music Creators and Labels Worldwide"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 544,
+        "x": 113,
+        "y": 4216
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "Export to Your Favorite Editor"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2 justify-center",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 1160,
+        "x": 113,
+        "y": 4594
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "Try it for free"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-2xl sm:text-3xl font-bold mb-3 flex items-center gap-2",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "30px",
+      "fontWeight": "700",
+      "lineHeight": "36px",
+      "rect": {
+        "h": 36,
+        "w": 544,
+        "x": 113,
+        "y": 5298
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "FAQ"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(235, 243, 246)",
+      "boxShadow": "none",
+      "cls": "cm__title",
+      "color": "rgb(235, 243, 246)",
+      "fontFamily": "-apple-system, \"system-ui\", \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\"",
+      "fontSize": "16.8px",
+      "fontWeight": "600",
+      "lineHeight": "19.32px",
+      "rect": {
+        "h": 19,
+        "w": 384,
+        "x": 1025,
+        "y": 799
+      },
+      "selector": "h2",
+      "tag": "h2",
+      "text": "Cookie Usage"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-1 pl-7 text-muted-color text-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "rect": {
+        "h": 40,
+        "w": 316,
+        "x": 198,
+        "y": 572
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "Create and edit your video before purchasing. No credit card required."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-1 pl-7 text-muted-color text-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "rect": {
+        "h": 40,
+        "w": 316,
+        "x": 554,
+        "y": 572
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "Change the story, art style, fonts, scenes, and timing in our real-time editor."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-1 pl-7 text-muted-color text-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "20px",
+      "rect": {
+        "h": 40,
+        "w": 316,
+        "x": 911,
+        "y": 572
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "Our AI will transcribe the lyrics of your song automatically."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "rect": {
+        "h": 59,
+        "w": 672,
+        "x": 357,
+        "y": 2037
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "The feeling of finishing THE SONG.After hours of composing, writing, recording, mixing, and iterating."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "rect": {
+        "h": 59,
+        "w": 672,
+        "x": 357,
+        "y": 2115
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "You’re excited to show it to the world. But you need a video.A music video worthy of your song."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-muted-color",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "rect": {
+        "h": 29,
+        "w": 672,
+        "x": 357,
+        "y": 2194
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "And suddenly, you realize:"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-xl italic leading-relaxed",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "32.5px",
+      "rect": {
+        "h": 33,
+        "w": 628,
+        "x": 381,
+        "y": 2255
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "“I need a budget. I need time. I need to find people to help me.”"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-6",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 28,
+        "w": 672,
+        "x": 357,
+        "y": 2324
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "In that moment, you feel stuck."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "rect": {
+        "h": 59,
+        "w": 320,
+        "x": 357,
+        "y": 2552
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "It was built by musicians, for musicians.We’ve been there, we get it."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "18px",
+      "fontWeight": "400",
+      "lineHeight": "29.25px",
+      "rect": {
+        "h": 29,
+        "w": 320,
+        "x": 357,
+        "y": 2626
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "Our AI helps bring your vision to life."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-2 text-base leading-relaxed text-muted-color",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "26px",
+      "rect": {
+        "h": 52,
+        "w": 287,
+        "x": 742,
+        "y": 2580
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "This is not a template. It’s a real music video workflow, available to every artist."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "mt-2 text-base leading-relaxed text-muted-color",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "26px",
+      "rect": {
+        "h": 78,
+        "w": 287,
+        "x": 742,
+        "y": 2684
+      },
+      "selector": "p",
+      "tag": "p",
+      "text": "We designed a tool that merges AI with human creativity. From your idea to a finished video, all in one place."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "router-link-active router-link-exact-active -mb-0.5",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 24,
+        "w": 141,
+        "x": 20,
+        "y": 25
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": ""
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-secondary p-button-rounded p-button-text p-button-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 35,
+        "w": 62,
+        "x": 1021,
+        "y": 19
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Studio"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-secondary p-button-rounded p-button-text p-button-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 35,
+        "w": 65,
+        "x": 1088,
+        "y": 19
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Pricing"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-secondary p-button-rounded p-button-text p-button-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 35,
+        "w": 71,
+        "x": 1156,
+        "y": 19
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Contact"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 40,
+        "y": 852
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 496,
+        "y": 852
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 953,
+        "y": 852
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 40,
+        "y": 1168
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 496,
+        "y": 1168
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "block aspect-video rounded-md overflow-hidden",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 243,
+        "w": 432,
+        "x": 953,
+        "y": 1168
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "Your browser does not support the video tag."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "lyt-playbtn",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 0,
+        "w": 0,
+        "x": 729,
+        "y": 3276
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "How to Make a Lyric Video with AI"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-contrast p-button-text !p-0 !font-bold",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 26,
+        "w": 131,
+        "x": 113,
+        "y": 4376
+      },
+      "selector": "a",
+      "tag": "a",
+      "text": "For filmmakers"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 0,
+        "w": 0,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": ""
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text -mr-2",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 0,
+        "w": 0,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": ""
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-icon-only p-button-secondary p-button-rounded p-button-text p-button-sm",
+      "color": "rgb(161, 161, 170)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 32,
+        "w": 32,
+        "x": 1231,
+        "y": 20
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": ""
+    },
+    {
+      "background": "rgb(39, 39, 42) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(39, 39, 42)",
+      "borderColor": "rgb(39, 39, 42)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-secondary p-button-sm ml-1 whitespace-nowrap",
+      "color": "rgb(212, 212, 216)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 35,
+        "w": 59,
+        "x": 1271,
+        "y": 19
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Log in"
+    },
+    {
+      "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(251, 191, 36)",
+      "borderColor": "rgb(251, 191, 36)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-sm ml-1 whitespace-nowrap",
+      "color": "rgb(24, 24, 27)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "21px",
+      "rect": {
+        "h": 35,
+        "w": 68,
+        "x": 1337,
+        "y": 19
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Sign up"
+    },
+    {
+      "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(251, 191, 36)",
+      "borderColor": "rgb(251, 191, 36)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-lg !text-lg !px-5 sm:!text-xl sm:!py-3 sm:!px-8",
+      "color": "rgb(24, 24, 27)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 54,
+        "w": 245,
+        "x": 590,
+        "y": 395
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Upload your song"
+    },
+    {
+      "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(251, 191, 36)",
+      "borderColor": "rgb(251, 191, 36)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-lg !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "color": "rgb(24, 24, 27)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 54,
+        "w": 261,
+        "x": 582,
+        "y": 1539
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Upload your song"
+    },
+    {
+      "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(251, 191, 36)",
+      "borderColor": "rgb(251, 191, 36)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-lg mt-10 !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "color": "rgb(24, 24, 27)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 54,
+        "w": 261,
+        "x": 562,
+        "y": 3030
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Upload your song"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgba(0, 0, 0, 0)",
+      "boxShadow": "none",
+      "cls": "p-button p-component p-button-contrast p-button-text !p-0 !font-bold",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "700",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 26,
+        "w": 208,
+        "x": 113,
+        "y": 3553
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Log in to access the editor"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) url(\"data:image/svg+xml;utf8,<svg xmlns=\\\"http://www.w3.org/2000/svg\\\" viewBox=\\\"0 0 68 48\\\"><path d=\\\"M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z\\\" fill=\\\"red\\\"/><path d=\\\"M45 24 27 14v20\\\" fill=\\\"white\\\"/></svg>\") no-repeat scroll 50% 50% / 68px 48px padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(255, 255, 255)",
+      "boxShadow": "none",
+      "cls": "lty-playbtn",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 329,
+        "w": 584,
+        "x": 729,
+        "y": 3276
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Play"
+    },
+    {
+      "background": "rgb(251, 191, 36) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(251, 191, 36)",
+      "borderColor": "rgb(251, 191, 36)",
+      "boxShadow": "none",
+      "cls": "p-button p-component !text-lg !px-6 sm:!text-xl sm:!py-3 sm:!px-10",
+      "color": "rgb(24, 24, 27)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "20px",
+      "fontWeight": "400",
+      "lineHeight": "28px",
+      "rect": {
+        "h": 54,
+        "w": 327,
+        "x": 549,
+        "y": 4870
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Upload your song to start"
+    },
+    {
+      "background": "rgb(24, 24, 27) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(24, 24, 27)",
+      "borderColor": "rgb(63, 63, 70)",
+      "boxShadow": "none",
+      "cls": "p-accordionheader",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 60,
+        "w": 584,
+        "x": 729,
+        "y": 5116
+      },
+      "selector": "button",
+      "tag": "button",
+      "text": "Can I post the video to YouTube or other platforms?"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 0,
+        "w": 0,
+        "x": 0,
+        "y": 0
+      },
+      "selector": "input",
+      "tag": "input",
+      "text": ""
+    },
+    {
+      "background": "rgb(24, 24, 27) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(24, 24, 27)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "cls": "p-card p-component w-full md:w-auto",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 280,
+        "x": 275,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "90,000+lyric videos created with LyricEdits"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-body",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 280,
+        "x": 275,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "90,000+lyric videos created with LyricEdits"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-content",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 60,
+        "w": 240,
+        "x": 295,
+        "y": 3944
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "90,000+lyric videos created with LyricEdits"
+    },
+    {
+      "background": "rgb(24, 24, 27) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(24, 24, 27)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "cls": "p-card p-component w-full md:w-auto",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 329,
+        "x": 575,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "20,000+music creators and labels using LyricEdits"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-body",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 329,
+        "x": 575,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "20,000+music creators and labels using LyricEdits"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-content",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 60,
+        "w": 289,
+        "x": 595,
+        "y": 3944
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "20,000+music creators and labels using LyricEdits"
+    },
+    {
+      "background": "rgb(24, 24, 27) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgb(24, 24, 27)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.1) 0px 1px 2px -1px",
+      "cls": "p-card p-component w-full md:w-auto",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 227,
+        "x": 924,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "85+languages across the world"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-body",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 100,
+        "w": 227,
+        "x": 924,
+        "y": 3924
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "85+languages across the world"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "p-card-content",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 60,
+        "w": 187,
+        "x": 944,
+        "y": 3944
+      },
+      "selector": "[class*=card]",
+      "tag": "div",
+      "text": "85+languages across the world"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) linear-gradient(to right, color(srgb 0.984314 0.74902 0.141176), rgb(249, 115, 22)) repeat scroll 0% 0% / auto padding-box text",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-orange-500",
+      "color": "rgba(0, 0, 0, 0)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "48px",
+      "fontWeight": "800",
+      "lineHeight": "48px",
+      "rect": {
+        "h": 61,
+        "w": 305,
+        "x": 540,
+        "y": 2883
+      },
+      "selector": "[class*=gradient]",
+      "tag": "span",
+      "text": "your hands."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0) linear-gradient(140deg, rgb(254, 243, 199) 0%, rgb(252, 211, 77) 100%) repeat scroll 0% 0% / auto padding-box border-box",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "cls": "bg-primary-gradient pt-10 pb-14",
+      "color": "rgb(255, 255, 255)",
+      "fontFamily": "SUSE, sans-serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "rect": {
+        "h": 330,
+        "w": 1425,
+        "x": 0,
+        "y": 5711
+      },
+      "selector": "[class*=gradient]",
+      "tag": "div",
+      "text": "You've finished your song. Let people see it. Let people feel it.Create your lyric video now:Upload your song"
+    }
+  ],
+  "scrollHeight": 6519,
+  "title": "LyricEdits | AI Lyric Video Generator",
+  "url": "https://lyricedits.ai/"
+}

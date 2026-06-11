@@ -18,10 +18,31 @@ function getLegacyPath(pathname: string) {
 export default function middleware(request: NextRequest) {
   const { locale, segments } = getLegacyPath(request.nextUrl.pathname);
 
+  if (segments.join('/') === 'dashboard') {
+    const url = request.nextUrl.clone();
+    url.pathname = `${localePrefix(locale)}/create`;
+    url.hash = '';
+    return NextResponse.redirect(url);
+  }
+
+  if (segments.join('/') === 'dashboard/create') {
+    const url = request.nextUrl.clone();
+    url.pathname = `${localePrefix(locale)}/create`;
+    url.hash = '';
+    return NextResponse.redirect(url);
+  }
+
   if (segments.join('/') === 'dashboard/lyric-videos/upload') {
     const url = request.nextUrl.clone();
-    url.pathname = `${localePrefix(locale)}/`;
-    url.hash = 'create';
+    url.pathname = `${localePrefix(locale)}/create`;
+    url.hash = '';
+    return NextResponse.redirect(url);
+  }
+
+  if (segments.join('/') === 'dashboard/lyric-videos') {
+    const url = request.nextUrl.clone();
+    url.pathname = `${localePrefix(locale)}/creations`;
+    url.hash = '';
     return NextResponse.redirect(url);
   }
 

@@ -1,17 +1,25 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from '@/core/db';
-import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject } from '@/config/db/schema';
+import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
 import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './audio';
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
 import { buildFailureSnapshot, createLyricVideoError } from './diagnostics';
-import { requestHash, safeJson } from './json';
-import { assertUsableSongAnalysis, analyzeSongWithKieForDebug, formatStoryActsText, generateStoryboardScenesWithKieClaude } from './llm';
+import { parseJsonField, requestHash, safeJson } from './json';
+import {
+  assertUsableSongAnalysis,
+  analyzeSongWithKieForDebug,
+  formatStoryActsText,
+  generatePreviewStoryWithKie,
+  generateStoryboardScenesWithKieClaude,
+  generateVideoPromptsForScenes,
+  mergeSongAnalysisParts,
+} from './llm';
 import { getProject, getProjectDetails } from './project';
 import { replaceLyrics } from './asr';
-import { queueSceneImagesGrid } from './media-generation';
+import { GRID_SCENE_IMAGE_BATCH_SIZE, GRID_SCENE_IMAGE_MODE, GRID_SCENE_IMAGE_SIZE, queueSceneImagesGrid } from './media-generation';
 import {
   buildFixedStoryboardSceneDraftsFromPersistedScenes,
   preprocessLyricVideoForLlm,
@@ -553,6 +561,69 @@ async function maybeStopAfterGenerationStage(params: {
   };
 }
 
+async function generateAndPersistVideoPromptsForScenes(params: {
+  userId: string;
+  projectId: string;
+  project: any;
+  scenes: any[];
+  model?: string;
+}) {
+  try {
+    const result = await generateVideoPromptsForScenes({
+      scenes: params.scenes,
+      project: params.project,
+      model: params.model,
+    });
+    const promptRows = (result.scenes || []).filter((scene: any) => scene.sceneId && scene.videoPrompt);
+    await Promise.all(
+      promptRows.map((scene: any) =>
+        db()
+          .update(lyricVideoScene)
+          .set({ motionPrompt: scene.videoPrompt })
+          .where(
+            and(
+              eq(lyricVideoScene.id, scene.sceneId),
+              eq(lyricVideoScene.projectId, params.projectId),
+              eq(lyricVideoScene.userId, params.userId)
+            )
+          )
+      )
+    );
+    logLyricStage('kie-video-prompts', 'db-written', {
+      projectId: params.projectId,
+      userId: params.userId,
+      status: result.status,
+      sceneCount: result.sceneCount,
+      persistedSceneCount: promptRows.length,
+      fallbackSceneIds: result.fallbackSceneIds,
+    });
+    return {
+      videoPromptStatus: result.status,
+      videoPromptSceneCount: result.sceneCount,
+      videoPromptPersistedSceneCount: promptRows.length,
+      videoPromptFallbackSceneIds: result.fallbackSceneIds || [],
+      videoPromptWarnings: result.warnings || [],
+      videoPromptProvider: result.provider,
+      videoPromptModel: result.actualModel || result.model,
+    };
+  } catch (error: any) {
+    logLyricStageError('kie-video-prompts', 'persist-fail', error, {
+      projectId: params.projectId,
+      userId: params.userId,
+      sceneCount: params.scenes.length,
+    });
+    return {
+      videoPromptStatus: 'failed',
+      videoPromptSceneCount: params.scenes.length,
+      videoPromptPersistedSceneCount: 0,
+      videoPromptFallbackSceneIds: params.scenes.map((scene: any) => scene.id).filter(Boolean),
+      videoPromptWarnings: [error?.message || 'Video prompt persistence failed'],
+      videoPromptProvider: 'kie_codex',
+      videoPromptModel: params.model,
+    };
+  }
+}
+
 export async function executeGenerationRun(params: {
   userId: string;
   projectId: string;
@@ -778,6 +849,93 @@ export async function executeGenerationRun(params: {
       progress: 50,
       input: currentStepInput,
     });
+    if (options.mode === 'guided') {
+      const previewStoryResult = await generatePreviewStoryWithKie({
+        preprocess,
+        model: options.songAnalysisModel,
+      });
+      const previewSongAnalysis = mergeSongAnalysisParts({
+        previewStoryDraft: previewStoryResult.previewStoryDraft,
+      });
+      assertUsableSongAnalysis(previewSongAnalysis);
+      const storyActsText = formatStoryActsText(previewSongAnalysis);
+      const existingStoryPrompt = String(detailsAfterLyrics.project.storyPrompt || '').trim();
+      const directionStoryPrompt = existingStoryPrompt || storyActsText || previewSongAnalysis.theme || '';
+      const shouldPersistStoryActs = Boolean(directionStoryPrompt && directionStoryPrompt !== existingStoryPrompt);
+      if (shouldPersistStoryActs) {
+        await db()
+          .update(lyricVideoProject)
+          .set({
+            storyPrompt: directionStoryPrompt,
+            pipelineError: null,
+          })
+          .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+      }
+      const songAnalysisOutput = {
+        provider: previewStoryResult.provider,
+        model: previewStoryResult.model,
+        actualModel: previewStoryResult.actualModel,
+        previewStoryDraft: previewStoryResult.previewStoryDraft,
+        songAnalysis: previewSongAnalysis,
+        storyPrompt: directionStoryPrompt,
+        storyPromptPersisted: shouldPersistStoryActs,
+        rawText: previewStoryResult.rawText,
+        raw: previewStoryResult.raw,
+      };
+      await markGenerationStepSuccess({
+        userId: params.userId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        output: debugStopOutput('song_analysis', songAnalysisOutput, debug),
+      });
+      const stoppedAfterSongAnalysis = await maybeStopAfterGenerationStage({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        debug,
+        outputSnapshot: debugStopOutput('song_analysis', songAnalysisOutput, debug),
+        songAnalysis: previewSongAnalysis,
+      });
+      if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
+
+      const directionOutputSnapshot = debugStopOutput('song_analysis', songAnalysisOutput, debug);
+      const directionOutput =
+        directionOutputSnapshot && typeof directionOutputSnapshot === 'object' && !Array.isArray(directionOutputSnapshot)
+          ? (directionOutputSnapshot as Record<string, unknown>)
+          : { value: directionOutputSnapshot };
+      await markGenerationRunDirectionReady({
+        userId: params.userId,
+        projectId: params.projectId,
+        runId: params.run.id,
+        step: currentStep,
+        progress: 70,
+        storyPrompt: directionStoryPrompt,
+        outputSnapshot: {
+          ...directionOutput,
+          guidedStopped: true,
+          stopAfter: 'song_analysis',
+          nextAction: 'review_direction',
+          prewarmAction: 'direction_detail',
+        },
+      });
+      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
+      return {
+        run: finalRun?.run,
+        steps: finalRun?.steps || [],
+        project: details?.project,
+        lines: details?.lines || [],
+        words: details?.words || [],
+        scenes: details?.scenes || [],
+        songAnalysis: previewSongAnalysis,
+        directionReady: true,
+        stopAfter: 'song_analysis',
+      };
+    }
+
     const songAnalysisResult = await analyzeSongWithKieForDebug({
       preprocess,
       provider: 'kie_codex',
@@ -827,42 +985,8 @@ export async function executeGenerationRun(params: {
     });
     if (stoppedAfterSongAnalysis) return stoppedAfterSongAnalysis;
 
-    if (options.mode === 'guided') {
-      const directionOutputSnapshot = debugStopOutput('song_analysis', songAnalysisOutput, debug);
-      const directionOutput =
-        directionOutputSnapshot && typeof directionOutputSnapshot === 'object' && !Array.isArray(directionOutputSnapshot)
-          ? (directionOutputSnapshot as Record<string, unknown>)
-          : { value: directionOutputSnapshot };
-      await markGenerationRunDirectionReady({
-        userId: params.userId,
-        projectId: params.projectId,
-        runId: params.run.id,
-        step: currentStep,
-        progress: 70,
-        storyPrompt: directionStoryPrompt,
-        outputSnapshot: {
-          ...directionOutput,
-          guidedStopped: true,
-          stopAfter: 'song_analysis',
-          nextAction: 'review_direction',
-        },
-      });
-      const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
-      const finalRun = await getGenerationRun({ userId: params.userId, projectId: params.projectId, runId: params.run.id });
-      return {
-        run: finalRun?.run,
-        steps: finalRun?.steps || [],
-        project: details?.project,
-        lines: details?.lines || [],
-        words: details?.words || [],
-        scenes: details?.scenes || [],
-        songAnalysis: songAnalysisResult.songAnalysis,
-        directionReady: true,
-        stopAfter: 'song_analysis',
-      };
-    }
-
     currentStep = findGenerationStep(params.steps, 'prompt_generation');
+    const promptGenerationStep = currentStep;
     const fixedScenes = buildFixedStoryboardSceneDraftsFromPersistedScenes({
       scenes: detailsAfterLyrics.scenes,
       lines: detailsAfterLyrics.lines,
@@ -924,12 +1048,37 @@ export async function executeGenerationRun(params: {
         },
       });
     }
+    const shouldGenerateVideoPrompts = debug.stopAfter !== 'prompt_generation';
+    const videoPromptPromise = shouldGenerateVideoPrompts
+      ? generateAndPersistVideoPromptsForScenes({
+          userId: params.userId,
+          projectId: params.projectId,
+          project: projectForStoryboard,
+          scenes,
+          model: options.storyboardModel,
+        })
+      : Promise.resolve({
+          videoPromptStatus: 'skipped',
+          videoPromptSceneCount: 0,
+          videoPromptPersistedSceneCount: 0,
+          videoPromptFallbackSceneIds: [],
+          videoPromptWarnings: ['Skipped because debug.stopAfter=prompt_generation.'],
+          videoPromptProvider: 'kie_codex',
+          videoPromptModel: options.storyboardModel,
+        });
     const promptGenerationOutput = {
       provider: storyboard.provider,
       model: storyboard.model,
       actualModel: storyboard.actualModel,
       sceneCount: scenes.length,
       fixedSceneCount: storyboard.fixedSceneCount || storyboard.fixedScenes?.length || fixedScenes.length,
+      imagePromptOnly: true,
+      videoPromptMode: 'parallel_single_call',
+      videoPromptStatus: shouldGenerateVideoPrompts ? 'running' : 'skipped',
+      videoPromptSceneCount: 0,
+      videoPromptPersistedSceneCount: 0,
+      videoPromptFallbackSceneIds: [],
+      videoPromptWarnings: shouldGenerateVideoPrompts ? [] : ['Skipped because debug.stopAfter=prompt_generation.'],
       retryMode: storyboard.retryMode || 'none',
       missingSceneIds: storyboard.missingSceneIds || [],
       incompleteSceneIds: storyboard.incompleteSceneIds || [],
@@ -965,8 +1114,8 @@ export async function executeGenerationRun(params: {
       model: options.imageModel,
       sceneCount: scenes.length,
       sceneIds: scenes.map((scene: any) => scene.id),
-      gridSize: 4,
-      batchSize: 16,
+      gridSize: GRID_SCENE_IMAGE_SIZE,
+      batchSize: GRID_SCENE_IMAGE_BATCH_SIZE,
     };
     await markGenerationStepRunning({
       userId: params.userId,
@@ -983,15 +1132,32 @@ export async function executeGenerationRun(params: {
       model: options.imageModel,
       clearExistingImages: true,
     });
+    const videoPromptResult = await videoPromptPromise;
+    const finalPromptGenerationOutput = {
+      ...promptGenerationOutput,
+      ...videoPromptResult,
+    };
+    await db()
+      .update(lyricVideoGenerationStep)
+      .set({ outputJson: safeJson(finalPromptGenerationOutput) })
+      .where(and(eq(lyricVideoGenerationStep.id, promptGenerationStep.id), eq(lyricVideoGenerationStep.userId, params.userId)));
     const imageProviderTaskIds = Array.from(
       new Set(queuedImages.map((scene: any) => scene.providerTaskId).filter(Boolean))
     );
+    const imageProviderNames = Array.from(
+      new Set(
+        queuedImages
+          .map((scene: any) => parseJsonField<Record<string, any>>(scene.generationParams, {}).provider || 'kie')
+          .filter(Boolean)
+      )
+    );
+    const imageModels = Array.from(new Set(queuedImages.map((scene: any) => scene.imageModel).filter(Boolean)));
     if (imageProviderTaskIds.length === 0) {
       throw createLyricVideoError('Scene image grid generation did not queue any provider tasks', {
         errorKind: 'provider_request_failed',
         stage: 'image_generation',
-        provider: 'kie',
-        model: options.imageModel || 'nano-banana-2',
+        provider: imageProviderNames.join(',') || 'kie',
+        model: imageModels.join(',') || options.imageModel || 'nano-banana-2',
         diagnostics: {
           queuedSceneCount: queuedImages.length,
           failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed').length,
@@ -1014,15 +1180,16 @@ export async function executeGenerationRun(params: {
         transcribe: options.transcribeModel,
         songAnalysis: songAnalysisResult.actualModel || options.songAnalysisModel,
         storyboard: storyboard.actualModel || options.storyboardModel,
-        image: options.imageModel || 'nano-banana-2',
+        image: imageModels.join(',') || options.imageModel || 'nano-banana-2',
       },
       lineCount: lines.length,
       wordCount: detailsAfterLyrics.words.length,
       sceneCount: scenes.length,
       imageGeneration: {
-        mode: 'grid_4x4',
+        mode: GRID_SCENE_IMAGE_MODE,
         queuedSceneCount: queuedImages.length,
         failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed').length,
+        providers: imageProviderNames,
         providerTaskIds: imageProviderTaskIds,
         batchCount: imageProviderTaskIds.length,
         failedScenes: queuedImages
@@ -1036,6 +1203,7 @@ export async function executeGenerationRun(params: {
             providerTaskId: scene.providerTaskId,
           })),
       },
+      videoPrompts: videoPromptResult,
       durationMs: Date.now() - startedAt,
       projectStatus: {
         lyricsStatus: 'ready',

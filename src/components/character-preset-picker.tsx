@@ -1,93 +1,135 @@
 "use client";
 
-import { Check, Sparkles, UserRound } from "lucide-react";
+import { Check, Users } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { CharacterPreset } from "@/lib/character-presets";
 
 export function CharacterPresetPicker({
   presets,
+  selectedSlugs,
   selectedSlug,
   disabled,
   onChange,
+  onSelectionChange,
 }: {
   presets: CharacterPreset[];
-  selectedSlug: string;
+  selectedSlug?: string;
+  selectedSlugs?: string[];
   disabled?: boolean;
-  onChange: (slug: string) => void;
+  onChange?: (slug: string) => void;
+  onSelectionChange?: (slugs: string[]) => void;
 }) {
-  const selected = presets.find((preset) => preset.slug === selectedSlug) || presets[0];
+  const selected = selectedSlugs ?? (selectedSlug ? [selectedSlug] : []);
+  const selectedPresets = selected.map((slug) => presets.find((preset) => preset.slug === slug)).filter(Boolean) as CharacterPreset[];
+  const primary = selectedPresets[0] || null;
+
+  function setSelection(slugs: string[]) {
+    const cleanSlugs = Array.from(new Set(slugs.filter(Boolean))).slice(0, 4);
+    if (cleanSlugs.length === 0) {
+      toast.error("Choose at least one character.");
+      return;
+    }
+    onSelectionChange?.(cleanSlugs);
+    if (cleanSlugs[0]) onChange?.(cleanSlugs[0]);
+  }
+
+  function togglePreset(slug: string) {
+    if (selected.includes(slug)) {
+      if (selected.length <= 1) {
+        toast.error("Choose at least one character.");
+        return;
+      }
+      setSelection(selected.filter((item) => item !== slug));
+      return;
+    }
+    if (selected.length >= 4) {
+      toast.error("This version supports up to four characters.");
+      return;
+    }
+    setSelection([...selected, slug]);
+  }
 
   return (
-    <section className="mx-auto mb-7 w-full max-w-[860px] text-left" aria-labelledby="character-preset-title">
-      <div className="overflow-hidden rounded-md border border-slate-200 bg-[#101014] text-white shadow-[0_18px_55px_rgba(15,23,42,0.16)]">
-        <div className="flex flex-col gap-4 border-b border-white/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div>
-            <div className="flex items-center gap-2">
-              <UserRound className="size-5 text-[#fbbf24]" />
-              <h3 id="character-preset-title" className="text-base font-black">
-                Cast Your Actor
-              </h3>
-            </div>
-            <p className="mt-1 text-xs font-semibold text-white/55">Lead look for this song.</p>
-          </div>
-          {selected ? (
-            <div className="flex min-w-0 items-center gap-3 rounded-md border border-white/10 bg-white/[0.06] px-3 py-2">
-              <img
-                src={selected.thumbnailUrl}
-                alt=""
-                className="size-10 shrink-0 rounded-full border border-white/15 object-cover"
-              />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-black">{selected.name}</p>
-                <p className="truncate text-xs font-semibold text-white/50">Selected main actor</p>
-              </div>
-            </div>
-          ) : null}
-        </div>
+    <section className="w-full border-t border-brand-line pt-7 text-left" aria-labelledby="character-preset-title">
+      <span className="inline-flex h-11 items-center justify-center rounded-[10px] bg-brand-accent px-4 text-sm font-black text-brand-accent-ink shadow-[0_10px_22px_var(--brand-accent-shadow)]">
+        Step 2
+      </span>
+      <div className="mt-5">
+        <h3 id="character-preset-title" className="text-3xl font-black tracking-[-0.012em] text-brand-ink">
+          Choose your cast
+        </h3>
+        <p className="mt-3 text-base font-semibold text-brand-muted">Select at least one character and up to four for this lyric video.</p>
+      </div>
 
-        <div className="px-4 py-4 sm:px-5">
-          <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-9 sm:overflow-visible sm:px-0 sm:pb-0">
-            {presets.map((preset) => {
-              const active = preset.slug === selectedSlug;
-              return (
-                <button
-                  key={preset.slug}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onChange(preset.slug)}
-                  aria-pressed={active}
-                  className="group min-w-[76px] shrink-0 rounded-md text-center outline-none disabled:cursor-not-allowed disabled:opacity-55"
+      <div className="mt-6 rounded-[12px] border border-brand-line bg-brand-panel p-4">
+        <span className="flex items-center gap-2 text-sm font-black text-brand-ink">
+          <Users className="size-4" />
+          {selected.length} / 4 selected
+        </span>
+        <span className="mt-2 block text-xs font-semibold leading-5 text-brand-muted">
+          Scenes may still use no character, but every project starts with a cast library.
+        </span>
+      </div>
+
+      <div className="mt-6">
+        <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-9 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
+          {presets.map((preset) => {
+            const active = selected.includes(preset.slug);
+            return (
+              <button
+                key={preset.slug}
+                type="button"
+                disabled={disabled}
+                onClick={() => togglePreset(preset.slug)}
+                aria-pressed={active}
+                className="group min-w-[78px] shrink-0 rounded-[12px] text-center outline-none disabled:cursor-not-allowed disabled:opacity-55"
+              >
+                <span
+                  className={cn(
+                    "relative mx-auto flex size-[76px] items-center justify-center rounded-full border-2 bg-brand-soft p-0.5 transition",
+                    active
+                      ? "border-brand-accent ring-4 ring-brand-accent/15"
+                      : "border-brand-line group-hover:border-brand-accent group-focus-visible:border-brand-accent",
+                  )}
                 >
-                  <span
-                    className={cn(
-                      "relative mx-auto flex size-[68px] items-center justify-center rounded-full border-2 bg-white/10 transition",
-                      active
-                        ? "border-[#fbbf24] shadow-[0_0_0_4px_rgba(251,191,36,0.18)]"
-                        : "border-white/10 group-hover:border-white/35 group-focus-visible:border-[#fbbf24]",
-                    )}
-                  >
-                    <img src={preset.thumbnailUrl} alt={preset.name} className="size-full rounded-full object-cover" />
-                    {active ? (
-                      <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-[#fbbf24] text-slate-950">
-                        <Check className="size-3.5 stroke-[3]" />
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className={cn("mt-2 block truncate text-xs font-black", active ? "text-white" : "text-white/55")}>
-                    {preset.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {selected ? (
-            <div className="mt-4 flex items-start gap-3 rounded-md border border-white/10 bg-white/[0.05] px-4 py-3">
-              <Sparkles className="mt-0.5 size-4 shrink-0 text-[#fbbf24]" />
-              <p className="text-sm font-semibold leading-6 text-white/68">{selected.description}</p>
-            </div>
-          ) : null}
+                  <img src={preset.thumbnailUrl} alt={preset.name} className="size-full rounded-full object-cover" />
+                  {active ? (
+                    <span className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-brand-accent text-brand-accent-ink shadow-sm">
+                      <Check className="size-4 stroke-[3]" />
+                    </span>
+                  ) : null}
+                </span>
+                <span className={cn("mt-3 block truncate text-sm font-black", active ? "text-brand-accent-hover" : "text-brand-ink")}>
+                  {preset.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {primary ? (
+          <div className="mt-6 grid gap-5 rounded-[16px] border border-brand-line bg-brand-panel p-4 shadow-[0_12px_34px_var(--brand-elevation-shadow-soft)] sm:grid-cols-[190px_1fr] sm:p-6">
+            <img
+              src={primary.thumbnailUrl}
+              alt=""
+              className="mx-auto size-40 rounded-full object-cover sm:size-44"
+            />
+            <div className="min-w-0 self-center">
+              <div className="flex flex-wrap items-center gap-3">
+                <h4 className="text-2xl font-black tracking-[-0.012em] text-brand-ink">{selectedPresets.map((preset) => preset.name).join(" + ")}</h4>
+                <span className="inline-flex rounded-full border border-brand-accent/25 bg-brand-accent-soft px-4 py-1.5 text-sm font-black text-brand-accent-hover">
+                  {selectedPresets.length > 1 ? "Selected cast library" : "Selected primary actor"}
+                </span>
+              </div>
+              <p className="mt-4 text-lg font-semibold leading-8 text-brand-muted">
+                {selectedPresets
+                  .map((preset, index) => `${index === 0 ? "Primary" : `Role ${index + 1}`}: ${preset.description}`)
+                  .join(" ")}
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

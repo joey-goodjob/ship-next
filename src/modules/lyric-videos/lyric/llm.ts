@@ -7,7 +7,7 @@ import { isStorageConfigured } from '@/modules/storage/service';
 import { saveAIProviderFiles } from './audio';
 import { audioAnalysisPromptSummary, parseLinesFromText, refineAsrSegmentsWithWords, readAudioAnalysis } from './asr';
 import { attachLyricVideoDiagnostics, createLyricVideoError } from './diagnostics';
-import { chatContentToText, parseJsonLoose, previewText } from './json';
+import { chatContentToText, parseJsonField, parseJsonLoose, previewText } from './json';
 import {
   audioAnalysisFromLlmPreprocess,
   buildFixedStoryboardSceneDrafts,
@@ -28,6 +28,7 @@ import {
   type SceneInput,
   type StoryboardScene,
 } from './types';
+import { activeCastForStoryboard, castRoleForDisplay } from './cast-library';
 
 /**
  * LLM 边界模块：负责把内部结构发给 Kie/Groq 等供应商，并把模型输出整理成内部格式。
@@ -497,6 +498,259 @@ export function formatStoryActsText(songAnalysis?: Partial<LyricVideoSongAnalysi
     .trim();
 }
 
+export type PreviewStoryDraft = Pick<LyricVideoSongAnalysisResult, 'theme' | 'story_acts' | 'visual_style' | 'color_palette'>;
+
+export type ProductionDirectionDetail = Pick<
+  LyricVideoSongAnalysisResult,
+  'key_props' | 'narrative_arc' | 'location_plan' | 'emotion_arc' | 'notes'
+>;
+
+function compactEnergyForPrompt(values: number[], bucketSeconds = 5) {
+  const buckets: Array<{ start_s: number; end_s: number; avg: number; peak: number }> = [];
+  for (let index = 0; index < values.length; index += bucketSeconds) {
+    const slice = values.slice(index, index + bucketSeconds).map((value) => Number(value) || 0);
+    if (slice.length === 0) continue;
+    const avg = slice.reduce((sum, value) => sum + value, 0) / slice.length;
+    const peak = Math.max(...slice);
+    buckets.push({
+      start_s: index,
+      end_s: index + slice.length,
+      avg: Number(avg.toFixed(4)),
+      peak: Number(peak.toFixed(4)),
+    });
+  }
+  return buckets;
+}
+
+function preprocessForPreviewStory(preprocess: LyricVideoLlmPreprocessResult) {
+  return {
+    song: preprocess.song,
+    duration_s: preprocess.duration_s,
+    bpm: preprocess.bpm,
+    key: preprocess.key,
+    lines: preprocess.lines,
+    energy_summary_5s: compactEnergyForPrompt(preprocess.energy_per_second || []),
+  };
+}
+
+export function normalizePreviewStoryDraft(parsed: any): PreviewStoryDraft {
+  const normalized = normalizeSongAnalysis(parsed || {});
+  return {
+    theme: normalized.theme,
+    story_acts: normalized.story_acts,
+    visual_style: normalized.visual_style,
+    color_palette: normalized.color_palette,
+  };
+}
+
+export function normalizeProductionDirectionDetail(parsed: any): ProductionDirectionDetail {
+  const normalized = normalizeSongAnalysis(parsed || {});
+  return {
+    key_props: normalized.key_props,
+    narrative_arc: normalized.narrative_arc,
+    location_plan: normalized.location_plan,
+    emotion_arc: normalized.emotion_arc,
+    notes: normalized.notes,
+  };
+}
+
+export function mergeSongAnalysisParts(params: {
+  previewStoryDraft?: Partial<PreviewStoryDraft> | null;
+  productionDirectionDetail?: Partial<ProductionDirectionDetail> | null;
+  fallback?: Partial<LyricVideoSongAnalysisResult> | null;
+}): LyricVideoSongAnalysisResult {
+  return normalizeSongAnalysis({
+    ...(params.fallback || {}),
+    ...(params.previewStoryDraft || {}),
+    ...(params.productionDirectionDetail || {}),
+    characters: params.fallback?.characters || [],
+  });
+}
+
+export function buildPreviewStoryPrompt(preprocess: LyricVideoLlmPreprocessResult) {
+  return `你是一位音乐视觉化导演。根据以下歌曲数据，快速生成用户进入 preview 时需要审核的 MV 故事方向。
+
+## 歌曲数据
+${JSON.stringify(preprocessForPreviewStory(preprocess))}
+
+## 输出要求
+只输出以下 JSON，不要输出其他内容：
+
+{
+  "theme": "一句话概括这首歌的核心主题",
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "English visual narrative paragraph, 80-120 words."
+    }
+  ],
+  "visual_style": "整体画面风格",
+  "color_palette": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"]
+}
+
+### story_acts
+- 产出 3-5 个 Act，作为用户在 Preview / Customize > Story 里看到和编辑的 MV 故事编排
+- 每个 Act 覆盖一个较大的叙事段落，不能是一条 scene 或一个镜头
+- description 必须用英文自然段，80-120 words
+- 写清楚人物动作、地点、视觉母题、情绪推进和转场方向
+- Acts 之间要形成完整起承转合
+- 不要写字幕、歌词文字、屏幕文字或 UI 文案
+
+### visual_style / color_palette
+- visual_style 要具体（如 "35mm film realism in a winter city"），不要只写泛泛的 cinematic
+- color_palette 必须 5 个 hex 色值，至少 1 个冷色、1 个暖色
+- 要与歌词情绪和 energy_summary_5s 匹配
+
+### 全局
+- 这是 preview 前的快速故事草案，只输出用户需要审核的字段
+- 不要输出 narrative_arc、location_plan、key_props、emotion_arc、characters 或 notes`;
+}
+
+export function buildProductionDirectionPrompt(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  previewStoryDraft: PreviewStoryDraft;
+  storyPrompt: string;
+  cast?: any[];
+}) {
+  const castBlock = Array.isArray(params.cast) && params.cast.length > 0
+    ? JSON.stringify(
+        params.cast.map((member: any) => ({
+          id: member.id,
+          name: member.name,
+          description: member.description,
+          promptFragment: member.promptFragment,
+        }))
+      )
+    : 'No user-selected cast is available. Do not invent detailed character identity; focus on action, space, props, and mood.';
+  return `你是一位音乐视频导演。用户已经在 preview 里看到并可能确认/编辑了故事方向。现在只把这个故事扩展成后续生图需要的执行细节。
+
+## 歌曲数据
+${JSON.stringify(params.preprocess)}
+
+## 已确认的 Preview Story Draft
+${JSON.stringify(params.previewStoryDraft)}
+
+## 当前用户确认的 Story Prompt
+${params.storyPrompt}
+
+## 用户选择的角色
+${castBlock}
+
+## 输出要求
+只输出以下 JSON，不要输出其他内容：
+
+{
+  "narrative_arc": [
+    {
+      "time_range": "0s-28s",
+      "section_label": "verse1 / chorus1 / bridge 等",
+      "plot_beat": "这个段落的具体故事事件：主角在做什么、为什么、结果是什么",
+      "visual_anchor": "这个段落最核心的视觉画面"
+    }
+  ],
+  "location_plan": [
+    {
+      "time_range": "0s-28s",
+      "location": "具体场景描述（地点类型、空间特征、环境元素）",
+      "lighting": "光线条件（时段、方向、强度、色温）",
+      "color_tone": "这个段落的主色调偏移",
+      "spatial_feel": "开阔/封闭/过渡"
+    }
+  ],
+  "key_props": [
+    {
+      "id": "prop_1",
+      "description": "道具外观、材质、颜色、尺寸",
+      "symbolic_meaning": "它在故事里代表什么情感或转折",
+      "state_progression": "这个道具从开头到结尾的状态变化",
+      "appears_in_sections": ["verse1", "chorus2", "outro"]
+    }
+  ],
+  "emotion_arc": [
+    {
+      "time_range": "0s-29s",
+      "emotion": "当前段落的情绪关键词",
+      "intensity": 0.4
+    }
+  ],
+  "notes": "任何影响后续 image_prompt 的执行备注"
+}
+
+### 约束
+- 不要改写 theme、story_acts、visual_style、color_palette
+- narrative_arc 必须服从当前用户确认的 Story Prompt，不要另写一个新故事
+- location_plan 必须跟 narrative_arc 的故事节点对齐，不能随意切换空间
+- key_props 至少 2 个、至多 4 个，必须是有叙事功能的具体物件
+- 每个 key_prop 要在不同段落至少出现 2 次，state_progression 必须体现变化
+- emotion_arc 要覆盖整首歌，intensity 范围 0-1，并参考 energy_per_second
+- 不要写字幕、歌词文字、屏幕文字、UI 文案、logo 或品牌`;
+}
+
+export async function generatePreviewStoryWithKie(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  model?: string;
+}) {
+  const result = await callKieCodexResponses({
+    text: buildPreviewStoryPrompt(params.preprocess),
+    model: params.model,
+    reasoningEffort: 'medium',
+  });
+  const previewStoryDraft = normalizePreviewStoryDraft(parseJsonLoose<any>(result.content, {}));
+  if (!previewStoryDraft.theme && previewStoryDraft.story_acts.length === 0) {
+    throw createLyricVideoError('Preview story returned no usable JSON content', {
+      errorKind: 'provider_invalid_response',
+      stage: 'song_analysis',
+      provider: 'kie_codex',
+      model: params.model || result.model,
+      diagnostics: { contentPreview: previewText(result.content, 500) },
+    });
+  }
+  return {
+    provider: 'kie_codex',
+    model: params.model || result.model,
+    actualModel: result.model,
+    previewStoryDraft,
+    rawText: result.content,
+    raw: result.raw,
+  };
+}
+
+export async function generateProductionDirectionWithKie(params: {
+  preprocess: LyricVideoLlmPreprocessResult;
+  previewStoryDraft: PreviewStoryDraft;
+  storyPrompt: string;
+  model?: string;
+  cast?: any[];
+}) {
+  const result = await callKieCodexResponses({
+    text: buildProductionDirectionPrompt(params),
+    model: params.model,
+    reasoningEffort: 'low',
+  });
+  const productionDirectionDetail = normalizeProductionDirectionDetail(parseJsonLoose<any>(result.content, {}));
+  if (
+    productionDirectionDetail.narrative_arc.length === 0 &&
+    productionDirectionDetail.location_plan.length === 0 &&
+    productionDirectionDetail.key_props.length === 0
+  ) {
+    throw createLyricVideoError('Production direction returned no usable execution detail', {
+      errorKind: 'provider_invalid_response',
+      stage: 'song_analysis',
+      provider: 'kie_codex',
+      model: params.model || result.model,
+      diagnostics: { contentPreview: previewText(result.content, 500) },
+    });
+  }
+  return {
+    provider: 'kie_codex',
+    model: params.model || result.model,
+    actualModel: result.model,
+    productionDirectionDetail,
+    rawText: result.content,
+    raw: result.raw,
+  };
+}
+
 export function buildSongAnalysisPrompt(preprocess: LyricVideoLlmPreprocessResult) {
   return `你是一位音乐视觉化导演。根据以下歌曲数据，分析这首歌并输出创意方向。
 
@@ -732,20 +986,12 @@ function normalizePromptScenesForRepair(parsed: any): LyricVideoPromptSceneResul
 
 export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[] {
   return normalizePromptScenesForRepair(parsed).filter(
-    (scene) => scene.image_prompt && scene.video_prompt
+    (scene) => scene.image_prompt
   );
 }
 
-function activeMainCast(cast?: any[]) {
-  return (Array.isArray(cast) ? cast : [])
-    .filter((member: any) => !member.deletedAt)
-    .filter((member: any) => ['active', 'processing', 'candidate'].includes(String(member.status || 'active')))
-    .filter((member: any) => String(member.role || '').toLowerCase() === 'main' || !String(member.role || '').trim())
-    .sort((a: any, b: any) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
-}
-
 function singleActiveMainCastId(cast?: any[]) {
-  const mainCast = activeMainCast(cast).filter((member: any) => String(member.status || 'active') === 'active');
+  const mainCast = activeCastForStoryboard(cast).filter((member: any) => String(member.status || 'active') === 'active');
   return mainCast.length === 1 ? String(mainCast[0].id) : '';
 }
 
@@ -761,7 +1007,7 @@ function castIdsForGeneratedScene(params: {
 }
 
 function buildStoryboardCastBlock(cast?: any[]) {
-  const mainCast = activeMainCast(cast);
+  const mainCast = activeCastForStoryboard(cast);
   if (mainCast.length === 0) {
     return 'No user-selected cast is available. Do not invent named characters beyond the established main character implied by the song.';
   }
@@ -769,7 +1015,7 @@ function buildStoryboardCastBlock(cast?: any[]) {
   const castPayload = mainCast.map((member: any) => ({
     id: member.id,
     name: member.name,
-    role: member.role || 'main',
+    role: castRoleForDisplay(member.role),
     description: member.description,
     promptFragment: member.promptFragment || member.description,
     hasReferenceImage: Boolean(member.referenceImageUrl),
@@ -777,8 +1023,81 @@ function buildStoryboardCastBlock(cast?: any[]) {
   return [
     'Use only these user-selected cast members for character_shot scenes:',
     JSON.stringify(castPayload),
-    'For each character_shot, include cast_ids with the selected cast id(s). If there is exactly one active main cast, use that cast for every character_shot.',
+    'For each character_shot, include cast_ids with selected cast id(s). If there is exactly one active cast, use that cast for every character_shot. If there are multiple active cast members, choose one or more listed cast ids according to the scene action; do not invent unlisted characters.',
   ].join('\n');
+}
+
+function cleanPromptValue<T>(value: T): T | undefined {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? (trimmed as T) : undefined;
+  }
+  if (Array.isArray(value)) return value.length > 0 ? value : undefined;
+  if (value && typeof value === 'object') return Object.keys(value).length > 0 ? value : undefined;
+  return value ?? undefined;
+}
+
+function compactSongAnalysisForStoryboardPrompt(songAnalysis: LyricVideoSongAnalysisResult) {
+  return Object.fromEntries(
+    Object.entries({
+      theme: songAnalysis.theme,
+      characters: songAnalysis.characters,
+      key_props: songAnalysis.key_props,
+      narrative_arc: songAnalysis.narrative_arc,
+      story_acts: songAnalysis.story_acts,
+      location_plan: songAnalysis.location_plan,
+      emotion_arc: songAnalysis.emotion_arc,
+      visual_style: songAnalysis.visual_style,
+      color_palette: songAnalysis.color_palette,
+      notes: songAnalysis.notes,
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
+}
+
+function compactPlanningForStoryboardPrompt(scene: FixedStoryboardSceneDraft) {
+  const planning = scene.planning;
+  if (!planning) return undefined;
+  return Object.fromEntries(
+    Object.entries({
+      durationClass: planning.durationClass,
+      needsMotion: planning.needsMotion,
+      isVocalMontage: planning.isVocalMontage,
+      splitIndex: planning.splitIndex,
+      splitCount: planning.splitCount,
+      repeatGroupId: planning.repeatGroupId,
+      repeatIndex: planning.repeatIndex,
+      repeatTotal: planning.repeatTotal,
+      focusText: planning.focusText,
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
+}
+
+function compactFixedSceneForStoryboardPrompt(scene: FixedStoryboardSceneDraft, index: number) {
+  return Object.fromEntries(
+    Object.entries({
+      scene_id: scene.sceneId,
+      index: index + 1,
+      kind: scene.kind,
+      shotType: scene.shotType,
+      start_s: secondsFromMs(scene.startMs),
+      end_s: secondsFromMs(scene.endMs),
+      text: scene.text,
+      energyLevel: scene.energyLevel,
+      bpm: scene.bpm,
+      prevLyric: scene.prevLyric,
+      nextLyric: scene.nextLyric,
+      planning: compactPlanningForStoryboardPrompt(scene),
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
 }
 
 export function buildStoryboardScenesPrompt(params: {
@@ -788,9 +1107,6 @@ export function buildStoryboardScenesPrompt(params: {
   storyPrompt?: string;
   cast?: any[];
 }) {
-  const bpm = Number(params.scenes.find((scene) => scene.bpm)?.bpm || 0);
-  const beatSeconds = bpm > 0 ? Number((60 / bpm).toFixed(2)) : undefined;
-  const bpmText = bpm > 0 ? `${bpm}${beatSeconds ? ` (约每拍 ${beatSeconds}s)` : ''}` : 'unknown';
   const styleText = [
     params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
     params.project?.palette ? `Palette: ${params.project.palette}` : '',
@@ -799,105 +1115,14 @@ export function buildStoryboardScenesPrompt(params: {
     .filter(Boolean)
     .join('\n');
   const fixedScenes = params.scenes.map((scene, index) => ({
-    scene_id: scene.sceneId,
-    index: index + 1,
-    kind: scene.kind,
-    shotType: scene.shotType,
-    start_s: secondsFromMs(scene.startMs),
-    end_s: secondsFromMs(scene.endMs),
-    text: scene.text,
-    energyLevel: scene.energyLevel,
-    bpm: scene.bpm,
-    prevLyric: scene.prevLyric,
-    nextLyric: scene.nextLyric,
-    planning: scene.planning,
+    ...compactFixedSceneForStoryboardPrompt(scene, index),
   }));
+  const songAnalysis = compactSongAnalysisForStoryboardPrompt(params.songAnalysis);
 
   return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
 
 ## 歌曲理解
-${JSON.stringify(params.songAnalysis)}
-
-	## 视觉设定
-	${styleText || 'Use a cinematic lyric video style with consistent characters, location logic, and color palette.'}
-
-## 用户选择的角色
-${buildStoryboardCastBlock(params.cast)}
-
-	## 固定分镜
-	${JSON.stringify(fixedScenes)}
-
-## 你的任务
-为每个固定 scene 补充 image_prompt 和 video_prompt，只输出 JSON：
-
-{
-  "scenes": [
-    {
-	      "scene_id": "必须等于输入 scene_id",
-	      "cast_ids": ["character_shot 使用的角色 id；非 character_shot 可为空数组"],
-	      "image_prompt": "英文静态画面描述，严格匹配输入 shotType，适合图片生成",
-	      "video_prompt": "英文运动描述，包含 Camera 机位/运动/稳定性、与 shotType 匹配的运动细节，适合 img2video"
-	    }
-  ]
-}
-
-## 要求
-- 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
-- Story direction 是 Act-level 故事编排，只用于保持连续性和视觉母题；不要把 Act 当成 scene，不要按 Act 数量生成镜头
-- lyric scene 根据 text 的歌词语义设计画面
-- instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
-- planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
-- planning.needsMotion=true 时，video_prompt 必须有明确可见的镜头运动或主体运动
-- planning.isVocalMontage=true 时，image_prompt/video_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
-	- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
-	- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 只写该 cast 的 name、主角动作、情绪、环境、光线、构图，不要重复整段 promptFragment，并输出 cast_ids
-- shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、鞋、口袋、尘土、火光、道路纹理等；不要出现完整人物、不要露脸、不要新增角色
-- shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
-- image_prompt 必须保持地点、色彩和视觉元素一致，不要出现文字、歌词、字幕、logo
-- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
-- video_prompt 第一短句必须以 Camera 开头；不要描述字幕；不要让画面变成新镜头内容
-- character_shot 的 video_prompt 写主角动作；insert_shot 的 video_prompt 写物件/局部/粒子/光影运动；landscape_shot 的 video_prompt 写环境运动
-- energyLevel=low 时运动 slow/smooth/subtle；medium 时 steady/controlled/rhythmic；high 时 faster/handheld/stronger
-- video_prompt 中的运动节奏要匹配 BPM ${bpmText}
-- 只输出 JSON，不要解释`;
-}
-
-export function buildDebugStoryboardScenesPrompt(params: {
-  songAnalysis: LyricVideoSongAnalysisResult;
-  scenes: FixedStoryboardSceneDraft[];
-  project?: any;
-  storyPrompt?: string;
-  cast?: any[];
-}) {
-  const bpm = Number(params.scenes.find((scene) => scene.bpm)?.bpm || 0);
-  const beatSeconds = bpm > 0 ? Number((60 / bpm).toFixed(2)) : undefined;
-  const bpmText = bpm > 0 ? `${bpm}${beatSeconds ? ` (约每拍 ${beatSeconds}s)` : ''}` : 'unknown';
-  const styleText = [
-    params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
-    params.project?.palette ? `Palette: ${params.project.palette}` : '',
-    params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n');
-  const fixedScenes = params.scenes.map((scene, index) => ({
-    scene_id: scene.sceneId,
-    index: index + 1,
-    kind: scene.kind,
-    shotType: scene.shotType,
-    start_s: secondsFromMs(scene.startMs),
-    end_s: secondsFromMs(scene.endMs),
-    text: scene.text,
-    energyLevel: scene.energyLevel,
-    bpm: scene.bpm,
-    prevLyric: scene.prevLyric,
-    nextLyric: scene.nextLyric,
-    planning: scene.planning,
-  }));
-
-  return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
-
-## 歌曲理解
-${JSON.stringify(params.songAnalysis)}
+${JSON.stringify(songAnalysis)}
 
 ## 视觉设定
 ${styleText || 'Use a cinematic lyric video style with consistent characters, location logic, and color palette.'}
@@ -909,15 +1134,76 @@ ${buildStoryboardCastBlock(params.cast)}
 ${JSON.stringify(fixedScenes)}
 
 ## 你的任务
-为每个固定 scene 补充 image_prompt 和 video_prompt，只输出 JSON：
+为每个固定 scene 补充 image_prompt，只输出 JSON：
 
 {
   "scenes": [
     {
       "scene_id": "必须等于输入 scene_id",
       "cast_ids": ["character_shot 使用的角色 id；非 character_shot 可为空数组"],
-      "image_prompt": "英文静态画面描述，严格匹配输入 shotType，适合图片生成",
-      "video_prompt": "英文运动描述，包含 Camera 机位/运动/稳定性、与 shotType 匹配的运动细节，适合 img2video"
+      "image_prompt": "英文静态画面描述，严格匹配输入 shotType，适合图片生成"
+    }
+  ]
+}
+
+## 要求
+- 不要合并、拆分、删除、重排任何 scene；不要改变输入的 shotType
+- Story direction 是 Act-level 故事编排，只用于保持连续性和视觉母题；不要把 Act 当成 scene，不要按 Act 数量生成镜头
+- lyric scene 根据 text 的歌词语义设计画面
+- instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
+- planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
+- planning.isVocalMontage=true 时，image_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
+- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt 不能完全重复
+- shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 只写该 cast 的 name、主角动作、情绪、环境、光线、构图，不要重复整段 promptFragment，并输出 cast_ids
+- shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、鞋、口袋、尘土、火光、道路纹理等；不要出现完整人物、不要露脸、不要新增角色
+- shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
+- image_prompt 必须保持地点、色彩和视觉元素一致，不要出现文字、歌词、字幕、logo
+- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
+- 只输出 JSON，不要解释`;
+}
+
+export function buildDebugStoryboardScenesPrompt(params: {
+  songAnalysis: LyricVideoSongAnalysisResult;
+  scenes: FixedStoryboardSceneDraft[];
+  project?: any;
+  storyPrompt?: string;
+  cast?: any[];
+}) {
+  const styleText = [
+    params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
+    params.project?.palette ? `Palette: ${params.project.palette}` : '',
+    params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+  const fixedScenes = params.scenes.map((scene, index) => ({
+    ...compactFixedSceneForStoryboardPrompt(scene, index),
+  }));
+  const songAnalysis = compactSongAnalysisForStoryboardPrompt(params.songAnalysis);
+
+  return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
+
+## 歌曲理解
+${JSON.stringify(songAnalysis)}
+
+## 视觉设定
+${styleText || 'Use a cinematic lyric video style with consistent characters, location logic, and color palette.'}
+
+## 用户选择的角色
+${buildStoryboardCastBlock(params.cast)}
+
+## 固定分镜
+${JSON.stringify(fixedScenes)}
+
+## 你的任务
+为每个固定 scene 补充 image_prompt，只输出 JSON：
+
+{
+  "scenes": [
+    {
+      "scene_id": "必须等于输入 scene_id",
+      "cast_ids": ["character_shot 使用的角色 id；非 character_shot 可为空数组"],
+      "image_prompt": "英文静态画面描述，严格匹配输入 shotType，适合图片生成"
     }
   ]
 }
@@ -930,9 +1216,8 @@ ${JSON.stringify(fixedScenes)}
 - lyric scene 根据 text 的歌词语义设计画面
 - instrumental scene 使用 prevLyric/nextLyric 做过渡；优先写成物件特写、环境空镜、光影或天气变化，不引入新角色、新地点、新故事线
 - planning 是系统计算出的客观分镜约束，不是导演创意；必须遵守但不要把字段名写进 prompt
-- planning.needsMotion=true 时，video_prompt 必须有明确可见的镜头运动或主体运动
-- planning.isVocalMontage=true 时，image_prompt/video_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
-- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt/video_prompt 不能完全重复
+- planning.isVocalMontage=true 时，image_prompt 必须表现为高潮蒙太奇片段，同一 vocal 段的多个 scene 要有画面变化
+- 同一 repeatGroupId 的 scene 要保持视觉母题一致，但每次出现的 image_prompt 不能完全重复
 
 ### shotType 规则
 - shotType=character_shot：必须使用“用户选择的角色”中的 cast，不要从 songAnalysis 自行发明主角；image_prompt 只写该 cast 的 name、主角动作、情绪、环境、光线、构图，不要重复整段 promptFragment，并输出 cast_ids
@@ -955,14 +1240,6 @@ ${JSON.stringify(fixedScenes)}
 - image_prompt 必须保持 visual_style 和当前段落 color_tone 的一致
 - 不要出现文字、歌词、字幕、logo
 - image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
-
-### video_prompt 规则
-- video_prompt 第一短句必须以 Camera 开头；不要描述字幕；不要让画面变成新镜头内容
-- character_shot 的 video_prompt 写主角动作
-- insert_shot 的 video_prompt 写物件/局部/粒子/光影运动
-- landscape_shot 的 video_prompt 写环境运动
-- energyLevel=low 时运动 slow/smooth/subtle；medium 时 steady/controlled/rhythmic；high 时 faster/handheld/stronger
-- video_prompt 中的运动节奏要匹配 BPM ${bpmText}
 
 ### 全局
 - 只输出 JSON，不要解释`;
@@ -1014,7 +1291,7 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
   const result = await callKieCodexResponses({
     text: prompt,
     model,
-    reasoningEffort: 'medium',
+    reasoningEffort: 'low',
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const promptScenes = new Map(normalizePromptScenes(parsed).map((scene) => [String(scene.scene_id), scene]));
@@ -1029,7 +1306,7 @@ export async function generateStoryboardScenesWithKieForDebug(params: {
       end_s: secondsFromMs(scene.endMs),
       lyrics_summary: scene.text,
       image_prompt: generated?.image_prompt || fallback.imagePrompt,
-      video_prompt: generated?.video_prompt || fallback.videoPrompt,
+      video_prompt: '',
       cast_ids: castIdsForGeneratedScene({ generated, scene, cast: params.cast }),
       timeline_config: buildSceneTimelineConfig(scene),
       linkedLineIds: scene.linkedLineIds,
@@ -1100,7 +1377,7 @@ function promptSceneIssues(params: {
       missingSceneIds.push(scene.sceneId);
       continue;
     }
-    if (!generated.image_prompt || !generated.video_prompt) {
+    if (!generated.image_prompt) {
       incompleteSceneIds.push(scene.sceneId);
     }
   }
@@ -1113,7 +1390,7 @@ function completePromptSceneCount(params: {
 }) {
   return params.fixedScenes.reduce((count, scene, index) => {
     const generated = findPromptScene({ promptScenes: params.promptScenes, scene, index });
-    return generated?.image_prompt && generated?.video_prompt ? count + 1 : count;
+    return generated?.image_prompt ? count + 1 : count;
   }, 0);
 }
 
@@ -1163,7 +1440,7 @@ async function callStoryboardPromptAttempt(params: {
   const result = await callKieCodexResponses({
     text: prompt,
     model: params.model,
-    reasoningEffort: 'medium',
+    reasoningEffort: 'low',
   });
   const parsed = parseJsonLoose<any>(result.content, {});
   const repairScenes = normalizePromptScenesForRepair(parsed);
@@ -1218,7 +1495,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   let promptScenes = buildPromptSceneMap(initial.repairScenes);
 
   if (completePromptSceneCount({ fixedScenes: params.fixedScenes, promptScenes }) === 0) {
-    warnings.push('Prompt2 returned no valid scenes on the first attempt; retried the full prompt once.');
+    warnings.push('Prompt2 returned no valid image prompts on the first attempt; retried the full prompt once.');
     retryMode = 'full';
     logLyricStage('kie-storyboard-scenes', 'full-retry', {
       model,
@@ -1240,7 +1517,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
     });
     promptScenes = buildPromptSceneMap(fullRetry.repairScenes);
     if (completePromptSceneCount({ fixedScenes: params.fixedScenes, promptScenes }) === 0) {
-      throw createLyricVideoError('Storyboard prompt generation returned no valid scenes', {
+      throw createLyricVideoError('Storyboard image prompt generation returned no valid scenes', {
         errorKind: 'provider_invalid_response',
         stage: 'prompt_generation',
         provider: 'kie_codex',
@@ -1270,7 +1547,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   if (retrySceneIds.length > 0) {
     retryMode = retryMode === 'full' ? 'full+targeted' : 'targeted';
     warnings.push(
-      `Prompt2 returned incomplete storyboard prompts for ${retrySceneIds.length} scene(s); retried only those scenes.`
+      `Prompt2 returned incomplete image prompts for ${retrySceneIds.length} scene(s); retried only those scenes.`
     );
     logLyricStage('kie-storyboard-scenes', 'targeted-retry', {
       model,
@@ -1307,7 +1584,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
 
   const fallbackSceneIds = Array.from(new Set([...missingSceneIds, ...incompleteSceneIds]));
   if (fallbackSceneIds.length > 0) {
-    warnings.push(`Prompt2 still had ${fallbackSceneIds.length} scene gap(s) after retry; fallback prompts were used.`);
+    warnings.push(`Prompt2 still had ${fallbackSceneIds.length} image prompt gap(s) after retry; fallback prompts were used.`);
   }
 
   const scenes: SceneInput[] = params.fixedScenes.map((scene, index) => {
@@ -1322,7 +1599,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
       endMs: scene.endMs,
       text: scene.text,
       prompt: generated?.image_prompt || fallback.imagePrompt,
-      motionPrompt: generated?.video_prompt || fallback.videoPrompt,
+      motionPrompt: '',
       castIds: castIdsForGeneratedScene({ generated, scene, cast: params.cast }),
       linkedLineIds: scene.linkedLineIds,
       timelineConfig: generated?.timeline_config || buildSceneTimelineConfig(scene),
@@ -1342,6 +1619,7 @@ export async function generateStoryboardScenesWithKieClaude(params: {
     firstRaw: firstAttempt.raw,
     fixedSceneCount: params.fixedScenes.length,
     sceneCount: scenes.length,
+    imagePromptOnly: true,
     retryMode,
     missingSceneIds: initialMissingSceneIds,
     incompleteSceneIds: initialIncompleteSceneIds,
@@ -1352,10 +1630,186 @@ export async function generateStoryboardScenesWithKieClaude(params: {
   };
 }
 
+function parseStoredJsonField<T>(value: unknown, fallback: T): T {
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value as T;
+  return parseJsonField<T>(value, fallback);
+}
+
+function fixedSceneDraftFromPersistedScene(scene: any, index: number): FixedStoryboardSceneDraft {
+  const timelineConfig = parseStoredJsonField<Record<string, any>>(scene.timelineConfig, {});
+  const linkedLineIds = Array.isArray(scene.linkedLineIds)
+    ? scene.linkedLineIds
+    : parseJsonField<string[]>(scene.linkedLineIds, []);
+  const kind = timelineConfig.kind === 'instrumental' ? 'instrumental' : 'lyric';
+  const shotType =
+    timelineConfig.shotType === 'insert_shot' || timelineConfig.shotType === 'landscape_shot'
+      ? timelineConfig.shotType
+      : 'character_shot';
+  const energyLevel =
+    timelineConfig.energyLevel === 'low' || timelineConfig.energyLevel === 'high'
+      ? timelineConfig.energyLevel
+      : 'medium';
+
+  return {
+    dbId: scene.id,
+    sceneId: String(scene.id || index + 1),
+    kind,
+    shotType,
+    startMs: Math.max(0, Math.round(Number(scene.startMs) || 0)),
+    endMs: Math.max(0, Math.round(Number(scene.endMs) || 0)),
+    text: String(scene.text || '').trim(),
+    linkedLineIds,
+    energyLevel,
+    avgEnergy: Number(timelineConfig.avgEnergy || timelineConfig.planning?.energy || 0),
+    beatCount: Number(timelineConfig.beatCount || 0),
+    bpm: Number(timelineConfig.bpm || 0) || undefined,
+    key: timelineConfig.key,
+    prevLyric: timelineConfig.prevLyric,
+    nextLyric: timelineConfig.nextLyric,
+    planning: timelineConfig.planning,
+  };
+}
+
+function normalizeCameraPrompt(value: unknown) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  if (/^camera\b/i.test(text)) return text.replace(/^camera\b/i, 'Camera');
+  return `Camera ${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+}
+
+function buildVideoPromptsPrompt(params: { scenes: any[] }) {
+  return `You are writing motion prompts for image-to-video generation.
+The still image prompts are already finalized. Do not change what appears in the image. Only describe camera movement, subject movement, and environmental motion.
+
+## Scenes
+${JSON.stringify(params.scenes)}
+
+## Output JSON only
+{
+  "scenes": [
+    {
+      "scene_id": "must match input scene_id",
+      "video_prompt": "Camera ..."
+    }
+  ]
+}
+
+## Rules
+- Return one video_prompt for every input scene.
+- Every video_prompt must start with Camera.
+- Do not mention subtitles, lyrics, captions, typography, UI, watermark, or logo.
+- Do not introduce new characters, new locations, or new story events.
+- character_shot: describe camera movement plus the established character's subtle physical action.
+- insert_shot: describe camera movement plus object, texture, particles, fabric, light, weather, or detail motion.
+- landscape_shot: describe camera movement plus environmental motion such as clouds, light, dust, wind, road shimmer, or weather.
+- low energy: slow, smooth, subtle motion. medium energy: steady, controlled, rhythmic motion. high energy: faster, stronger, more kinetic motion.`;
+}
+
+export async function generateVideoPromptsForScenes(params: {
+  scenes: any[];
+  project: any;
+  model?: string;
+}) {
+  const fixedScenes = params.scenes.map(fixedSceneDraftFromPersistedScene);
+  const fallbackScenes = new Map(
+    params.scenes.map((scene, index) => {
+      const draft = fixedScenes[index];
+      const fallback = fallbackPromptForFixedScene({
+        scene: draft,
+        project: params.project || {},
+        storyPrompt: params.project?.storyPrompt,
+      });
+      return [String(scene.id || draft.sceneId), fallback.videoPrompt];
+    })
+  );
+  const promptScenes = params.scenes.map((scene, index) => {
+    const draft = fixedScenes[index];
+    const durationSec = Math.max(0.5, secondsFromMs(draft.endMs - draft.startMs));
+    return {
+      scene_id: String(scene.id || draft.sceneId),
+      index: index + 1,
+      image_prompt: String(scene.prompt || '').trim(),
+      text: draft.text,
+      shotType: draft.shotType,
+      energyLevel: draft.energyLevel,
+      bpm: draft.bpm,
+      duration_s: durationSec,
+    };
+  });
+  const model = params.model || DEFAULT_STORYBOARD_MODEL;
+  const warnings: string[] = [];
+
+  try {
+    const result = await callKieCodexResponses({
+      text: buildVideoPromptsPrompt({ scenes: promptScenes }),
+      model,
+      reasoningEffort: 'low',
+    });
+    const parsed = parseJsonLoose<any>(result.content, {});
+    const parsedScenes = Array.isArray(parsed?.scenes) ? parsed.scenes : Array.isArray(parsed) ? parsed : [];
+    const videoPromptMap = new Map<string, string>();
+    for (const item of parsedScenes) {
+      const sceneId = String(item?.scene_id || item?.id || '').trim();
+      const videoPrompt = normalizeCameraPrompt(item?.video_prompt || item?.motionPrompt || item?.motion_prompt);
+      if (sceneId && videoPrompt) videoPromptMap.set(sceneId, videoPrompt);
+    }
+
+    const fallbackSceneIds: string[] = [];
+    const scenes = params.scenes.map((scene, index) => {
+      const sceneId = String(scene.id || fixedScenes[index].sceneId);
+      const generated = videoPromptMap.get(sceneId) || videoPromptMap.get(String(index + 1));
+      if (generated) {
+        return { sceneId, videoPrompt: generated, fallback: false };
+      }
+      fallbackSceneIds.push(sceneId);
+      return { sceneId, videoPrompt: fallbackScenes.get(sceneId) || '', fallback: true };
+    });
+
+    if (fallbackSceneIds.length > 0) {
+      warnings.push(`Video prompt generation missed ${fallbackSceneIds.length} scene(s); fallback motion prompts were used.`);
+    }
+
+    return {
+      provider: 'kie_codex',
+      model,
+      actualModel: result.model,
+      status: fallbackSceneIds.length === 0 ? 'success' : fallbackSceneIds.length === scenes.length ? 'failed' : 'partial_success',
+      sceneCount: scenes.length,
+      fallbackSceneIds,
+      warnings,
+      scenes,
+      rawText: result.content,
+      raw: result.raw,
+    };
+  } catch (error: any) {
+    logLyricStageError('kie-video-prompts', 'request-fallback', error, {
+      model,
+      sceneCount: params.scenes.length,
+    });
+    warnings.push(error?.message || 'Video prompt generation failed; fallback motion prompts were used.');
+    return {
+      provider: 'kie_codex',
+      model,
+      actualModel: model,
+      status: 'failed',
+      sceneCount: params.scenes.length,
+      fallbackSceneIds: params.scenes.map((scene, index) => String(scene.id || fixedScenes[index].sceneId)),
+      warnings,
+      scenes: params.scenes.map((scene, index) => {
+        const sceneId = String(scene.id || fixedScenes[index].sceneId);
+        return { sceneId, videoPrompt: fallbackScenes.get(sceneId) || '', fallback: true };
+      }),
+      rawText: '',
+      raw: null,
+    };
+  }
+}
+
 export async function generateStoryboardWithKieClaude(params: {
   lines: any[];
   project: any;
   storyPrompt?: string;
+  songAnalysis?: LyricVideoSongAnalysisResult;
   fixedScenes?: FixedStoryboardSceneDraft[];
   cast?: any[];
 }): Promise<StoryboardScene[]> {
@@ -1390,18 +1844,20 @@ export async function generateStoryboardWithKieClaude(params: {
   if (!configs.kie_api_key) return fallback;
 
   const prompt = buildStoryboardScenesPrompt({
-    songAnalysis: {
-      theme: params.storyPrompt || params.project.storyPrompt || params.project.title || 'emotional lyric video',
-      characters: [],
-      key_props: [],
-      narrative_arc: [],
-      story_acts: [],
-      location_plan: [],
-      emotion_arc: [],
-      visual_style: params.project.artStyle || 'cinematic lyric video',
-      color_palette: String(params.project.palette || '').split(',').map((color) => color.trim()).filter(Boolean),
-      notes: audioAnalysisPromptSummary(params.project),
-    },
+    songAnalysis:
+      params.songAnalysis ||
+      {
+        theme: params.storyPrompt || params.project.storyPrompt || params.project.title || 'emotional lyric video',
+        characters: [],
+        key_props: [],
+        narrative_arc: [],
+        story_acts: [],
+        location_plan: [],
+        emotion_arc: [],
+        visual_style: params.project.artStyle || 'cinematic lyric video',
+        color_palette: String(params.project.palette || '').split(',').map((color) => color.trim()).filter(Boolean),
+        notes: audioAnalysisPromptSummary(params.project),
+      },
     scenes: fixedScenes,
     project: params.project,
     storyPrompt: params.storyPrompt,
@@ -1411,7 +1867,7 @@ export async function generateStoryboardWithKieClaude(params: {
   const result = await callKieCodexResponses({
     text: prompt,
     model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
-    reasoningEffort: 'medium',
+    reasoningEffort: 'low',
   });
 
   const content = result.content || '{}';
@@ -1432,7 +1888,7 @@ export async function generateStoryboardWithKieClaude(params: {
       endMs: scene.endMs,
       text: scene.text,
       prompt: generated?.image_prompt || fallbackPrompt.imagePrompt,
-      motionPrompt: generated?.video_prompt || fallbackPrompt.videoPrompt,
+      motionPrompt: '',
       castIds: castIdsForGeneratedScene({ generated, scene, cast: params.cast }),
       linkedLineIds: scene.linkedLineIds,
       timelineConfig: buildSceneTimelineConfig(scene),
@@ -1445,12 +1901,45 @@ export async function generateStoryboardWithKieClaude(params: {
 export async function generateStoryPromptWithKieClaude(params: {
   lines: any[];
   project: any;
+  feedback?: string;
+  currentStory?: string;
 }) {
   const lyrics = params.lines
     .map((line, index) => `${index + 1}. ${line.text}`)
     .join('\n');
-  const prompt = `Write an English act-based visual story brief for a lyric video.
-Use the lyrics, title, style, palette, and format to create a cinematic concept that an image/storyboard generator can later split into many scenes.
+
+  const isRewrite = Boolean(params.currentStory && params.feedback);
+
+  const prompt = isRewrite
+    ? `Revise an existing act-based visual story brief for a lyric video based on user feedback.
+Keep the same act structure (same number of acts) and lyrics alignment. Only adjust the mood, tone, scenes, or visual direction as requested.
+Return only JSON, no markdown.
+
+JSON shape:
+{
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "80-120 English words. A broad visual story segment, not a single shot."
+    }
+  ]
+}
+
+Requirements: consistent characters and setting, clear visual arc, recurring motifs, emotionally matched to the lyrics, no text, no typography, no subtitles in the images.
+
+Current story:
+${params.currentStory}
+
+User feedback: ${params.feedback}
+
+Project title: ${params.project.title}
+Art style: ${params.project.artStyle}
+Aspect ratio: ${params.project.aspectRatio}
+
+Lyrics:
+${lyrics}`
+    : `Write an English act-based visual story brief for a lyric video.
+Use the lyrics, title, style, and format to create a cinematic concept that an image/storyboard generator can later split into many scenes.
 Return only JSON, no markdown.
 
 JSON shape:
@@ -1469,7 +1958,6 @@ Do not write scene prompts. Each act should cover a larger part of the song and 
 Project title: ${params.project.title}
 Lyrics language: ${params.project.language || 'auto'}
 Art style: ${params.project.artStyle}
-Palette: ${params.project.palette}
 Aspect ratio: ${params.project.aspectRatio}
 
 Lyrics:

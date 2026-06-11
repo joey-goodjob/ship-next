@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "@/core/auth/client";
-import { usePathname, useRouter } from "@/core/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/core/i18n/navigation";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
 import {
@@ -19,6 +19,7 @@ export function AppLayout({
   brandHref = "/",
   mobileBrand,
   headerExtra,
+  topbar,
   profileHref,
   requirePermission,
   unauthorizedRedirect = "/settings",
@@ -30,6 +31,15 @@ export function AppLayout({
   brandHref?: string;
   mobileBrand?: React.ReactNode;
   headerExtra?: React.ReactNode;
+  topbar?: (props: {
+    brand: React.ReactNode;
+    brandHref: string;
+    user: {
+      name: string;
+      email: string;
+      image?: string | null;
+    };
+  }) => React.ReactNode;
   profileHref?: string;
   requirePermission?: string;
   unauthorizedRedirect?: string;
@@ -81,10 +91,38 @@ export function AppLayout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="pt-16">
+      <div className="fixed inset-x-0 top-0 z-40">
+        {topbar ? (
+          topbar({
+            brand: mobileBrand || brand,
+            brandHref,
+            user: {
+              name: session.user.name || "User",
+              email: session.user.email,
+              image: session.user.image,
+            },
+          })
+        ) : (
+          <header className="flex h-16 shrink-0 items-center border-b border-brand-line bg-brand-panel px-3 text-brand-ink shadow-[0_1px_0_var(--brand-elevation-shadow-soft)] sm:px-4 lg:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <SidebarTrigger className="size-9 shrink-0 rounded-md text-brand-muted transition-colors hover:bg-brand-soft hover:text-brand-ink active:scale-95" />
+              <Link
+                href={brandHref}
+                className="flex min-w-0 items-center gap-2 rounded-md px-1 py-1 text-brand-ink transition-colors hover:text-brand-accent-hover active:scale-95"
+              >
+                <span className="flex min-w-0 shrink-0 items-center">
+                  {brand}
+                </span>
+              </Link>
+            </div>
+            {headerExtra && (
+              <div className="flex shrink-0 items-center gap-1">{headerExtra}</div>
+            )}
+          </header>
+        )}
+      </div>
       <AppSidebar
-        brand={brand}
-        brandHref={brandHref}
         navItems={navItems}
         footerNavItems={footerNavItems}
         footer={
@@ -96,16 +134,7 @@ export function AppLayout({
           />
         }
       />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-          </div>
-          <div className="flex-1" />
-          {headerExtra && (
-            <div className="flex items-center gap-1 px-4">{headerExtra}</div>
-          )}
-        </header>
+      <SidebarInset className="min-h-[calc(100svh-4rem)]">
         <main className="flex-1 overflow-auto">
           {children}
         </main>

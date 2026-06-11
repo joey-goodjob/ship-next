@@ -325,6 +325,7 @@
       "elevenlabs": { "title": "ElevenLabs / 语音转文字", "description": "ElevenLabs Scribe 语音转文字 API" },
       "groq": { "title": "Groq / Whisper", "description": "Groq 语音转文字 API" },
       "kie": { "title": "Kie / Kling", "description": "Kie AI 图片、视频和 Gemini Chat API" },
+      "wavespeed": { "title": "WaveSpeed", "description": "WaveSpeed GPT Image 2 API" },
       "gemini": { "title": "Gemini", "description": "Google Gemini API" },
       "fal": { "title": "Fal", "description": "Fal AI API" }
     },
@@ -401,6 +402,11 @@
       "kie_codex_model": "Codex 模型",
       "kie_image_model": "图片模型",
       "kie_character_image_model": "角色图片模型",
+      "wavespeed_api_key": "API 密钥",
+      "wavespeed_base_url": "Base URL",
+      "wavespeed_image_model": "图片模型",
+      "wavespeed_image_quality": "图片质量",
+      "lyric_video_image_provider": "歌词视频图片供应商",
       "gemini_api_key": "API 密钥",
       "fal_api_key": "API 密钥"
     },

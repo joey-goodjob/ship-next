@@ -1,9 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Coins, Home, Settings, Video } from "lucide-react";
-import { envConfigs } from "@/config";
+import { Coins, Home, PlusCircle, Settings, Video } from "lucide-react";
 import { AppLayout } from "@/components/app-layout";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function DashboardLayout({
   children,
@@ -14,8 +14,14 @@ export default function DashboardLayout({
 
   const navItems = [
     {
-      href: "/dashboard/lyric-videos",
-      label: t("nav.lyric_videos"),
+      href: "/create",
+      label: t("nav.create"),
+      icon: PlusCircle,
+      group: t("nav.workspace"),
+    },
+    {
+      href: "/creations",
+      label: t("nav.creations"),
       icon: Video,
       group: t("nav.workspace"),
     },
@@ -36,8 +42,8 @@ export default function DashboardLayout({
     <AppLayout
       navItems={navItems}
       footerNavItems={footerNavItems}
-      brand={envConfigs.app_name}
-      brandHref="/dashboard/lyric-videos"
+      brand={<BrandLogo variant="sidebar" showName />}
+      brandHref="/create"
       profileHref="/settings/profile"
     >
       {children}
