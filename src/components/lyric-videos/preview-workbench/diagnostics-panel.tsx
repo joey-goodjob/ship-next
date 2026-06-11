@@ -373,7 +373,7 @@ export function DiagnosticsPanel() {
           <div className="mb-[10px] rounded-[6px] border border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] px-[11px] py-[10px] text-[var(--editor-text)]">
             <p className="text-[13px] font-[900]">方向审核暂停</p>
             <p className="mt-[3px] text-[12px] font-[700] leading-[18px]">
-              Prompt1 已完成。点击底部 Generate All Scenes 后，Prompt2、图片生成和完成项目会继续写入这里。
+              Prompt1 已完成。点击轨道蒙版上的 Confirm & Generate Scenes 后，Prompt2、图片生成和完成项目会继续写入这里。
             </p>
           </div>
         ) : null}

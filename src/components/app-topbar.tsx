@@ -25,11 +25,25 @@ type CreditsResponse = {
   };
 };
 
+function DiscordIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M19.54 5.34A17.6 17.6 0 0 0 15.2 4c-.2.36-.42.84-.58 1.22a16.4 16.4 0 0 0-5.24 0A11 11 0 0 0 8.8 4a17.6 17.6 0 0 0-4.35 1.34C1.7 9.45.95 13.46 1.32 17.4A17.8 17.8 0 0 0 6.66 20c.43-.58.82-1.2 1.16-1.86-.64-.24-1.25-.54-1.82-.9l.44-.34a12.6 12.6 0 0 0 11.12 0l.44.34c-.57.36-1.18.66-1.82.9.34.66.73 1.28 1.16 1.86a17.8 17.8 0 0 0 5.34-2.6c.44-4.56-.75-8.54-3.14-12.06ZM8.62 14.96c-1.05 0-1.9-.96-1.9-2.14s.84-2.14 1.9-2.14c1.06 0 1.92.97 1.9 2.14 0 1.18-.84 2.14-1.9 2.14Zm6.76 0c-1.05 0-1.9-.96-1.9-2.14s.84-2.14 1.9-2.14c1.06 0 1.92.97 1.9 2.14 0 1.18-.84 2.14-1.9 2.14Z" />
+    </svg>
+  );
+}
+
 export function AppTopbar({
   brand,
   brandHref = "/create",
   helpLink,
   pricingLink,
+  discordLink,
   upgradeLabel,
   creditLabel,
   user,
@@ -38,6 +52,7 @@ export function AppTopbar({
   brandHref?: string;
   helpLink: AppTopbarLink;
   pricingLink: AppTopbarLink;
+  discordLink?: AppTopbarLink;
   upgradeLabel: string;
   creditLabel: string;
   user: AppTopbarUser;
@@ -94,6 +109,17 @@ export function AppTopbar({
         >
           {pricingLink.label}
         </Link>
+        {discordLink ? (
+          <a
+            href={discordLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-2 rounded-full bg-[#5865f2] px-4 text-sm font-extrabold text-white shadow-[0_10px_24px_color-mix(in_oklch,#5865f2_32%,transparent)] transition-colors hover:bg-[#4752c4] active:scale-95"
+          >
+            <DiscordIcon className="size-4" />
+            {discordLink.label}
+          </a>
+        ) : null}
       </nav>
 
       <div className="ml-2 flex shrink-0 items-center gap-2 sm:ml-4 md:gap-3">

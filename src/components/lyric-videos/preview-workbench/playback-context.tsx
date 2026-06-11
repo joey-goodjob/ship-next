@@ -10,6 +10,7 @@ type PlaybackContextValue = {
   audioAvailable: boolean;
   audioReadyState: number;
   currentTime: number;
+  isMuted: boolean;
   isAudioLoading: boolean;
   isPlaying: boolean;
   totalDuration: number;
@@ -17,6 +18,7 @@ type PlaybackContextValue = {
   currentLine?: LyricLine;
   currentWord?: LyricWord;
   setCurrentTime: (time: number) => void;
+  toggleMute: () => void;
   togglePlayback: () => Promise<void>;
   playFrom: (time: number) => Promise<void>;
   playScenePreview: (startTime: number, endTime: number) => Promise<void>;
@@ -76,6 +78,7 @@ export function PlaybackProvider({
 }) {
   const [currentTime, setCurrentTimeState] = useState(0);
   const [audioReadyState, setAudioReadyState] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -181,6 +184,7 @@ export function PlaybackProvider({
 
     const audio = new Audio(audioSrc);
     audio.preload = "auto";
+    audio.muted = isMuted;
     audio.currentTime = clamp(latestPlaybackRef.current.currentTime, 0, latestPlaybackRef.current.totalDuration);
     audioRef.current = audio;
     setAudioReadyState(audio.readyState);
@@ -336,6 +340,10 @@ export function PlaybackProvider({
   }, [audioSrc]);
 
   useEffect(() => {
+    if (audioRef.current) audioRef.current.muted = isMuted;
+  }, [isMuted]);
+
+  useEffect(() => {
     if (currentTime > totalDuration) {
       setCurrentTime(totalDuration);
     }
@@ -366,6 +374,10 @@ export function PlaybackProvider({
     audioRef.current?.pause();
     setIsAudioLoading(false);
     setIsPlaying(false);
+  }
+
+  function toggleMute() {
+    setIsMuted((previous) => !previous);
   }
 
   async function playAudio(from?: number, sceneEnd?: number | null) {
@@ -447,6 +459,7 @@ export function PlaybackProvider({
       audioAvailable,
       audioReadyState,
       currentTime,
+      isMuted,
       isAudioLoading,
       isPlaying,
       totalDuration,
@@ -454,12 +467,13 @@ export function PlaybackProvider({
       currentLine,
       currentWord,
       setCurrentTime,
+      toggleMute,
       togglePlayback,
       playFrom,
       playScenePreview,
       pausePlayback,
     }),
-    [audioAvailable, audioReadyState, currentLine, currentScene, currentTime, currentWord, isAudioLoading, isPlaying, totalDuration],
+    [audioAvailable, audioReadyState, currentLine, currentScene, currentTime, currentWord, isAudioLoading, isMuted, isPlaying, totalDuration],
   );
 
   return <PlaybackContext.Provider value={value}>{children}</PlaybackContext.Provider>;

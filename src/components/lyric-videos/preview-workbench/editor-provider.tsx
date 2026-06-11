@@ -21,6 +21,8 @@ import type {
   RetryFailedBatchesResponse,
   RuntimeState,
   SaveStatus,
+  StoryChangeSource,
+  StoryReviewStatus,
   StoryGenerationResponse,
   UploadAudioResponse,
   VisualGenerationResponse,
@@ -52,6 +54,22 @@ const IMAGE_SYNC_SCENE_FIELDS = [
   "completedAt",
   "updatedAt",
 ];
+
+export function mergeProjectWithLocalPatch({
+  inFlightPatch,
+  pendingPatch,
+  serverProject,
+}: {
+  inFlightPatch: Partial<LyricVideoProject>;
+  pendingPatch: Partial<LyricVideoProject>;
+  serverProject: LyricVideoProject;
+}) {
+  return {
+    ...serverProject,
+    ...inFlightPatch,
+    ...pendingPatch,
+  };
+}
 
 function mergeImageSyncedScenes(current: LyricScene[], updates: LyricScene[]) {
   if (!updates.length) return current;
@@ -108,6 +126,9 @@ export function EditorProvider({
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
   const [castBusy, setCastBusy] = useState(false);
+  const [confirmedStoryPrompt, setConfirmedStoryPrompt] = useState<string | null>(null);
+  const [storyChangeSource, setStoryChangeSource] = useState<StoryChangeSource>(null);
+  const [storyReviewBaseline, setStoryReviewBaseline] = useState("");
   const saveTimerRef = useRef<number | null>(null);
   const imageSyncInFlightRef = useRef(false);
   const refreshInFlightRef = useRef(false);
@@ -115,6 +136,8 @@ export function EditorProvider({
   const autoStoryProjectRef = useRef<string | null>(null);
   const autoDirectionDetailProjectRef = useRef<string | null>(null);
   const pendingProjectPatchRef = useRef<Partial<LyricVideoProject>>({});
+  const projectPatchInFlightRef = useRef<Partial<LyricVideoProject>>({});
+  const storyReviewProjectRef = useRef<string | null>(null);
 
   const totalDuration = useMemo(() => {
     const candidates = [
@@ -133,9 +156,40 @@ export function EditorProvider({
     [debugGenerationLocked, generationRun, project, runtimeState],
   );
   const generationLockReason = GENERATION_LOCK_REASON;
+  const storyReviewStatus = useMemo<StoryReviewStatus>(() => {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) return "idle";
+    if (confirmedStoryPrompt !== null) {
+      return storyPrompt === confirmedStoryPrompt ? "confirmed" : "dirty";
+    }
+    if (storyReviewBaseline && storyPrompt !== storyReviewBaseline) return "dirty";
+    return "unconfirmed";
+  }, [confirmedStoryPrompt, project?.storyPrompt, storyReviewBaseline]);
 
   function showGenerationLockedToast() {
     toast.info(generationLockReason);
+  }
+
+  function mergeIncomingProject(serverProject: LyricVideoProject) {
+    return mergeProjectWithLocalPatch({
+      serverProject,
+      inFlightPatch: projectPatchInFlightRef.current,
+      pendingPatch: pendingProjectPatchRef.current,
+    });
+  }
+
+  function clearInFlightProjectPatch(patch: Partial<LyricVideoProject>) {
+    const nextPatch = { ...projectPatchInFlightRef.current };
+    for (const key of Object.keys(patch) as Array<keyof LyricVideoProject>) {
+      if (Object.is(nextPatch[key], patch[key])) {
+        delete nextPatch[key];
+      }
+    }
+    projectPatchInFlightRef.current = nextPatch;
+  }
+
+  function hasLocalProjectPatch() {
+    return Object.keys(pendingProjectPatchRef.current).length > 0 || Object.keys(projectPatchInFlightRef.current).length > 0;
   }
 
   const refresh = useCallback(async () => {
@@ -145,7 +199,7 @@ export function EditorProvider({
     try {
       const details = await requestJson<ProjectDetails>(`/api/lyric-videos/${projectId}`);
       if (!details?.project) throw new Error("Project not found");
-      setProject(details.project);
+      setProject(mergeIncomingProject(details.project));
       setRuntimeState(details.runtimeState || null);
       setGenerationRun(details.generationRun || null);
       setGenerationSteps(details.generationSteps || []);
@@ -156,7 +210,7 @@ export function EditorProvider({
       setExports(details.exports || []);
       setLyricsDirty(false);
       setWordsDirty(false);
-      setSaveStatus("saved");
+      setSaveStatus(hasLocalProjectPatch() ? "saving" : "saved");
     } catch (err: any) {
       setLoadError(err?.message || "Project not found");
     } finally {
@@ -168,6 +222,28 @@ export function EditorProvider({
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (!project) {
+      storyReviewProjectRef.current = null;
+      setConfirmedStoryPrompt(null);
+      setStoryChangeSource(null);
+      setStoryReviewBaseline("");
+      return;
+    }
+
+    if (storyReviewProjectRef.current !== project.id) {
+      storyReviewProjectRef.current = project.id;
+      setConfirmedStoryPrompt(null);
+      setStoryChangeSource(null);
+      setStoryReviewBaseline(project.storyPrompt || "");
+      return;
+    }
+
+    if (!storyReviewBaseline && confirmedStoryPrompt === null && project.storyPrompt?.trim()) {
+      setStoryReviewBaseline(project.storyPrompt);
+    }
+  }, [confirmedStoryPrompt, project, storyReviewBaseline]);
 
   useEffect(() => {
     const hasPendingSceneImages = scenes.some(sceneImageIsPending);
@@ -244,7 +320,7 @@ export function EditorProvider({
           sceneCount: generated.scenes?.length || 0,
           firstScene: generated.scenes?.[0],
         });
-        setProject((previous) => generated.project || previous);
+        setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
         if (generated.run) setGenerationRun(generated.run);
         if (generated.steps) setGenerationSteps(generated.steps);
         if (generated.lines?.length) setLinesState(generated.lines);
@@ -289,7 +365,10 @@ export function EditorProvider({
       body: JSON.stringify({}),
     })
       .then((data) => {
-        setProject((previous) => data.project || (previous ? { ...previous, storyPrompt: data.storyPrompt } : previous));
+        setProject((previous) => {
+          const incomingProject = data.project || (previous ? { ...previous, storyPrompt: data.storyPrompt } : null);
+          return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+        });
         setSaveStatus("saved");
         toast.success("Story created");
       })
@@ -353,20 +432,33 @@ export function EditorProvider({
     if (Object.keys(patch).length === 0) return null;
 
     pendingProjectPatchRef.current = {};
-    const saved = await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
-    setProject((previous) => saved || previous);
-    setSaveStatus("saved");
-    return saved;
+    projectPatchInFlightRef.current = { ...projectPatchInFlightRef.current, ...patch };
+    try {
+      const saved = await requestJson<LyricVideoProject>(`/api/lyric-videos/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      clearInFlightProjectPatch(patch);
+      const mergedProject = saved ? mergeIncomingProject(saved) : null;
+      if (mergedProject) setProject(mergedProject);
+      setSaveStatus(hasLocalProjectPatch() ? "saving" : "saved");
+      return mergedProject || saved;
+    } catch (error) {
+      clearInFlightProjectPatch(patch);
+      pendingProjectPatchRef.current = { ...patch, ...pendingProjectPatchRef.current };
+      setProject((previous) => (previous ? mergeIncomingProject(previous) : previous));
+      throw error;
+    }
   }
 
   function updateProjectField<K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) {
     if (generationLocked) {
       showGenerationLockedToast();
       return;
+    }
+    if (key === "storyPrompt") {
+      setStoryChangeSource("manual_edit");
     }
     setProject((previous) => (previous ? { ...previous, [key]: value } : previous));
     pendingProjectPatchRef.current = { ...pendingProjectPatchRef.current, [key]: value };
@@ -381,6 +473,36 @@ export function EditorProvider({
         toast.error(err?.message || "Save failed");
       }
     }, 600);
+  }
+
+  function confirmStoryPrompt() {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) {
+      toast.info("Add a story before confirming.");
+      return;
+    }
+    setConfirmedStoryPrompt(storyPrompt);
+    setStoryChangeSource(null);
+    setStoryReviewBaseline(storyPrompt);
+  }
+
+  function applyStoryPromptChanges() {
+    confirmStoryPrompt();
+  }
+
+  function editStoryPrompt() {
+    const storyPrompt = project?.storyPrompt || "";
+    if (!storyPrompt.trim()) return;
+    setConfirmedStoryPrompt(null);
+    setStoryChangeSource(null);
+    setStoryReviewBaseline(storyPrompt);
+  }
+
+  function cancelStoryPromptChanges() {
+    const fallbackStoryPrompt = confirmedStoryPrompt ?? storyReviewBaseline;
+    if (!fallbackStoryPrompt.trim()) return;
+    updateProjectField("storyPrompt", fallbackStoryPrompt);
+    setStoryChangeSource(null);
   }
 
   function setLines(nextLines: LyricLine[]) {
@@ -476,7 +598,7 @@ export function EditorProvider({
         firstScene: generated.scenes?.[0],
       });
 
-      setProject((previous) => generated.project || previous);
+      setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
       if (generated.run) setGenerationRun(generated.run);
       if (generated.steps) setGenerationSteps(generated.steps);
       if (generated.lines?.length) setLinesState(generated.lines);
@@ -500,7 +622,7 @@ export function EditorProvider({
     }
   }
 
-  async function createStory() {
+  async function createStory(feedback?: string) {
     if (generationLocked) {
       showGenerationLockedToast();
       return;
@@ -529,9 +651,27 @@ export function EditorProvider({
       const data = await requestJson<StoryGenerationResponse>(`/api/lyric-videos/${project.id}/story`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ feedback: feedback || undefined }),
       });
-      setProject(data.project || { ...project, storyPrompt: data.storyPrompt });
+      const nextStoryPrompt = data.project?.storyPrompt || data.storyPrompt || "";
+      const hadPriorStory = Boolean(project.storyPrompt?.trim());
+      setProject(mergeIncomingProject(data.project || { ...project, storyPrompt: data.storyPrompt }));
+      if (hadPriorStory) {
+        setStoryChangeSource(feedback?.trim() ? "ai_rewrite" : "ai_new_story");
+        // Previously had a story → mark new story as "dirty" so user must
+        // re-confirm before generating scenes. Keep the old baseline/confirmed
+        // value so new story ≠ baseline → dirty.
+        if (confirmedStoryPrompt === null) {
+          // No prior confirm — keep storyReviewBaseline as-is (old story text).
+          // new story ≠ old baseline → dirty.
+        }
+        // If confirmedStoryPrompt !== null, new story ≠ confirmedStoryPrompt → dirty.
+      } else {
+        // First-time generation — set baseline to new story → "unconfirmed"
+        setConfirmedStoryPrompt(null);
+        setStoryChangeSource(null);
+        setStoryReviewBaseline(nextStoryPrompt);
+      }
       setSaveStatus("saved");
       toast.success("Story created");
     } catch (err: any) {
@@ -575,7 +715,10 @@ export function EditorProvider({
           body: JSON.stringify({}),
         });
         storyPrompt = story.storyPrompt;
-        setProject((previous) => story.project || (previous ? { ...previous, storyPrompt } : previous));
+        setProject((previous) => {
+          const incomingProject = story.project || (previous ? { ...previous, storyPrompt } : null);
+          return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+        });
       }
 
       console.info("[lyric-video] generate-all-scenes requesting visuals", {
@@ -603,18 +746,20 @@ export function EditorProvider({
         scenesStatus: generated.project?.scenesStatus,
       });
       setScenes(generated.scenes || []);
-      setProject((previous) =>
-        generated.project ||
-        (previous
-          ? {
-              ...previous,
-              storyPrompt: generated.storyPrompt || storyPrompt,
-              scenesStatus: (generated.queuedImages?.length || 0) > 0 ? "processing" : "ready",
-              pipelineStage: (generated.queuedImages?.length || 0) > 0 ? "images_processing" : "storyboard_ready",
-              pipelineError: null,
-            }
-          : previous),
-      );
+      setProject((previous) => {
+        const incomingProject =
+          generated.project ||
+          (previous
+            ? {
+                ...previous,
+                storyPrompt: generated.storyPrompt || storyPrompt,
+                scenesStatus: (generated.queuedImages?.length || 0) > 0 ? "processing" : "ready",
+                pipelineStage: (generated.queuedImages?.length || 0) > 0 ? "images_processing" : "storyboard_ready",
+                pipelineError: null,
+              }
+            : null);
+        return incomingProject ? mergeIncomingProject(incomingProject) : previous;
+      });
       setActiveTab("scenes");
       setSaveStatus("saved");
       await refresh();
@@ -943,8 +1088,14 @@ export function EditorProvider({
       castBusy,
       generationLocked,
       generationLockReason,
+      storyChangeSource,
+      storyReviewStatus,
       setActiveTab,
       setZoom,
+      confirmStoryPrompt,
+      applyStoryPromptChanges,
+      cancelStoryPromptChanges,
+      editStoryPrompt,
       updateProjectField,
       setLines,
       setWords,
@@ -986,9 +1137,11 @@ export function EditorProvider({
       projectId,
       saveStatus,
       scenes,
+      storyChangeSource,
       words,
       wordsDirty,
       zoom,
+      storyReviewStatus,
       refresh,
       retryFailedImageBatches,
     ],

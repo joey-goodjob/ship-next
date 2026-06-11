@@ -9,7 +9,6 @@ export async function Header() {
     { href: "/#create", label: t("nav.tools") },
     { href: "/pricing", label: t("nav.pricing") },
     { href: "/#faq", label: t("nav.help") },
-    { href: "/#faq", label: t("nav.contact") },
   ];
 
   return <SiteHeader navLinks={navLinks} />;

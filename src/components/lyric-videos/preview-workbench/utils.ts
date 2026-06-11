@@ -74,10 +74,23 @@ export function formatDurationMs(ms: number) {
   return `${Math.max(0, ms / 1000).toFixed(2)}s`;
 }
 
-export function getAspectRatio(aspectRatio?: string) {
-  if (aspectRatio === "9:16") return "9 / 16";
-  if (aspectRatio === "1:1") return "1 / 1";
-  return "16 / 9";
+export function getPreviewStageStyle(aspectRatio?: string) {
+  if (aspectRatio === "9:16") {
+    return {
+      aspectRatio: "9 / 16",
+      height: "min(100%, 760px)",
+      maxHeight: "100%",
+      maxWidth: "min(100%, 560px)",
+      width: "auto",
+    };
+  }
+
+  return {
+    aspectRatio: "16 / 9",
+    height: "auto",
+    maxHeight: "100%",
+    width: "min(100%, 1540px)",
+  };
 }
 
 export function projectIsProcessing(project: LyricVideoProject | null, runtimeState?: RuntimeState | null) {

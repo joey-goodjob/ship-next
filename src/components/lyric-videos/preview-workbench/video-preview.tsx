@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
 import { usePlayback } from "./playback-context";
-import { clamp, deriveGenerationProgress, getAspectRatio, normalizePreviewConfig, secondsToMs } from "./utils";
+import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, secondsToMs } from "./utils";
 
 export function VideoPreview() {
   const {
@@ -24,7 +24,7 @@ export function VideoPreview() {
     words,
   } = useEditor();
   const { currentLine, currentScene, currentTime, totalDuration } = usePlayback();
-  const aspectRatio = getAspectRatio(project?.aspectRatio);
+  const stageStyle = getPreviewStageStyle(project?.aspectRatio);
   const hasImage = Boolean(currentScene?.imageUrl);
   const hasLyrics = lines.length > 0 || words.length > 0 || project?.lyricsStatus === "ready";
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
@@ -41,7 +41,10 @@ export function VideoPreview() {
   }, [currentLine?.text, currentScene?.endMs, currentScene?.startMs, currentTime, project?.title, words]);
 
   return (
-    <section className="relative flex min-h-0 flex-1 items-start justify-start overflow-hidden bg-[var(--editor-bg)] px-[16px] pt-[16px]">
+    <section
+      data-preview-stage
+      className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[var(--editor-bg)] p-[16px]"
+    >
       <GenerationProgressBanner
         locked={generationLocked}
         lockReason={generationLockReason}
@@ -49,12 +52,8 @@ export function VideoPreview() {
         onRetry={retryFailedImageBatches}
       />
       <div
-        className="relative max-h-full overflow-hidden rounded-[4px] bg-[var(--editor-panel-strong)]"
-        style={{
-          aspectRatio,
-          width: "min(100%, 1540px)",
-          maxHeight: "100%",
-        }}
+        className="relative max-h-full max-w-full overflow-hidden rounded-[4px] bg-[var(--editor-panel-strong)]"
+        style={stageStyle}
       >
         {loading ? (
           <PreviewPlaceholder title="Loading project..." description="Preparing the editor workspace." />
@@ -84,7 +83,7 @@ export function VideoPreview() {
             title={directionReady ? "Direction ready" : currentScene ? "Scene image pending" : hasLyrics ? "Scene timing pending" : "No scene image yet"}
             description={
               directionReady
-                ? "Review the Story panel, then click Generate All Scenes to create Prompt2 scenes and queue images."
+                ? "Review the Story panel, then click Confirm & Generate Scenes to create Prompt2 scenes and queue images."
                 : currentScene
                 ? currentScene.status === "failed"
                   ? currentScene.error || "Image generation failed."

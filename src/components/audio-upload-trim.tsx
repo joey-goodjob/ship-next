@@ -13,6 +13,7 @@ import {
   Pause,
   Play,
   RefreshCcw,
+  Loader2,
   Sparkles,
   Trash2,
   Upload,
@@ -45,6 +46,7 @@ export type UploadedAudioSource = {
   size: number;
   contentType?: string;
   checksum?: string;
+  durationSeconds?: number;
 };
 
 export interface AudioUploadTrimProps {
@@ -68,6 +70,7 @@ export interface AudioUploadTrimProps {
   successLabel?: string;
   maxFileSizeLabel?: string;
   initialUploadedAudio?: UploadedAudioSource | null;
+  deferInitialAudioUntilReady?: boolean;
   onClearInitialAudio?: () => void;
   onBack?: () => void;
   onGenerate?: (
@@ -113,6 +116,11 @@ function formatAudioExtension(name: string, type?: string) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function normalizeDurationSeconds(value?: number) {
+  const seconds = Number(value);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
 function fallbackPeaks(seed: string, count = WAVEFORM_BUCKETS) {
@@ -370,23 +378,27 @@ export function AudioUploadTrim({
   successLabel = "Uploaded",
   maxFileSizeLabel = "100MB",
   initialUploadedAudio = null,
+  deferInitialAudioUntilReady = false,
   onClearInitialAudio,
   onBack,
   onGenerate,
 }: AudioUploadTrimProps) {
+  const initialDurationSeconds = normalizeDurationSeconds(initialUploadedAudio?.durationSeconds);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [uploadedAudio, setUploadedAudio] = useState<UploadedAudioSource | null>(initialUploadedAudio);
-  const [audioPreviewUrl, setAudioPreviewUrl] = useState("");
-  const [audioDurationMs, setAudioDurationMs] = useState(0);
-  const [durationStatus, setDurationStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState(() => initialUploadedAudio?.url || "");
+  const [audioDurationMs, setAudioDurationMs] = useState(() => (initialDurationSeconds ? ms(initialDurationSeconds) : 0));
+  const [durationStatus, setDurationStatus] = useState<"idle" | "loading" | "ready" | "error">(() =>
+    initialDurationSeconds ? "ready" : initialUploadedAudio?.url ? "loading" : "idle",
+  );
   const [isDraggingAudio, setIsDraggingAudio] = useState(false);
   const [startSeconds, setStartSeconds] = useState(0);
-  const [endSeconds, setEndSeconds] = useState(0);
+  const [endSeconds, setEndSeconds] = useState(() => (initialDurationSeconds ? Number(initialDurationSeconds.toFixed(3)) : 0));
   const [useEntireAudio, setUseEntireAudio] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [generateStatus, setGenerateStatus] = useState<"idle" | "working" | "success">("idle");
-  const [waveformPeaks, setWaveformPeaks] = useState<number[]>(fallbackPeaks("empty"));
+  const [waveformPeaks, setWaveformPeaks] = useState<number[]>(() => fallbackPeaks(initialUploadedAudio?.filename || "empty"));
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [creditBalanceLoading, setCreditBalanceLoading] = useState(showCredits);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -448,16 +460,18 @@ export function AudioUploadTrim({
     setAudioFile(null);
     setUploadedAudio(initialUploadedAudio);
     setAudioPreviewUrl(initialUploadedAudio.url);
-    setDurationStatus("loading");
+    const nextDurationSeconds = normalizeDurationSeconds(initialUploadedAudio.durationSeconds);
+    setAudioDurationMs(nextDurationSeconds ? ms(nextDurationSeconds) : 0);
+    setDurationStatus(nextDurationSeconds ? "ready" : "loading");
     setStartSeconds(0);
-    setEndSeconds(0);
+    setEndSeconds(nextDurationSeconds ? Number(nextDurationSeconds.toFixed(3)) : 0);
     setUseEntireAudio(false);
     setIsPlaying(false);
     setCurrentTime(0);
     setIsDraggingAudio(false);
     setGenerateStatus("idle");
     setWaveformPeaks(fallbackPeaks(initialUploadedAudio.filename));
-  }, [initialUploadedAudio?.url]);
+  }, [initialUploadedAudio?.url, initialUploadedAudio?.durationSeconds]);
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -680,6 +694,35 @@ export function AudioUploadTrim({
           : durationStatus === "ready"
             ? "Ready"
             : "Selected";
+  const shouldDeferInitialAudio =
+    deferInitialAudioUntilReady && Boolean(uploadedAudio) && !audioFile && durationStatus === "loading";
+  const audioElement = audioPreviewUrl ? (
+    <audio
+      ref={audioRef}
+      src={audioPreviewUrl}
+      className="sr-only"
+      onLoadedMetadata={(event) => {
+        const duration = event.currentTarget.duration;
+        if (Number.isFinite(duration) && duration > 0 && durationStatus !== "ready") {
+          const durationMs = ms(duration);
+          setAudioDurationMs(durationMs);
+          setStartSeconds(0);
+          setEndSeconds(Number(duration.toFixed(3)));
+          setCurrentTime(0);
+          setDurationStatus("ready");
+        }
+      }}
+      onError={() => {
+        setAudioDurationMs(0);
+        setDurationStatus("error");
+      }}
+      onPlay={() => setIsPlaying(true)}
+      onPause={() => setIsPlaying(false)}
+      onEnded={() => setIsPlaying(false)}
+    >
+      <track kind="captions" />
+    </audio>
+  ) : null;
 
   if (isHomeCard) {
     return (
@@ -802,6 +845,22 @@ export function AudioUploadTrim({
                   Max {maxFileSizeLabel}
                 </p>
               </>
+            ) : shouldDeferInitialAudio ? (
+              <div className="mt-8 space-y-6">
+                <section className="rounded-[18px] border border-brand-line bg-brand-panel p-8 text-center shadow-[0_14px_38px_var(--brand-elevation-shadow-soft)]">
+                  <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-accent-soft text-brand-accent">
+                    <Loader2 className="size-7 animate-spin" aria-hidden={true} />
+                  </span>
+                  <h4 className="mt-5 text-xl font-black tracking-[-0.012em] text-brand-ink">Reading audio</h4>
+                  <p className="mt-2 text-sm font-semibold text-brand-muted">
+                    Preparing trim controls before you choose the main actor.
+                  </p>
+                  <div className="mx-auto mt-5 max-w-sm overflow-hidden rounded-full bg-brand-soft">
+                    <div className="h-2 w-1/2 animate-pulse rounded-full bg-brand-accent" />
+                  </div>
+                  {audioElement}
+                </section>
+              </div>
             ) : (
               <div className="mt-8 space-y-6">
                 <section className="rounded-[18px] border border-brand-line bg-brand-panel p-4 shadow-[0_14px_38px_var(--brand-elevation-shadow-soft)] sm:p-5">
@@ -978,33 +1037,7 @@ export function AudioUploadTrim({
                   </div>
                 ) : null}
 
-                {audioPreviewUrl && (
-                  <audio
-                    ref={audioRef}
-                    src={audioPreviewUrl}
-                    className="sr-only"
-                    onLoadedMetadata={(event) => {
-                      const duration = event.currentTarget.duration;
-                      if (Number.isFinite(duration) && duration > 0 && durationStatus !== "ready") {
-                        const durationMs = ms(duration);
-                        setAudioDurationMs(durationMs);
-                        setStartSeconds(0);
-                        setEndSeconds(Number(duration.toFixed(3)));
-                        setCurrentTime(0);
-                        setDurationStatus("ready");
-                      }
-                    }}
-                    onError={() => {
-                      setAudioDurationMs(0);
-                      setDurationStatus("error");
-                    }}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
-                  >
-                    <track kind="captions" />
-                  </audio>
-                )}
+                {audioElement}
 
                 {!autoGenerateOnReady ? (
                 <div className="border-t border-brand-line pt-6">
@@ -1254,33 +1287,7 @@ export function AudioUploadTrim({
                 </label>
               </>
             )}
-            {audioPreviewUrl && (
-              <audio
-                ref={audioRef}
-                src={audioPreviewUrl}
-                className="sr-only"
-                onLoadedMetadata={(event) => {
-                  const duration = event.currentTarget.duration;
-                  if (Number.isFinite(duration) && duration > 0 && durationStatus !== "ready") {
-                    const durationMs = ms(duration);
-                    setAudioDurationMs(durationMs);
-                    setStartSeconds(0);
-                    setEndSeconds(Number(duration.toFixed(3)));
-                    setCurrentTime(0);
-                    setDurationStatus("ready");
-                  }
-                }}
-                onError={() => {
-                  setAudioDurationMs(0);
-                  setDurationStatus("error");
-                }}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onEnded={() => setIsPlaying(false)}
-              >
-                <track kind="captions" />
-              </audio>
-            )}
+            {audioElement}
           </div>
 
           <Button

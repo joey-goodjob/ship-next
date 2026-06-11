@@ -19,6 +19,7 @@ export type UploadedAudio = {
   contentType?: string;
   checksum?: string;
   deduped?: boolean;
+  durationSeconds?: number;
 };
 
 type LyricVideoProject = {

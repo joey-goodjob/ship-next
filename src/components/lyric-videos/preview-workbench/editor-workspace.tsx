@@ -10,7 +10,7 @@ import { useEditor } from "./editor-context";
 import { HorizontalResizeHandle, VerticalResizeHandle } from "./resize-handles";
 import { PlaybackControls } from "./playback-controls";
 import { SidePanel } from "./side-panel";
-import { StatusBar } from "./status-bar";
+import { TimelineActionOverlay } from "./timeline-action-overlay";
 import { Timeline } from "./timeline";
 import { TopNavBar } from "./top-nav-bar";
 import { VideoPreview } from "./video-preview";
@@ -127,8 +127,10 @@ export function EditorWorkspace() {
           </div>
           <HorizontalResizeHandle onPointerDown={startTimelineResize} />
           <PlaybackControls />
-          <Timeline height={timelineHeight} />
-          <StatusBar />
+          <div className="relative shrink-0" style={{ height: timelineHeight }}>
+            <Timeline height={timelineHeight} />
+            <TimelineActionOverlay />
+          </div>
         </>
       )}
     </div>

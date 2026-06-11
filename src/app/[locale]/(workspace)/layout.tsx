@@ -53,6 +53,7 @@ export default function WorkspaceLayout({
           brandHref={brandHref}
           helpLink={{ href: "/#faq", label: t("nav.help") }}
           pricingLink={{ href: "/pricing", label: t("nav.pricing") }}
+          discordLink={{ href: "https://discord.gg/2YmWtNx3z7", label: "Discord" }}
           upgradeLabel={t("nav.upgrade")}
           creditLabel={t("nav.credits")}
           user={user}

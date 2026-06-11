@@ -1148,7 +1148,6 @@ export function fallbackPromptForFixedScene(params: {
 }) {
   const style = [
     params.project.artStyle,
-    params.project.palette ? `${params.project.palette} color palette` : '',
     params.storyPrompt || params.project.storyPrompt,
   ]
     .filter(Boolean)
@@ -1453,6 +1452,7 @@ function storyPromptFromGenerationSteps(steps?: any[]) {
 export async function generateStoryPrompt(params: {
   userId: string;
   projectId: string;
+  feedback?: string;
 }) {
   // 生成故事方向：只更新 `lyric_video_project.storyPrompt`，不改歌词和 scene。
   // 后续 generateStoryboard / generateVisualsFromStory 会使用这个 storyPrompt。
@@ -1460,7 +1460,13 @@ export async function generateStoryPrompt(params: {
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Generate lyrics before creating a story');
   const configs = await getAllConfigs();
-  const latestSongAnalysisStory = storyPromptFromGenerationSteps(details.generationSteps);
+
+  // If user provided feedback AND there's an existing story, do a lightweight rewrite instead of full regeneration
+  const currentStory = details.project.storyPrompt?.trim();
+  const hasFeedback = Boolean(params.feedback?.trim());
+  const useRewrite = hasFeedback && currentStory;
+
+  const latestSongAnalysisStory = useRewrite ? undefined : storyPromptFromGenerationSteps(details.generationSteps);
 
   const task = await createTask({
     userId: params.userId,
@@ -1470,11 +1476,11 @@ export async function generateStoryPrompt(params: {
     prompt: [
       `title: ${details.project.title}`,
       `style: ${details.project.artStyle}`,
-      `palette: ${details.project.palette}`,
       `lyrics: ${details.lines.map((line: any) => line.text).join('\n')}`,
+      ...(params.feedback ? [`feedback: ${params.feedback}`] : []),
     ].join('\n\n'),
     costCredits: 0,
-    options: { projectId: params.projectId, stage: 'story_prompt' },
+    options: { projectId: params.projectId, stage: 'story_prompt', feedback: params.feedback },
   });
 
   try {
@@ -1485,13 +1491,16 @@ export async function generateStoryPrompt(params: {
       provider: 'kie_codex',
       model: configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL,
       lineCount: details.lines.length,
-      source: latestSongAnalysisStory ? 'song_analysis' : 'story_prompt_llm',
+      source: useRewrite ? 'story_rewrite' : latestSongAnalysisStory ? 'song_analysis' : 'story_prompt_llm',
+      feedback: params.feedback,
     });
     const storyPrompt =
       latestSongAnalysisStory ||
       (await generateStoryPromptWithKieClaude({
         lines: details.lines,
         project: details.project,
+        feedback: params.feedback,
+        currentStory: useRewrite ? currentStory : undefined,
       }));
 
     if (!storyPrompt) {

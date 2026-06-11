@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Music2 } from "lucide-react";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ function uploadedToAudioSource(uploaded: UploadedAudio): UploadedAudioSource {
     size: uploaded.size,
     contentType: uploaded.contentType,
     checksum: uploaded.checksum,
+    durationSeconds: uploaded.durationSeconds,
   };
 }
 
@@ -53,7 +54,7 @@ export default function DashboardCreatePage() {
     resetCreationState,
   } = useLyricVideoCreationFlow();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const uploaded = readHomeUploadedAudio();
     if (!uploaded) return;
     setHomeUploadedAudio(uploaded);
@@ -125,6 +126,7 @@ export default function DashboardCreatePage() {
           uploadProgress={uploadProgress}
           showBack={false}
           initialUploadedAudio={homeUploadedAudio ? uploadedToAudioSource(homeUploadedAudio) : null}
+          deferInitialAudioUntilReady
           onClearInitialAudio={clearInitialAudio}
           afterTrimSlot={
             <CharacterPresetPicker

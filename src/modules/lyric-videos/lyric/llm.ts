@@ -1034,6 +1034,79 @@ function buildStoryboardCastBlock(cast?: any[]) {
   ].join('\n');
 }
 
+function cleanPromptValue<T>(value: T): T | undefined {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? (trimmed as T) : undefined;
+  }
+  if (Array.isArray(value)) return value.length > 0 ? value : undefined;
+  if (value && typeof value === 'object') return Object.keys(value).length > 0 ? value : undefined;
+  return value ?? undefined;
+}
+
+function compactSongAnalysisForStoryboardPrompt(songAnalysis: LyricVideoSongAnalysisResult) {
+  return Object.fromEntries(
+    Object.entries({
+      theme: songAnalysis.theme,
+      characters: songAnalysis.characters,
+      key_props: songAnalysis.key_props,
+      narrative_arc: songAnalysis.narrative_arc,
+      story_acts: songAnalysis.story_acts,
+      location_plan: songAnalysis.location_plan,
+      emotion_arc: songAnalysis.emotion_arc,
+      visual_style: songAnalysis.visual_style,
+      color_palette: songAnalysis.color_palette,
+      notes: songAnalysis.notes,
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
+}
+
+function compactPlanningForStoryboardPrompt(scene: FixedStoryboardSceneDraft) {
+  const planning = scene.planning;
+  if (!planning) return undefined;
+  return Object.fromEntries(
+    Object.entries({
+      durationClass: planning.durationClass,
+      needsMotion: planning.needsMotion,
+      isVocalMontage: planning.isVocalMontage,
+      splitIndex: planning.splitIndex,
+      splitCount: planning.splitCount,
+      repeatGroupId: planning.repeatGroupId,
+      repeatIndex: planning.repeatIndex,
+      repeatTotal: planning.repeatTotal,
+      focusText: planning.focusText,
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
+}
+
+function compactFixedSceneForStoryboardPrompt(scene: FixedStoryboardSceneDraft, index: number) {
+  return Object.fromEntries(
+    Object.entries({
+      scene_id: scene.sceneId,
+      index: index + 1,
+      kind: scene.kind,
+      shotType: scene.shotType,
+      start_s: secondsFromMs(scene.startMs),
+      end_s: secondsFromMs(scene.endMs),
+      text: scene.text,
+      energyLevel: scene.energyLevel,
+      bpm: scene.bpm,
+      prevLyric: scene.prevLyric,
+      nextLyric: scene.nextLyric,
+      planning: compactPlanningForStoryboardPrompt(scene),
+    }).flatMap(([key, value]) => {
+      const cleaned = cleanPromptValue(value);
+      return cleaned === undefined ? [] : [[key, cleaned]];
+    })
+  );
+}
+
 export function buildStoryboardScenesPrompt(params: {
   songAnalysis: LyricVideoSongAnalysisResult;
   scenes: FixedStoryboardSceneDraft[];
@@ -1049,24 +1122,14 @@ export function buildStoryboardScenesPrompt(params: {
     .filter(Boolean)
     .join('\n');
   const fixedScenes = params.scenes.map((scene, index) => ({
-    scene_id: scene.sceneId,
-    index: index + 1,
-    kind: scene.kind,
-    shotType: scene.shotType,
-    start_s: secondsFromMs(scene.startMs),
-    end_s: secondsFromMs(scene.endMs),
-    text: scene.text,
-    energyLevel: scene.energyLevel,
-    bpm: scene.bpm,
-    prevLyric: scene.prevLyric,
-    nextLyric: scene.nextLyric,
-    planning: scene.planning,
+    ...compactFixedSceneForStoryboardPrompt(scene, index),
   }));
+  const songAnalysis = compactSongAnalysisForStoryboardPrompt(params.songAnalysis);
 
   return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
 
 ## 歌曲理解
-${JSON.stringify(params.songAnalysis)}
+${JSON.stringify(songAnalysis)}
 
 ## 视觉设定
 ${styleText || 'Use a cinematic lyric video style with consistent characters, location logic, and color palette.'}
@@ -1121,24 +1184,14 @@ export function buildDebugStoryboardScenesPrompt(params: {
     .filter(Boolean)
     .join('\n');
   const fixedScenes = params.scenes.map((scene, index) => ({
-    scene_id: scene.sceneId,
-    index: index + 1,
-    kind: scene.kind,
-    shotType: scene.shotType,
-    start_s: secondsFromMs(scene.startMs),
-    end_s: secondsFromMs(scene.endMs),
-    text: scene.text,
-    energyLevel: scene.energyLevel,
-    bpm: scene.bpm,
-    prevLyric: scene.prevLyric,
-    nextLyric: scene.nextLyric,
-    planning: scene.planning,
+    ...compactFixedSceneForStoryboardPrompt(scene, index),
   }));
+  const songAnalysis = compactSongAnalysisForStoryboardPrompt(params.songAnalysis);
 
   return `你是一位专业音乐视频导演。现在分镜边界和镜头类型已经由系统确定，你不能改动 scene 数量、顺序、kind、shotType、start_s、end_s。
 
 ## 歌曲理解
-${JSON.stringify(params.songAnalysis)}
+${JSON.stringify(songAnalysis)}
 
 ## 视觉设定
 ${styleText || 'Use a cinematic lyric video style with consistent characters, location logic, and color palette.'}
@@ -1855,12 +1908,45 @@ export async function generateStoryboardWithKieClaude(params: {
 export async function generateStoryPromptWithKieClaude(params: {
   lines: any[];
   project: any;
+  feedback?: string;
+  currentStory?: string;
 }) {
   const lyrics = params.lines
     .map((line, index) => `${index + 1}. ${line.text}`)
     .join('\n');
-  const prompt = `Write an English act-based visual story brief for a lyric video.
-Use the lyrics, title, style, palette, and format to create a cinematic concept that an image/storyboard generator can later split into many scenes.
+
+  const isRewrite = Boolean(params.currentStory && params.feedback);
+
+  const prompt = isRewrite
+    ? `Revise an existing act-based visual story brief for a lyric video based on user feedback.
+Keep the same act structure (same number of acts) and lyrics alignment. Only adjust the mood, tone, scenes, or visual direction as requested.
+Return only JSON, no markdown.
+
+JSON shape:
+{
+  "story_acts": [
+    {
+      "title": "Act 1",
+      "description": "80-120 English words. A broad visual story segment, not a single shot."
+    }
+  ]
+}
+
+Requirements: consistent characters and setting, clear visual arc, recurring motifs, emotionally matched to the lyrics, no text, no typography, no subtitles in the images.
+
+Current story:
+${params.currentStory}
+
+User feedback: ${params.feedback}
+
+Project title: ${params.project.title}
+Art style: ${params.project.artStyle}
+Aspect ratio: ${params.project.aspectRatio}
+
+Lyrics:
+${lyrics}`
+    : `Write an English act-based visual story brief for a lyric video.
+Use the lyrics, title, style, and format to create a cinematic concept that an image/storyboard generator can later split into many scenes.
 Return only JSON, no markdown.
 
 JSON shape:
@@ -1879,7 +1965,6 @@ Do not write scene prompts. Each act should cover a larger part of the song and 
 Project title: ${params.project.title}
 Lyrics language: ${params.project.language || 'auto'}
 Art style: ${params.project.artStyle}
-Palette: ${params.project.palette}
 Aspect ratio: ${params.project.aspectRatio}
 
 Lyrics:

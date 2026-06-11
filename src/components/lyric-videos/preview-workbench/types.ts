@@ -1,5 +1,7 @@
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
-export type PanelTab = "customize" | "lyrics" | "cast" | "scenes" | "diagnostics";
+export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "diagnostics";
+export type StoryReviewStatus = "idle" | "unconfirmed" | "dirty" | "confirmed";
+export type StoryChangeSource = "manual_edit" | "ai_rewrite" | "ai_new_story" | null;
 
 export type ApiResponse<T> = {
   code: number;
@@ -247,8 +249,14 @@ export type EditorContextValue = {
   castBusy: boolean;
   generationLocked: boolean;
   generationLockReason: string;
+  storyChangeSource: StoryChangeSource;
+  storyReviewStatus: StoryReviewStatus;
   setActiveTab: (tab: PanelTab) => void;
   setZoom: (zoom: number) => void;
+  confirmStoryPrompt: () => void;
+  applyStoryPromptChanges: () => void;
+  cancelStoryPromptChanges: () => void;
+  editStoryPrompt: () => void;
   updateProjectField: <K extends keyof LyricVideoProject>(key: K, value: LyricVideoProject[K]) => void;
   setLines: (lines: LyricLine[]) => void;
   setWords: (words: LyricWord[]) => void;
@@ -258,7 +266,7 @@ export type EditorContextValue = {
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) => Promise<void>;
-  createStory: () => Promise<void>;
+  createStory: (feedback?: string) => Promise<void>;
   generateStoryboardPrompts: () => Promise<void>;
   generateCastCandidates: () => Promise<void>;
   createCastMember: (params: { name: string; description: string; promptFragment?: string }) => Promise<LyricCastMember | null>;

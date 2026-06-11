@@ -66,6 +66,7 @@ export function LyricVideoHomeTool() {
       filename: uploaded.filename || pending.file.name,
       size: uploaded.size || pending.file.size,
       contentType: uploaded.contentType || pending.file.type || "audio/mpeg",
+      durationSeconds: pending.options.durationSeconds,
     });
     pendingUploadRef.current = null;
     setIsRedirecting(true);
