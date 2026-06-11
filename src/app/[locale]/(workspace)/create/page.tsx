@@ -17,6 +17,7 @@ import {
   CHARACTER_PRESETS,
   DEFAULT_CHARACTER_PRESET_SLUG,
   getCharacterPreset,
+  type CharacterPreset,
 } from "@/lib/character-presets";
 
 const DEFAULT_RESOLUTION = "1080p";
@@ -42,7 +43,7 @@ export default function DashboardCreatePage() {
   const t = useTranslations("dashboard.create");
   const rawTitleLoop = t.raw("title_loop");
   const titleLoop = Array.isArray(rawTitleLoop) ? rawTitleLoop.filter((item): item is string => typeof item === "string") : [t("title")];
-  const [selectedCharacterSlug, setSelectedCharacterSlug] = useState(DEFAULT_CHARACTER_PRESET_SLUG);
+  const [selectedCharacterSlugs, setSelectedCharacterSlugs] = useState<string[]>([DEFAULT_CHARACTER_PRESET_SLUG]);
   const [homeUploadedAudio, setHomeUploadedAudio] = useState<UploadedAudio | null>(null);
   const {
     stage,
@@ -74,7 +75,7 @@ export default function DashboardCreatePage() {
     uploadedAudio?: UploadedAudioSource | null,
   ) {
     const projectTitle = titleFromFilename(uploadedAudio?.filename || file?.name || "");
-    const selectedCharacter = getCharacterPreset(selectedCharacterSlug);
+    const selectedCharacters = selectedCharacterSlugs.map((slug) => getCharacterPreset(slug)).filter(Boolean) as CharacterPreset[];
     const generateOptions = {
       ...options,
       projectTitle,
@@ -84,7 +85,7 @@ export default function DashboardCreatePage() {
 
     try {
       if (uploadedAudio) {
-        await generateFromUploaded(uploadedAudio, startTime, endTime, generateOptions, selectedCharacter);
+        await generateFromUploaded(uploadedAudio, startTime, endTime, generateOptions, selectedCharacters);
         clearHomeUploadedAudio();
         setHomeUploadedAudio(null);
         return;
@@ -95,7 +96,7 @@ export default function DashboardCreatePage() {
         return;
       }
 
-      await generateFromFile(file, startTime, endTime, generateOptions, selectedCharacter);
+      await generateFromFile(file, startTime, endTime, generateOptions, selectedCharacters);
     } catch (err: any) {
       toast.error(err?.message || t("failed"));
     }
@@ -131,9 +132,9 @@ export default function DashboardCreatePage() {
           afterTrimSlot={
             <CharacterPresetPicker
               presets={CHARACTER_PRESETS}
-              selectedSlug={selectedCharacterSlug}
+              selectedSlugs={selectedCharacterSlugs}
               disabled={isWorking}
-              onChange={setSelectedCharacterSlug}
+              onSelectionChange={setSelectedCharacterSlugs}
             />
           }
           onGenerate={handleGenerate}

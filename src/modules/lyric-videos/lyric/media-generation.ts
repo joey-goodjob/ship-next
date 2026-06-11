@@ -22,6 +22,7 @@ import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
 import { generateStoryboard } from './storyboard';
 import { GENERATION_STAGES } from './types';
+import { activeCastForStoryboard, cleanSceneCastIds, groupScenesByCastCombination } from './cast-library';
 
 /**
  * 图片生成模块：把已有的 `lyric_video_scene.prompt` 送去图片供应商，并把结果写回 scene。
@@ -58,6 +59,7 @@ const GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS = 2;
 type GridImagePanelScene = any & {
   finalPrompt?: string;
   boundCast?: any;
+  boundCastMembers?: any[];
   castIdsForGeneration?: string[];
   referenceImageUrl?: string;
   referenceImageUrls?: string[];
@@ -76,6 +78,7 @@ type GridImageBatchDescriptor = {
   referenceImageUrl: string;
   referenceImageUrls: string[];
   castId?: string;
+  castIds?: string[];
 };
 
 async function runWithConcurrency<T, R>(
@@ -127,14 +130,6 @@ function getCastReferenceImageUrls(castMember: any) {
     : [];
 }
 
-function activeMainCast(cast: any[]) {
-  return (Array.isArray(cast) ? cast : [])
-    .filter((member: any) => !member.deletedAt)
-    .filter((member: any) => String(member.status || 'active') === 'active')
-    .filter((member: any) => String(member.role || '').toLowerCase() === 'main' || !String(member.role || '').trim())
-    .sort((a: any, b: any) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
-}
-
 function sceneShotType(scene: any) {
   const timelineConfig = scene.timelineConfig && typeof scene.timelineConfig === 'object'
     ? scene.timelineConfig
@@ -142,28 +137,52 @@ function sceneShotType(scene: any) {
   return String(timelineConfig?.shotType || '').trim();
 }
 
-function resolveSceneCast(params: { scene: any; cast: any[] }) {
-  const sceneCastIds = Array.isArray(params.scene.castIds) ? params.scene.castIds : [];
+function resolveSceneCastMembers(params: { scene: any; cast: any[] }) {
+  const activeCast = activeCastForStoryboard(params.cast);
+  const sceneCastIds = cleanSceneCastIds(params.scene.castIds || [], activeCast);
   if (sceneCastIds.length > 0) {
-    return params.cast.find((member: any) => sceneCastIds.includes(member.id) && String(member.status || 'active') === 'active');
+    return activeCast.filter((member: any) => sceneCastIds.includes(member.id));
   }
-  const mainCast = activeMainCast(params.cast);
-  if (mainCast.length === 1 && sceneShotType(params.scene) === 'character_shot') {
-    return mainCast[0];
+  if (activeCast.length === 1 && sceneShotType(params.scene) === 'character_shot') {
+    return activeCast;
   }
-  return null;
+  return [];
+}
+
+function combinedCastPromptFragment(castMembers: any[]) {
+  return castMembers
+    .map((member: any) => {
+      const name = String(member?.name || 'character').trim();
+      const fragment = String(member?.promptFragment || member?.description || '').trim();
+      return fragment ? `${name}: ${fragment}` : name;
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
+function combinedReferenceCast(castMembers: any[]) {
+  if (castMembers.length === 0) return null;
+  if (castMembers.length === 1) return castMembers[0];
+  return {
+    id: castMembers.map((member: any) => member.id).join('+'),
+    name: castMembers.map((member: any) => member.name || 'character').join(' and '),
+    description: combinedCastPromptFragment(castMembers),
+    promptFragment: combinedCastPromptFragment(castMembers),
+  };
 }
 
 function scenePromptWithCast(params: { scene: any; cast: any[] }) {
-  const boundCast = resolveSceneCast(params);
-  const referenceImageUrls = getCastReferenceImageUrls(boundCast);
+  const boundCastMembers = resolveSceneCastMembers(params);
+  const boundCast = boundCastMembers[0] || null;
+  const referenceImageUrls = uniqueProviderReachableUrls(boundCastMembers.flatMap((member: any) => getCastReferenceImageUrls(member)));
   const prompt = String(params.scene.prompt || '').trim();
-  const explicitCastIds = Array.isArray(params.scene.castIds) ? params.scene.castIds.filter(Boolean) : [];
-  const castIdsForGeneration = explicitCastIds.length > 0 ? explicitCastIds : boundCast?.id ? [boundCast.id] : [];
+  const explicitCastIds = cleanSceneCastIds(params.scene.castIds || [], params.cast);
+  const castIdsForGeneration = explicitCastIds.length > 0 ? explicitCastIds : boundCastMembers.map((member: any) => member.id);
   return {
     ...params.scene,
     finalPrompt: prompt,
     boundCast,
+    boundCastMembers,
     castIdsForGeneration,
     referenceImageUrl: referenceImageUrls[0] || '',
     referenceImageUrls,
@@ -943,13 +962,16 @@ export async function queueSceneImages(params: {
     clearExistingImages: params.clearExistingImages,
   });
   for (const scene of scenes) {
-    const sceneCastIds = Array.isArray(scene.castIds) ? scene.castIds : [];
-    const boundCast =
+    const activeCast = activeCastForStoryboard(details.cast);
+    const sceneCastIds = cleanSceneCastIds(scene.castIds || [], activeCast);
+    const boundCastMembers =
       sceneCastIds.length > 0
-        ? details.cast.find((member: any) => sceneCastIds.includes(member.id) && getCastReferenceImageUrls(member).length > 0)
-        : activeMainCast(details.cast).find((member: any) => getCastReferenceImageUrls(member).length > 0) ||
-          details.cast.find((member: any) => member.status === 'active' && getCastReferenceImageUrls(member).length > 0);
-    const referenceImageUrls = getCastReferenceImageUrls(boundCast);
+        ? activeCast.filter((member: any) => sceneCastIds.includes(member.id) && getCastReferenceImageUrls(member).length > 0)
+        : activeCast.length === 1
+          ? activeCast.filter((member: any) => getCastReferenceImageUrls(member).length > 0)
+          : [];
+    const boundCast = combinedReferenceCast(boundCastMembers);
+    const referenceImageUrls = uniqueProviderReachableUrls(boundCastMembers.flatMap((member: any) => getCastReferenceImageUrls(member)));
     const referenceImageUrl = referenceImageUrls[0] || '';
     const model = referenceImageUrls.length > 0 ? characterImageModel : defaultModel;
     const imageOptions: Record<string, unknown> = {
@@ -970,7 +992,7 @@ export async function queueSceneImages(params: {
     const normalizedImageOptions = providerSelection.normalizeOptions(imageOptions);
     const actualModel = providerSelection.model;
     const prompt = referenceImageUrls.length > 0 && boundCast?.promptFragment
-      ? `${scene.prompt}\n\nKeep the main character consistent with this reference: ${boundCast.promptFragment}.`
+      ? `${scene.prompt}\n\nKeep the character identity consistent with this reference: ${boundCast.promptFragment}.`
       : scene.prompt;
 
     const task = await createTask({
@@ -986,7 +1008,8 @@ export async function queueSceneImages(params: {
         provider: providerSelection.providerName,
         fallbackReason: providerSelection.fallbackReason,
         ...normalizedImageOptions,
-        castId: boundCast?.id,
+        castId: boundCastMembers[0]?.id,
+        castIds: boundCastMembers.map((member: any) => member.id),
       },
     });
 
@@ -1148,52 +1171,65 @@ export async function queueSceneImagesGrid(params: {
   });
 
   const descriptors: GridImageBatchDescriptor[] = [];
-  for (let start = 0; start < scenes.length; start += GRID_SCENE_IMAGE_BATCH_SIZE) {
-    const batchIndex = Math.floor(start / GRID_SCENE_IMAGE_BATCH_SIZE);
-    const batchScenes = scenes
-      .slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE)
-      .map((scene: any) => scenePromptWithCast({ scene, cast }));
-    const batchReferenceCast =
-      batchScenes.find((scene: GridImagePanelScene) => scene.boundCast && (scene.referenceImageUrls || []).length > 0)?.boundCast ||
-      activeMainCast(cast).find((member: any) => getCastReferenceImageUrls(member).length > 0);
-    const referenceImageUrls = getCastReferenceImageUrls(batchReferenceCast);
-    const gridPrompt = buildGridSceneImagePrompt({
-      scenes: batchScenes,
-      gridSize: GRID_SCENE_IMAGE_SIZE,
-      aspectRatio,
-      resolution,
-      referenceCast: batchReferenceCast,
-      hasReferenceImage: referenceImageUrls.length > 0,
-    });
-    const imageOptions: Record<string, unknown> = {
-      aspect_ratio: aspectRatio,
-      resolution,
-      output_format: 'jpg',
-    };
-    if (referenceImageUrls.length > 0) {
-      imageOptions.image_input = referenceImageUrls;
+  let batchIndex = 0;
+  let sceneOffset = 0;
+  const groupedScenes = groupScenesByCastCombination(scenes, activeCastForStoryboard(cast));
+  for (const group of groupedScenes) {
+    for (let start = 0; start < group.scenes.length; start += GRID_SCENE_IMAGE_BATCH_SIZE) {
+      const batchScenes = group.scenes
+        .slice(start, start + GRID_SCENE_IMAGE_BATCH_SIZE)
+        .map((scene: any) => scenePromptWithCast({ scene, cast }));
+      const castMembersById = new Map<string, any>();
+      for (const scene of batchScenes) {
+        for (const member of scene.boundCastMembers || []) {
+          if (member?.id) castMembersById.set(member.id, member);
+        }
+      }
+      const batchReferenceCastMembers = Array.from(castMembersById.values());
+      const batchReferenceCast = combinedReferenceCast(batchReferenceCastMembers);
+      const referenceImageUrls = uniqueProviderReachableUrls(batchScenes.flatMap((scene) => scene.referenceImageUrls || []));
+      const castIds = batchReferenceCastMembers.map((member: any) => member.id);
+      const gridPrompt = buildGridSceneImagePrompt({
+        scenes: batchScenes,
+        gridSize: GRID_SCENE_IMAGE_SIZE,
+        aspectRatio,
+        resolution,
+        referenceCast: batchReferenceCast,
+        hasReferenceImage: referenceImageUrls.length > 0,
+      });
+      const imageOptions: Record<string, unknown> = {
+        aspect_ratio: aspectRatio,
+        resolution,
+        output_format: 'jpg',
+      };
+      if (referenceImageUrls.length > 0) {
+        imageOptions.image_input = referenceImageUrls;
+      }
+      const providerSelection = await createLyricVideoImageProviderSelection({
+        configs,
+        model,
+        needsReferenceImage: referenceImageUrls.length > 0,
+        defaultKieModel: model,
+        defaultKieCharacterModel: configs.kie_character_image_model || 'nano-banana-2',
+      });
+      descriptors.push({
+        batchIndex,
+        start: sceneOffset,
+        scenes: batchScenes,
+        gridPrompt,
+        imageOptions: providerSelection.normalizeOptions(imageOptions),
+        provider: providerSelection.provider,
+        providerName: providerSelection.providerName,
+        model: providerSelection.model,
+        fallbackReason: providerSelection.fallbackReason,
+        referenceImageUrl: referenceImageUrls[0] || '',
+        referenceImageUrls,
+        castId: castIds[0],
+        castIds,
+      });
+      batchIndex += 1;
+      sceneOffset += batchScenes.length;
     }
-    const providerSelection = await createLyricVideoImageProviderSelection({
-      configs,
-      model,
-      needsReferenceImage: referenceImageUrls.length > 0,
-      defaultKieModel: model,
-      defaultKieCharacterModel: configs.kie_character_image_model || 'nano-banana-2',
-    });
-    descriptors.push({
-      batchIndex,
-      start,
-      scenes: batchScenes,
-      gridPrompt,
-      imageOptions: providerSelection.normalizeOptions(imageOptions),
-      provider: providerSelection.provider,
-      providerName: providerSelection.providerName,
-      model: providerSelection.model,
-      fallbackReason: providerSelection.fallbackReason,
-      referenceImageUrl: referenceImageUrls[0] || '',
-      referenceImageUrls,
-      castId: batchReferenceCast?.id,
-    });
   }
 
   async function queueBatch(descriptor: GridImageBatchDescriptor) {
@@ -1217,6 +1253,7 @@ export async function queueSceneImagesGrid(params: {
           gridSize: GRID_SCENE_IMAGE_SIZE,
           ...descriptor.imageOptions,
           castId: descriptor.castId,
+          castIds: descriptor.castIds || [],
           referenceImageUrl: descriptor.referenceImageUrl,
           referenceImageUrls: descriptor.referenceImageUrls,
         },
@@ -1231,6 +1268,7 @@ export async function queueSceneImagesGrid(params: {
         provider: descriptor.providerName,
         queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
         hasReferenceImage: descriptor.referenceImageUrls.length > 0,
+        castIds: descriptor.castIds || [],
       });
       const result = await descriptor.provider.generate({
         params: {

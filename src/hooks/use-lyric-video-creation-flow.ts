@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
-import { getCharacterPreset, type CharacterPreset } from "@/lib/character-presets";
+import { DEFAULT_CHARACTER_PRESET_SLUG, getCharacterPreset, type CharacterPreset } from "@/lib/character-presets";
 import { logLyricStage, logLyricStageError } from "@/lib/lyric-video-log";
 
 type ApiResponse<T> = {
@@ -63,6 +63,7 @@ type PendingLyricVideoPayload = {
   startTime: number;
   endTime: number;
   options: GenerateOptions;
+  selectedCharacterSlugs?: string[];
   selectedCharacterSlug?: string;
   createdAt: number;
 };
@@ -100,6 +101,20 @@ function resolvePublicAssetUrl(url: string) {
   if (!url || /^https?:\/\//.test(url)) return url;
   if (typeof window === "undefined") return url;
   return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
+function selectedCharacterSlugsFromPayload(payload: PendingLyricVideoPayload) {
+  const slugs = Array.isArray(payload.selectedCharacterSlugs)
+    ? payload.selectedCharacterSlugs
+    : payload.selectedCharacterSlug
+      ? [payload.selectedCharacterSlug]
+      : [];
+  const selected = Array.from(new Set(slugs.filter(Boolean))).slice(0, 4);
+  return selected.length > 0 ? selected : [DEFAULT_CHARACTER_PRESET_SLUG];
+}
+
+function roleForSelectedCharacter(index: number) {
+  return ['primary', 'secondary', 'tertiary', 'quaternary'][index] || 'inactive';
 }
 
 function assertPrompt1DirectionReady(generated: GenerationRunResponse) {
@@ -281,13 +296,17 @@ export function useLyricVideoCreationFlow() {
         scenesStatus: project.scenesStatus,
       });
 
-      const selectedCharacter = getCharacterPreset(payload.selectedCharacterSlug);
-      if (selectedCharacter) {
+      const selectedCharacters = selectedCharacterSlugsFromPayload(payload)
+        .map((slug) => getCharacterPreset(slug))
+        .filter(Boolean) as CharacterPreset[];
+      for (const [index, selectedCharacter] of selectedCharacters.entries()) {
         const castStartedAt = Date.now();
+        const role = roleForSelectedCharacter(index);
         logLyricStage("create-project-cast", "start", {
           projectId: project.id,
           characterSlug: selectedCharacter.slug,
           characterName: selectedCharacter.name,
+          role,
         });
         const thumbnailUrl = resolvePublicAssetUrl(selectedCharacter.thumbnailUrl || selectedCharacter.referenceImageUrl);
         const referenceImageUrl = resolvePublicAssetUrl(selectedCharacter.referenceImageUrl || selectedCharacter.thumbnailUrl);
@@ -303,11 +322,12 @@ export function useLyricVideoCreationFlow() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: selectedCharacter.name,
-            role: selectedCharacter.role,
+            role,
             description: selectedCharacter.description,
             promptFragment: selectedCharacter.promptFragment,
             referenceImageUrl,
             generationParams: {
+              source: "preset",
               presetSlug: selectedCharacter.slug,
               thumbnailUrl,
               referenceImageUrls,
@@ -320,6 +340,7 @@ export function useLyricVideoCreationFlow() {
           projectId: project.id,
           characterSlug: selectedCharacter.slug,
           characterName: selectedCharacter.name,
+          role,
         });
       }
 
@@ -384,9 +405,14 @@ export function useLyricVideoCreationFlow() {
       startTime: number,
       endTime: number,
       options: GenerateOptions,
-      selectedCharacter?: CharacterPreset | null,
+      selectedCharacters?: CharacterPreset[] | CharacterPreset | null,
     ) => {
       try {
+        const castSelection = Array.isArray(selectedCharacters)
+          ? selectedCharacters
+          : selectedCharacters
+            ? [selectedCharacters]
+            : [];
         const payload: PendingLyricVideoPayload = {
           uploaded,
           filename: uploaded.filename,
@@ -395,7 +421,8 @@ export function useLyricVideoCreationFlow() {
           startTime,
           endTime,
           options,
-          selectedCharacterSlug: selectedCharacter?.slug,
+          selectedCharacterSlugs: castSelection.map((character) => character.slug).slice(0, 4),
+          selectedCharacterSlug: castSelection[0]?.slug,
           createdAt: Date.now(),
         };
 
@@ -416,10 +443,10 @@ export function useLyricVideoCreationFlow() {
       startTime: number,
       endTime: number,
       options: GenerateOptions,
-      selectedCharacter?: CharacterPreset | null,
+      selectedCharacters?: CharacterPreset[] | CharacterPreset | null,
     ) => {
       const uploaded = await uploadOnly(file);
-      await generateFromUploaded(uploaded, startTime, endTime, options, selectedCharacter);
+      await generateFromUploaded(uploaded, startTime, endTime, options, selectedCharacters);
     },
     [generateFromUploaded, uploadOnly],
   );
@@ -430,9 +457,14 @@ export function useLyricVideoCreationFlow() {
       startTime: number,
       endTime: number,
       options: GenerateOptions,
-      selectedCharacter?: CharacterPreset | null,
+      selectedCharacters?: CharacterPreset[] | CharacterPreset | null,
     ) => {
       try {
+        const castSelection = Array.isArray(selectedCharacters)
+          ? selectedCharacters
+          : selectedCharacters
+            ? [selectedCharacters]
+            : [];
         setError("");
         setStage("uploading");
         setUploadProgress(0);
@@ -445,7 +477,8 @@ export function useLyricVideoCreationFlow() {
           startTime,
           endTime,
           options,
-          selectedCharacterSlug: selectedCharacter?.slug,
+          selectedCharacterSlugs: castSelection.map((character) => character.slug).slice(0, 4),
+          selectedCharacterSlug: castSelection[0]?.slug,
           createdAt: Date.now(),
         });
         setStage("waiting-auth");

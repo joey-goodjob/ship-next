@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
 import type {
+  CreateCastMemberInput,
   EditorContextValue,
   GenerationRun,
   GenerationRunResponse,
@@ -14,6 +15,7 @@ import type {
   LyricExport,
   LyricLine,
   LyricScene,
+  LyricScenePatch,
   LyricVideoProject,
   LyricWord,
   PanelTab,
@@ -770,33 +772,7 @@ export function EditorProvider({
     }
   }
 
-  async function generateCastCandidates() {
-    if (generationLocked) {
-      showGenerationLockedToast();
-      return;
-    }
-    if (!project || castBusy) return;
-    setCastBusy(true);
-    setSaveStatus("saving");
-    try {
-      const generated = await requestJson<LyricCastMember[]>(`/api/lyric-videos/${project.id}/cast/candidates`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      setCast(generated || []);
-      setActiveTab("cast");
-      setSaveStatus("saved");
-      toast.success("Character candidates queued");
-    } catch (err: any) {
-      setSaveStatus("failed");
-      toast.error(err?.message || "Generate characters failed");
-    } finally {
-      setCastBusy(false);
-    }
-  }
-
-  async function createCastMember(params: { name: string; description: string; promptFragment?: string }) {
+  async function createCastMember(params: CreateCastMemberInput) {
     if (generationLocked) {
       showGenerationLockedToast();
       return null;
@@ -836,13 +812,9 @@ export function EditorProvider({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      setCast((previous) =>
-        data.selectAsMain
-          ? previous.map((item) => (item.id === updated.id ? updated : { ...item, status: item.status === "deleted" ? item.status : "inactive" }))
-          : previous.map((item) => (item.id === updated.id ? updated : item)),
-      );
+      setCast((previous) => previous.map((item) => (item.id === updated.id ? updated : item)));
       setSaveStatus("saved");
-      toast.success(data.selectAsMain ? "Main character selected" : "Character saved");
+      toast.success(data.role ? "Character role updated" : data.selectAsMain ? "Primary character selected" : "Character saved");
       return updated;
     } catch (err: any) {
       setSaveStatus("failed");
@@ -854,18 +826,36 @@ export function EditorProvider({
   async function deleteCastMember(castId: string) {
     if (generationLocked) {
       showGenerationLockedToast();
-      return;
+      return false;
     }
-    if (!project) return;
-    setSaveStatus("saving");
+    if (!project) return false;
+    const previousCast = cast;
+    const previousScenes = scenes;
     try {
-      await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
+      const activeCount = cast.filter((member) => member.status === "active" && String(member.role || "").toLowerCase() !== "inactive").length;
+      const deletingActive = cast.some((member) => member.id === castId && member.status === "active" && String(member.role || "").toLowerCase() !== "inactive");
+      if (deletingActive && activeCount <= 1) {
+        toast.error("Each project needs at least one active character.");
+        return false;
+      }
       setCast((previous) => previous.filter((item) => item.id !== castId));
+      setScenes((previous) =>
+        previous.map((scene) => ({
+          ...scene,
+          castIds: (scene.castIds || []).filter((id) => id !== castId),
+        })),
+      );
+      setSaveStatus("saving");
+      await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
       setSaveStatus("saved");
       toast.success("Character deleted");
+      return true;
     } catch (err: any) {
+      setCast(previousCast);
+      setScenes(previousScenes);
       setSaveStatus("failed");
       toast.error(err?.message || "Delete character failed");
+      return false;
     }
   }
 
@@ -904,6 +894,34 @@ export function EditorProvider({
     } catch (err: any) {
       toast.error(err?.message || "Sync character images failed");
     }
+  }
+
+  async function updateScene(sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setSaveStatus("saved");
+      if (options?.successMessage !== null) toast.success(options?.successMessage || "Scene saved");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || options?.errorMessage || "Update scene failed");
+      return null;
+    }
+  }
+
+  async function updateSceneCastIds(sceneId: string, castIds: string[]) {
+    return updateScene(sceneId, { castIds }, { successMessage: "Scene cast updated", errorMessage: "Update scene cast failed" });
   }
 
   async function queueSceneImages(sceneIds: string[]) {
@@ -1102,10 +1120,11 @@ export function EditorProvider({
       uploadAndTranscribe,
       createStory,
       generateStoryboardPrompts,
-      generateCastCandidates,
       createCastMember,
       updateCastMember,
       deleteCastMember,
+      updateScene,
+      updateSceneCastIds,
       regenerateCastImage,
       syncCastImages,
       queueSceneImages,
@@ -1144,6 +1163,8 @@ export function EditorProvider({
       storyReviewStatus,
       refresh,
       retryFailedImageBatches,
+      updateScene,
+      updateSceneCastIds,
     ],
   );
 

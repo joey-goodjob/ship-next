@@ -152,6 +152,108 @@
     "line3": "现在创建你的歌词视频：",
     "button": "上传你的歌曲"
   },
+  "free_page": {
+    "seo": {
+      "title": "免费在线歌词视频制作工具 — 无水印，无需注册",
+      "description": "用 AI 免费制作歌词视频。无水印，开始无需账号。上传歌曲后自动转写并同步歌词，可下载 HD 视频，任何设备都能使用。"
+    },
+    "hero": {
+      "badge": "无水印。无需信用卡。不是伪免费试用。",
+      "h1": "免费歌词视频制作工具",
+      "subhead": "真正免费。没有水印，没有注册墙，也没有要求信用卡的“免费试用”。上传一首歌，歌词会自动转写并同步。",
+      "primary_cta": "免费制作歌词视频",
+      "secondary_cta": "查看免费风格",
+      "upload_note": "把歌曲拖到这里，或点击浏览 · MP3、WAV、FLAC、AAC、OGG · 最长 15 分钟",
+      "lyrics_option": "已经有歌词文件？自动转写后也可以改用粘贴或上传 LRC/TXT。"
+    },
+    "trust": {
+      "items": ["无水印", "开始无需注册", "歌词自动转写", "1080p HD 导出"]
+    },
+    "manifesto": {
+      "title": "别人说“免费”通常是什么意思，以及这里是什么意思",
+      "other_label": "其他工具",
+      "here_label": "这里",
+      "rows": [
+        { "other": "“免费”——但带巨大水印", "here": "没有水印。永远没有。连很小的也没有。" },
+        { "other": "“免费”——但导出要付费", "here": "下载你的 HD 视频。免费。" },
+        { "other": "“免费试用”——需要信用卡", "here": "不需要信用卡。没有试用倒计时。免费就是免费。" },
+        { "other": "“免费”——只能 720p", "here": "免费计划也给完整 1080p HD。" },
+        { "other": "“免费”——注册之后才让用", "here": "先体验完整流程。只有下载时才需要注册。" }
+      ]
+    },
+    "styles": {
+      "title": "免费风格已包含",
+      "description": "这些都在免费计划里。点击任意风格开始。",
+      "button": "使用这个风格",
+      "items": [
+        { "name": "Neon Pulse", "badge": "FREE", "description": "适合电子和流行音乐" },
+        { "name": "Clean Slate", "badge": "FREE", "description": "适合原声和独立音乐" },
+        { "name": "Night Drive", "badge": "FREE", "description": "适合 hip-hop 和 trap" },
+        { "name": "Ink & Paper", "badge": "FREE", "description": "适合抒情、民谣和 ballad" },
+        { "name": "Minimal Mono", "badge": "FREE", "description": "适合只想让歌词说话的作品" },
+        { "name": "Tape Rewind", "badge": "PRO", "description": "VHS 颗粒和 80 年代金属质感。预览免费，导出需 Pro。" }
+      ]
+    },
+    "how_it_works": {
+      "title": "工作方式",
+      "steps": [
+        { "label": "1", "title": "上传你的歌曲", "description": "拖入 MP3、WAV 或 FLAC。开始无需账号。" },
+        { "label": "2", "title": "歌词自动出现", "description": "AI 会转写歌词，并把每一行同步到节拍，大约 30 秒。你可以点击任意行编辑。已经有歌词文件？也可以直接粘贴。" },
+        { "label": "3", "title": "选择风格并下载", "description": "选择免费风格，渲染并下载 1080p HD 视频。无水印，可用于 YouTube、TikTok 或 Instagram。" }
+      ]
+    },
+    "comparison": {
+      "title": "免费版 vs Pro：诚实版",
+      "feature_label": "",
+      "free_label": "免费版",
+      "pro_label": "Pro $9/月",
+      "unlimited_label": "Unlimited $19/月",
+      "free_button": "免费开始",
+      "pro_button": "升级 Pro",
+      "note": "只有免费版真的打动你之后，再考虑升级。",
+      "rows": [
+        { "feature": "每月视频数", "free": "3", "pro": "20", "unlimited": "无限" },
+        { "feature": "风格", "free": "5 个免费风格", "pro": "全部 20+", "unlimited": "全部 20+" },
+        { "feature": "分辨率", "free": "1080p HD", "pro": "4K", "unlimited": "4K" },
+        { "feature": "歌曲长度", "free": "最长 15 分钟", "pro": "最长 15 分钟", "unlimited": "最长 15 分钟" },
+        { "feature": "自定义字体", "free": "—", "pro": "✓", "unlimited": "✓" },
+        { "feature": "自定义背景", "free": "—", "pro": "✓", "unlimited": "✓" },
+        { "feature": "优先渲染", "free": "—", "pro": "✓（约快 3 倍）", "unlimited": "✓（约快 3 倍）" },
+        { "feature": "批量渲染", "free": "—", "pro": "—", "unlimited": "✓" },
+        { "feature": "Watermark", "free": "None", "pro": "None", "unlimited": "None" },
+        { "feature": "Commercial use", "free": "✓", "pro": "✓", "unlimited": "✓" }
+      ]
+    },
+    "use_cases": {
+      "title": "为每个平台制作免费歌词视频",
+      "items": [
+        { "title": "YouTube lyric videos", "description": "完整长度，16:9 HD" },
+        { "title": "TikTok lyric videos", "description": "竖屏 9:16，适合趋势风格" },
+        { "title": "Instagram Reels", "description": "支持 9:16 和 1:1" },
+        { "title": "Spotify Canvas-style loops", "description": "适合歌曲的短竖屏视觉循环" },
+        { "title": "Karaoke-style videos", "description": "逐词高亮的卡拉 OK 风格歌词" },
+        { "title": "Fan edits & covers", "description": "你的素材，加上同步歌词" }
+      ]
+    },
+    "faq": {
+      "title": "FAQ",
+      "items": [
+        { "question": "这个歌词视频制作工具真的免费吗？", "answer": "是的。免费计划包含每月 3 个视频，完整 1080p HD，无水印，不需要信用卡。" },
+        { "question": "以后会给免费视频加水印吗？", "answer": "不会。免费视频无水印是永久承诺，不是上线促销。" },
+        { "question": "3 个免费视频用完后会怎样？", "answer": "不会发生坏事。你的视频仍然属于你，账号仍然免费，额度会在每月 1 日重置。只有等待不适合你时再升级。" },
+        { "question": "我需要自己输入或粘贴歌词吗？", "answer": "不需要。歌词会从音频中自动转写，支持 50+ 语言。如果你愿意，也可以改用自己的 LRC/TXT 歌词文件。" },
+        { "question": "免费计划可以制作 TikTok 竖屏歌词视频吗？", "answer": "可以。每个免费视频都可以导出 16:9、9:16 和 1:1，一键切换。" },
+        { "question": "免费视频可以商用吗？", "answer": "可以。导出视频属于你，也可以用于变现频道。只要确保你拥有上传音乐的相应权利。" }
+      ]
+    },
+    "bottom_cta": {
+      "title": "免费就应该意味着免费。",
+      "description": "现在制作你的第一个歌词视频，看看我们是否说到做到。",
+      "primary": "免费开始",
+      "pricing_prefix": "需要更多视频、全部风格或 4K？",
+      "pricing_link": "查看 Pro 方案"
+    }
+  },
   "footer": {
     "tagline": "由音乐人打造，为音乐人而生。",
     "feature": "资源",
@@ -159,6 +261,7 @@
     "resources": "公司",
     "legal": "法律信息",
     "home": "首页",
+    "free": "免费歌词视频工具",
     "pricing": "价格",
     "dashboard": "AI 歌词视频工具",
     "privacy": "隐私政策",

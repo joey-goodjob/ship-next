@@ -1,13 +1,14 @@
-import { and, desc, eq, isNull, ne } from 'drizzle-orm';
+import { and, desc, eq, isNull, ne, or } from 'drizzle-orm';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus } from '@/core/ai';
 import { db } from '@/core/db';
-import { lyricVideoCastMember, type NewLyricVideoCastMember } from '@/config/db/schema';
+import { lyricVideoCastMember, lyricVideoScene, type NewLyricVideoCastMember } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
-import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
+import { logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
-import { callKieCodexResponses, createKieProvider } from './llm';
-import { parseJsonLoose, safeJson } from './json';
+import { createKieProvider } from './llm';
+import { parseJsonField, safeJson } from './json';
+import { ACTIVE_CAST_ROLES, castRoleForStorage, ensureUniqueActiveCastName, removeCastIdFromSceneCastIds } from './cast-library';
 import { getProjectDetails } from './project';
 
 /**
@@ -20,6 +21,38 @@ import { getProjectDetails } from './project';
 
 const DEFAULT_CHARACTER_IMAGE_MODEL = 'nano-banana-2';
 const CHARACTER_IMAGE_COST_CREDITS = 5;
+
+function sameCastRoleCondition(role: string) {
+  if (role === 'primary') return or(eq(lyricVideoCastMember.role, 'primary'), eq(lyricVideoCastMember.role, 'main'));
+  if (role === 'secondary') {
+    return or(
+      eq(lyricVideoCastMember.role, 'secondary'),
+      eq(lyricVideoCastMember.role, 'duet_partner'),
+      eq(lyricVideoCastMember.role, 'supporting')
+    );
+  }
+  return eq(lyricVideoCastMember.role, role);
+}
+
+function activeCastCount(cast: Array<{ role?: string | null; status?: string | null; deletedAt?: unknown }>) {
+  return cast.filter((member) => !member.deletedAt && String(member.status || 'active') === 'active' && castRoleForStorage(member.role) !== 'inactive').length;
+}
+
+function nextCastAfterRoleExclusivity<T extends { id: string; role?: string | null; status?: string | null }>(cast: T[], activeRole?: string | null, activeCastId?: string) {
+  const role = castRoleForStorage(activeRole);
+  if (!ACTIVE_CAST_ROLES.includes(role)) return cast;
+  return cast.map((member) => {
+    if (activeCastId && member.id === activeCastId) return member;
+    if (castRoleForStorage(member.role) !== role) return member;
+    return { ...member, role: 'inactive', status: 'inactive' };
+  });
+}
+
+function assertUniqueActiveCastNames(cast: Array<{ id: string; name?: string | null; role?: string | null; status?: string | null; deletedAt?: unknown; sort?: number | null }>) {
+  if (!ensureUniqueActiveCastName(cast)) {
+    throw new Error('Active character names must be unique. Rename one character before saving.');
+  }
+}
 
 function resolveCharacterImageModel(configs: Record<string, string>, model?: string) {
   return model || configs.kie_character_image_model || DEFAULT_CHARACTER_IMAGE_MODEL;
@@ -37,9 +70,10 @@ function buildCharacterPrompt(params: {
   const styleParts = [
     params.project.artStyle,
     params.project.palette ? `${params.project.palette} color palette` : '',
-    'full body character reference sheet',
-    'single main character',
-    'plain light background',
+    'three-view full body character reference sheet in a single image',
+    'same character shown as front view, side view, and back view',
+    'consistent face, hairstyle, body proportions, outfit, accessories, and shoes across all three views',
+    'plain white background',
     'clear face, hairstyle, outfit, accessories, shoes',
     'cinematic lyric video production design',
     'no text, no typography, no watermark, no logo',
@@ -51,72 +85,6 @@ function buildCharacterPrompt(params: {
     `Visual requirements: ${styleParts.join(', ')}.`,
     'The image must be useful as a stable reference image for future scene generation.',
   ].join('\n');
-}
-
-function buildCandidatePrompt(details: Awaited<ReturnType<typeof getProjectDetails>>) {
-  const project = details?.project;
-  const lyricSample = (details?.lines || [])
-    .slice(0, 16)
-    .map((line: any) => line.text)
-    .filter(Boolean)
-    .join('\n');
-  const sceneSample = (details?.scenes || [])
-    .slice(0, 8)
-    .map((scene: any) => scene.prompt || scene.text)
-    .filter(Boolean)
-    .join('\n');
-
-  return `You are a music video casting director. Create 3 distinct main-character candidates for a lyric video.
-
-Project:
-${JSON.stringify({
-  title: project?.title,
-  storyPrompt: project?.storyPrompt,
-  artStyle: project?.artStyle,
-  palette: project?.palette,
-  aspectRatio: project?.aspectRatio,
-  resolution: project?.resolution,
-})}
-
-Lyrics sample:
-${lyricSample || 'No lyrics yet.'}
-
-Scene prompt sample:
-${sceneSample || 'No scene prompts yet.'}
-
-Return only JSON:
-{
-  "characters": [
-    {
-      "name": "short memorable name",
-      "role": "main",
-      "description": "specific physical appearance, face, hair, skin tone, body type, wardrobe, accessories, and vibe",
-      "promptFragment": "concise English prompt fragment for keeping this character consistent in generated images"
-    }
-  ]
-}
-
-Rules:
-- Create exactly 3 candidates.
-- Each description must be safe, concrete, and visually distinct.
-- Do not mention real people, celebrities, brands, copyrighted characters, text, logos, or typography.`;
-}
-
-function normalizeCandidates(value: unknown) {
-  const parsed = parseJsonLoose<any>(value, {});
-  const rawCharacters = Array.isArray(parsed?.characters) ? parsed.characters : Array.isArray(parsed) ? parsed : [];
-  return rawCharacters
-    .map((item: any, index: number) => {
-      const description = cleanText(item?.description || item?.promptFragment);
-      return {
-        name: cleanText(item?.name, `Character ${index + 1}`),
-        role: cleanText(item?.role, 'main') || 'main',
-        description,
-        promptFragment: cleanText(item?.promptFragment, description),
-      };
-    })
-    .filter((item: any) => item.description)
-    .slice(0, 3);
 }
 
 export async function listCastMembers(params: { userId: string; projectId: string }) {
@@ -156,22 +124,40 @@ export async function createCastMember(params: {
   if (!description) throw new Error('Character description is required');
 
   const existing = await listCastMembers({ userId: params.userId, projectId: params.projectId });
+  const role = castRoleForStorage(params.role || 'primary');
   const data: NewLyricVideoCastMember = {
     id: getUuid(),
     projectId: params.projectId,
     userId: params.userId,
     name,
-    role: cleanText(params.role, 'main') || 'main',
+    role,
     description,
     promptFragment: cleanText(params.promptFragment, description),
     referenceImageUrl: cleanText(params.referenceImageUrl) || null,
     generationParams: params.generationParams ? safeJson(params.generationParams) : null,
-    status: params.status || 'active',
+    status: role === 'inactive' ? 'inactive' : params.status || 'active',
     sort: params.sort ?? existing.length,
   };
+  assertUniqueActiveCastNames([...nextCastAfterRoleExclusivity(existing, data.status === 'active' ? role : 'inactive'), data]);
 
-  const [created] = await db().insert(lyricVideoCastMember).values(data).returning();
-  return created;
+  return db().transaction(async (tx: any) => {
+    const [created] = await tx.insert(lyricVideoCastMember).values(data).returning();
+    if (created && created.status === 'active' && ACTIVE_CAST_ROLES.includes(role)) {
+      await tx
+        .update(lyricVideoCastMember)
+        .set({ status: 'inactive', role: 'inactive' })
+        .where(
+          and(
+            eq(lyricVideoCastMember.projectId, params.projectId),
+            eq(lyricVideoCastMember.userId, params.userId),
+            sameCastRoleCondition(role),
+            ne(lyricVideoCastMember.id, created.id),
+            isNull(lyricVideoCastMember.deletedAt)
+          )
+        );
+    }
+    return created;
+  });
 }
 
 export async function updateCastMember(params: {
@@ -188,7 +174,11 @@ export async function updateCastMember(params: {
 }) {
   const updateData: any = {};
   if (typeof params.name === 'string') updateData.name = params.name.trim();
-  if (typeof params.role === 'string') updateData.role = params.role.trim();
+  if (typeof params.role === 'string') {
+    const role = castRoleForStorage(params.role);
+    updateData.role = role;
+    updateData.status = role === 'inactive' ? 'inactive' : 'active';
+  }
   if (typeof params.description === 'string') updateData.description = params.description.trim();
   if (typeof params.promptFragment === 'string') updateData.promptFragment = params.promptFragment.trim();
   if (params.referenceImageUrl !== undefined) updateData.referenceImageUrl = params.referenceImageUrl || null;
@@ -196,20 +186,51 @@ export async function updateCastMember(params: {
   updateData.error = null;
 
   return db().transaction(async (tx: any) => {
+    const projectCast = await tx
+      .select()
+      .from(lyricVideoCastMember)
+      .where(
+        and(
+          eq(lyricVideoCastMember.projectId, params.projectId),
+          eq(lyricVideoCastMember.userId, params.userId),
+          isNull(lyricVideoCastMember.deletedAt)
+        )
+      );
+    const current = projectCast.find((member: any) => member.id === params.castId);
+    if (!current) throw new Error('Character not found');
+
     if (params.selectAsMain) {
+      updateData.role = 'primary';
+      updateData.status = 'active';
+    }
+
+    const nextCurrent = { ...current, ...updateData };
+    const nextProjectCast = nextCastAfterRoleExclusivity(
+      projectCast.map((member: any) => (member.id === params.castId ? nextCurrent : member)),
+      nextCurrent.status === 'active' ? nextCurrent.role : 'inactive',
+      params.castId
+    );
+    assertUniqueActiveCastNames(nextProjectCast as any);
+
+    if (updateData.role === 'inactive' || updateData.status === 'inactive') {
+      if (current && String(current.status || 'active') === 'active' && castRoleForStorage(current.role) !== 'inactive' && activeCastCount(projectCast) <= 1) {
+        throw new Error('Each project needs at least one active character');
+      }
+    }
+
+    if (ACTIVE_CAST_ROLES.includes(updateData.role)) {
       await tx
         .update(lyricVideoCastMember)
-        .set({ status: 'inactive' })
+        .set({ status: 'inactive', role: 'inactive' })
         .where(
           and(
             eq(lyricVideoCastMember.projectId, params.projectId),
             eq(lyricVideoCastMember.userId, params.userId),
+            sameCastRoleCondition(updateData.role),
             ne(lyricVideoCastMember.id, params.castId),
             isNull(lyricVideoCastMember.deletedAt)
           )
         );
-      updateData.role = 'main';
-      updateData.status = 'active';
     }
 
     const [updated] = await tx
@@ -230,16 +251,46 @@ export async function updateCastMember(params: {
 }
 
 export async function removeCastMember(params: { userId: string; projectId: string; castId: string }) {
-  await db()
-    .update(lyricVideoCastMember)
-    .set({ status: 'deleted', deletedAt: new Date() })
-    .where(
-      and(
-        eq(lyricVideoCastMember.id, params.castId),
-        eq(lyricVideoCastMember.projectId, params.projectId),
-        eq(lyricVideoCastMember.userId, params.userId)
-      )
-    );
+  await db().transaction(async (tx: any) => {
+    const projectCast = await tx
+      .select()
+      .from(lyricVideoCastMember)
+      .where(
+        and(
+          eq(lyricVideoCastMember.projectId, params.projectId),
+          eq(lyricVideoCastMember.userId, params.userId),
+          isNull(lyricVideoCastMember.deletedAt)
+        )
+      );
+    const current = projectCast.find((member: any) => member.id === params.castId);
+    if (current && String(current.status || 'active') === 'active' && castRoleForStorage(current.role) !== 'inactive' && activeCastCount(projectCast) <= 1) {
+      throw new Error('Each project needs at least one active character');
+    }
+
+    await tx
+      .update(lyricVideoCastMember)
+      .set({ status: 'deleted', role: 'inactive', deletedAt: new Date() })
+      .where(
+        and(
+          eq(lyricVideoCastMember.id, params.castId),
+          eq(lyricVideoCastMember.projectId, params.projectId),
+          eq(lyricVideoCastMember.userId, params.userId)
+        )
+      );
+
+    const scenes = await tx
+      .select()
+      .from(lyricVideoScene)
+      .where(and(eq(lyricVideoScene.projectId, params.projectId), eq(lyricVideoScene.userId, params.userId)));
+    for (const scene of scenes) {
+      const castIds = parseJsonField<string[]>(scene.castIds, []);
+      if (!castIds.includes(params.castId)) continue;
+      await tx
+        .update(lyricVideoScene)
+        .set({ castIds: safeJson(removeCastIdFromSceneCastIds(castIds, params.castId)) })
+        .where(and(eq(lyricVideoScene.id, scene.id), eq(lyricVideoScene.userId, params.userId)));
+    }
+  });
 }
 
 export async function queueCastImage(params: {
@@ -385,54 +436,6 @@ export async function syncCastImages(params: { userId: string; projectId: string
   }
 
   return listCastMembers({ userId: params.userId, projectId: params.projectId });
-}
-
-export async function generateCastCandidates(params: {
-  userId: string;
-  projectId: string;
-  model?: string;
-}) {
-  // 让 LLM 生成三个候选主角，先插入 `lyric_video_cast_member`，再逐个调用 queueCastImage。
-  // 这是角色辅助链路，不是 `/generate` 必跑步骤。
-  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
-  if (!details) throw new Error('Project not found');
-
-  const result = await callKieCodexResponses({
-    text: buildCandidatePrompt(details),
-    model: params.model,
-    reasoningEffort: 'medium',
-  });
-  const candidates = normalizeCandidates(result.content);
-  if (candidates.length === 0) throw new Error('No character candidates generated');
-
-  logLyricStage('cast-candidates', 'generated', {
-    projectId: params.projectId,
-    userId: params.userId,
-    count: candidates.length,
-    model: result.model,
-  });
-
-  const existing = await listCastMembers({ userId: params.userId, projectId: params.projectId });
-  const created = [];
-  for (const [index, candidate] of candidates.entries()) {
-    const [member] = await db()
-      .insert(lyricVideoCastMember)
-      .values({
-        id: getUuid(),
-        projectId: params.projectId,
-        userId: params.userId,
-        name: candidate.name,
-        role: candidate.role,
-        description: candidate.description,
-        promptFragment: candidate.promptFragment,
-        status: 'candidate',
-        sort: existing.length + index,
-      })
-      .returning();
-    created.push(await queueCastImage({ userId: params.userId, projectId: params.projectId, castId: member.id, model: params.model }));
-  }
-
-  return created;
 }
 
 export async function getLatestMainCast(params: { userId: string; projectId: string }) {

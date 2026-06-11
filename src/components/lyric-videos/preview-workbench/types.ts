@@ -86,6 +86,14 @@ export type LyricScene = {
   sort?: number;
 };
 
+export type LyricScenePatch = {
+  text?: string;
+  prompt?: string;
+  negativePrompt?: string | null;
+  motionPrompt?: string | null;
+  castIds?: string[];
+};
+
 export type GenerationRun = {
   id: string;
   status: string;
@@ -153,12 +161,22 @@ export type LyricCastMember = {
   providerTaskId?: string | null;
   imageModel?: string | null;
   imagePromptSnapshot?: string | null;
-  generationParams?: string | null;
+  generationParams?: string | Record<string, unknown> | null;
   completedAt?: string | null;
   failureCode?: string | null;
   error?: string | null;
   status: string;
   sort: number;
+};
+
+export type CreateCastMemberInput = {
+  name: string;
+  role?: string;
+  description: string;
+  promptFragment?: string;
+  referenceImageUrl?: string | null;
+  generationParams?: Record<string, unknown>;
+  status?: string;
 };
 
 export type ProjectDetails = {
@@ -268,10 +286,11 @@ export type EditorContextValue = {
   ) => Promise<void>;
   createStory: (feedback?: string) => Promise<void>;
   generateStoryboardPrompts: () => Promise<void>;
-  generateCastCandidates: () => Promise<void>;
-  createCastMember: (params: { name: string; description: string; promptFragment?: string }) => Promise<LyricCastMember | null>;
+  createCastMember: (params: CreateCastMemberInput) => Promise<LyricCastMember | null>;
   updateCastMember: (castId: string, data: Partial<LyricCastMember> & { selectAsMain?: boolean }) => Promise<LyricCastMember | null>;
-  deleteCastMember: (castId: string) => Promise<void>;
+  deleteCastMember: (castId: string) => Promise<boolean>;
+  updateScene: (sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) => Promise<LyricScene | null>;
+  updateSceneCastIds: (sceneId: string, castIds: string[]) => Promise<LyricScene | null>;
   regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
   syncCastImages: () => Promise<void>;
   queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;

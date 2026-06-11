@@ -28,6 +28,7 @@ import {
   type SceneInput,
   type StoryboardScene,
 } from './types';
+import { activeCastForStoryboard, castRoleForDisplay } from './cast-library';
 
 /**
  * LLM 边界模块：负责把内部结构发给 Kie/Groq 等供应商，并把模型输出整理成内部格式。
@@ -989,16 +990,8 @@ export function normalizePromptScenes(parsed: any): LyricVideoPromptSceneResult[
   );
 }
 
-function activeMainCast(cast?: any[]) {
-  return (Array.isArray(cast) ? cast : [])
-    .filter((member: any) => !member.deletedAt)
-    .filter((member: any) => ['active', 'processing', 'candidate'].includes(String(member.status || 'active')))
-    .filter((member: any) => String(member.role || '').toLowerCase() === 'main' || !String(member.role || '').trim())
-    .sort((a: any, b: any) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
-}
-
 function singleActiveMainCastId(cast?: any[]) {
-  const mainCast = activeMainCast(cast).filter((member: any) => String(member.status || 'active') === 'active');
+  const mainCast = activeCastForStoryboard(cast).filter((member: any) => String(member.status || 'active') === 'active');
   return mainCast.length === 1 ? String(mainCast[0].id) : '';
 }
 
@@ -1014,7 +1007,7 @@ function castIdsForGeneratedScene(params: {
 }
 
 function buildStoryboardCastBlock(cast?: any[]) {
-  const mainCast = activeMainCast(cast);
+  const mainCast = activeCastForStoryboard(cast);
   if (mainCast.length === 0) {
     return 'No user-selected cast is available. Do not invent named characters beyond the established main character implied by the song.';
   }
@@ -1022,7 +1015,7 @@ function buildStoryboardCastBlock(cast?: any[]) {
   const castPayload = mainCast.map((member: any) => ({
     id: member.id,
     name: member.name,
-    role: member.role || 'main',
+    role: castRoleForDisplay(member.role),
     description: member.description,
     promptFragment: member.promptFragment || member.description,
     hasReferenceImage: Boolean(member.referenceImageUrl),
@@ -1030,7 +1023,7 @@ function buildStoryboardCastBlock(cast?: any[]) {
   return [
     'Use only these user-selected cast members for character_shot scenes:',
     JSON.stringify(castPayload),
-    'For each character_shot, include cast_ids with the selected cast id(s). If there is exactly one active main cast, use that cast for every character_shot.',
+    'For each character_shot, include cast_ids with selected cast id(s). If there is exactly one active cast, use that cast for every character_shot. If there are multiple active cast members, choose one or more listed cast ids according to the scene action; do not invent unlisted characters.',
   ].join('\n');
 }
 
