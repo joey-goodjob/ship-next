@@ -32,7 +32,7 @@ export function SiteFooter({
     <footer className="bg-brand-panel text-brand-ink">
       <div className="mx-auto max-w-[1320px] px-6 pb-10 pt-14 sm:px-10 sm:pt-16 lg:px-16">
         {tagline && (
-          <p className="mb-10 text-center font-serif text-3xl italic leading-[1.15] tracking-tight text-brand-ink sm:text-4xl">
+          <p className="mb-10 text-center text-xl font-bold leading-[25px] text-brand-ink lg:text-4xl lg:leading-10">
             {tagline}
           </p>
         )}
@@ -52,7 +52,7 @@ export function SiteFooter({
           >
             <div className="space-y-6">
               <BrandLogo variant="footer" showName />
-              <p className="font-black">Follow us on</p>
+              <p className="text-base font-semibold leading-6">Follow us on</p>
               <div className="flex gap-2">
                 {socials?.map((s) => (
                   <a
@@ -73,7 +73,7 @@ export function SiteFooter({
             </div>
             {columns.map((col) => (
               <div key={col.title} className="space-y-5">
-                <h4 className="text-[15px] font-black uppercase tracking-wide text-brand-ink">
+                <h4 className="text-sm font-semibold uppercase text-brand-ink">
                   {col.title}
                 </h4>
                 <ul className="space-y-2">

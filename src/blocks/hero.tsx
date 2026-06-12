@@ -19,18 +19,18 @@ export async function Hero() {
   const t = await getTranslations("landing");
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-page px-5 pb-8 pt-14 text-brand-ink sm:px-8 lg:pb-10 lg:pt-16">
+    <section className="relative isolate overflow-hidden bg-brand-page px-5 pb-[70px] pt-14 text-brand-ink sm:px-8 lg:pb-[96px] lg:pt-16">
       <div className="pointer-events-none absolute left-0 top-36 -z-10 h-[420px] w-[260px] opacity-70 bg-brand-hero-dots-left" />
       <div className="pointer-events-none absolute right-0 top-32 -z-10 h-[480px] w-[300px] opacity-70 bg-brand-hero-dots-right" />
 
       <div className="mx-auto max-w-[1200px]">
-        <div className="mx-auto max-w-[760px] text-center">
-          <h1 className="text-balance text-[44px] font-black leading-[1.08] tracking-[-0.022em] text-brand-ink sm:text-[64px] lg:text-[72px]">
+        <div className="mx-auto max-w-[1060px] text-center">
+          <h1 className="text-balance text-2xl font-bold leading-8 text-brand-ink lg:text-[40px] lg:leading-[60px]">
             {t("hero.headline_start")}
             <span className="text-brand-accent"> {t("hero.headline_accent")}</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-[680px] text-pretty text-lg font-semibold leading-8 text-brand-muted lg:text-xl">
+          <p className="mx-auto mt-2.5 max-w-[680px] text-pretty text-sm font-normal leading-5 text-brand-muted lg:mt-4 lg:text-base lg:leading-6">
             {t("hero.subheadline")}
           </p>
 
@@ -59,8 +59,8 @@ export async function Hero() {
           </div>
         </div>
 
-        <div className="mx-auto mt-6 w-full max-w-[960px]">
-          <LyricVideoHomeTool />
+        <div className="mx-auto mt-6 w-full max-w-[1220px]">
+          <LyricVideoHomeTool showMaterialCarousel />
         </div>
 
         <div className="mt-12 rounded-[18px] border border-brand-line/90 bg-brand-panel/78 px-6 py-8 shadow-[0_18px_55px_var(--brand-elevation-shadow-soft)] sm:px-10">
@@ -70,8 +70,8 @@ export async function Hero() {
                 <span className="mx-auto flex size-16 items-center justify-center rounded-[16px] bg-brand-accent-soft text-brand-accent-hover shadow-[inset_0_0_0_1px_var(--brand-accent-hairline)]">
                   <Icon className="size-7" />
                 </span>
-                <h3 className="mt-5 text-base font-extrabold text-brand-ink">{t(`hero.benefits.${key}.title`)}</h3>
-                <p className="mt-3 text-sm font-medium leading-6 text-brand-muted">
+                <h3 className="mt-5 text-base font-semibold leading-6 text-brand-ink">{t(`hero.benefits.${key}.title`)}</h3>
+                <p className="mt-3 text-sm font-normal leading-5 text-brand-muted">
                   {t(`hero.benefits.${key}.description`)}
                 </p>
               </div>
@@ -79,7 +79,7 @@ export async function Hero() {
           </div>
         </div>
 
-        <p className="mt-7 flex items-center justify-center gap-3 text-center text-sm font-semibold text-brand-muted">
+        <p className="mt-7 flex items-center justify-center gap-3 text-center text-sm font-normal leading-5 text-brand-muted">
           <Heart className="size-5 fill-brand-accent text-brand-accent" />
           {t("hero.loved_by")}
         </p>

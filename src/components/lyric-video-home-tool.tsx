@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { Loader2, Music2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim } from "@/components/audio-upload-trim";
+import { LyricVideoMaterialCarousel } from "@/components/lyric-video-material-carousel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,13 +26,17 @@ type PendingUpload = {
   options: { useEntireAudio: boolean; durationSeconds: number };
 };
 
+type LyricVideoHomeToolProps = {
+  showMaterialCarousel?: boolean;
+};
+
 function stageLabel(stage: string) {
   if (stage === "uploading") return "Uploading your audio...";
   if (stage === "redirecting") return "Opening the creator...";
   return "Preparing your song...";
 }
 
-export function LyricVideoHomeTool() {
+export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoHomeToolProps) {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const {
@@ -148,22 +153,28 @@ export function LyricVideoHomeTool() {
 
   return (
     <div id="create" className="relative scroll-mt-24">
-      <AudioUploadTrim
-        compact
-        presentation="home-card"
-        creationStage={displayStage}
-        uploadProgress={uploadProgress}
-        showBack={false}
-        showCredits={false}
-        showTrimControls={false}
-        autoGenerateOnReady
-        completionState="idle"
-        onGenerate={handleGenerate}
-        creditCost={10}
-        generateLabel="Upload song"
-        workingLabel={displayStage === "idle" ? "Preparing your song..." : stageLabel(displayStage)}
-        successLabel="Song uploaded"
-      />
+      <div className={showMaterialCarousel ? "grid min-w-0 items-stretch gap-6 lg:grid-cols-[minmax(320px,390px)_minmax(0,1fr)]" : ""}>
+        <div className="min-w-0">
+          <AudioUploadTrim
+            compact
+            presentation="home-card"
+            homeCardSize={showMaterialCarousel ? "narrow" : "default"}
+            creationStage={displayStage}
+            uploadProgress={uploadProgress}
+            showBack={false}
+            showCredits={false}
+            showTrimControls={false}
+            autoGenerateOnReady
+            completionState="idle"
+            onGenerate={handleGenerate}
+            creditCost={10}
+            generateLabel="Upload song"
+            workingLabel={displayStage === "idle" ? "Preparing your song..." : stageLabel(displayStage)}
+            successLabel="Song uploaded"
+          />
+        </div>
+        {showMaterialCarousel ? <LyricVideoMaterialCarousel /> : null}
+      </div>
 
       {displayWorking ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-brand-panel/88 px-6 backdrop-blur-sm">

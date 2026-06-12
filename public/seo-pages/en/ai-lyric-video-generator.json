@@ -1,0 +1,127 @@
+{
+  "slug": "ai-lyric-video-generator",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "AI Lyric Video Generator - Turn Songs Into Lyric Videos Online",
+    "description": "Create lyric videos from audio with AI. Upload a song, transcribe and sync lyrics, preview scenes, and export videos for YouTube, TikTok, and Instagram.",
+    "keywords": [
+      "ai lyric video generator",
+      "lyric video generator",
+      "song to lyric video",
+      "audio to lyric video"
+    ]
+  },
+  "hero": {
+    "badge": "AI-powered lyric videos from your song",
+    "h1": "AI Lyric Video Generator",
+    "subhead": "Upload your song and turn it into a ready-to-edit lyric video. The workflow helps transcribe lyrics, plan scenes, preview the result, and prepare exports for every major social format.",
+    "primaryCta": "Upload a Song",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "Audio upload",
+    "Lyrics transcription",
+    "Preview-first editing",
+    "Social-ready formats"
+  ],
+  "howItWorks": {
+    "title": "How to make an AI lyric video",
+    "steps": [
+      {
+        "title": "Upload your audio",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png",
+        "description": "Start with an MP3, WAV, FLAC, AAC, or OGG file. The tool stores the song and opens the creation flow."
+      },
+      {
+        "title": "Review lyrics and direction",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png",
+        "description": "The workflow prepares lyrics and creative direction so the visual story can match the rhythm and mood of the track."
+      },
+      {
+        "title": "Preview, edit, and export",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png",
+        "description": "Open the preview workspace, adjust the result, and prepare versions for YouTube, TikTok, Reels, or square posts."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why choose this AI lyric video generator",
+    "description": "Create a lyric-video workflow around your actual song instead of forcing music into a generic video prompt box.",
+    "highlight": {
+      "title": "Preview your lyric video before export",
+      "description": "The page opens directly with the real upload flow, so visitors can start from a song instead of reading another static landing page."
+    },
+    "cards": [
+      {
+        "title": "Built around songs",
+        "description": "Unlike generic video generators, the flow starts from audio and treats lyric timing as the center of the video."
+      },
+      {
+        "title": "Preview-first workflow",
+        "description": "You can inspect the lyric video in the preview workspace before committing to a final export."
+      },
+      {
+        "title": "Made for multiple formats",
+        "description": "Plan lyric videos for horizontal, vertical, and square distribution without changing the core idea."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "LyricVideo AI ToolKit",
+    "description": "Use the same template for related song, lyric, and social video pages."
+  },
+  "useCases": [
+    {
+      "title": "YouTube lyric videos",
+      "description": "Publish full-length lyric videos in a horizontal layout."
+    },
+    {
+      "title": "TikTok song clips",
+      "description": "Create vertical lyric visuals for hooks, choruses, and short promo cuts."
+    },
+    {
+      "title": "Instagram Reels",
+      "description": "Turn a track section into a quick visual preview for social release posts."
+    },
+    {
+      "title": "Artist promo assets",
+      "description": "Prepare consistent lyric visuals for release campaigns, covers, and fan updates."
+    }
+  ],
+  "faq": {
+    "title": "FAQ",
+    "items": [
+      {
+        "question": "What is an AI lyric video generator?",
+        "answer": "It is a tool that helps turn a song into a lyric video by using AI-assisted transcription, timing, scene planning, and visual generation workflows."
+      },
+      {
+        "question": "Can I start with audio instead of writing a prompt?",
+        "answer": "Yes. This template places the real song upload flow in the hero so visitors can start with an audio file immediately."
+      },
+      {
+        "question": "Do I need to finish the whole video before previewing it?",
+        "answer": "No. The product is designed around a preview-first workflow so you can inspect and adjust the lyric video before final export."
+      },
+      {
+        "question": "Which formats can lyric videos be made for?",
+        "answer": "The workflow is intended for common social video formats, including horizontal YouTube videos, vertical TikTok or Reels videos, and square posts."
+      }
+    ]
+  },
+  "bottomCta": {
+    "title": "Turn your next song into a lyric video",
+    "description": "Start with the audio you already have and move into a guided lyric video creation flow.",
+    "button": "Start With a Song"
+  }
+}

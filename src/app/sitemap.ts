@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { envConfigs } from "@/config";
+import { getAllSeoPages } from "@/lib/seo-pages";
 
 const PUBLIC_PATHS = [
   { path: "/", priority: 1 },
@@ -21,8 +22,12 @@ function baseUrl() {
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const base = baseUrl();
+  const seoPaths = getAllSeoPages().map(({ locale, slug }) => ({
+    path: locale === "en" ? `/${slug}` : `/${locale}/${slug}`,
+    priority: 0.9,
+  }));
 
-  return PUBLIC_PATHS.map(({ path, priority }) => ({
+  return [...PUBLIC_PATHS, ...seoPaths].map(({ path, priority }) => ({
     url: `${base}${path}`,
     lastModified: now,
     changeFrequency: "weekly",

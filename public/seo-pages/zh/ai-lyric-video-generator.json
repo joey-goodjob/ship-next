@@ -1,0 +1,127 @@
+{
+  "slug": "ai-lyric-video-generator",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "AI 歌词视频生成器 - 在线把歌曲做成歌词视频",
+    "description": "用 AI 从音频创建歌词视频。上传歌曲，自动转写并同步歌词，预览分镜效果，再导出适合 YouTube、TikTok 和 Instagram 的视频。",
+    "keywords": [
+      "AI 歌词视频生成器",
+      "歌词视频生成器",
+      "歌曲转歌词视频",
+      "音频转歌词视频"
+    ]
+  },
+  "hero": {
+    "badge": "从你的歌曲开始生成 AI 歌词视频",
+    "h1": "AI 歌词视频生成器",
+    "subhead": "上传一首歌，把它变成可预览、可编辑的歌词视频。流程会帮助你转写歌词、规划视觉方向、预览效果，并准备适合主流社媒格式的导出。",
+    "primaryCta": "上传歌曲",
+    "secondaryCta": "查看流程"
+  },
+  "trust": [
+    "音频上传",
+    "歌词转写",
+    "先预览再编辑",
+    "适配社媒格式"
+  ],
+  "howItWorks": {
+    "title": "如何制作 AI 歌词视频",
+    "steps": [
+      {
+        "title": "上传音频",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png",
+        "description": "从 MP3、WAV、FLAC、AAC 或 OGG 文件开始。工具会保存歌曲并打开创建流程。"
+      },
+      {
+        "title": "检查歌词和方向",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png",
+        "description": "流程会准备歌词和创意方向，让视觉故事能贴合歌曲节奏和情绪。"
+      },
+      {
+        "title": "预览、编辑并导出",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png",
+        "description": "进入预览工作台，调整结果，并准备适合 YouTube、TikTok、Reels 或方形帖子的版本。"
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "为什么选择这个 AI 歌词视频生成器",
+    "description": "围绕你的真实歌曲构建歌词视频流程，而不是把音乐硬塞进通用视频提示词框。",
+    "highlight": {
+      "title": "导出前先预览歌词视频",
+      "description": "页面首屏直接放真实上传流程，访问者可以从歌曲开始，而不是只看静态落地页文案。"
+    },
+    "cards": [
+      {
+        "title": "围绕歌曲构建",
+        "description": "它不是通用视频生成器，而是从音频开始，把歌词时间轴当成视频核心。"
+      },
+      {
+        "title": "Preview-first 工作流",
+        "description": "在最终导出前，你可以先在预览工作台检查歌词视频效果。"
+      },
+      {
+        "title": "适合多种比例",
+        "description": "可以围绕同一个创意，准备横屏、竖屏和方形歌词视频。"
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "LyricVideo AI 工具集",
+    "description": "同一套模板可以继续扩展到歌曲、歌词和社媒视频相关页面。"
+  },
+  "useCases": [
+    {
+      "title": "YouTube 歌词视频",
+      "description": "制作完整横屏歌词视频，用于频道发布。"
+    },
+    {
+      "title": "TikTok 歌曲片段",
+      "description": "为副歌、hook 和短推广片段制作竖屏歌词视觉。"
+    },
+    {
+      "title": "Instagram Reels",
+      "description": "把歌曲片段变成适合发布预告的短视觉内容。"
+    },
+    {
+      "title": "音乐人宣发素材",
+      "description": "为发歌、翻唱和粉丝更新准备风格一致的歌词视觉。"
+    }
+  ],
+  "faq": {
+    "title": "常见问题",
+    "items": [
+      {
+        "question": "什么是 AI 歌词视频生成器？",
+        "answer": "它是一个把歌曲变成歌词视频的工具，会用 AI 辅助完成歌词转写、时间同步、分镜规划和视觉生成流程。"
+      },
+      {
+        "question": "可以从音频开始，而不是先写提示词吗？",
+        "answer": "可以。这个模板会把真实歌曲上传流程放在首屏，让访问者可以直接从音频文件开始。"
+      },
+      {
+        "question": "必须等完整视频生成完才能看效果吗？",
+        "answer": "不用。产品是 preview-first 流程，你可以先检查和调整歌词视频，再进入最终导出。"
+      },
+      {
+        "question": "歌词视频可以适配哪些格式？",
+        "answer": "流程面向常见社媒视频格式，包括 YouTube 横屏视频、TikTok 或 Reels 竖屏视频，以及方形帖子。"
+      }
+    ]
+  },
+  "bottomCta": {
+    "title": "把下一首歌做成歌词视频",
+    "description": "从已有音频开始，进入一套引导式歌词视频创建流程。",
+    "button": "从歌曲开始"
+  }
+}

@@ -58,6 +58,7 @@ export interface AudioUploadTrimProps {
   showTrimControls?: boolean;
   compact?: boolean;
   presentation?: "default" | "home-card";
+  homeCardSize?: "default" | "narrow";
   completionState?: "success" | "idle";
   autoGenerateOnReady?: boolean;
   afterTrimSlot?: ReactNode;
@@ -366,6 +367,7 @@ export function AudioUploadTrim({
   showTrimControls = true,
   compact = false,
   presentation = "default",
+  homeCardSize = "default",
   completionState = "success",
   autoGenerateOnReady = false,
   afterTrimSlot,
@@ -411,6 +413,7 @@ export function AudioUploadTrim({
   const requiredCredits = Math.max(1, creditCost ?? Math.ceil((selectedDuration || durationSeconds || 1) * creditsPerSecond));
   const hasEnoughCredits = !showCredits || creditBalance === null || creditBalance >= requiredCredits;
   const isHomeCard = presentation === "home-card";
+  const isNarrowHomeCard = isHomeCard && homeCardSize === "narrow";
   const hasAudio = Boolean(audioFile || uploadedAudio);
   const audioName = audioFile?.name || uploadedAudio?.filename || "";
   const audioSize = audioFile?.size || uploadedAudio?.size || 0;
@@ -757,28 +760,48 @@ export function AudioUploadTrim({
               if (isGenerateDisabled) return;
               generatePreview();
             }}
-            className="overflow-hidden rounded-[24px] border border-brand-line bg-brand-panel p-6 shadow-[0_30px_95px_var(--brand-elevation-shadow)] sm:p-9"
+            className={`overflow-hidden rounded-[24px] border border-brand-line bg-brand-panel p-6 shadow-[0_30px_95px_var(--brand-elevation-shadow)] ${
+              isNarrowHomeCard ? "" : "sm:p-9"
+            }`}
           >
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className={isNarrowHomeCard ? "flex flex-col gap-6" : "flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"}>
               <div>
-                <span className="inline-flex h-8 items-center justify-center rounded-[10px] bg-brand-accent px-4 text-sm font-black text-brand-accent-ink shadow-[0_10px_22px_var(--brand-accent-shadow)]">
+                <span className="inline-flex h-8 items-center justify-center rounded-[10px] bg-brand-accent px-4 text-sm font-semibold leading-5 text-brand-accent-ink shadow-[0_10px_22px_var(--brand-accent-shadow)]">
                   Step 1
                 </span>
                 <div>
-                  <h3 className="mt-5 text-3xl font-black tracking-[-0.012em] text-brand-ink">Upload your song</h3>
-                  <p className="mt-2 text-base font-semibold text-brand-muted">Choose one audio file to start your lyric video.</p>
+                  <h3 className="mt-5 text-xl font-bold leading-7 text-brand-ink lg:text-2xl lg:leading-8">Upload your song</h3>
+                  <p className="mt-2 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">Choose one audio file to start your lyric video.</p>
                 </div>
               </div>
-              <div className="-mx-1 flex gap-3 overflow-x-auto px-1 text-center text-sm font-extrabold text-brand-ink sm:mx-0 sm:grid sm:w-[450px] sm:grid-cols-3 sm:overflow-visible sm:px-0">
-                <span className="inline-flex h-12 min-w-[140px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm sm:min-w-0">
+              <div
+                className={
+                  isNarrowHomeCard
+                    ? "-mx-1 flex gap-3 overflow-x-auto px-1 text-center text-sm font-semibold leading-5 text-brand-ink"
+                    : "-mx-1 flex gap-3 overflow-x-auto px-1 text-center text-sm font-semibold leading-5 text-brand-ink sm:mx-0 sm:grid sm:w-[450px] sm:grid-cols-3 sm:overflow-visible sm:px-0"
+                }
+              >
+                <span
+                  className={`inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm ${
+                    isNarrowHomeCard ? "min-w-[140px]" : "min-w-[140px] sm:min-w-0"
+                  }`}
+                >
                   <Music className="size-5 text-brand-accent" />
                   Single song
                 </span>
-                <span className="inline-flex h-12 min-w-[120px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm sm:min-w-0">
+                <span
+                  className={`inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm ${
+                    isNarrowHomeCard ? "min-w-[120px]" : "min-w-[120px] sm:min-w-0"
+                  }`}
+                >
                   <FolderOpen className="size-5 text-brand-accent" />
                   {maxFileSizeLabel}
                 </span>
-                <span className="inline-flex h-12 min-w-[130px] items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm sm:min-w-0">
+                <span
+                  className={`inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[14px] border border-brand-line bg-brand-panel px-3 shadow-sm ${
+                    isNarrowHomeCard ? "min-w-[130px]" : "min-w-[130px] sm:min-w-0"
+                  }`}
+                >
                   <span className="flex h-5 items-center gap-0.5 text-brand-accent" aria-hidden={true}>
                     <span className="h-2 w-0.5 rounded-full bg-current" />
                     <span className="h-4 w-0.5 rounded-full bg-current" />
@@ -811,7 +834,7 @@ export function AudioUploadTrim({
                     setIsDraggingAudio(false);
                   }}
                   onDrop={handleAudioDrop}
-                  className={`mt-8 flex min-h-[280px] cursor-pointer items-center justify-center rounded-[18px] border-2 border-dashed px-6 py-8 text-center transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] ${
+                  className={`mt-8 flex ${isNarrowHomeCard ? "min-h-[220px]" : "min-h-[280px]"} cursor-pointer items-center justify-center rounded-[18px] border-2 border-dashed px-6 py-8 text-center transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] ${
                     isDraggingAudio
                       ? "border-brand-accent bg-brand-accent-soft"
                       : "border-brand-line bg-brand-panel [@media(hover:hover)]:hover:border-brand-accent [@media(hover:hover)]:hover:bg-brand-accent-soft/50"
@@ -821,13 +844,13 @@ export function AudioUploadTrim({
                     <span className="mx-auto flex size-20 items-center justify-center rounded-full bg-brand-accent-soft text-brand-accent shadow-[0_18px_45px_var(--brand-accent-shadow-soft)]">
                       <CloudUpload className="size-10" aria-hidden={true} />
                     </span>
-                    <p className="mt-5 text-xl font-black tracking-[-0.012em] text-brand-ink">
+                    <p className="mt-5 text-base font-semibold leading-6 text-brand-ink">
                       {isDraggingAudio ? "Drop your audio file here" : "Drag & drop your audio file here"}
                     </p>
-                    <p className="mt-2 text-base font-semibold text-brand-muted">or click the button below to browse</p>
+                    <p className="mt-2 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">or click the button below to browse</p>
                     <Button
                       type="button"
-                      className="mt-6 h-16 rounded-[18px] bg-brand-accent px-12 text-xl font-black text-brand-accent-ink shadow-[0_18px_38px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
+                      className="mt-6 h-11 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-accent-ink shadow-[0_18px_38px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
                       onClick={(event) => {
                         event.stopPropagation();
                         audioInputRef.current?.click();
@@ -838,7 +861,7 @@ export function AudioUploadTrim({
                     </Button>
                   </div>
                 </div>
-                <p className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm font-bold text-brand-muted">
+                <p className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm font-normal leading-5 text-brand-muted">
                   <Check className="size-5 text-brand-accent-hover" />
                   Supports MP3, WAV, FLAC, AAC, OGG, M4A
                   <span className="mx-1 text-brand-subtle">•</span>
@@ -851,8 +874,8 @@ export function AudioUploadTrim({
                   <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-brand-accent-soft text-brand-accent">
                     <Loader2 className="size-7 animate-spin" aria-hidden={true} />
                   </span>
-                  <h4 className="mt-5 text-xl font-black tracking-[-0.012em] text-brand-ink">Reading audio</h4>
-                  <p className="mt-2 text-sm font-semibold text-brand-muted">
+                  <h4 className="mt-5 text-base font-semibold leading-6 text-brand-ink">Reading audio</h4>
+                  <p className="mt-2 text-sm font-normal leading-5 text-brand-muted">
                     Preparing trim controls before you choose the main actor.
                   </p>
                   <div className="mx-auto mt-5 max-w-sm overflow-hidden rounded-full bg-brand-soft">
@@ -869,8 +892,8 @@ export function AudioUploadTrim({
                       <Check className="size-7 stroke-[3]" />
                     </span>
                     <div>
-                      <h4 className="text-xl font-black tracking-[-0.012em] text-brand-ink">Song uploaded</h4>
-                      <p className="mt-1 text-sm font-semibold text-brand-muted">Your audio is ready to use.</p>
+                      <h4 className="text-base font-semibold leading-6 text-brand-ink">Song uploaded</h4>
+                      <p className="mt-1 text-sm font-normal leading-5 text-brand-muted">Your audio is ready to use.</p>
                     </div>
                   </div>
 
@@ -880,8 +903,8 @@ export function AudioUploadTrim({
                         <Music className="size-12" aria-hidden={true} />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-xl font-black tracking-[-0.012em] text-brand-ink">{audioName}</p>
-                        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-base font-bold text-brand-muted">
+                        <p className="truncate text-base font-semibold leading-6 text-brand-ink lg:text-xl lg:leading-7">{audioName}</p>
+                        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">
                           <span className="inline-flex items-center gap-2">
                             <Clock className="size-5" />
                             {durationStatus === "ready" ? formatClock(durationSeconds) : fileStatusLabel}
@@ -925,7 +948,7 @@ export function AudioUploadTrim({
                         <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                           {showTrimControls && durationStatus === "ready" ? (
                             <div className="flex flex-col gap-3 md:flex-row md:items-end">
-                              <label className="text-left text-sm font-black text-brand-muted">
+                              <label className="text-left text-sm font-semibold leading-5 text-brand-muted">
                                 Start
                                 <span className="mt-2 flex overflow-hidden rounded-[9px] border border-brand-line bg-brand-panel">
                                   <button
@@ -952,8 +975,8 @@ export function AudioUploadTrim({
                                   </button>
                                 </span>
                               </label>
-                              <span className="hidden pb-3 text-base font-black text-brand-muted md:inline">/ {formatClock(durationSeconds)}</span>
-                              <label className="text-left text-sm font-black text-brand-muted">
+                              <span className="hidden pb-3 text-base font-semibold leading-6 text-brand-muted md:inline">/ {formatClock(durationSeconds)}</span>
+                              <label className="text-left text-sm font-semibold leading-5 text-brand-muted">
                                 End
                                 <span className="mt-2 flex overflow-hidden rounded-[9px] border border-brand-line bg-brand-panel">
                                   <button
@@ -987,7 +1010,7 @@ export function AudioUploadTrim({
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-12 rounded-[10px] border-brand-line px-4 text-sm font-black text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
+                              className="h-11 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
                               onClick={() => audioInputRef.current?.click()}
                             >
                               <RefreshCcw className="size-4" />
@@ -996,7 +1019,7 @@ export function AudioUploadTrim({
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-12 rounded-[10px] border-brand-line px-4 text-sm font-black text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
+                              className="h-11 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
                               onClick={clearAudioFile}
                             >
                               <Trash2 className="size-4" />
@@ -1021,7 +1044,7 @@ export function AudioUploadTrim({
 
                 {isGenerating ? (
                   <div className="rounded-[12px] border border-brand-accent/25 bg-brand-accent-soft p-4">
-                    <div className="flex items-center justify-between gap-4 text-sm font-extrabold text-brand-ink">
+                    <div className="flex items-center justify-between gap-4 text-sm font-semibold leading-5 text-brand-ink">
                       <span>{isUploadingToServer ? "Uploading your song" : externalStageLabel}</span>
                       {isUploadingToServer ? <span>{Math.round(uploadProgressValue || 0)}%</span> : null}
                     </div>
@@ -1045,7 +1068,7 @@ export function AudioUploadTrim({
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-14 rounded-[12px] border-brand-line px-10 text-base font-black text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
+                      className="h-11 rounded-[9px] border-brand-line px-6 text-base font-semibold leading-6 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
                       onClick={clearAudioFile}
                     >
                       Cancel
@@ -1053,7 +1076,7 @@ export function AudioUploadTrim({
                     <Button
                       type="submit"
                       disabled={isGenerateDisabled}
-                      className="h-14 gap-3 rounded-[12px] bg-brand-accent px-10 text-base font-black text-brand-accent-ink shadow-[0_16px_34px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
+                      className="h-11 gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-accent-ink shadow-[0_16px_34px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
                     >
                       {isGenerating && <span className="size-4 animate-spin rounded-full border-2 border-brand-accent-ink border-t-transparent" />}
                       {isGenerated && <Check className="size-5" />}
@@ -1123,7 +1146,7 @@ export function AudioUploadTrim({
             </div>
             <p className={`${compact ? "mt-5" : "mt-8"} text-base text-brand-ink`}>
               Drag and drop your <Music className="mx-1 inline size-5 fill-brand-ink" />
-              <span className="font-black">Audio file</span> here or{" "}
+              <span className="font-semibold">Audio file</span> here or{" "}
               <span className="inline-flex items-center gap-2 rounded-md border border-brand-line px-3 py-1 font-semibold">
                 <FolderOpen className="size-4" />
                 Browse
@@ -1134,7 +1157,7 @@ export function AudioUploadTrim({
           <Button
             type="button"
             onClick={() => audioInputRef.current?.click()}
-            className="mt-5 h-11 gap-2 rounded-md bg-brand-accent px-6 text-base font-black text-brand-ink hover:bg-brand-accent-hover"
+            className="mt-5 h-11 gap-2 rounded-md bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover"
           >
             <Upload className="size-5" />
             Upload audio file
@@ -1148,7 +1171,7 @@ export function AudioUploadTrim({
                 <Check className="size-12 stroke-[1.7]" />
               </div>
             )}
-            <div className="mb-3 flex items-center justify-center gap-2 text-base font-black">
+            <div className="mb-3 flex items-center justify-center gap-2 text-base font-semibold leading-6">
               <Music className="size-5 fill-brand-ink text-brand-ink" />
               <span className="truncate">{audioName}</span>
             </div>
@@ -1191,7 +1214,7 @@ export function AudioUploadTrim({
                     <div className="mt-7 text-base font-medium leading-7 text-brand-muted">
                       <p>You have {creditBalanceLoading ? "..." : (creditBalance ?? 0)} credits in your balance,</p>
                       <p>
-                        but the audio you uploaded requires <span className="font-black text-brand-ink">{requiredCredits} credits</span>
+                        but the audio you uploaded requires <span className="font-semibold text-brand-ink">{requiredCredits} credits</span>
                       </p>
                       {!hasEnoughCredits && (
                         <Button className="mt-3 h-9 rounded-md bg-brand-accent px-5 font-bold text-brand-ink hover:bg-brand-accent-hover">
@@ -1208,7 +1231,7 @@ export function AudioUploadTrim({
                 ) : null}
                 <p className={`${showCredits ? "mt-9" : "mt-7"} text-sm font-medium text-brand-muted`}>(Optional) You can trim the audio to create a video for just a part of the song:</p>
                 <div className="mt-5 flex justify-center gap-2">
-                  <label className="text-left text-xs font-black text-brand-muted">
+                  <label className="text-left text-xs font-semibold text-brand-muted">
                     Start Time
                     <span className="mt-1 flex overflow-hidden rounded-md border border-brand-line bg-brand-panel">
                       <button
@@ -1238,7 +1261,7 @@ export function AudioUploadTrim({
                       </button>
                     </span>
                   </label>
-                  <label className="text-left text-xs font-black text-brand-muted">
+                  <label className="text-left text-xs font-semibold text-brand-muted">
                     End Time
                     <span className="mt-1 flex overflow-hidden rounded-md border border-brand-line bg-brand-panel">
                       <button
@@ -1294,7 +1317,7 @@ export function AudioUploadTrim({
             type="button"
             onClick={generatePreview}
             disabled={isGenerateDisabled}
-            className="mt-5 h-12 gap-2 rounded-md bg-brand-accent px-6 text-base font-black text-brand-ink hover:bg-brand-accent-hover"
+            className="mt-5 h-11 gap-2 rounded-md bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover"
           >
             {isGenerating && <span className="size-4 animate-spin rounded-full border-2 border-brand-ink border-t-transparent" />}
             {isGenerated && <Check className="size-5" />}

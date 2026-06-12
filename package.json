@@ -18,7 +18,8 @@
     "credits:grant": "tsx scripts/with-env.ts tsx scripts/grant-credits.ts",
     "test:wavespeed-provider": "tsx scripts/test-wavespeed-provider.ts",
     "test:asr-scenes": "tsx scripts/test-asr-scene-fixture.ts",
-    "test:lyric-video-e2e": "tsx scripts/with-env.ts tsx scripts/run-lyric-video-e2e.ts --runs=3"
+    "test:lyric-video-e2e": "tsx scripts/with-env.ts tsx scripts/run-lyric-video-e2e.ts --runs=3",
+    "test:seo-pages": "tsx scripts/validate-seo-pages.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
