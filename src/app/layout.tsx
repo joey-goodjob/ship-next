@@ -32,7 +32,7 @@ export default async function RootLayout({
   const appUrl = envConfigs.app_url || '';
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         {locales.map((loc) => (
           <link
@@ -46,8 +46,9 @@ export default async function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           {children}

@@ -43,8 +43,9 @@
     "loved_by": "Loved by creators, musicians, and marketers worldwide."
   },
   "featured": {
-    "title": "See What Creators Are Making",
-    "description": "Real AI music videos created by the community",
+    "title": "Made with 💚 by AI Music Video Community",
+    "description": "Discover amazing creations from music video creators worldwide",
+    "explore_cta": "Explore More",
     "cards": {
       "one_click": {
         "title": "One Click",

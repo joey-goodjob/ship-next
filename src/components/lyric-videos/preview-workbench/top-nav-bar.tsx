@@ -1,7 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Coins, Download, Edit3, Loader2, Lock, Menu, Moon, Settings, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Check, ChevronDown, Coins, Download, Edit3, Loader2, Lock, Menu, Settings } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -9,12 +8,9 @@ import { useEditor } from "./editor-context";
 
 export function TopNavBar() {
   const { exporting, generationLocked, generationLockReason, project, queueExport, saveStatus, updateProjectField } = useEditor();
-  const { resolvedTheme, setTheme } = useTheme();
 
   const saveLabel =
     saveStatus === "saving" ? "Saving" : saveStatus === "failed" ? "Save failed" : saveStatus === "saved" ? "Saved" : "Ready";
-  const isDarkTheme = resolvedTheme === "dark";
-  const themeToggleLabel = isDarkTheme ? "Switch to light mode" : "Switch to dark mode";
 
   return (
     <header className="top-nav-bar flex h-[56px] shrink-0 items-center border-b border-[var(--editor-line)] bg-[var(--editor-panel)] px-[20px]">
@@ -67,15 +63,6 @@ export function TopNavBar() {
           <Coins className="h-[16px] w-[16px]" />
           --
         </span>
-        <button
-          type="button"
-          onClick={() => setTheme(isDarkTheme ? "light" : "dark")}
-          aria-label={themeToggleLabel}
-          title={themeToggleLabel}
-          className="flex h-[30px] w-[30px] items-center justify-center rounded-[6px] text-[var(--editor-muted)] transition-colors hover:bg-[var(--editor-panel-soft)] hover:text-[var(--editor-text)]"
-        >
-          {isDarkTheme ? <Sun className="h-[16px] w-[16px]" /> : <Moon className="h-[16px] w-[16px]" />}
-        </button>
         <Settings className="h-[18px] w-[18px] text-[var(--editor-muted)]" />
         <Menu className="h-[18px] w-[18px] text-[var(--editor-muted)]" />
       </div>

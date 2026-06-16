@@ -6,6 +6,7 @@ import {
   MonitorPlay,
   SlidersHorizontal,
 } from "lucide-react";
+import { HeroNeuralBackground } from "@/components/hero-neural-background";
 import { LyricVideoHomeTool } from "@/components/lyric-video-home-tool";
 
 const BENEFITS = [
@@ -19,18 +20,20 @@ export async function Hero() {
   const t = await getTranslations("landing");
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-page px-5 pb-[70px] pt-14 text-brand-ink sm:px-8 lg:pb-[96px] lg:pt-16">
-      <div className="pointer-events-none absolute left-0 top-36 -z-10 h-[420px] w-[260px] opacity-70 bg-brand-hero-dots-left" />
-      <div className="pointer-events-none absolute right-0 top-32 -z-10 h-[480px] w-[300px] opacity-70 bg-brand-hero-dots-right" />
+    <section className="relative isolate overflow-hidden bg-[#050913] px-5 pb-[70px] pt-[144px] text-white sm:px-8 lg:pb-[96px] lg:pt-[152px]">
+      <HeroNeuralBackground className="z-0" />
 
-      <div className="mx-auto max-w-[1200px]">
+      <div className="relative z-10 mx-auto max-w-[1200px]">
         <div className="mx-auto max-w-[1060px] text-center">
-          <h1 className="text-balance text-2xl font-bold leading-8 text-brand-ink lg:text-[40px] lg:leading-[60px]">
+          <h1 className="text-balance text-2xl font-bold leading-8 text-white drop-shadow-[0_0_24px_rgba(236,163,7,0.22)] lg:text-[40px] lg:leading-[60px]">
             {t("hero.headline_start")}
-            <span className="text-brand-accent"> {t("hero.headline_accent")}</span>
+            <span className="bg-gradient-to-r from-amber-200 via-brand-accent to-amber-500 bg-clip-text text-transparent">
+              {" "}
+              {t("hero.headline_accent")}
+            </span>
           </h1>
 
-          <p className="mx-auto mt-2.5 max-w-[680px] text-pretty text-sm font-normal leading-5 text-brand-muted lg:mt-4 lg:text-base lg:leading-6">
+          <p className="mx-auto mt-2.5 max-w-[680px] text-pretty text-sm font-normal leading-5 text-slate-300/90 lg:mt-4 lg:text-base lg:leading-6">
             {t("hero.subheadline")}
           </p>
 

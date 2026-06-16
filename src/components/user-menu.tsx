@@ -2,15 +2,10 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/core/i18n/navigation";
-import { useTheme } from "next-themes";
 import {
   LogOutIcon,
   EllipsisVerticalIcon,
   LanguagesIcon,
-  SunIcon,
-  MoonIcon,
-  MonitorIcon,
-  PaletteIcon,
   CheckIcon,
   UserIcon,
 } from "lucide-react";
@@ -51,7 +46,6 @@ export function UserMenu({
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
-  const { theme, setTheme } = useTheme();
   const { isMobile } = useSidebar();
 
   async function handleSignOut() {
@@ -130,35 +124,6 @@ export function UserMenu({
                     {loc === locale && <CheckIcon className="size-3.5" />}
                   </DropdownMenuItem>
                 ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="gap-2 px-2 py-2">
-                <PaletteIcon className="size-4" />
-                <span className="flex-1">
-                  {theme === "dark"
-                    ? t("nav.theme_dark")
-                    : theme === "light"
-                    ? t("nav.theme_light")
-                    : t("nav.theme_system")}
-                </span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <SunIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_light")}</span>
-                  {theme === "light" && <CheckIcon className="size-3.5" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <MoonIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_dark")}</span>
-                  {theme === "dark" && <CheckIcon className="size-3.5" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  <MonitorIcon className="size-4" />
-                  <span className="flex-1">{t("nav.theme_system")}</span>
-                  {theme === "system" && <CheckIcon className="size-3.5" />}
-                </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />

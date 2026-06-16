@@ -1,7 +1,11 @@
 import { getTranslations } from "next-intl/server";
-import { SiteHeader } from "@/components/site-header";
+import { SiteHeader, type SiteHeaderVariant } from "@/components/site-header";
 
-export async function Header() {
+export async function Header({
+  variant = "default",
+}: {
+  variant?: SiteHeaderVariant;
+}) {
   const t = await getTranslations("landing");
 
   const navLinks = [
@@ -11,5 +15,5 @@ export async function Header() {
     { href: "/#faq", label: t("nav.help") },
   ];
 
-  return <SiteHeader navLinks={navLinks} />;
+  return <SiteHeader navLinks={navLinks} variant={variant} />;
 }

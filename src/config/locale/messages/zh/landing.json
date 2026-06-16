@@ -43,8 +43,9 @@
     "loved_by": "深受创作者、音乐人和营销团队喜爱。"
   },
   "featured": {
-    "title": "看看创作者都在做什么",
-    "description": "社区创作者用 AI 制作的真实音乐视频",
+    "title": "由 AI 音乐视频社区用 💚 创作",
+    "description": "发现全球音乐视频创作者的精彩作品",
+    "explore_cta": "查看更多",
     "cards": {
       "one_click": {
         "title": "一键开始",
