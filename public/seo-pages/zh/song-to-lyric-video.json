@@ -1,0 +1,134 @@
+{
+  "slug": "song-to-lyric-video",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Song to Lyric Video — AI 一键把歌曲变成歌词视频",
+    "description": "上传歌曲或粘贴链接，AI 自动转写歌词并同步节拍，生成与音乐情绪匹配的视觉，导出 YouTube、TikTok、Reels 格式。免费。",
+    "keywords": [
+      "song to lyric video",
+      "song lyrics to video",
+      "song to lyrics video converter",
+      "song lyrics to video ai",
+      "turn song into lyric video",
+      "how to make a song lyrics video on youtube"
+    ]
+  },
+  "hero": {
+    "badge": "Song to Lyric Video — 上传一次，AI 搞定剩下的",
+    "h1": "Song to Lyric Video：一次上传生成歌词视频",
+    "subhead": "上传歌曲或粘贴链接，AI 自动转写每一行歌词并同步节拍，根据歌曲情绪生成视觉方向。预览完整歌词视频，导出 YouTube、TikTok 或 Reels 格式——免费，无需订阅。",
+    "primaryCta": "把歌曲变成视频",
+    "secondaryCta": "查看使用流程"
+  },
+  "trust": [
+    "AI 自动转写歌词",
+    "支持全曲和片段",
+    "YouTube、TikTok、Reels 导出",
+    "免费导出，无需订阅，无需信用卡"
+  ],
+  "howItWorks": {
+    "title": "Song to Lyric Video 使用流程",
+    "steps": [
+      {
+        "title": "上传歌曲",
+        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。Song lyrics to video AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。"
+      },
+      {
+        "title": "AI 转写歌词并同步节拍",
+        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。AI 还会分析歌曲的情绪、能量和节奏，生成与音乐匹配的视觉方向，而不是随机背景。"
+      },
+      {
+        "title": "预览并导出",
+        "description": "发布前观看完整歌词视频。导出 16:9 用于 YouTube，9:16 用于 TikTok 和 Reels，1:1 用于信息流帖子——全部来自一次上传。免费，无需订阅。"
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "为什么在 LyricsVideo.ai 把歌曲变成歌词视频",
+    "description": "大多数 song-to-video 工具需要你手动打歌词、拖到时间轴上、逐行对齐时间点。LyricsVideo.ai 从音频出发，AI 帮你完成歌词工作——从歌曲到成片，几分钟而不是几小时。",
+    "highlight": {
+      "title": "视觉由歌曲驱动，不是由模板驱动",
+      "description": "AI 会把歌曲里的每个元素转成视频决策：歌词变成随节拍同步的动态文字；速度决定转场推进；情绪影响视觉风格和配色；段落结构决定 intro、主歌、副歌和留白。最终像是从这首歌长出来的，而不是套一个通用模板。"
+    },
+    "cards": [
+      {
+        "title": "让整首歌都清楚可读",
+        "description": "LyricsVideo.ai 会为 intro、主歌、副歌、桥段和纯音乐段落留出合适空间，让完整歌曲有清晰结构，而不是变成一整段堆在一起的歌词。"
+      },
+      {
+        "title": "让 YouTube 上传更像成片",
+        "description": "保留干净的开场空间、可读的歌词节奏和频道品牌露出位置，让视频像音乐频道内容，而不是简单把歌词盖在画面上。"
+      },
+      {
+        "title": "一首歌拆出多种发布素材",
+        "description": "同一首歌可以做完整歌词视频、副歌亮点、合作方预览或发歌周预热视频，不需要每次从零重做创意。"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Song to Lyric Video 常见问题",
+    "items": [
+      {
+        "question": "不打歌词也能 turn song into lyric video 吗？",
+        "answer": "可以。上传音频，AI 自动转写每一行歌词并同步节拍。不需要手动输入，支持 50 多种语言。"
+      },
+      {
+        "question": "如果我已经有歌词文件怎么办？",
+        "answer": "可以直接粘贴或上传歌词文件。AI 会将歌词与音频时间点对齐，确保每一行都跟上节拍。"
+      },
+      {
+        "question": "How to make a song lyrics video on YouTube？",
+        "answer": "上传完整歌曲，让 AI 自动转写并同步歌词，预览 16:9 版本，然后导出适合 YouTube 的完整歌词视频。你也可以保留干净的 intro 或 outro 空间，用于频道品牌露出。"
+      },
+      {
+        "question": "同一首歌能做 TikTok 短片段吗？",
+        "answer": "可以。选择 hook、副歌或任何片段，导出 9:16。同一次上传既能做完整 YouTube 视频，也能做 TikTok 或 Reels 短片段。"
+      },
+      {
+        "question": "这个 song to lyric video converter 免费吗？",
+        "answer": "是的。注册后领取免费积分，制作并导出歌词视频——无需订阅，也无需信用卡。"
+      },
+      {
+        "question": "导出的视频可以商用吗？",
+        "answer": "可以。导出的视频归你所有，包括用于已开通收益的频道。请确保你拥有上传音乐的使用权。"
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "为 YouTube 和每个发布渠道制作 Song Lyric Video",
+    "description": "一首歌可以变成 YouTube 完整歌词视频、短视频片段、投稿预览和发歌周素材。"
+  },
+  "useCases": [
+    {
+      "title": "YouTube 全长歌词视频",
+      "description": "导出完整 16:9 歌词视频，保留干净的 intro/outro 空间用于频道品牌露出，并用清晰节奏和同步歌词让观众跟住整首歌。"
+    },
+    {
+      "title": "TikTok 和 Reels 片段",
+      "description": "截取 hook 或副歌，导出 9:16 竖屏片段，在信息流中抓住注意力。"
+    },
+    {
+      "title": "Demo 和投稿预览",
+      "description": "让未发布的歌曲更容易理解，方便发给厂牌、合作方或经纪人。"
+    },
+    {
+      "title": "发歌周内容",
+      "description": "从同一首歌做出多个歌词素材，每天发布新鲜内容，而不是重复同一张封面。"
+    }
+  ],
+  "bottomCta": {
+    "title": "你的歌曲已经拥有它需要的一切。",
+    "description": "上传一次，让 AI 处理歌词，导出任何平台都能用的歌词视频——免费，无需订阅。",
+    "button": "把歌曲变成视频"
+  }
+}

@@ -30,7 +30,6 @@ export async function Footer() {
       title: t("footer.feature"),
       links: [
         { label: t("footer.home"), href: "/" },
-        { label: t("footer.free"), href: "/free" },
         { label: t("footer.pricing"), href: "/pricing" },
       ],
     },

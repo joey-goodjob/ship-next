@@ -1,0 +1,139 @@
+{
+  "slug": "free-lyric-video-maker",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "manifesto",
+      "howItWorks",
+      "toolkit",
+      "faq",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Free Lyric Video Maker Online — 自动生成歌词，免费导出",
+    "description": "免费 AI 歌词视频制作工具。上传歌曲，自动转写并同步歌词，预览完整效果，免费导出——无需订阅。",
+    "keywords": [
+      "free lyric video maker",
+      "lyric video creator free",
+      "lyric video maker free",
+      "make a lyric video free",
+      "free lyric video maker online",
+      "lyric video generator ai free",
+      "add lyrics to video automatically online free"
+    ]
+  },
+  "hero": {
+    "badge": "Free Lyric Video Maker Online — 免费制作，免费导出",
+    "h1": "Free Lyric Video Maker",
+    "subhead": "上传歌曲，歌词自动转写并同步。预览完整歌词视频效果，免费导出——无需订阅。",
+    "primaryCta": "免费制作歌词视频",
+    "secondaryCta": "查看使用流程"
+  },
+  "trust": [
+    "无需注册即可试用",
+    "歌词自动转写",
+    "完整视频免费预览",
+    "免费导出，无需订阅"
+  ],
+  "manifesto": {
+    "title": "「免费」通常是什么意思——在这里是什么意思",
+    "rows": [
+      {
+        "myth": "「免费」——但付费之前什么也看不到",
+        "reality": "完整预览歌词视频效果，免费"
+      },
+      {
+        "myth": "「免费」——需要绑定信用卡才能开始",
+        "reality": "不需要信用卡，不需要试用倒计时，免费就是免费"
+      },
+      {
+        "myth": "「免费」——但要手动逐行输入歌词",
+        "reality": "歌词从音频自动转写生成"
+      },
+      {
+        "myth": "「免费」——先注册才能试用",
+        "reality": "先体验完整流程，注册后保存成果"
+      },
+      {
+        "myth": "「免费」——导出时突然弹出付费墙",
+        "reality": "免费方案即可导出，无需订阅"
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "Free Lyric Video Maker 使用流程",
+    "steps": [
+      {
+        "title": "上传你的歌曲",
+        "description": "拖入 MP3、WAV 或 FLAC 文件，无需创建账号即可开始。"
+      },
+      {
+        "title": "歌词自动生成",
+        "description": "AI 自动转写歌词并逐行同步节拍，点击任意一行即可编辑。有现成歌词？也可以直接粘贴。"
+      },
+      {
+        "title": "预览并免费导出",
+        "description": "观看完整歌词视频预览，满意后直接导出——无需订阅。"
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "为每个平台制作免费歌词视频",
+    "description": "一首歌，所有格式——导出到你的观众所在的任何平台。"
+  },
+  "useCases": [
+    {
+      "title": "YouTube 歌词视频",
+      "description": "全长 16:9 高清视频，可直接上传和变现。"
+    },
+    {
+      "title": "TikTok 歌词视频",
+      "description": "竖屏 9:16，搭配潮流风格，适合短视频 hook。"
+    },
+    {
+      "title": "Instagram Reels",
+      "description": "支持 9:16 和 1:1 格式，适合 Reels 和信息流帖子。"
+    },
+    {
+      "title": "卡拉 OK 风格视频",
+      "description": "逐字高亮歌词，精准同步节拍。"
+    }
+  ],
+  "faq": {
+    "title": "Free Lyric Video Maker 常见问题",
+    "items": [
+      {
+        "question": "这个 lyric video creator 真的免费吗？",
+        "answer": "是的。免费方案可以制作歌词视频、预览完整效果并导出——不需要信用卡，不需要订阅。"
+      },
+      {
+        "question": "我需要自己输入或粘贴歌词吗？",
+        "answer": "不需要。歌词从音频自动转写，AI 支持 50 多种语言。如果你有现成歌词文件，也可以直接粘贴。"
+      },
+      {
+        "question": "免费方案可以制作 TikTok 竖屏歌词视频吗？",
+        "answer": "可以。每个免费视频都能导出 16:9、9:16 和 1:1 三种比例，一键切换。"
+      },
+      {
+        "question": "免费导出的视频可以商用吗？",
+        "answer": "可以。导出的视频归你所有，包括用于已开通收益的频道。请确保你拥有上传音乐的使用权。"
+      },
+      {
+        "question": "订阅有什么额外好处？",
+        "answer": "更多积分、全部风格（包括 Pro 专属）以及更高优先级的处理。免费方案已经覆盖了制作和导出歌词视频的核心功能。"
+      },
+      {
+        "question": "支持上传哪些文件格式？",
+        "answer": "MP3、WAV、FLAC、AAC 和 OGG，时长不超过 15 分钟。"
+      }
+    ]
+  },
+  "bottomCta": {
+    "title": "免费，就应该是免费的。",
+    "description": "现在就制作你的第一个歌词视频——看看我们是不是说到做到。",
+    "button": "免费制作歌词视频",
+    "upsell": "需要更多视频或全部风格？→ 查看 Pro 方案"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "slug": "add-lyrics-to-video",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Add Lyrics to Video Automatically — Free AI Tool",
+    "description": "Add lyrics to video automatically with AI. Upload a video or audio file, auto-transcribe lyrics, sync them to the beat, preview, and export free with no subscription needed.",
+    "keywords": [
+      "add lyrics to video",
+      "add lyrics to video automatically",
+      "add lyrics to video online free",
+      "add lyrics in video",
+      "how to put lyrics on video",
+      "how to add lyrics to a video",
+      "put lyrics on video",
+      "app to add lyrics to video"
+    ]
+  },
+  "hero": {
+    "badge": "Add lyrics to video online with AI sync",
+    "h1": "Add Lyrics to Video — Automatically",
+    "subhead": "Upload a video, add an audio file, or paste a supported link. AI transcribes lyrics from the audio automatically, syncs every line to the beat, overlays the words on your original footage, then lets you preview and export free — no subscription needed.",
+    "primaryCta": "Add Lyrics Now — Free",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics from audio",
+    "Lyric overlays for existing footage",
+    "16:9, 9:16, and 1:1 export",
+    "Export free, no subscription or credit card"
+  ],
+  "howItWorks": {
+    "title": "How to Add Lyrics to Video Automatically",
+    "steps": [
+      {
+        "title": "Upload your video",
+        "description": "Start with your MP4, MOV, or WebM video, or add a separate MP3, WAV, FLAC, AAC, or OGG audio track. You can also paste a supported link when the song or performance is already online. No account needed to start, and no manual lyric typing required."
+      },
+      {
+        "title": "AI transcribes and syncs",
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to fix a word before rendering. The lyric timing follows the music, so hooks, repeated lines, ad-libs, and vocal entrances feel natural on screen."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full video with lyrics before publishing. Move the lyric block away from faces, products, or action in the frame, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Add Lyrics to Video on LyricsVideo.ai",
+    "description": "Adding lyrics to a finished video by hand means typing every line, dragging text across a timeline, and hoping the words do not cover the best part of the shot. LyricsVideo.ai turns the video's audio into beat-synced lyric overlays while keeping your original footage intact.",
+    "highlight": {
+      "title": "Designed for videos that already exist",
+      "description": "Use a music video, performance recording, wedding clip, travel montage, fan edit, or promo cut. LyricsVideo.ai adds the lyric layer without flattening the video into a generic caption template."
+    },
+    "cards": [
+      {
+        "title": "Your footage stays the focus",
+        "description": "Place the lyric overlay where it supports the scene instead of covering faces, dancers, products, or the moment viewers came to see."
+      },
+      {
+        "title": "Built for music, not subtitle paste-ins",
+        "description": "Subtitle tools usually follow speech timing and pin plain text to the bottom. LyricsVideo.ai treats lyrics as a visual layer that moves with the rhythm of the song."
+      },
+      {
+        "title": "Fix one line without rebuilding the edit",
+        "description": "If the transcript needs a correction, click the lyric line, adjust the words, and keep the timing workflow moving without starting the video over."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Add Lyrics to Video FAQ",
+    "items": [
+      {
+        "question": "Is this add lyrics to video tool free?",
+        "answer": "Yes. Sign up, get free credits, create a lyric video, preview it, and export — no subscription required, no credit card needed."
+      },
+      {
+        "question": "How do I put lyrics on video without typing them?",
+        "answer": "Upload your video or audio file. AI transcribes lyrics from the audio automatically, syncs the lines to the beat, and lets you edit any word before export."
+      },
+      {
+        "question": "Will adding lyrics reduce my video quality?",
+        "answer": "No. Your video is processed as a finished visual layer with synced lyrics added on top, and you can export in the format that fits YouTube, TikTok, Reels, Shorts, or feed posts."
+      },
+      {
+        "question": "Do I need a separate audio file if my video already has music?",
+        "answer": "No. If the music is already in the video, LyricsVideo.ai can analyze that audio directly. A separate audio file is optional when you want to use a cleaner track."
+      },
+      {
+        "question": "Can I move lyrics so they do not cover faces?",
+        "answer": "Yes. Preview the video and place the lyric block where it stays readable without hiding performers, products, captions, or important action."
+      },
+      {
+        "question": "Can I use exported lyric videos commercially?",
+        "answer": "Yes — your exports are yours to use for channels, campaigns, releases, and client work. Make sure you have the rights to the music and footage you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Add Lyrics to Video for Real Footage",
+    "description": "Use one AI workflow when your video is already shot and the missing piece is a clean, synced lyric layer."
+  },
+  "useCases": [
+    {
+      "title": "Music videos",
+      "description": "Add lyrics to official footage, performance cuts, or visualizers so viewers can follow the song without losing the video."
+    },
+    {
+      "title": "Performance recordings",
+      "description": "Overlay lyrics on live sets, covers, studio sessions, and rehearsal clips while keeping the energy of the original recording."
+    },
+    {
+      "title": "Wedding and event videos",
+      "description": "Put lyrics on first-dance edits, highlight reels, or event recaps when the song carries the emotion of the scene."
+    },
+    {
+      "title": "Travel montages and fan edits",
+      "description": "Add synced lyric overlays to footage, soundtrack cuts, and short social edits without rebuilding the timeline by hand."
+    }
+  ],
+  "bottomCta": {
+    "title": "Hours of manual lyric syncing, gone.",
+    "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free, no subscription needed.",
+    "button": "Add Lyrics to My Video — Free"
+  }
+}

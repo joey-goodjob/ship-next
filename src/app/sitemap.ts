@@ -5,8 +5,6 @@ import { getAllSeoPages } from "@/lib/seo-pages";
 const PUBLIC_PATHS = [
   { path: "/", priority: 1 },
   { path: "/zh", priority: 1 },
-  { path: "/free", priority: 0.95 },
-  { path: "/zh/free", priority: 0.95 },
   { path: "/pricing", priority: 0.8 },
   { path: "/zh/pricing", priority: 0.8 },
   { path: "/privacy-policy", priority: 0.3 },

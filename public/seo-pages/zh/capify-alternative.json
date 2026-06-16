@@ -1,0 +1,169 @@
+{
+  "slug": "capify-alternative",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "comparisonTable",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Capify 替代方案 — AI 歌词视频制作，免费导出",
+    "description": "在找 Capify 替代方案？LyricsVideo.ai 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
+    "keywords": [
+      "Capify 替代",
+      "Capify 替代方案",
+      "AI 歌词视频制作替代",
+      "歌词视频工具对比"
+    ]
+  },
+  "hero": {
+    "badge": "Capify 替代方案 — AI 歌词视频，免费",
+    "h1": "Capify 替代方案",
+    "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词、逐行同步节拍，并生成匹配歌曲情绪的视觉画面。预览完整歌词视频后导出 — 免费，无需订阅。",
+    "primaryCta": "免费试用",
+    "secondaryCta": "查看制作流程"
+  },
+  "trust": [
+    "AI 自动转写歌词",
+    "16:9、9:16、1:1 多格式导出",
+    "AI 情绪驱动画面生成",
+    "免费导出，无需订阅或信用卡"
+  ],
+  "comparisonTable": {
+    "title": "Capify 和 LyricsVideo.ai 做歌词视频怎么比",
+    "description": "如果你正在对比歌词视频工具，最直接的方法是用同一首歌测试歌词准确度、时间同步、画面和导出适配。",
+    "columns": [
+      "LyricsVideo.ai",
+      "Capify"
+    ],
+    "rows": [
+      {
+        "label": "开始流程",
+        "values": [
+          "上传音频或粘贴链接，AI 构建歌词视频流程",
+          "你可能已经在评估或使用的歌词视频流程"
+        ]
+      },
+      {
+        "label": "歌词",
+        "values": [
+          "AI 自动从音频转写歌词，并保持可编辑",
+          "可与你当前的歌词准备和修正流程对比"
+        ]
+      },
+      {
+        "label": "视觉方向",
+        "values": [
+          "画面根据歌曲情绪和能量生成",
+          "对比视觉是否真的贴合这首歌"
+        ]
+      },
+      {
+        "label": "最佳测试方式",
+        "values": [
+          "用同一段 hook 或完整歌曲检查可读性、时间和导出适配",
+          "把你当前的 Capify 结果作为基准"
+        ]
+      }
+    ],
+    "note": "直接竞品对比最诚实的方法很简单：上传同一首歌，预览两个结果，选歌词更容易跟住的那一个。",
+    "cta": "用同一首歌免费试试"
+  },
+  "howItWorks": {
+    "title": "这个 Capify 替代方案如何制作歌词视频",
+    "steps": [
+      {
+        "title": "上传歌曲",
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。"
+      },
+      {
+        "title": "AI 转写并同步",
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。AI 还会读取歌曲情绪，生成匹配的视觉画面。"
+      },
+      {
+        "title": "预览并导出",
+        "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。"
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "为什么用 LyricsVideo.ai 测试你的歌词视频",
+    "description": "如果你正在比较 Capify 和另一个歌词视频工具，最好的测试就是同一首歌。LyricsVideo.ai 关注真正决定结果的部分：歌词准确、节拍时间、清晰版式和贴合歌曲的画面。",
+    "highlight": {
+      "title": "AI 转写 + 画面生成，不只是文字贴在视频上",
+      "description": "LyricsVideo.ai 自动转写歌词、同步节拍，并根据歌曲情绪生成画面。你不用打歌词、不用选模板 — 上传歌曲就能拿到成品视频。"
+    },
+    "cards": [
+      {
+        "title": "用同一份音频对比",
+        "description": "使用你已经在其他工具里测试过的同一首歌，再并排判断转写、时间和视觉方向。"
+      },
+      {
+        "title": "情绪画面进入流程",
+        "description": "LyricsVideo.ai 把视觉当成歌曲理解的一部分，而不是只在文字背后放一层背景。"
+      },
+      {
+        "title": "歌词可读性是判断标准",
+        "description": "结果好不好，最终看粉丝能不能在主歌、hook、副歌和结尾清楚跟住歌词。"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Capify 替代方案常见问题",
+    "items": [
+      {
+        "question": "LyricsVideo.ai 作为 Capify 替代方案免费吗？",
+        "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
+      },
+      {
+        "question": "LyricsVideo.ai 和 Capify 有什么不同？",
+        "answer": "LyricsVideo.ai 从音频自动转写歌词、逐行同步节拍、生成情绪驱动的 AI 画面，并支持多格式导出 — 全部一次上传搞定。"
+      },
+      {
+        "question": "需要像 Capify 一样手动输入歌词吗？",
+        "answer": "不需要。上传音频后 AI 会自动转写每一行歌词，支持 50 多种语言。你可以点击任意行进行编辑。"
+      },
+      {
+        "question": "可以同时导出 TikTok 和 YouTube 格式吗？",
+        "answer": "可以。16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。所有格式来自同一次上传。"
+      },
+      {
+        "question": "导出的歌词视频可以商用吗？",
+        "answer": "可以 — 导出的视频归你所有，包括用于变现频道和付费发行。请确保你拥有上传音乐的版权。"
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Capify 替代方案 — 使用场景",
+    "description": "你在 Capify 里做的一切，都可以在 LyricsVideo.ai 试试 — 带 AI 转写、节拍同步和免费导出。"
+  },
+  "useCases": [
+    {
+      "title": "YouTube 完整歌词视频",
+      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面。"
+    },
+    {
+      "title": "TikTok 和 Reels 片段",
+      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频。"
+    },
+    {
+      "title": "发歌周内容",
+      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。"
+    },
+    {
+      "title": "歌词频道批量上传",
+      "description": "需要频繁上传歌词视频时，使用可重复的上传到导出流程。"
+    }
+  ],
+  "bottomCta": {
+    "title": "同一首歌，不同结果。免费试试。",
+    "description": "上传你在 Capify 里用过的那首歌，AI 搞定歌词和画面 — 免费导出，无需订阅。",
+    "button": "免费试用 LyricsVideo.ai"
+  }
+}

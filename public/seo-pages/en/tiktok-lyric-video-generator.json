@@ -1,0 +1,134 @@
+{
+  "slug": "tiktok-lyric-video-generator",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "TikTok Lyric Video Generator — AI-Powered, Vertical Format",
+    "description": "Create vertical lyric videos for TikTok. Upload your song, AI auto-syncs lyrics to the beat, preview in 9:16 with safe zones, export free. Works for Reels and Shorts too.",
+    "keywords": [
+      "tiktok lyric video generator",
+      "tiktok lyric video maker",
+      "how to add song lyrics to tiktok video",
+      "how to add song lyrics on tiktok video",
+      "lyric video tiktok",
+      "tiktok lyrics video"
+    ]
+  },
+  "hero": {
+    "badge": "TikTok lyric video generator — vertical, AI-powered, free to export",
+    "h1": "TikTok Lyric Video Generator — Vertical Lyrics That Stay Readable",
+    "subhead": "Upload your song or paste a link. AI transcribes the lyrics and syncs every line to the beat. Preview in a vertical 9:16 frame with TikTok safe zones, then export — free, no subscription needed. One render works for TikTok, Reels, and Shorts.",
+    "primaryCta": "Make a TikTok Lyric Video",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "9:16 vertical export",
+    "Safe zones avoid TikTok buttons",
+    "Export free, no subscription"
+  ],
+  "howItWorks": {
+    "title": "How the TikTok Lyric Video Generator Works",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track."
+      },
+      {
+        "title": "AI transcribes and syncs every line",
+        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The TikTok lyric video maker positions text inside the vertical safe zone so your words are never buried under TikTok's like, comment, and share buttons."
+      },
+      {
+        "title": "Preview vertically and export in 9:16",
+        "description": "Watch the draft on a phone-sized canvas before you post. Confirm the first lyric lands within 2 seconds, text is large enough for a 6-inch screen, and nothing is hidden by TikTok UI. Export in 9:16 HD — the same file works on TikTok, Instagram Reels, and YouTube Shorts."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Make TikTok Lyric Videos on LyricsVideo.ai",
+    "description": "Most lyric video tools are built for YouTube — horizontal, full-length, desktop-first. LyricsVideo.ai is the TikTok lyric video generator built for vertical, short-form, phone-first content from the start.",
+    "highlight": {
+      "title": "Vertical-first, not vertical-as-an-afterthought",
+      "description": "Every preview, every text layout, and every export is designed around a 9:16 phone screen with TikTok safe zones. You are not cropping a horizontal video — you are building a vertical one from scratch."
+    },
+    "cards": [
+      {
+        "title": "Phone-screen lyric sizing",
+        "description": "Lyrics are sized for a vertical phone feed, not squeezed down from a widescreen lyric video. The result stays readable when someone watches with one thumb on the screen."
+      },
+      {
+        "title": "TikTok safe zones built in",
+        "description": "Lyrics are automatically positioned away from the like, comment, share buttons, and caption area. No more guessing whether your text will be readable after posting."
+      },
+      {
+        "title": "Short-form pacing by default",
+        "description": "The first lyric appears fast, hook clips stay tight, and endings feel loop-friendly. The page is built for TikTok behavior instead of full-song playback only."
+      }
+    ]
+  },
+  "faq": {
+    "title": "TikTok Lyric Video Generator FAQ",
+    "items": [
+      {
+        "question": "How long should a TikTok lyric video be?",
+        "answer": "15 to 30 seconds performs best. Pick the hook, chorus, or the lyric people would repeat after hearing it once, and set start and end points before exporting."
+      },
+      {
+        "question": "How to add song lyrics to TikTok video without typing them?",
+        "answer": "Upload your audio to this TikTok lyric video generator. The AI transcribes and syncs every lyric line automatically — no manual typing needed, in 50+ languages."
+      },
+      {
+        "question": "Will the lyrics avoid TikTok's buttons and captions?",
+        "answer": "Yes. All TikTok exports keep lyrics inside the safe zone, away from the like, comment, and share buttons and the caption area."
+      },
+      {
+        "question": "Can I post the same video to Reels and Shorts?",
+        "answer": "Yes. The 9:16 export works on TikTok, Instagram Reels, and YouTube Shorts. One render, three platforms."
+      },
+      {
+        "question": "Is this TikTok lyric video maker free?",
+        "answer": "Yes. Sign up, get free credits, and export your TikTok lyric video — no subscription required and no credit card required."
+      },
+      {
+        "question": "Can I use TikTok lyric videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized accounts. Make sure you have rights to the music you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "TikTok Lyric Video Generator Use Cases",
+    "description": "One song, multiple TikTok moments — turn hooks, verses, and choruses into vertical lyric clips that stop the scroll."
+  },
+  "useCases": [
+    {
+      "title": "Hook clips for TikTok",
+      "description": "Turn the catchiest 15 seconds into a vertical lyric video that gets to the words fast."
+    },
+    {
+      "title": "Release week content",
+      "description": "Cut multiple lyric clips from one single so you post fresh content every day instead of the same asset."
+    },
+    {
+      "title": "Reels and Shorts reposts",
+      "description": "Export once in 9:16 and post the same lyric video to TikTok, Instagram Reels, and YouTube Shorts."
+    },
+    {
+      "title": "Fan-friendly lyric clips",
+      "description": "Give fans a readable lyric version of the best line so they can share it before they even know the full song."
+    }
+  ],
+  "bottomCta": {
+    "title": "Your next viral sound deserves visuals to match.",
+    "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free, no subscription needed.",
+    "button": "Make My TikTok Lyric Video"
+  }
+}

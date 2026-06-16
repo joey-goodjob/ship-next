@@ -1,0 +1,169 @@
+{
+  "slug": "neural-frames-alternative",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "comparisonTable",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Neural Frames Alternative — AI Lyric Video Maker, Free",
+    "description": "Looking for a Neural Frames alternative for lyric videos? LyricsVideo.ai auto-transcribes lyrics, syncs to the beat, generates mood-driven visuals, and exports free.",
+    "keywords": [
+      "neural frames ai lyric video maker",
+      "neural frames lyric video",
+      "neural frames alternative",
+      "ai lyric video maker alternative"
+    ]
+  },
+  "hero": {
+    "badge": "Neural Frames alternative — AI lyric video maker, free",
+    "h1": "Neural Frames Alternative",
+    "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricsVideo.ai is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
+    "primaryCta": "Try It Free",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "Lyrics stay readable on screen",
+    "16:9, 9:16, and 1:1 export",
+    "Export free, no subscription or credit card"
+  ],
+  "comparisonTable": {
+    "title": "Neural Frames vs LyricsVideo.ai for Lyric Videos",
+    "description": "Both tools can create AI-powered music visuals. The difference is whether readable, beat-synced lyrics are the center of the result.",
+    "columns": [
+      "LyricsVideo.ai",
+      "Neural Frames"
+    ],
+    "rows": [
+      {
+        "label": "Main focus",
+        "values": [
+          "Readable lyric videos with AI-generated visuals supporting the words",
+          "AI music visuals and generative video direction"
+        ]
+      },
+      {
+        "label": "Lyrics",
+        "values": [
+          "AI transcribes lyrics from audio and keeps them on screen",
+          "Best considered when visuals are the main asset"
+        ]
+      },
+      {
+        "label": "Timing",
+        "values": [
+          "Lyric lines sync to the beat and can be reviewed before export",
+          "Music-driven visuals may not solve line-by-line lyric readability"
+        ]
+      },
+      {
+        "label": "When Neural Frames is better",
+        "values": [
+          "Use LyricsVideo.ai when fans need to read and sing the words",
+          "Use Neural Frames when the main goal is generative music visuals"
+        ]
+      }
+    ],
+    "note": "For lyric content, the words must remain the product. LyricsVideo.ai keeps AI visuals in service of the lyric layer.",
+    "cta": "Try LyricsVideo.ai Free"
+  },
+  "howItWorks": {
+    "title": "How This Neural Frames Alternative Makes Lyric Videos",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen."
+      },
+      {
+        "title": "AI transcribes and syncs",
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. AI generates visuals that match the song's mood while keeping lyrics readable."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Make AI Lyric Videos on LyricsVideo.ai",
+    "description": "AI visual generators are exciting, but lyric videos need one non-negotiable thing: the words must stay readable and synced. LyricsVideo.ai generates mood-driven visuals while keeping the lyrics front and center.",
+    "highlight": {
+      "title": "AI visuals + readable lyrics, not one or the other",
+      "description": "Neural Frames gives you visuals. LyricsVideo.ai gives you visuals AND lyrics — transcribed, synced, readable, and exportable. You don't have to choose."
+    },
+    "cards": [
+      {
+        "title": "Words remain the hero",
+        "description": "Generated visuals support the lyric layer instead of competing with it, so fans can actually read the line they came for."
+      },
+      {
+        "title": "Visual mood follows the track",
+        "description": "The look still responds to the song's mood and energy, but it is shaped around lyric readability rather than pure visual spectacle."
+      },
+      {
+        "title": "Useful for lyric channels",
+        "description": "A repeatable lyric-first workflow helps channels and artists publish visual songs without losing the core text layer."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Neural Frames Alternative FAQ",
+    "items": [
+      {
+        "question": "Is LyricsVideo.ai free as a Neural Frames alternative?",
+        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+      },
+      {
+        "question": "How is LyricsVideo.ai different from Neural Frames?",
+        "answer": "Neural Frames is strongest when the main goal is generative music visuals. LyricsVideo.ai is built for lyric videos: it auto-transcribes lyrics, syncs to the beat, generates matching visuals, and keeps lyrics readable on screen."
+      },
+      {
+        "question": "Do I need to type lyrics like in Neural Frames?",
+        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+      },
+      {
+        "question": "Can I get AI visuals AND readable lyrics?",
+        "answer": "Yes. LyricsVideo.ai generates mood-driven visuals while keeping lyrics synced and readable. You don't have to choose between pretty visuals and readable words."
+      },
+      {
+        "question": "Can I use exported lyric videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Neural Frames Alternative — Use Cases",
+    "description": "Everything Neural Frames does for visuals, plus lyrics that are actually readable — transcribed, synced, and exportable."
+  },
+  "useCases": [
+    {
+      "title": "YouTube full-length lyric video",
+      "description": "Export the entire track as a 16:9 lyric video with AI visuals AND readable lyrics."
+    },
+    {
+      "title": "TikTok and Reels clips",
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video with mood-matched visuals."
+    },
+    {
+      "title": "Artists who need lyrics on screen",
+      "description": "When fans need to learn the words, not just see pretty visuals — LyricsVideo.ai keeps lyrics front and center."
+    },
+    {
+      "title": "Lyric channels and frequent uploads",
+      "description": "Use a repeatable flow with auto-transcription and visual generation — faster than Neural Frames for lyric content."
+    }
+  ],
+  "bottomCta": {
+    "title": "AI visuals that don't bury the lyrics.",
+    "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
+    "button": "Try LyricsVideo.ai Free"
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "slug": "free-lyric-video-maker",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "manifesto",
+      "howItWorks",
+      "toolkit",
+      "faq",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Free Lyric Video Maker Online — Auto Lyrics, No Signup to Start",
+    "description": "Make lyric videos for free with AI. Upload your song, lyrics auto-transcribed and synced, preview and export — no subscription required. Works on any device.",
+    "keywords": [
+      "free lyric video maker",
+      "lyric video creator free",
+      "lyric video maker free",
+      "make a lyric video free",
+      "free lyric video maker online",
+      "lyric video generator ai free",
+      "add lyrics to video automatically online free"
+    ]
+  },
+  "hero": {
+    "badge": "Free lyric video maker online — make it, preview it, export it",
+    "h1": "Free Lyric Video Maker",
+    "subhead": "Upload a song — lyrics are transcribed and synced automatically. Preview the full lyric video and export free, no subscription needed.",
+    "primaryCta": "Make a Free Lyric Video",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "No signup to start",
+    "Lyrics auto-transcribed",
+    "Full preview, free",
+    "Export free, no subscription"
+  ],
+  "manifesto": {
+    "title": "What \"free\" usually means — and what it means here",
+    "rows": [
+      {
+        "myth": "\"Free\" — but you can't see anything until you pay",
+        "reality": "Full preview of your lyric video, free"
+      },
+      {
+        "myth": "\"Free\" — credit card required to start",
+        "reality": "No card. No trial countdown. Free is free."
+      },
+      {
+        "myth": "\"Free\" — but you have to type every lyric line",
+        "reality": "Lyrics transcribed from your audio automatically"
+      },
+      {
+        "myth": "\"Free\" — signup before you can even try",
+        "reality": "Try the full flow first. Sign up to save."
+      },
+      {
+        "myth": "\"Free\" — then a surprise paywall at export",
+        "reality": "Export on the free plan. No subscription needed."
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "How the Free Lyric Video Maker Works",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, or FLAC. No account needed to start."
+      },
+      {
+        "title": "Lyrics appear automatically",
+        "description": "The AI transcribes and syncs every line to the beat. Click any line to edit. Have a lyrics file? You can paste it instead."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video preview and export when you are ready — no subscription required."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Make Free Lyric Videos for Every Platform",
+    "description": "One song, every format — export for whichever platform your audience is on."
+  },
+  "useCases": [
+    {
+      "title": "YouTube lyric videos",
+      "description": "Full-length, 16:9 HD — ready to upload and monetize."
+    },
+    {
+      "title": "TikTok lyric videos",
+      "description": "Vertical 9:16 with trend-ready styles for short-form hooks."
+    },
+    {
+      "title": "Instagram Reels",
+      "description": "9:16 and 1:1 formats for Reels and feed posts."
+    },
+    {
+      "title": "Karaoke-style videos",
+      "description": "Word-by-word highlighted lyrics synced to the beat."
+    }
+  ],
+  "faq": {
+    "title": "Free Lyric Video Maker FAQ",
+    "items": [
+      {
+        "question": "Is this lyric video creator really free?",
+        "answer": "Yes. The free plan lets you make lyric videos, preview the full result, and export — no credit card required, no subscription needed."
+      },
+      {
+        "question": "Do I need to type or paste the lyrics myself?",
+        "answer": "No — lyrics are transcribed automatically from the audio. The AI lyric video generator handles transcription in 50+ languages. You can paste your own lyrics file instead if you prefer."
+      },
+      {
+        "question": "Can I make vertical lyric videos for TikTok on the free plan?",
+        "answer": "Yes. Every free video can export in 16:9, 9:16, and 1:1 — one click each."
+      },
+      {
+        "question": "Can I use free videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels. Just make sure you have rights to the music you upload."
+      },
+      {
+        "question": "What does a subscription add?",
+        "answer": "More credits, all styles including Pro exclusives, and higher priority processing. The free plan already covers making and exporting your lyric video."
+      },
+      {
+        "question": "What file formats can I upload?",
+        "answer": "MP3, WAV, FLAC, AAC, and OGG — up to 15 minutes. Add lyrics to video automatically online free from any of these formats."
+      }
+    ]
+  },
+  "bottomCta": {
+    "title": "Free should mean free.",
+    "description": "Make your first lyric video now — and see if we live up to it.",
+    "button": "Make a Free Lyric Video",
+    "upsell": "Need more videos or all styles? → View Pro plans"
+  }
+}

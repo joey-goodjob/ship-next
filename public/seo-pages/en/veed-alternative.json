@@ -1,0 +1,169 @@
+{
+  "slug": "veed-alternative",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "comparisonTable",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "VEED Alternative for Lyric Videos — AI Song-First Workflow, Free",
+    "description": "Looking for a VEED alternative for lyric videos? LyricsVideo.ai auto-transcribes lyrics from audio, syncs to the beat, generates visuals, and exports free — no timeline editing.",
+    "keywords": [
+      "veed alternative lyric video",
+      "veed io lyric video maker",
+      "veed lyric video alternative",
+      "ai lyric video maker alternative"
+    ]
+  },
+  "hero": {
+    "badge": "VEED alternative — AI lyric video maker, free",
+    "h1": "VEED Alternative for Lyric Videos",
+    "subhead": "VEED is a general video editor — great for subtitles and talking heads, but lyric videos still mean manual text placement and timeline work. LyricsVideo.ai starts from the song: upload audio, AI auto-transcribes lyrics, syncs every line to the beat, and generates visuals. Export free, no subscription needed.",
+    "primaryCta": "Try It Free",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "No timeline or text placement",
+    "16:9, 9:16, and 1:1 export",
+    "Export free, no subscription or credit card"
+  ],
+  "comparisonTable": {
+    "title": "VEED vs LyricsVideo.ai for Lyric Videos",
+    "description": "VEED is useful when you need a general editor. LyricsVideo.ai is faster when the job is turning a song into a lyric video.",
+    "columns": [
+      "LyricsVideo.ai",
+      "VEED"
+    ],
+    "rows": [
+      {
+        "label": "Starting point",
+        "values": [
+          "Upload a song and let AI build the lyric video flow",
+          "Open a video editing timeline and assemble text, timing, and visuals"
+        ]
+      },
+      {
+        "label": "Lyrics",
+        "values": [
+          "AI transcribes lyrics from audio automatically",
+          "Lyrics usually need to be prepared, pasted, and arranged"
+        ]
+      },
+      {
+        "label": "Music timing",
+        "values": [
+          "Lines sync to the beat with editable review",
+          "Timing depends on timeline edits and manual adjustments"
+        ]
+      },
+      {
+        "label": "When VEED is better",
+        "values": [
+          "Use LyricsVideo.ai for song-first lyric videos",
+          "Use VEED for talking-head edits, subtitles, and general social videos"
+        ]
+      }
+    ],
+    "note": "The difference is workflow shape: VEED gives you editing tools; LyricsVideo.ai turns the song itself into the project.",
+    "cta": "Try LyricsVideo.ai Free"
+  },
+  "howItWorks": {
+    "title": "How This VEED Alternative Makes Lyric Videos",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start."
+      },
+      {
+        "title": "AI transcribes and syncs",
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. No dragging text boxes, no adjusting timestamps frame by frame. AI also generates visuals matched to the song's mood."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and timing feels right, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Make Lyric Videos on LyricsVideo.ai Instead of a Timeline Editor",
+    "description": "VEED is a capable general editor, but making a lyric video in VEED means typing lyrics, placing text, syncing timestamps, and building on a timeline. LyricsVideo.ai eliminates all of that — upload a song and get a finished lyric video.",
+    "highlight": {
+      "title": "Song in, lyric video out — no timeline",
+      "description": "VEED gives you a timeline and text tools. LyricsVideo.ai gives you a finished lyric video from a song upload — lyrics transcribed, synced, and visualized automatically."
+    },
+    "cards": [
+      {
+        "title": "Song-first project setup",
+        "description": "The upload starts with audio analysis, lyrics, timing, and visuals instead of asking you to assemble a blank timeline."
+      },
+      {
+        "title": "Review instead of reconstruct",
+        "description": "You review synced lyric lines and visual direction instead of recreating the song section by section with text boxes."
+      },
+      {
+        "title": "Release assets stay aligned",
+        "description": "Full-song videos and short clips can share the same lyric timing and visual direction, so release content feels consistent."
+      }
+    ]
+  },
+  "faq": {
+    "title": "VEED Alternative FAQ",
+    "items": [
+      {
+        "question": "Is LyricsVideo.ai free as a VEED alternative?",
+        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+      },
+      {
+        "question": "How is LyricsVideo.ai different from VEED for lyric videos?",
+        "answer": "VEED is a general video editor — you type lyrics, place text, and sync timestamps on a timeline. LyricsVideo.ai auto-transcribes lyrics from audio, syncs to the beat, generates visuals, and gives you a finished lyric video. No timeline needed."
+      },
+      {
+        "question": "Do I need to type lyrics like in VEED?",
+        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+      },
+      {
+        "question": "Is VEED still better for some projects?",
+        "answer": "Yes — VEED is better for general video editing, talking-head content, subtitled clips, and mixed social content. For lyric videos specifically, LyricsVideo.ai is faster because it's built for that one job."
+      },
+      {
+        "question": "Can I use exported lyric videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "VEED Alternative — Use Cases",
+    "description": "When the project is a lyric video, skip the general editor and start from the song."
+  },
+  "useCases": [
+    {
+      "title": "YouTube full-length lyric video",
+      "description": "Export the entire track as a 16:9 lyric video — no timeline assembly required."
+    },
+    {
+      "title": "TikTok and Reels clips",
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video without rebuilding a timeline."
+    },
+    {
+      "title": "Artist single releases",
+      "description": "Get a lyric video from the final mix in minutes — no editor, no designer, no timeline."
+    },
+    {
+      "title": "Lyric channels and batch content",
+      "description": "Upload songs one after another and get finished lyric videos — faster than building each one in VEED's editor."
+    }
+  ],
+  "bottomCta": {
+    "title": "Skip the timeline. Start from the song.",
+    "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
+    "button": "Try LyricsVideo.ai Free"
+  }
+}

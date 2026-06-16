@@ -1,0 +1,134 @@
+{
+  "slug": "song-to-lyric-video",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Song to Lyric Video — AI Turns Any Song into a Lyrics Video",
+    "description": "Turn any song into a lyric video. Upload audio or paste a link, AI transcribes and syncs lyrics to the beat, preview and export for YouTube, TikTok, and Reels. Free.",
+    "keywords": [
+      "song to lyric video",
+      "song lyrics to video",
+      "song to lyrics video converter",
+      "song lyrics to video ai",
+      "turn song into lyric video",
+      "how to make a song lyrics video on youtube"
+    ]
+  },
+  "hero": {
+    "badge": "Song to lyric video — upload once, AI does the rest",
+    "h1": "Song to Lyric Video in One Upload",
+    "subhead": "Upload your song or paste a link. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free, no subscription needed.",
+    "primaryCta": "Turn My Song into a Video",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "Full song or short clip",
+    "YouTube, TikTok, Reels export",
+    "Export free, no subscription or credit card"
+  ],
+  "howItWorks": {
+    "title": "How Song to Lyric Video Works",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels."
+      },
+      {
+        "title": "AI transcribes and syncs every line",
+        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The AI also reads the mood, energy, and pacing of your song to generate visuals that match the music, not just random backgrounds."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video before you publish. Export in 16:9 for YouTube, 9:16 for TikTok and Reels, or 1:1 for feed posts — all from one upload. Free, no subscription required."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Turn Songs into Lyric Videos on LyricsVideo.ai",
+    "description": "Most song-to-video tools make you type lyrics, drag them onto a timeline, and manually set every timing point. LyricsVideo.ai starts from the audio and does the lyric work for you — so you go from song to finished lyric video in minutes, not hours.",
+    "highlight": {
+      "title": "Visuals driven by your song, not by templates",
+      "description": "The AI turns each part of your song into a video decision: lyrics become beat-synced animated text, tempo shapes transition pacing, mood guides style and color, and song structure shapes intros, verses, choruses, and breathing room. It feels built from the song, not dropped onto a generic preset."
+    },
+    "cards": [
+      {
+        "title": "Keep the whole song readable",
+        "description": "LyricsVideo.ai builds space for intros, verses, choruses, bridges, and instrumental breaks, so a full track feels structured instead of becoming one long wall of text."
+      },
+      {
+        "title": "Make YouTube uploads feel finished",
+        "description": "Add a clean opening moment, readable lyric pacing, and room for channel branding so the video feels ready for a music channel, not just a quick lyric overlay."
+      },
+      {
+        "title": "Turn one track into release assets",
+        "description": "Use the same song to create a full lyric video, chorus highlight, collaborator preview, or release-week teaser without rebuilding the idea from scratch."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Song to Lyric Video FAQ",
+    "items": [
+      {
+        "question": "Can I turn a song into a lyric video without typing the lyrics?",
+        "answer": "Yes. Upload your audio and the AI transcribes every lyric line automatically, synced to the beat. No manual typing needed, in 50+ languages."
+      },
+      {
+        "question": "What if I already have the lyrics?",
+        "answer": "You can paste or upload your own lyrics file. The AI will still sync them to the audio timing so every line matches the beat."
+      },
+      {
+        "question": "How to make a song lyrics video on YouTube?",
+        "answer": "Upload the full song, let AI transcribe and sync the lyrics, preview the 16:9 version, and export a finished lyric video for YouTube. You can leave clean intro or outro space for your channel branding."
+      },
+      {
+        "question": "Can I make short clips for TikTok from the same song?",
+        "answer": "Yes. Pick a section — hook, chorus, or any moment — and export in 9:16. The same upload works for full YouTube videos and short TikTok or Reels clips."
+      },
+      {
+        "question": "Is this song to lyric video converter free?",
+        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required and no credit card required."
+      },
+      {
+        "question": "Can I use the exported video commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels. Make sure you have rights to the music you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Make a Song Lyric Video for YouTube and Every Release Channel",
+    "description": "Turn one song into a full YouTube lyric video, short-form clips, pitch previews, and release-week assets."
+  },
+  "useCases": [
+    {
+      "title": "Full YouTube lyric video",
+      "description": "Export a complete 16:9 lyric video with clean intro/outro space for channel branding, readable pacing, and synced lyrics that keep viewers following the song."
+    },
+    {
+      "title": "TikTok and Reels clips",
+      "description": "Cut the hook or chorus into a 9:16 vertical clip that stops the scroll."
+    },
+    {
+      "title": "Demo and pitch previews",
+      "description": "Make an unreleased song easier to follow when sharing with labels, collaborators, or managers."
+    },
+    {
+      "title": "Release week content",
+      "description": "Create multiple lyric assets from one song so every post is fresh content, not the same cover art."
+    }
+  ],
+  "bottomCta": {
+    "title": "Your song already has everything it needs.",
+    "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free, no subscription needed.",
+    "button": "Turn My Song into a Video"
+  }
+}

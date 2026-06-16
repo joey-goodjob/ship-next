@@ -229,6 +229,25 @@
   .bg-brand-hero-dots-right {
     background: var(--brand-hero-dots-right);
   }
+
+  .featured-creators-track {
+    animation-duration: 72s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    will-change: transform;
+  }
+
+  .featured-creators-track-left {
+    animation-name: featured-creators-marquee-left;
+  }
+
+  .featured-creators-track-right {
+    animation-name: featured-creators-marquee-right;
+  }
+
+  .featured-creators-gallery:is(:hover, :focus-within) .featured-creators-track {
+    animation-play-state: paused;
+  }
 }
 
 @layer base {
@@ -251,7 +270,16 @@
     0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
     50%      { transform: translate3d(4%, 6%, 0) scale(1.08); }
   }
+  @keyframes featured-creators-marquee-left {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes featured-creators-marquee-right {
+    from { transform: translate3d(-50%, 0, 0); }
+    to { transform: translate3d(0, 0, 0); }
+  }
   @media (prefers-reduced-motion: reduce) {
     .animate-drift-a, .animate-drift-b, .animate-drift-c { animation: none !important; }
+    .featured-creators-track { animation: none !important; transform: none !important; }
   }
 }

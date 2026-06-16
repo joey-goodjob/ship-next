@@ -3,6 +3,38 @@ import path from "node:path";
 
 export type SeoPageLocale = "en" | "zh";
 
+export type SeoManifestoRow = {
+  myth: string;
+  reality: string;
+};
+
+export type SeoStyleItem = {
+  name: string;
+  description: string;
+  free: boolean;
+};
+
+export type SeoMethodItem = SeoTextItem & {
+  meta: string;
+  bestFor: string;
+  steps: string[];
+  cta?: string;
+};
+
+export type SeoComparisonRow = {
+  label: string;
+  values: string[];
+};
+
+export type SeoComparisonTable = {
+  title: string;
+  description?: string;
+  columns: string[];
+  rows: SeoComparisonRow[];
+  note?: string;
+  cta?: string;
+};
+
 export type SeoPageContent = {
   slug: string;
   layout: {
@@ -21,10 +53,39 @@ export type SeoPageContent = {
     secondaryCta: string;
   };
   trust?: string[];
+  manifesto?: {
+    title: string;
+    rows: SeoManifestoRow[];
+  };
   howItWorks?: {
     title: string;
     steps: SeoStepItem[];
   };
+  styles?: {
+    title: string;
+    subtitle: string;
+    items: SeoStyleItem[];
+  };
+  methodComparison?: {
+    title: string;
+    description: string;
+    quickAnswer: SeoTextItem & {
+      cta: string;
+    };
+    methods: SeoMethodItem[];
+    comparison: {
+      title: string;
+      columns: string[];
+      rows: SeoComparisonRow[];
+      bottomLine: string;
+      cta: string;
+    };
+    tips: {
+      title: string;
+      items: string[];
+    };
+  };
+  comparisonTable?: SeoComparisonTable;
   whyChoose?: {
     title: string;
     description: string;
@@ -44,6 +105,7 @@ export type SeoPageContent = {
     title: string;
     description: string;
     button: string;
+    upsell?: string;
   };
 };
 
@@ -64,7 +126,11 @@ export type SeoFaqItem = {
 export const SEO_SECTION_TYPES = [
   "heroTool",
   "trust",
+  "manifesto",
   "howItWorks",
+  "styles",
+  "methodComparison",
+  "comparisonTable",
   "whyChoose",
   "faq",
   "toolkit",
@@ -81,7 +147,6 @@ const RESERVED_SLUGS = new Set([
   "create",
   "creations",
   "dashboard",
-  "free",
   "forgot-password",
   "lyric-videos",
   "pricing",
@@ -207,8 +272,20 @@ function validateSelectedSection(page: SeoPageContent, section: SeoSectionType, 
     case "trust":
       assertStringArray(page.trust, `${where}.trust`);
       return;
+    case "manifesto":
+      validateManifestoSection(page, where);
+      return;
     case "howItWorks":
       validateHowItWorksSection(page, where);
+      return;
+    case "styles":
+      validateStylesSection(page, where);
+      return;
+    case "methodComparison":
+      validateMethodComparisonSection(page, where);
+      return;
+    case "comparisonTable":
+      validateComparisonTableSection(page, where);
       return;
     case "whyChoose":
       validateWhyChooseSection(page, where);
@@ -232,6 +309,108 @@ function validateHeroSection(page: SeoPageContent, where: string) {
   assertNonEmptyString(page.hero.subhead, `${where}.hero.subhead`);
   assertNonEmptyString(page.hero.primaryCta, `${where}.hero.primaryCta`);
   assertNonEmptyString(page.hero.secondaryCta, `${where}.hero.secondaryCta`);
+}
+
+function validateManifestoSection(page: SeoPageContent, where: string) {
+  assertRecord(page.manifesto, `${where}.manifesto`);
+  assertNonEmptyString(page.manifesto.title, `${where}.manifesto.title`);
+  assertArray(page.manifesto.rows, `${where}.manifesto.rows`);
+  page.manifesto.rows.forEach((row, index) => {
+    assertRecord(row, `${where}.manifesto.rows[${index}]`);
+    assertNonEmptyString(row.myth, `${where}.manifesto.rows[${index}].myth`);
+    assertNonEmptyString(row.reality, `${where}.manifesto.rows[${index}].reality`);
+  });
+}
+
+function validateStylesSection(page: SeoPageContent, where: string) {
+  assertRecord(page.styles, `${where}.styles`);
+  assertNonEmptyString(page.styles.title, `${where}.styles.title`);
+  assertNonEmptyString(page.styles.subtitle, `${where}.styles.subtitle`);
+  assertArray(page.styles.items, `${where}.styles.items`);
+  page.styles.items.forEach((item, index) => {
+    assertRecord(item, `${where}.styles.items[${index}]`);
+    assertNonEmptyString(item.name, `${where}.styles.items[${index}].name`);
+    assertNonEmptyString(item.description, `${where}.styles.items[${index}].description`);
+    if (typeof item.free !== "boolean") {
+      throw new Error(`${where}.styles.items[${index}].free must be a boolean`);
+    }
+  });
+}
+
+function validateMethodComparisonSection(page: SeoPageContent, where: string) {
+  assertRecord(page.methodComparison, `${where}.methodComparison`);
+  assertNonEmptyString(page.methodComparison.title, `${where}.methodComparison.title`);
+  assertNonEmptyString(page.methodComparison.description, `${where}.methodComparison.description`);
+
+  assertRecord(page.methodComparison.quickAnswer, `${where}.methodComparison.quickAnswer`);
+  assertNonEmptyString(page.methodComparison.quickAnswer.title, `${where}.methodComparison.quickAnswer.title`);
+  assertNonEmptyString(page.methodComparison.quickAnswer.description, `${where}.methodComparison.quickAnswer.description`);
+  assertNonEmptyString(page.methodComparison.quickAnswer.cta, `${where}.methodComparison.quickAnswer.cta`);
+
+  assertArray(page.methodComparison.methods, `${where}.methodComparison.methods`);
+  if (page.methodComparison.methods.length !== 4) {
+    throw new Error(`${where}.methodComparison.methods must include exactly 4 items`);
+  }
+  page.methodComparison.methods.forEach((method, index) => {
+    assertRecord(method, `${where}.methodComparison.methods[${index}]`);
+    assertNonEmptyString(method.title, `${where}.methodComparison.methods[${index}].title`);
+    assertNonEmptyString(method.description, `${where}.methodComparison.methods[${index}].description`);
+    assertNonEmptyString(method.meta, `${where}.methodComparison.methods[${index}].meta`);
+    assertNonEmptyString(method.bestFor, `${where}.methodComparison.methods[${index}].bestFor`);
+    assertStringArray(method.steps, `${where}.methodComparison.methods[${index}].steps`);
+    if (method.cta !== undefined) {
+      assertNonEmptyString(method.cta, `${where}.methodComparison.methods[${index}].cta`);
+    }
+  });
+
+  assertRecord(page.methodComparison.comparison, `${where}.methodComparison.comparison`);
+  assertNonEmptyString(page.methodComparison.comparison.title, `${where}.methodComparison.comparison.title`);
+  assertStringArray(page.methodComparison.comparison.columns, `${where}.methodComparison.comparison.columns`);
+  if (page.methodComparison.comparison.columns.length !== page.methodComparison.methods.length) {
+    throw new Error(`${where}.methodComparison.comparison.columns must match method count`);
+  }
+  assertArray(page.methodComparison.comparison.rows, `${where}.methodComparison.comparison.rows`);
+  page.methodComparison.comparison.rows.forEach((row, index) => {
+    assertRecord(row, `${where}.methodComparison.comparison.rows[${index}]`);
+    assertNonEmptyString(row.label, `${where}.methodComparison.comparison.rows[${index}].label`);
+    assertStringArray(row.values, `${where}.methodComparison.comparison.rows[${index}].values`);
+    if (row.values.length !== page.methodComparison!.comparison.columns.length) {
+      throw new Error(`${where}.methodComparison.comparison.rows[${index}].values must match column count`);
+    }
+  });
+  assertNonEmptyString(page.methodComparison.comparison.bottomLine, `${where}.methodComparison.comparison.bottomLine`);
+  assertNonEmptyString(page.methodComparison.comparison.cta, `${where}.methodComparison.comparison.cta`);
+
+  assertRecord(page.methodComparison.tips, `${where}.methodComparison.tips`);
+  assertNonEmptyString(page.methodComparison.tips.title, `${where}.methodComparison.tips.title`);
+  assertStringArray(page.methodComparison.tips.items, `${where}.methodComparison.tips.items`);
+  if (page.methodComparison.tips.items.length !== 7) {
+    throw new Error(`${where}.methodComparison.tips.items must include exactly 7 items`);
+  }
+}
+
+function validateComparisonTableSection(page: SeoPageContent, where: string) {
+  assertRecord(page.comparisonTable, `${where}.comparisonTable`);
+  assertNonEmptyString(page.comparisonTable.title, `${where}.comparisonTable.title`);
+  if (page.comparisonTable.description !== undefined) {
+    assertNonEmptyString(page.comparisonTable.description, `${where}.comparisonTable.description`);
+  }
+  assertStringArray(page.comparisonTable.columns, `${where}.comparisonTable.columns`);
+  assertArray(page.comparisonTable.rows, `${where}.comparisonTable.rows`);
+  page.comparisonTable.rows.forEach((row, index) => {
+    assertRecord(row, `${where}.comparisonTable.rows[${index}]`);
+    assertNonEmptyString(row.label, `${where}.comparisonTable.rows[${index}].label`);
+    assertStringArray(row.values, `${where}.comparisonTable.rows[${index}].values`);
+    if (row.values.length !== page.comparisonTable!.columns.length) {
+      throw new Error(`${where}.comparisonTable.rows[${index}].values must match column count`);
+    }
+  });
+  if (page.comparisonTable.note !== undefined) {
+    assertNonEmptyString(page.comparisonTable.note, `${where}.comparisonTable.note`);
+  }
+  if (page.comparisonTable.cta !== undefined) {
+    assertNonEmptyString(page.comparisonTable.cta, `${where}.comparisonTable.cta`);
+  }
 }
 
 function validateHowItWorksSection(page: SeoPageContent, where: string) {

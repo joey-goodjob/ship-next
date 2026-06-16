@@ -1,0 +1,172 @@
+{
+  "slug": "lyric-video-templates",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "styles",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Lyric Video Templates — AI Visual Styles for Your Song, Free",
+    "description": "Get lyric video styles that match your song. Upload audio, AI transcribes lyrics, syncs to the beat, and generates mood-driven visuals. Preview and export free — no subscription.",
+    "keywords": [
+      "lyric video templates",
+      "lyric video template",
+      "lyric video background",
+      "lyric video fonts",
+      "lyric video styles",
+      "lyric video effects",
+      "best lyric video fonts"
+    ]
+  },
+  "hero": {
+    "badge": "Lyric video templates — AI-generated, matched to your song",
+    "h1": "Lyric Video Templates",
+    "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visual styles driven by the song's mood — not generic templates. Preview the result, then export — free, no subscription needed.",
+    "primaryCta": "Try Templates with My Song — Free",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "Visuals matched to song mood",
+    "16:9, 9:16, and 1:1 export",
+    "Export free, no subscription or credit card"
+  ],
+  "styles": {
+    "title": "Lyric Video Templates Matched to Your Song",
+    "subtitle": "Start from flexible visual directions instead of a fixed gallery: AI adapts the lyric layout, motion, and background mood to the track.",
+    "items": [
+      {
+        "name": "Minimal lyric layout",
+        "description": "Clean type, simple motion, and generous spacing for acoustic songs, demos, and lyric-first releases.",
+        "free": true
+      },
+      {
+        "name": "Vertical short-form style",
+        "description": "Large readable lyrics and phone-safe composition for TikTok, Reels, and Shorts clips.",
+        "free": true
+      },
+      {
+        "name": "Mood visualizer",
+        "description": "Generated backgrounds follow the energy and emotion of the song while the lyrics stay clear.",
+        "free": true
+      },
+      {
+        "name": "YouTube release layout",
+        "description": "A wider 16:9 presentation with room for full-song pacing, intro moments, and readable choruses.",
+        "free": true
+      },
+      {
+        "name": "Performance promo style",
+        "description": "More movement and visual weight for hooks, launch clips, and artist promo moments.",
+        "free": false
+      },
+      {
+        "name": "Square feed cut",
+        "description": "Balanced 1:1 framing for posts where the lyric has to stay readable in a tighter canvas.",
+        "free": false
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "How Lyric Video Templates Work on LyricsVideo.ai",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The AI reads your song's mood to match the right visual style — you don't browse a generic template gallery."
+      },
+      {
+        "title": "AI transcribes and generates visuals",
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. Visual styles are generated to match the song's energy, genre, and mood."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video with the matched visual style before publishing. Confirm the lyrics are readable and the look fits the song, then export in 16:9 for YouTube, 9:16 for TikTok and Reels, or 1:1 for feed posts. Free to export, no subscription required."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Get Lyric Video Templates on LyricsVideo.ai",
+    "description": "Most lyric video template tools give you a gallery of generic backgrounds and expect you to type lyrics on top. LyricsVideo.ai starts from your song — AI transcribes the lyrics, syncs them, and generates visuals that actually match the music.",
+    "highlight": {
+      "title": "Visuals matched to your song, not picked from a gallery",
+      "description": "The AI reads the mood, energy, and genre of your song and generates matching visual styles. A ballad gets a different look than a rap hook — automatically."
+    },
+    "cards": [
+      {
+        "title": "Template direction starts from the track",
+        "description": "The song's energy and genre shape the layout direction before you spend time comparing looks that were never meant for your music."
+      },
+      {
+        "title": "Mood-driven, not random",
+        "description": "Visual styles are generated from the song's mood and energy, not picked randomly from a template gallery. Every lyric video looks like it belongs to the track."
+      },
+      {
+        "title": "Consistent release look",
+        "description": "Use the same visual direction across a full lyric video, hook clip, and feed post so the release feels like one campaign."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Lyric Video Templates FAQ",
+    "items": [
+      {
+        "question": "Are lyric video templates free?",
+        "answer": "Yes. Sign up, get free credits, and export your lyric video with matched visual styles — no subscription required, no credit card needed."
+      },
+      {
+        "question": "Do I need to choose a template manually?",
+        "answer": "No. Upload your song and AI generates visual styles matched to the mood and energy of your music. You preview the result and export — no manual template browsing."
+      },
+      {
+        "question": "Do I need to type the lyrics myself?",
+        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+      },
+      {
+        "question": "Will the visual style match my song's genre?",
+        "answer": "Yes. The AI reads the mood, energy, and themes of your song and generates matching visuals. A soft ballad gets a different look than an energetic hook."
+      },
+      {
+        "question": "Can I use exported lyric videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+      },
+      {
+        "question": "What formats can I export in?",
+        "answer": "16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. All formats from one upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Lyric Video Templates — Use Cases",
+    "description": "One song, one upload — AI generates the right visual style for every platform and release moment."
+  },
+  "useCases": [
+    {
+      "title": "YouTube full-length lyric video",
+      "description": "Get a visual style that works for a full-song 16:9 lyric video with readable pacing."
+    },
+    {
+      "title": "TikTok and Reels clips",
+      "description": "Get vertical-safe visual styles with large, readable lyrics for short-form platforms."
+    },
+    {
+      "title": "Genre-matched aesthetics",
+      "description": "AI matches the visual style to your genre — acoustic gets a different look than hip-hop or pop."
+    },
+    {
+      "title": "Release week content",
+      "description": "Generate multiple lyric video clips with consistent visual styles from one single."
+    }
+  ],
+  "bottomCta": {
+    "title": "Your song sets the mood. AI matches the visuals.",
+    "description": "Upload your track, let AI handle the lyrics and visual style, and export a finished lyric video — free, no subscription needed.",
+    "button": "Try Templates with My Song"
+  }
+}

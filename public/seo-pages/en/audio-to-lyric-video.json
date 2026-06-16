@@ -1,0 +1,176 @@
+{
+  "slug": "audio-to-lyric-video",
+  "layout": {
+    "sections": [
+      "heroTool",
+      "trust",
+      "comparisonTable",
+      "howItWorks",
+      "whyChoose",
+      "faq",
+      "toolkit",
+      "bottomCta"
+    ]
+  },
+  "seo": {
+    "title": "Audio to Lyric Video — AI Converter, Upload MP3 & Get Video",
+    "description": "Convert any audio file to a lyric video automatically. Upload MP3, WAV, FLAC, AAC, or OGG, and AI transcribes lyrics, syncs every line, previews, and exports free. No subscription needed.",
+    "keywords": [
+      "audio to lyric video",
+      "audio to lyric video ai",
+      "audio to lyrics video",
+      "audio to lyrics video converter",
+      "audio to lyrics video generator",
+      "convert audio to lyrics video",
+      "mp3 to lyric video"
+    ]
+  },
+  "hero": {
+    "badge": "Audio to lyric video AI converter",
+    "h1": "Audio to Lyric Video Converter — Upload Audio, Get a Synced Video",
+    "subhead": "Any audio file in, a synced lyric video out. Upload MP3, WAV, FLAC, AAC, or OGG — or paste a link — and AI auto-transcribes the lyrics, syncs every line to the beat, lets you preview the full video, and exports free with no subscription needed.",
+    "primaryCta": "Convert Audio to Video — Free",
+    "secondaryCta": "See How It Works"
+  },
+  "trust": [
+    "AI auto-transcribes lyrics",
+    "MP3, WAV, FLAC, AAC, OGG",
+    "MP4 export in 16:9, 9:16, and 1:1",
+    "Export free, no subscription or credit card"
+  ],
+  "comparisonTable": {
+    "title": "Audio to Lyric Video Input and Output Specs",
+    "description": "See exactly what the converter accepts and what your finished lyric video can become.",
+    "columns": [
+      "Input",
+      "Output"
+    ],
+    "rows": [
+      {
+        "label": "Supported formats",
+        "values": [
+          "MP3, WAV, FLAC, AAC, OGG, or a supported link",
+          "MP4 video with synced lyrics and original audio"
+        ]
+      },
+      {
+        "label": "Best for",
+        "values": [
+          "Finished songs, demos, hooks, rough mixes, and social edits",
+          "YouTube lyric videos, TikTok clips, Reels, Shorts, and square feed posts"
+        ]
+      },
+      {
+        "label": "Audio handling",
+        "values": [
+          "The uploaded audio is used as the source for transcription, beat sync, and mood analysis",
+          "The lyric video keeps your music central while adding synced text and generated visuals"
+        ]
+      },
+      {
+        "label": "Aspect ratios",
+        "values": [
+          "One audio upload can feed every output shape",
+          "16:9 for YouTube, 9:16 for TikTok/Reels/Shorts, and 1:1 for feed posts"
+        ]
+      }
+    ],
+    "note": "The audio to lyric video converter is free to start: sign up, get free credits, preview the result, and export with no subscription needed.",
+    "cta": "Convert Audio to Video"
+  },
+  "howItWorks": {
+    "title": "How the Audio to Lyric Video Converter Works",
+    "steps": [
+      {
+        "title": "Upload your audio",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The converter works directly from your audio file, whether it is a polished master or a rough demo, with tracks up to 15 minutes supported."
+      },
+      {
+        "title": "AI transcribes and syncs",
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. The lyrics follow the rhythm and phrasing of the actual song, not a generic subtitle timer."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Watch the full lyric video before publishing. Confirm every lyric lands on time and reads clearly, then export MP4 in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. 1080p export is available on the free path, with higher-resolution Pro exports when you need them."
+      }
+    ]
+  },
+  "whyChoose": {
+    "title": "Why Convert Audio to Lyric Video on LyricsVideo.ai",
+    "description": "Converting audio to a lyric video usually means moving between a transcription app, subtitle editor, and video timeline. LyricsVideo.ai turns that into one upload-to-video flow built for songs, demos, and social releases.",
+    "highlight": {
+      "title": "One audio file in, a finished lyric video out",
+      "description": "Upload one audio file and the project starts from the song itself: lyrics, timing, mood-driven visuals, and export settings stay in the same workflow."
+    },
+    "cards": [
+      {
+        "title": "Built for finished songs and demos",
+        "description": "Use a polished MP3 master, a WAV bounce, or a rough demo file. The workflow treats the audio as the source of truth instead of making you rebuild the song in a video editor."
+      },
+      {
+        "title": "Original audio stays central",
+        "description": "The generated video is built around your uploaded track, so the lyric timing and visual pacing follow the actual recording instead of a generic subtitle timeline."
+      },
+      {
+        "title": "Clear specs before export",
+        "description": "Choose the format you need before publishing: MP4 video for horizontal, vertical, or square distribution, with free 1080p output and Pro resolution when the release needs it."
+      }
+    ]
+  },
+  "faq": {
+    "title": "Audio to Lyric Video FAQ",
+    "items": [
+      {
+        "question": "Is converting audio to lyric video free?",
+        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+      },
+      {
+        "question": "What input and output formats does the converter support?",
+        "answer": "You can upload MP3, WAV, FLAC, AAC, or OGG audio, or paste a link instead of uploading a file. The finished lyric video exports as MP4 for YouTube, TikTok, Reels, Shorts, and square feed posts."
+      },
+      {
+        "question": "Do I need to type the lyrics myself?",
+        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+      },
+      {
+        "question": "Can I convert an MP3 to a TikTok lyric video?",
+        "answer": "Yes. Upload the MP3, and export in 9:16 for TikTok, Reels, and Shorts. Use the full track or create a shorter clip from the part you want to publish."
+      },
+      {
+        "question": "How long can my audio file be?",
+        "answer": "Audio files up to 15 minutes are supported, which covers most singles, demos, hooks, and social edits. For best results, upload a clear audio file at 128kbps or higher."
+      },
+      {
+        "question": "Can I use exported lyric videos commercially?",
+        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+      }
+    ]
+  },
+  "toolkit": {
+    "title": "Audio to Lyric Video Use Cases",
+    "description": "One audio file becomes a finished lyric video — from full YouTube releases to quick social clips."
+  },
+  "useCases": [
+    {
+      "title": "MP3 singles to YouTube lyric video",
+      "description": "Turn a finished audio master into a full-length 16:9 MP4 lyric video for your channel."
+    },
+    {
+      "title": "TikTok and Reels clips",
+      "description": "Convert the hook or chorus into a 9:16 vertical lyric video that stops the scroll."
+    },
+    {
+      "title": "Unreleased demos",
+      "description": "Turn a demo audio file into a lyric video preview to share with collaborators or tease on socials."
+    },
+    {
+      "title": "Lyric channels and frequent uploads",
+      "description": "Use a repeatable audio-to-video workflow when you need to upload lyric videos regularly."
+    }
+  ],
+  "bottomCta": {
+    "title": "You already have the audio. That is all you need.",
+    "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
+    "button": "Convert My Audio"
+  }
+}

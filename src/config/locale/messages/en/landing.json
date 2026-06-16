@@ -43,8 +43,26 @@
     "loved_by": "Loved by creators, musicians, and marketers worldwide."
   },
   "featured": {
-    "title": "See what you can create",
-    "description": "Real videos made with LyricVideo AI"
+    "title": "See What Creators Are Making",
+    "description": "Real AI music videos created by the community",
+    "cards": {
+      "one_click": {
+        "title": "One Click",
+        "description": "Upload a song, get a music video."
+      },
+      "styles": {
+        "title": "20+ Styles",
+        "description": "Anime, cinematic, retro - match any vibe."
+      },
+      "lip_sync": {
+        "title": "Lip Sync",
+        "description": "AI characters that sing your lyrics."
+      },
+      "any_format": {
+        "title": "Any Format",
+        "description": "16:9, 9:16, 1:1 - every platform ready."
+      }
+    }
   },
   "story": {
     "title": "You already know this feeling.",
@@ -151,108 +169,6 @@
     "line2": "Let people see it. Let people feel it.",
     "line3": "Create your lyric video now:",
     "button": "Upload your song"
-  },
-  "free_page": {
-    "seo": {
-      "title": "Free Lyric Video Maker Online — No Watermark, No Signup",
-      "description": "Make lyric videos for free with AI. No watermark, no account needed to start. Upload your song, lyrics auto-transcribed and synced, download in HD. Works on any device."
-    },
-    "hero": {
-      "badge": "No watermark. No card. No fake free trial.",
-      "h1": "Free Lyric Video Maker",
-      "subhead": "Actually free. No watermark, no signup wall, no \"free trial\" that asks for a credit card. Upload a song — lyrics are transcribed and synced automatically.",
-      "primary_cta": "Make a Free Lyric Video",
-      "secondary_cta": "See free styles",
-      "upload_note": "Drop your song here or click to browse · MP3, WAV, FLAC, AAC, OGG · up to 15 min",
-      "lyrics_option": "Have your own lyrics file? Paste or upload LRC/TXT instead after the automatic transcription step."
-    },
-    "trust": {
-      "items": ["No watermark", "No signup to start", "Lyrics auto-transcribed", "1080p HD export"]
-    },
-    "manifesto": {
-      "title": "What \"free\" usually means — and what it means here",
-      "other_label": "Other tools",
-      "here_label": "Here",
-      "rows": [
-        { "other": "\"Free\" — with a giant watermark", "here": "No watermark. Ever. Not even a tiny one." },
-        { "other": "\"Free\" — but export is paid", "here": "Download your HD video. Free." },
-        { "other": "\"Free trial\" — card required", "here": "No card. No trial countdown. Free is free." },
-        { "other": "\"Free\" — 720p only", "here": "Full 1080p HD on the free plan." },
-        { "other": "\"Free\" — after you sign up", "here": "Try the whole flow first. Sign up only to download." }
-      ]
-    },
-    "styles": {
-      "title": "Free styles included",
-      "description": "All of these are on the free plan. Click one to start with it.",
-      "button": "Use This Style",
-      "items": [
-        { "name": "Neon Pulse", "badge": "FREE", "description": "for electronic & pop" },
-        { "name": "Clean Slate", "badge": "FREE", "description": "for acoustic & indie" },
-        { "name": "Night Drive", "badge": "FREE", "description": "for hip-hop & trap" },
-        { "name": "Ink & Paper", "badge": "FREE", "description": "for ballads & folk" },
-        { "name": "Minimal Mono", "badge": "FREE", "description": "for when the words are enough" },
-        { "name": "Tape Rewind", "badge": "PRO", "description": "VHS grain & 80s chrome. Preview free, export on Pro." }
-      ]
-    },
-    "how_it_works": {
-      "title": "How it works",
-      "steps": [
-        { "label": "1", "title": "Upload your song", "description": "Drop an MP3, WAV, or FLAC. No account needed." },
-        { "label": "2", "title": "Lyrics appear automatically", "description": "The AI transcribes and syncs every line to the beat — about 30 seconds. Click any line to edit. Have a lyrics file? You can paste it instead." },
-        { "label": "3", "title": "Pick a style and download", "description": "Choose a free style, render, and download in 1080p HD — no watermark, ready for YouTube, TikTok, or Instagram." }
-      ]
-    },
-    "comparison": {
-      "title": "Free plan vs Pro — the honest version",
-      "feature_label": "",
-      "free_label": "Free",
-      "pro_label": "Pro $9/mo",
-      "unlimited_label": "Unlimited $19/mo",
-      "free_button": "Start Free",
-      "pro_button": "Go Pro",
-      "note": "Only upgrade if the free plan wins you over first.",
-      "rows": [
-        { "feature": "Videos / month", "free": "3", "pro": "20", "unlimited": "Unlimited" },
-        { "feature": "Styles", "free": "5 free styles", "pro": "All 20+", "unlimited": "All 20+" },
-        { "feature": "Resolution", "free": "1080p HD", "pro": "4K", "unlimited": "4K" },
-        { "feature": "Song length", "free": "Up to 15 min", "pro": "Up to 15 min", "unlimited": "Up to 15 min" },
-        { "feature": "Custom fonts", "free": "—", "pro": "✓", "unlimited": "✓" },
-        { "feature": "Custom backgrounds", "free": "—", "pro": "✓", "unlimited": "✓" },
-        { "feature": "Priority rendering", "free": "—", "pro": "✓ (~3x faster)", "unlimited": "✓ (~3x faster)" },
-        { "feature": "Batch rendering", "free": "—", "pro": "—", "unlimited": "✓" },
-        { "feature": "Watermark", "free": "None", "pro": "None", "unlimited": "None" },
-        { "feature": "Commercial use", "free": "✓", "pro": "✓", "unlimited": "✓" }
-      ]
-    },
-    "use_cases": {
-      "title": "Make free lyric videos for every platform",
-      "items": [
-        { "title": "YouTube lyric videos", "description": "full-length, 16:9 HD" },
-        { "title": "TikTok lyric videos", "description": "vertical 9:16, trend-ready styles" },
-        { "title": "Instagram Reels", "description": "9:16 and 1:1 formats" },
-        { "title": "Spotify Canvas-style loops", "description": "short vertical visuals for your tracks" },
-        { "title": "Karaoke-style videos", "description": "word-by-word highlighted lyrics" },
-        { "title": "Fan edits & covers", "description": "your clips, synced lyrics" }
-      ]
-    },
-    "faq": {
-      "title": "FAQ",
-      "items": [
-        { "question": "Is this lyric video maker really free?", "answer": "Yes. The free plan includes 3 videos per month in full 1080p HD with no watermark. No credit card required." },
-        { "question": "Will you add a watermark later?", "answer": "No. No watermark on free videos is a permanent commitment, not a launch promo." },
-        { "question": "What happens when I use all 3 free videos?", "answer": "Nothing bad. Your videos stay yours, your account stays free, and your quota resets on the 1st of each month. Upgrade only if waiting doesn't work for you." },
-        { "question": "Do I need to type or paste the lyrics myself?", "answer": "No — lyrics are transcribed automatically from the audio, in 50+ languages. You can paste your own lyrics file (LRC/TXT) instead if you prefer." },
-        { "question": "Can I make vertical lyric videos for TikTok on the free plan?", "answer": "Yes. Every free video can export in 16:9, 9:16, and 1:1 — one click each." },
-        { "question": "Can I use free videos commercially?", "answer": "Yes — your exports are yours, including for monetized channels. Just make sure you have rights to the music you upload." }
-      ]
-    },
-    "bottom_cta": {
-      "title": "Free should mean free.",
-      "description": "Make your first lyric video now — and see if we live up to it.",
-      "primary": "Start Free",
-      "pricing_prefix": "Need more videos, all styles, or 4K?",
-      "pricing_link": "View Pro plans"
-    }
   },
   "footer": {
     "tagline": "Made by musicians for musicians.",

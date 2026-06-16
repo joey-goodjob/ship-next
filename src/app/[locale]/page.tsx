@@ -1,5 +1,6 @@
 import { Header } from "@/blocks/header";
 import { Hero } from "@/blocks/hero";
+import { FeaturedCreators } from "@/blocks/featured-creators";
 import { Features } from "@/blocks/features";
 import { FAQ } from "@/blocks/faq";
 import { CTA } from "@/blocks/cta";
@@ -15,6 +16,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground">
       <Header />
       <Hero />
+      <FeaturedCreators />
       <Features />
       <FAQ />
       <CTA />

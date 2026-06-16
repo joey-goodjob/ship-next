@@ -18,6 +18,11 @@ export function BottomCtaSection({ content }: { content: NonNullable<SeoPageCont
           {content.button}
           <ArrowRight className="size-4" />
         </a>
+        {content.upsell && (
+          <p className="mt-4 text-xs leading-4 text-brand-panel/50">
+            {content.upsell}
+          </p>
+        )}
       </div>
     </section>
   );
