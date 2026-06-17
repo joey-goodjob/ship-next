@@ -124,6 +124,7 @@ export function EditorProvider({
   const [zoom, setZoomState] = useState(1);
   const [lyricsDirty, setLyricsDirty] = useState(false);
   const [wordsDirty, setWordsDirty] = useState(false);
+  const [exportError, setExportError] = useState("");
   const [exporting, setExporting] = useState(false);
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
@@ -1055,6 +1056,7 @@ export function EditorProvider({
       return;
     }
     if (exporting) return;
+    setExportError("");
     setExporting(true);
     try {
       const previewConfig = normalizePreviewConfig(project?.previewConfig);
@@ -1073,7 +1075,9 @@ export function EditorProvider({
       await refresh();
       toast.success(exportJob.videoUrl ? "Export ready" : "Export queued");
     } catch (err: any) {
-      toast.error(err?.message || "Queue export failed");
+      const message = err?.message || "Queue export failed";
+      setExportError(message);
+      toast.error(message);
     } finally {
       setExporting(false);
     }
@@ -1100,6 +1104,7 @@ export function EditorProvider({
       zoom,
       lyricsDirty,
       wordsDirty,
+      exportError,
       exporting,
       preparingAudio,
       creatingStory,
@@ -1140,6 +1145,7 @@ export function EditorProvider({
       cast,
       castBusy,
       creatingStory,
+      exportError,
       exporting,
       exports,
       generationRun,

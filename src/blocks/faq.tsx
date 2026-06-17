@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const FAQ_KEYS = ["rights", "free_preview", "models", "static_video", "credits"] as const;
+const FAQ_KEYS = ["free", "lyrics", "formats", "platforms", "languages", "commercial", "accuracy", "time", "account", "phone"] as const;
 
 export async function FAQ() {
   const t = await getTranslations("landing");
@@ -24,7 +24,7 @@ export async function FAQ() {
             {t("faq.description")}
           </p>
         </div>
-        <Accordion className="overflow-hidden rounded-sm bg-brand-panel shadow-sm" defaultValue={["rights"]}>
+        <Accordion className="overflow-hidden rounded-sm bg-brand-panel shadow-sm" defaultValue={["free"]}>
           {FAQ_KEYS.map((key) => (
             <AccordionItem key={key} value={key} className="border-brand-line">
               <AccordionTrigger className="cursor-pointer px-5 py-6 text-left text-base font-semibold leading-6 text-brand-muted hover:no-underline">

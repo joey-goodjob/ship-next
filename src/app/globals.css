@@ -248,6 +248,25 @@
   .featured-creators-gallery:is(:hover, :focus-within) .featured-creators-track {
     animation-play-state: paused;
   }
+
+  .testimonials-wall-column {
+    animation-duration: var(--testimonials-duration, 32s);
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    will-change: transform;
+  }
+
+  .testimonials-wall-column-up {
+    animation-name: testimonials-wall-scroll-up;
+  }
+
+  .testimonials-wall-column-down {
+    animation-name: testimonials-wall-scroll-down;
+  }
+
+  .testimonials-wall:is(:hover, :focus-within) .testimonials-wall-column {
+    animation-play-state: paused;
+  }
 }
 
 @layer base {
@@ -278,8 +297,20 @@
     from { transform: translate3d(-50%, 0, 0); }
     to { transform: translate3d(0, 0, 0); }
   }
+  @keyframes testimonials-wall-scroll-up {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(0, -50%, 0); }
+  }
+  @keyframes testimonials-wall-scroll-down {
+    from { transform: translate3d(0, -50%, 0); }
+    to { transform: translate3d(0, 0, 0); }
+  }
+  @keyframes style-preview-fade {
+    from { opacity: 0; transform: scale(1.015); }
+    to { opacity: 1; transform: scale(1); }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .animate-drift-a, .animate-drift-b, .animate-drift-c { animation: none !important; }
-    .featured-creators-track { animation: none !important; transform: none !important; }
+    .animate-drift-a, .animate-drift-b, .animate-drift-c, .animate-\[style-preview-fade_260ms_ease-out\] { animation: none !important; }
+    .featured-creators-track, .testimonials-wall-column { animation: none !important; transform: none !important; }
   }
 }

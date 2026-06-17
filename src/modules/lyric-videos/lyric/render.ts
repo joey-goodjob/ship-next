@@ -66,6 +66,69 @@ function captionsAreEnabled(style?: unknown) {
   return normalizeCaptionStyle(style).captionsEnabled !== false;
 }
 
+export type ExportWatermark = {
+  enabled: boolean;
+  text?: string | null;
+};
+
+export function normalizeExportWatermark(watermark?: ExportWatermark | null): ExportWatermark {
+  const text = String(watermark?.text || envConfigs.app_name || 'LyricsVideo.ai').trim() || 'LyricsVideo.ai';
+  return {
+    enabled: Boolean(watermark?.enabled),
+    text,
+  };
+}
+
+export function buildExportSettings(params: {
+  settings?: unknown;
+  watermark?: ExportWatermark | null;
+}): Record<string, unknown> & { watermark: ExportWatermark } {
+  const base =
+    params.settings && typeof params.settings === 'object' && !Array.isArray(params.settings)
+      ? { ...(params.settings as Record<string, unknown>) }
+      : {};
+  return {
+    ...base,
+    watermark: normalizeExportWatermark(params.watermark),
+  };
+}
+
+export function escapeDrawtextText(text: string) {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/:/g, '\\:')
+    .replace(/'/g, "\\'")
+    .replace(/,/g, '\\,')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]');
+}
+
+export function buildWatermarkDrawtextFilter(params: {
+  watermark?: ExportWatermark | null;
+  width: number;
+  height: number;
+}) {
+  const watermark = normalizeExportWatermark(params.watermark);
+  if (!watermark.enabled) return null;
+
+  const shortEdge = Math.min(params.width, params.height);
+  const fontSize = Math.max(24, Math.round(shortEdge * 0.032));
+  const padding = Math.max(24, Math.round(shortEdge * 0.05));
+  const text = escapeDrawtextText(watermark.text || 'LyricsVideo.ai');
+
+  return [
+    `drawtext=text='${text}'`,
+    `x=w-tw-${padding}`,
+    `y=h-th-${padding}`,
+    `fontsize=${fontSize}`,
+    'fontcolor=white@0.72',
+    'shadowcolor=black@0.55',
+    'shadowx=2',
+    'shadowy=2',
+    'expansion=none',
+  ].join(':');
+}
+
 export function buildAss(params: {
   lines: LyricLineInput[];
   words?: CaptionWord[];
@@ -128,6 +191,7 @@ export async function queueExport(params: {
   userId: string;
   projectId: string;
   settings?: unknown;
+  watermark?: ExportWatermark;
 }) {
   // 导出入口：创建视频类 `ai_task` 和 `lyric_video_export` 记录，
   // 然后用本地 ffmpeg/ASS 渲染，成功或失败都会回写 export 和 project 状态。
@@ -139,6 +203,8 @@ export async function queueExport(params: {
   if (!details.scenes.some((scene: any) => scene.imageUrl)) throw new Error('Generate at least one scene image before export');
 
   const costCredits = Math.max(20, Math.ceil((details.project.audioDurationMs || 60000) / 1000 / 10) * 5);
+  const watermark = normalizeExportWatermark(params.watermark);
+  const exportSettings = buildExportSettings({ settings: params.settings, watermark });
   const task = await createTask({
     userId: params.userId,
     mediaType: 'video',
@@ -146,7 +212,7 @@ export async function queueExport(params: {
     model: 'static-lyric-video-1080p',
     prompt: details.project.title,
     costCredits,
-    options: { projectId: params.projectId, stage: 'render', settings: params.settings },
+    options: { projectId: params.projectId, stage: 'render', settings: exportSettings },
   });
 
   const [exportJob] = await db()
@@ -160,7 +226,7 @@ export async function queueExport(params: {
       resolution: details.project.resolution,
       aspectRatio: details.project.aspectRatio,
       taskId: task.id,
-      settings: safeJson(params.settings || LYRIC_VIDEO_DEFAULT_STYLE),
+      settings: safeJson(exportSettings),
       costCredits,
     })
     .returning();
@@ -177,6 +243,7 @@ export async function queueExport(params: {
     lineCount: details.lines.length,
     sceneCount: details.scenes.length,
     costCredits,
+    watermarkEnabled: watermark.enabled,
   });
 
   await db()
@@ -197,6 +264,7 @@ export async function queueExport(params: {
       words: details.words,
       scenes: details.scenes,
       settings: params.settings,
+      watermark,
       exportId: exportJob.id,
     });
 
@@ -254,6 +322,7 @@ export async function renderStaticVideo(params: {
   words?: any[];
   scenes: any[];
   settings?: unknown;
+  watermark?: ExportWatermark | null;
   exportId: string;
 }) {
   const { width, height } = getDimensions(params.project.aspectRatio);
@@ -296,10 +365,16 @@ export async function renderStaticVideo(params: {
       );
     }
 
+    const watermarkFilter = buildWatermarkDrawtextFilter({
+      watermark: params.watermark,
+      width,
+      height,
+    });
     const videoFilter = [
       `scale=${width}:${height}:force_original_aspect_ratio=increase`,
       `crop=${width}:${height}`,
       subtitlesEnabled ? `subtitles=${assPath}` : null,
+      watermarkFilter,
     ]
       .filter(Boolean)
       .join(',');

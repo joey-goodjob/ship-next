@@ -3,6 +3,7 @@ import { getAuth } from '@/core/auth';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
 import * as service from '@/modules/lyric-videos/service';
+import { getCurrentSubscription } from '@/modules/subscriptions/service';
 
 async function getUserId() {
   const auth = getAuth();
@@ -21,15 +22,19 @@ export async function POST(
   const { id } = await params;
   try {
     const body = await req.json().catch(() => ({}));
+    const currentSubscription = await getCurrentSubscription(userId);
+    const watermark = { enabled: !currentSubscription };
     logLyricStage('export-video', 'route-start', {
       userId,
       projectId: id,
       hasSettings: Boolean(body.settings),
+      watermarkEnabled: watermark.enabled,
     });
     const data = await service.queueExport({
       userId,
       projectId: id,
       settings: body.settings,
+      watermark,
     });
     logLyricStage('export-video', 'route-success', {
       durationMs: Date.now() - startedAt,

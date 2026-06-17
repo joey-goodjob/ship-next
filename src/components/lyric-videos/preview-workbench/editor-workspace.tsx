@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { AudioUploadTrim } from "@/components/audio-upload-trim";
 import { Link } from "@/core/i18n/navigation";
 import { DEFAULT_TIMELINE_HEIGHT, SIDE_PANEL_WIDTH_KEY, TIMELINE_HEIGHT_KEY } from "./constants";
 import { useEditor } from "./editor-context";
+import { ExportStatusDialog } from "./export-status-dialog";
 import { HorizontalResizeHandle, VerticalResizeHandle } from "./resize-handles";
 import { PlaybackControls } from "./playback-controls";
 import { SidePanel } from "./side-panel";
@@ -17,7 +18,9 @@ import { VideoPreview } from "./video-preview";
 import { clamp, defaultSidePanelWidth, readStoredNumber } from "./utils";
 
 export function EditorWorkspace() {
-  const { loadError, loading, preparingAudio, project, uploadAndTranscribe } = useEditor();
+  const { exportError, exporting, latestExport, loadError, loading, preparingAudio, project, uploadAndTranscribe } = useEditor();
+  const wasExportingRef = useRef(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() =>
     clamp(readStoredNumber(SIDE_PANEL_WIDTH_KEY, defaultSidePanelWidth()), 360, 900),
   );
@@ -83,6 +86,13 @@ export function EditorWorkspace() {
 
   const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
 
+  useEffect(() => {
+    if (exporting && !wasExportingRef.current) {
+      setExportDialogOpen(true);
+    }
+    wasExportingRef.current = exporting;
+  }, [exporting]);
+
   return (
     <div className="editor-workspace fixed inset-0 z-[9999] flex h-[100dvh] w-screen flex-col overflow-hidden bg-[var(--editor-panel)] font-sans">
       <TopNavBar />
@@ -133,6 +143,15 @@ export function EditorWorkspace() {
           </div>
         </>
       )}
+      <ExportStatusDialog
+        exportError={exportError}
+        exporting={exporting}
+        latestExport={latestExport}
+        onOpenChange={setExportDialogOpen}
+        open={exportDialogOpen}
+        renderStatus={project?.renderStatus || "empty"}
+        renderUrl={project?.renderUrl}
+      />
     </div>
   );
 }

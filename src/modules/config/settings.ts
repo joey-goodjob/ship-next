@@ -81,8 +81,8 @@ export function getSettings(): Setting[] {
   return [
     // ─── General / App Info ──────────────────────────────────────────
     { name: 'app_name', title: 'App Name', type: 'text', placeholder: 'My App', group: 'appinfo', tab: 'general' },
-    { name: 'app_description', title: 'App Description', type: 'textarea', placeholder: 'Ship your SaaS faster', group: 'appinfo', tab: 'general' },
-    { name: 'app_url', title: 'App URL', type: 'text', placeholder: 'https://example.com', group: 'appinfo', tab: 'general' },
+    { name: 'app_description', title: 'App Description', type: 'textarea', placeholder: 'Create static AI lyric videos from your songs in minutes.', group: 'appinfo', tab: 'general' },
+    { name: 'app_url', title: 'App URL', type: 'text', placeholder: 'https://lyricvideomaker.app', group: 'appinfo', tab: 'general' },
 
     // ─── General / User Roles ────────────────────────────────────────
     { name: 'initial_role_enabled', title: 'Auto-assign role for new users', type: 'switch', group: 'user_role', tab: 'general' },
@@ -163,7 +163,7 @@ export function getSettings(): Setting[] {
     { name: 'alipay_app_id', title: 'App ID', type: 'text', placeholder: '2021xxx', group: 'alipay', tab: 'payment' },
     { name: 'alipay_private_key', title: 'Private Key (RSA2)', type: 'textarea', placeholder: 'MIIEvQIBADANBgkq...', group: 'alipay', tab: 'payment' },
     { name: 'alipay_public_key', title: 'Alipay Public Key', type: 'textarea', placeholder: 'MIIBIjANBgkq...', group: 'alipay', tab: 'payment' },
-    { name: 'alipay_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://hersoul.cn/api/payment/notify/alipay', group: 'alipay', tab: 'payment' },
+    { name: 'alipay_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://lyricvideomaker.app/api/payment/notify/alipay', group: 'alipay', tab: 'payment' },
     { name: 'alipay_test_amount', title: 'Test amount (分)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 ¥0.01', group: 'alipay', tab: 'payment' },
 
     // ─── Payment / WeChat Pay ───────────────────────────────────────
@@ -173,7 +173,7 @@ export function getSettings(): Setting[] {
     { name: 'wechat_api_v3_key', title: 'APIv3 Key (32位密钥)', type: 'password', placeholder: '32 chars', group: 'wechat', tab: 'payment' },
     { name: 'wechat_private_key', title: 'Merchant Private Key (PEM)', type: 'textarea', placeholder: 'MIIEvgIBADANBgkq...', group: 'wechat', tab: 'payment' },
     { name: 'wechat_serial_no', title: 'Certificate Serial No', type: 'text', placeholder: 'xxx', group: 'wechat', tab: 'payment' },
-    { name: 'wechat_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://hersoul.cn/api/payment/notify/wechat', group: 'wechat', tab: 'payment' },
+    { name: 'wechat_notify_url', title: 'Notify URL (Webhook)', type: 'text', placeholder: 'https://lyricvideomaker.app/api/payment/notify/wechat', group: 'wechat', tab: 'payment' },
     { name: 'wechat_test_amount', title: 'Test amount (分)', type: 'number', placeholder: '留空使用实际金额，填 1 则支付 ¥0.01', group: 'wechat', tab: 'payment' },
 
     // ─── Email / Resend ──────────────────────────────────────────────

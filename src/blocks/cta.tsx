@@ -36,6 +36,9 @@ export async function CTA() {
             <Upload className="size-5" />
             {t("cta.button")}
           </Link>
+          <p className="mt-4 max-w-md text-sm font-medium leading-5 text-white/78">
+            {t("cta.note")}
+          </p>
         </div>
       </div>
     </section>

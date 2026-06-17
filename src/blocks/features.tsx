@@ -1,12 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/core/i18n/navigation";
-import { Check, Clapperboard, MonitorPlay, ShieldCheck, Upload, WandSparkles } from "lucide-react";
-
-const STATS = [
-  ["90,000+", "lyric videos created"],
-  ["20,000+", "music creators and labels"],
-  ["85+", "languages supported"],
-] as const;
+import { Clapperboard, Upload, WandSparkles } from "lucide-react";
 
 export async function Features() {
   const t = await getTranslations("landing");
@@ -50,12 +44,8 @@ export async function Features() {
             </div>
           </div>
 
-          <div className="mt-24 text-center">
-            <h3 className="text-balance text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">
-              {t("creativity.title")} <span className="text-brand-accent">{t("creativity.accent")}</span>
-            </h3>
-            <p className="mt-5 text-sm font-normal leading-5 text-brand-muted lg:mt-6 lg:text-base lg:leading-6">{t("creativity.description")}</p>
-            <Link href="/#create" className="mt-8 inline-flex h-11 items-center justify-center gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover">
+          <div className="mt-16 text-center lg:mt-20">
+            <Link href="/#create" className="inline-flex h-11 items-center justify-center gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover">
               <Upload className="size-5" />
               {t("hero.cta")}
             </Link>
@@ -83,7 +73,7 @@ export async function Features() {
           <div className="relative rounded-sm bg-brand-preview-gradient p-3 shadow-xl">
             <div className="overflow-hidden bg-brand-panel shadow-sm">
               <div className="flex h-8 items-center border-b bg-brand-panel-strong px-3 text-[10px] font-semibold text-brand-muted">
-                LyricVideo AI Editor
+                LyricVideoMaker Editor
               </div>
               <div className="grid aspect-video grid-cols-[0.72fr_1fr] gap-4 p-5">
                 <div className="relative overflow-hidden rounded-sm bg-brand-stage-gradient">
@@ -104,18 +94,6 @@ export async function Features() {
           </div>
         </div>
 
-        <div className="mx-auto mt-24 max-w-[980px] text-center">
-          <h2 className="text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">{t("stats.title")}</h2>
-          <p className="mt-4 text-sm font-normal leading-5 text-brand-muted lg:mt-5 lg:text-base lg:leading-6">{t("stats.description")}</p>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {STATS.map(([value, label]) => (
-              <div key={value} className="rounded-2xl border border-brand-line bg-brand-panel px-8 py-7 shadow-sm">
-                <div className="text-2xl font-bold leading-8 text-brand-ink lg:text-[28px] lg:leading-[42px]">{value}</div>
-                <p className="mt-2 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       <section className="bg-brand-soft px-5 py-[70px] text-brand-ink lg:py-[120px]">
@@ -138,27 +116,6 @@ export async function Features() {
         </div>
       </section>
 
-      <section className="bg-brand-panel px-5 py-[70px] text-center text-brand-ink lg:py-[120px]">
-        <h2 className="text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">{t("try_free.title")}</h2>
-        <p className="mt-4 text-sm font-normal leading-5 text-brand-muted lg:mt-6 lg:text-base lg:leading-6">{t("try_free.description")}</p>
-        <div className="mx-auto mt-10 grid max-w-[620px] grid-cols-2 gap-8 md:grid-cols-4">
-          {[
-            ["preview", MonitorPlay],
-            ["watermark", Check],
-            ["rights", ShieldCheck],
-            ["cancel", Upload],
-          ].map(([key, Icon]) => (
-            <div key={key as string} className="flex flex-col items-center gap-3">
-              <Icon className="size-8" />
-              <span className="text-sm font-semibold leading-5 lg:text-base lg:leading-6">{t(`try_free.${key}`)}</span>
-            </div>
-          ))}
-        </div>
-        <Link href="/#create" className="mt-12 inline-flex h-11 items-center justify-center gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover">
-          <Upload className="size-5" />
-          {t("try_free.button")}
-        </Link>
-      </section>
     </>
   );
 }

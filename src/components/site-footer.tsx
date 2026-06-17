@@ -20,65 +20,24 @@ export function SiteFooter({
   columns,
   socials,
   copyright,
-  backgroundImageSrc,
 }: {
   tagline?: string;
   columns?: FooterColumn[];
   socials?: FooterSocial[];
   copyright?: string;
-  backgroundImageSrc?: string;
 }) {
   const year = new Date().getFullYear();
-  const hasBackgroundImage = Boolean(backgroundImageSrc);
-  const textClassName = hasBackgroundImage ? "text-white" : "text-brand-ink";
-  const mutedTextClassName = hasBackgroundImage
-    ? "text-white/72"
-    : "text-brand-muted";
-  const linkClassName = hasBackgroundImage
-    ? "text-white/88 transition-colors hover:text-brand-accent"
-    : "text-brand-ink transition-colors hover:text-brand-accent";
 
   return (
-    <footer
-      className={cn(
-        "relative isolate overflow-hidden",
-        hasBackgroundImage
-          ? "bg-brand-ink text-white"
-          : "bg-brand-panel text-brand-ink"
-      )}
-    >
-      {backgroundImageSrc && (
-        <>
-          <img
-            src={backgroundImageSrc}
-            alt=""
-            aria-hidden={true}
-            className="absolute inset-0 z-0 size-full object-cover"
-          />
-          <div
-            className="absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(8,11,18,0.72),rgba(8,11,18,0.9))]"
-            aria-hidden={true}
-          />
-        </>
-      )}
-      <div className="relative z-10 mx-auto max-w-[1320px] px-6 pb-10 pt-14 sm:px-10 sm:pt-16 lg:px-16">
+    <footer className="bg-brand-panel text-brand-ink">
+      <div className="mx-auto max-w-[1320px] px-6 pb-10 pt-14 sm:px-10 sm:pt-16 lg:px-16">
         {tagline && (
-          <p
-            className={cn(
-              "mb-10 text-center text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10",
-              textClassName
-            )}
-          >
+          <p className="mb-10 text-center text-xl font-bold leading-[25px] text-brand-ink lg:text-4xl lg:leading-10">
             {tagline}
           </p>
         )}
 
-        <div
-          className={cn(
-            "mx-auto mb-12 h-px w-32",
-            hasBackgroundImage ? "bg-white/24" : "bg-brand-line"
-          )}
-        />
+        <div className="mx-auto mb-12 h-px w-32 bg-brand-line" />
 
         {columns && columns.length > 0 && (
           <div
@@ -92,10 +51,8 @@ export function SiteFooter({
             )}
           >
             <div className="space-y-6">
-              <BrandLogo variant="footer" showName className={textClassName} />
-              <p className={cn("text-base font-semibold leading-6", textClassName)}>
-                Follow us on
-              </p>
+              <BrandLogo variant="footer" showName />
+              <p className="text-base font-semibold leading-6">Follow us on</p>
               <div className="flex gap-2">
                 {socials?.map((s) => (
                   <a
@@ -104,24 +61,19 @@ export function SiteFooter({
                     aria-label={s.label}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={cn(
-                      "flex size-9 items-center justify-center rounded-md",
-                      hasBackgroundImage
-                        ? "bg-white text-brand-ink"
-                        : "bg-brand-ink text-brand-panel"
-                    )}
+                    className="flex size-9 items-center justify-center rounded-md bg-brand-ink text-brand-panel"
                   >
                     <s.icon className="size-[17px]" />
                   </a>
                 ))}
               </div>
-              <p className={cn("text-sm font-semibold", mutedTextClassName)}>
+              <p className="text-sm font-semibold text-brand-muted">
                 {copyright || `All rights reserved © ${year}`}
               </p>
             </div>
             {columns.map((col) => (
               <div key={col.title} className="space-y-5">
-                <h4 className={cn("text-sm font-semibold uppercase", textClassName)}>
+                <h4 className="text-sm font-semibold uppercase text-brand-ink">
                   {col.title}
                 </h4>
                 <ul className="space-y-2">
@@ -132,14 +84,14 @@ export function SiteFooter({
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={cn("text-base", linkClassName)}
+                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </a>
                       ) : (
                         <Link
                           href={link.href}
-                          className={cn("text-base", linkClassName)}
+                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </Link>

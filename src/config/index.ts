@@ -1,8 +1,17 @@
+const DEFAULT_APP_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://lyricvideomaker.app'
+    : 'http://localhost:3000';
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
+
 export const envConfigs: Record<string, string> = {
   // App
-  app_url: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
-  app_name: process.env.NEXT_PUBLIC_APP_NAME ?? 'ShipAny Next',
-  app_description: process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? 'Ship your SaaS faster',
+  app_url: appUrl,
+  app_name: process.env.NEXT_PUBLIC_APP_NAME ?? 'LyricVideoMaker',
+  app_description:
+    process.env.NEXT_PUBLIC_APP_DESCRIPTION ??
+    'Create static AI lyric videos from your songs in minutes.',
   app_logo: process.env.NEXT_PUBLIC_APP_LOGO ?? '/logo.png',
 
   // Database
@@ -14,7 +23,7 @@ export const envConfigs: Record<string, string> = {
   db_max_connections: process.env.DB_MAX_CONNECTIONS ?? '1',
 
   // Auth
-  auth_url: process.env.AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? '',
+  auth_url: process.env.AUTH_URL ?? appUrl,
   auth_secret: process.env.AUTH_SECRET ?? '',
 
   // Payment - Stripe

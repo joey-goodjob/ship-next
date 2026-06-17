@@ -8,36 +8,47 @@
     "help": "帮助",
     "contact": "联系"
   },
+  "seo": {
+    "title": "AI 歌词视频制作工具 - 免费在线生成 Lyric Video",
+    "description": "上传歌曲，AI 自动转写歌词、按节拍同步每一行，并生成适合歌曲氛围的歌词视频。支持 YouTube、TikTok 和 Reels，免费创建和导出，无需订阅。",
+    "keywords": [
+      "AI 歌词视频制作工具",
+      "歌词视频生成器",
+      "AI lyric video maker",
+      "lyric video generator",
+      "免费歌词视频工具"
+    ]
+  },
   "hero": {
-    "badge": "AI 驱动的歌词视频创作",
-    "headline_start": "用 AI 制作歌词视频",
-    "headline_accent": "只需几分钟。",
-    "subheadline": "上传一个音频文件，立即获得歌词视频预览。",
-    "upload_title": "上传歌曲，立即获得视频预览",
-    "cta": "上传你的歌曲",
-    "secondary_cta": "试试看 demo",
+    "badge": "AI Lyric Video Maker",
+    "headline_start": "AI 歌词视频制作工具 - 从一首歌生成",
+    "headline_accent": "完整 Lyric Video",
+    "subheadline": "上传你的歌曲，或粘贴音频链接。AI 会自动从音频中转写歌词，把每一行歌词同步到节拍，并生成适合歌曲氛围的画面。你可以先完整预览，再免费导出，无需订阅。",
+    "upload_title": "上传歌曲生成歌词视频",
+    "cta": "上传歌曲生成视频",
+    "secondary_cta": "查看制作流程",
     "file_note": "最大 100MB · 支持 MP3、WAV、FLAC、AAC、OGG、M4A",
     "quick_points": {
       "free_preview": "免费预览",
-      "no_templates": "不套模板",
+      "no_templates": "无需手动卡点",
       "fully_customizable": "完全可自定义"
     },
     "benefits": {
       "free_preview": {
-        "title": "免费预览",
-        "description": "购买前就能创建并预览视频，无需信用卡。"
+        "title": "AI 自动转写歌词",
+        "description": "上传音频后，AI 会自动准备可编辑的歌词。"
       },
       "customizable": {
-        "title": "完全可自定义",
-        "description": "编辑故事、风格、字体、场景和时间，让视频贴合你的想法。"
+        "title": "歌词按节拍同步",
+        "description": "每一行歌词都会跟随歌曲节奏，卡在合适的时间点。"
       },
       "languages": {
-        "title": "90+ 语言",
-        "description": "AI 自动为全球歌曲准备歌词转写。"
+        "title": "支持 YouTube / TikTok / Reels",
+        "description": "支持 16:9、9:16 和 1:1，适配不同发布场景。"
       },
       "secure_private": {
-        "title": "安全且私密",
-        "description": "你的音频和数据会加密处理，不会被分享。"
+        "title": "免费导出，无需订阅",
+        "description": "注册即可获得免费积分，不订阅也可以开始导出。"
       }
     },
     "loved_by": "深受创作者、音乐人和营销团队喜爱。"
@@ -66,21 +77,21 @@
     }
   },
   "story": {
-    "title": "你一定懂这种感觉。",
-    "p1": "歌曲终于完成了。你花了很多时间作曲、写词、录音、混音和修改。",
-    "p2": "你迫不及待想把它展示给世界。但你还需要一个视频，一个配得上这首歌的视频。",
-    "quote": "我需要预算，需要时间，还需要找人帮我。",
-    "p3": "就在那一刻，你被卡住了。",
-    "exists": "LyricVideo AI 就是为这一刻而存在。",
-    "solution_left_1": "它由音乐人打造，也为音乐人而生。我们经历过，所以懂你。",
-    "solution_left_2": "我们的 AI 帮你把视觉想法变成作品，而不是把歌曲塞进模板。",
+    "title": "歌做完了，但视频还没有。",
+    "p1": "写词、录音、混音，花了好几周。歌终于是对的了。",
+    "p2": "现在你需要一个画面——能配得上这首歌的画面——让别人能找到它、感受到它。",
+    "quote": "找人做视频太贵，自己学剪辑太慢，套模板又完全不对味。",
+    "p3": "于是这首歌就停在那里。做完了，但没人看见。",
+    "exists": "LyricVideoMaker 解决的就是这个问题。",
+    "solution_left_1": "上传歌曲，AI 自动完成转写、卡点和初版画面——几分钟，不是几天。",
+    "solution_left_2": "创作方向始终由你决定。改文字、换风格、调氛围，满意了再导出。",
     "not_magic": {
-      "title": "不是魔法按钮",
-      "description": "这是一个真实的歌词视频工作流，每位音乐人都可以使用。"
+      "title": "真正的制作工具",
+      "description": "不是一键生成的噱头，而是一个你可以信赖的歌词视频工作流。"
     },
     "human": {
-      "title": "AI + 人类创造力",
-      "description": "把 AI 和你的创作方向结合起来，从想法到成片都在一个地方完成。"
+      "title": "AI 做重活",
+      "description": "转写、同步、渲染全自动。你的审美和判断决定最终成片。"
     }
   },
   "creativity": {
@@ -90,28 +101,15 @@
   },
   "maker": {
     "title": "为音乐而生的 AI 歌词视频工具",
-    "p1": "LyricVideo AI 是专门为音乐设计的 AI 歌词视频工具。大多数 AI 视频工具是为广告和短视频做的，而它是为歌曲做的。",
+    "p1": "LyricVideoMaker 是专门为音乐设计的 AI 歌词视频工具。大多数 AI 视频工具是为广告和短视频做的，而它是为歌曲做的。",
     "p2": "从歌词和歌曲开始，然后用故事提示词、场景、颜色、字体和图片把它变成你的作品。",
     "p3": "不需要视频剪辑经验。",
     "link": "登录进入编辑器"
   },
-  "stats": {
-    "title": "被全球音乐创作者和团队使用",
-    "description": "越来越多音乐人正在用这种方式发布作品。"
-  },
   "export": {
     "title": "导出到你熟悉的编辑器",
-    "description": "从 LyricVideo AI 开始，再进入你已经熟悉的工具。几分钟内完成歌词视频，之后还可以继续高级剪辑。",
+    "description": "从 LyricVideoMaker 开始，再进入你已经熟悉的工具。几分钟内完成歌词视频，之后还可以继续高级剪辑。",
     "link": "给视频创作者"
-  },
-  "try_free": {
-    "title": "免费试用",
-    "description": "付款前先看视频效果。没有压力，没有意外。",
-    "preview": "免费预览",
-    "watermark": "无水印",
-    "rights": "版权归你",
-    "cancel": "随时取消",
-    "button": "上传歌曲开始"
   },
   "pricing": {
     "title": "价格",
@@ -126,7 +124,7 @@
   "credits_pack": {
     "title": "随时加购积分",
     "description": "适合完成单个项目。长期创作时订阅方案更划算。",
-    "included": "包含无水印导出和商业使用权"
+    "included": "包含导出和商业使用权"
   },
   "calculator": {
     "title": "我需要多少积分？"
@@ -141,35 +139,247 @@
   "pricing_cta": {
     "copy": "你的歌已经完成了。让大家看见它，感受到它。还有疑问吗？"
   },
+  "how_it_works": {
+    "title": "AI 歌词视频制作工具如何工作",
+    "steps": [
+      {
+        "title": "上传你的歌曲",
+        "description": "上传 MP3、WAV、FLAC、AAC 或 OGG 文件，也可以粘贴音频链接。开始前无需账号，也不需要手动输入歌词。LyricVideoMaker 会直接从你的真实音频开始生成。"
+      },
+      {
+        "title": "AI 自动转写并同步歌词",
+        "description": "AI 会自动从音频中转写歌词，识别节拍，并把每一行歌词同步到合适的时间点。支持 50+ 语言，每一句歌词都可以继续编辑。"
+      },
+      {
+        "title": "预览并导出视频",
+        "description": "用你的真实歌词和选择的风格预览整支歌词视频。然后导出 YouTube、TikTok、Reels、Shorts 或社媒动态版本，免费导出，无需订阅。"
+      }
+    ]
+  },
+  "styles": {
+    "title": "找到你的风格",
+    "subtitle": "每种风格都用真实歌词预览。点击任意一个试试。",
+    "items": [
+      {
+        "name": "Neon Pulse",
+        "description": "深色渐变上的霓虹字体——适合电子、流行和合成器浪潮。",
+        "previewImage": "/style-previews/neon-pulse.png",
+        "free": true
+      },
+      {
+        "name": "Clean Slate",
+        "description": "留白、柔和衬线字体和轻柔动效——适合民谣、独立和原声音乐。",
+        "previewImage": "/style-previews/clean-slate.png",
+        "free": true
+      },
+      {
+        "name": "Night Drive",
+        "description": "暗色调、快速切换和粗体无衬线——为说唱、trap 和 R&B 而生。",
+        "previewImage": "/style-previews/night-drive.png",
+        "free": true
+      },
+      {
+        "name": "Ink & Paper",
+        "description": "手写质感搭配暖色纸张——适合叙事歌曲、抒情和口语表达。",
+        "previewImage": "/style-previews/ink-paper.png",
+        "free": true
+      },
+      {
+        "name": "Minimal Mono",
+        "description": "黑白无装饰——当文字本身就够了。",
+        "previewImage": "/style-previews/minimal-mono.png",
+        "free": true
+      }
+    ]
+  },
+  "platforms": {
+    "title": "无论你的音乐在哪里发布",
+    "items": [
+      {
+        "platform": "YouTube",
+        "description": "清晰的 16:9 HD 全长歌词视频，适合歌词频道和官方音频上传。",
+        "link_text": "了解如何制作 YouTube 歌词视频",
+        "link_href": "/how-to-make-a-lyric-video"
+      },
+      {
+        "platform": "TikTok",
+        "description": "竖屏 9:16 视频，带醒目歌词动画，为前 3 秒抓住注意力而优化。",
+        "link_text": "试试 TikTok 歌词视频生成器",
+        "link_href": "/tiktok-lyric-video-generator"
+      },
+      {
+        "platform": "Instagram",
+        "description": "方形和竖屏格式，适合 Reels、Stories 和动态帖子。风格美感与你的主页一致。",
+        "link_text": "查看 Instagram 适用模板",
+        "link_href": "/lyric-video-templates"
+      }
+    ]
+  },
+  "comparison": {
+    "title": "最快完成歌词视频的方式",
+    "columns": ["LyricVideoMaker", "视频编辑器", "通用 AI 工具"],
+    "rows": [
+      { "label": "完成时间", "values": ["约 2 分钟", "2-6 小时", "15-30 分钟"] },
+      { "label": "自动识别歌词", "values": ["✓", "✗ 手动输入", "~ 仅字幕"] },
+      { "label": "节拍精准同步", "values": ["✓", "✗ 手动对齐", "✗"] },
+      { "label": "歌词专用风格", "values": ["✓ 专门设计", "✗ 从零开始", "~ 通用字幕"] },
+      { "label": "50+ 语言", "values": ["✓", "—", "~"] },
+      { "label": "免费，无需订阅", "values": ["✓", "~ 需购买软件", "✗ 需要订阅"] }
+    ],
+    "note": "专注做一件事——歌词视频——并且把它做到极致。"
+  },
+  "testimonials": {
+    "title": "创作者如何使用歌词视频制作工具",
+    "description": "音乐人、剪辑师和发行团队用 LyricVideoMaker 把真实歌曲变成同步歌词视频，用于 YouTube、TikTok、Reels 和新歌发布。",
+    "items": [
+      {
+        "id": "maya",
+        "name": "Maya R.",
+        "role": "独立唱作人",
+        "quote": "我上传了一首 3 分钟 demo，还没打开常用剪辑软件，就已经拿到了可编辑、按节拍同步的歌词。",
+        "rating": 5,
+        "initials": "MR"
+      },
+      {
+        "id": "jonas",
+        "name": "Jonas K.",
+        "role": "音乐制作人",
+        "quote": "给客户看预览时，最重要的是时间点。我可以先确认每一句歌词都卡在节拍上，再继续打磨画面。",
+        "rating": 5,
+        "initials": "JK"
+      },
+      {
+        "id": "alina",
+        "name": "Alina S.",
+        "role": "TikTok 音乐创作者",
+        "quote": "9:16 预览能让我直接看 hook 在手机上读不读得清。短竖版可以当天导出，当天发布。",
+        "rating": 5,
+        "initials": "AS"
+      },
+      {
+        "id": "dante",
+        "name": "Dante V.",
+        "role": "YouTube 歌词频道剪辑",
+        "quote": "我一周要准备 5 支歌词视频。自动转写和同步歌词能省掉最耗时的手动字幕卡点。",
+        "rating": 5,
+        "initials": "DV"
+      },
+      {
+        "id": "sora",
+        "name": "Sora N.",
+        "role": "视频剪辑师",
+        "quote": "艺人发来粗混版本时，我会先用歌词视频工具做出干净的时间基础，后面把时间花在风格和节奏上。",
+        "rating": 5,
+        "initials": "SN"
+      },
+      {
+        "id": "leah",
+        "name": "Leah M.",
+        "role": "独立厂牌协调",
+        "quote": "发行周要同时准备 YouTube、TikTok 和 Reels 版本。同一首歌在一个流程里导出，交接会简单很多。",
+        "rating": 5,
+        "initials": "LM"
+      },
+      {
+        "id": "niko",
+        "name": "Niko P.",
+        "role": "电子音乐人",
+        "quote": "我的歌很少有干净的停顿，手动卡歌词很容易乱。上传一次后，节拍同步先给了我一个能用的第一版。",
+        "rating": 5,
+        "initials": "NP"
+      },
+      {
+        "id": "camila",
+        "name": "Camila T.",
+        "role": "社媒内容负责人",
+        "quote": "我们会在发行前测试 hook。一段同步好的歌词短片，能先看出副歌在 Reels 上有没有传播感。",
+        "rating": 5,
+        "initials": "CT"
+      },
+      {
+        "id": "eli",
+        "name": "Eli W.",
+        "role": "民谣音乐人",
+        "quote": "我更在意歌词读得清楚，而不是特效多。先上传歌曲开始，会让视频一直围绕歌词和人声。",
+        "rating": 5,
+        "initials": "EW"
+      },
+      {
+        "id": "noor",
+        "name": "Noor H.",
+        "role": "R&B 主唱",
+        "quote": "可编辑歌词很有用。我改了两处转写结果，预览完整歌曲后，又导出了 TikTok 竖屏版本。",
+        "rating": 5,
+        "initials": "NH"
+      },
+      {
+        "id": "marco",
+        "name": "Marco D.",
+        "role": "YouTube 频道剪辑",
+        "quote": "10 秒预览很容易，真正看完整首歌才知道节奏是否成立。同步歌词让歌词频道的审核快很多。",
+        "rating": 5,
+        "initials": "MD"
+      },
+      {
+        "id": "tia",
+        "name": "Tia B.",
+        "role": "卧室制作人",
+        "quote": "以前我会跳过歌词视频，因为前期设置太重。现在从音频开始，更像是完成歌曲的一部分。",
+        "rating": 5,
+        "initials": "TB"
+      }
+    ]
+  },
   "faq": {
     "title": "FAQ",
-    "description": "如果有任何问题，欢迎联系我们。我们很乐意帮你。",
-    "rights": {
-      "question": "我可以把视频发布到 YouTube 或其他平台吗？",
-      "answer": "可以。只要你拥有歌曲版权或得到授权，就可以发布到 YouTube、Instagram、TikTok 或其他平台。"
+    "description": "开始制作第一支 AI 歌词视频前，你可能会关心这些问题。",
+    "free": {
+      "question": "这个 AI 歌词视频制作工具免费吗？",
+      "answer": "是的。注册后可以获得免费积分，用来创建、预览并导出歌词视频。无需订阅，也无需信用卡。"
     },
-    "free_preview": {
-      "question": "有免费试用吗？",
-      "answer": "有。注册后可以获得免费积分来创建和预览视频。导出视频时可以升级或购买积分。"
+    "lyrics": {
+      "question": "我需要自己输入歌词吗？",
+      "answer": "不需要。上传音频后，AI 会自动从歌曲中转写歌词。你也可以粘贴自己的歌词，或在生成后点击任意一句进行修改。"
     },
-    "models": {
-      "question": "你们使用哪些 AI 模型？",
-      "answer": "工作流采用可替换 provider。视觉生成优先兼容 Kie，转写、分镜和渲染都保留替换空间。"
+    "formats": {
+      "question": "支持哪些音频格式？",
+      "answer": "支持 MP3、WAV、FLAC、AAC 和 OGG。你也可以粘贴音频链接开始制作。"
     },
-    "static_video": {
-      "question": "视频是怎么生成的？",
-      "answer": "MVP 会基于歌词、场景图片、字幕样式和音频时间生成静态歌词视频。图生视频和 lip sync 是后续升级。"
+    "platforms": {
+      "question": "可以同时做 YouTube 和 TikTok 视频吗？",
+      "answer": "可以。同一个项目可以导出 16:9 的 YouTube 版本、9:16 的 TikTok/Reels/Shorts 版本，以及 1:1 的社媒动态版本。"
     },
-    "credits": {
-      "question": "我可以额外购买积分吗？",
-      "answer": "可以。你可以随时购买积分包，用于转写、图片生成和导出任务。"
+    "languages": {
+      "question": "支持哪些语言？",
+      "answer": "AI 歌词转写支持 50+ 语言，包括英语、西班牙语、葡萄牙语、日语、韩语、印地语和中文等。"
+    },
+    "commercial": {
+      "question": "导出的视频可以商用吗？",
+      "answer": "可以，导出的视频归你使用。请确保你拥有上传音乐的版权或已获得授权。"
+    },
+    "accuracy": {
+      "question": "歌词转写准确率怎么样？",
+      "answer": "支持语言的清晰人声准确率在 95% 以上。每一行歌词都可以编辑——生成视频前点击任意一句即可修改。"
+    },
+    "time": {
+      "question": "制作一支歌词视频需要多久？",
+      "answer": "一首 3 分钟的歌曲大约需要 2 分钟。转写大约 30 秒，选好风格后开始渲染。"
+    },
+    "account": {
+      "question": "试用需要注册账号吗？",
+      "answer": "不需要。你可以直接上传歌曲、查看转写好的歌词、预览风格效果。只有在导出时才需要创建免费账号。"
+    },
+    "phone": {
+      "question": "手机上能用吗？",
+      "answer": "可以。所有功能都在浏览器中运行，不需要安装任何应用。支持 iPhone、Android 和桌面端。"
     }
   },
   "cta": {
-    "line1": "你的歌已经完成了。",
-    "line2": "让大家看见它，感受到它。",
+    "line1": "你的歌已经有故事了，",
+    "line2": "现在让它被看见。",
     "line3": "现在创建你的歌词视频：",
-    "button": "上传你的歌曲"
+    "button": "上传歌曲开始制作",
+    "note": "免费导出，无需订阅，无需信用卡。"
   },
   "footer": {
     "tagline": "由音乐人打造，为音乐人而生。",

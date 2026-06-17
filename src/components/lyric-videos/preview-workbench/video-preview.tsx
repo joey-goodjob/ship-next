@@ -6,6 +6,7 @@ import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
+import { LatestExport } from "./latest-export";
 import { usePlayback } from "./playback-context";
 import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, secondsToMs } from "./utils";
 
@@ -15,6 +16,8 @@ export function VideoPreview() {
     generationLockReason,
     generationRun,
     generationSteps,
+    exporting,
+    latestExport,
     lines,
     loading,
     project,
@@ -30,6 +33,7 @@ export function VideoPreview() {
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const directionReady = runtimeState?.currentStage === "direction_ready" || generationRun?.currentStage === "direction_ready" || project?.pipelineStage === "direction_ready";
   const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
+  const shouldShowLatestExport = Boolean(exporting || latestExport || project?.renderUrl || (project?.renderStatus && project.renderStatus !== "empty"));
   const captionText = useMemo(() => {
     const currentMs = secondsToMs(currentTime);
     const activeChunk = findActiveCaptionChunk(words, currentMs, {
@@ -51,6 +55,11 @@ export function VideoPreview() {
         progress={progress}
         onRetry={retryFailedImageBatches}
       />
+      {shouldShowLatestExport ? (
+        <div className="absolute right-[24px] top-[24px] z-20 w-[min(320px,calc(100%-48px))]">
+          <LatestExport exportJob={latestExport} isExporting={exporting} renderStatus={project?.renderStatus || "empty"} renderUrl={project?.renderUrl} />
+        </div>
+      ) : null}
       <div
         className="relative max-h-full max-w-full overflow-hidden rounded-[4px] bg-[var(--editor-panel-strong)]"
         style={stageStyle}

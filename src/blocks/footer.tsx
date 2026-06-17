@@ -59,7 +59,6 @@ export async function Footer() {
       tagline={t("footer.tagline")}
       columns={columns}
       socials={socials}
-      backgroundImageSrc="/imgs/footer-stage-bg.png"
     />
   );
 }

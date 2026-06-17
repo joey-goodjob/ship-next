@@ -66,5 +66,8 @@ README.md
 /scripts/upload-beatviz-videos-to-r2.ts
 /scripts/upload-beatviz-yt5-with-curl.ts
 
+# binary docs
+*.xlsx
+
 # npm (project uses pnpm)
 package-lock.json

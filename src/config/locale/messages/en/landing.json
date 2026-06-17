@@ -8,36 +8,48 @@
     "help": "Help",
     "contact": "Contact"
   },
+  "seo": {
+    "title": "AI Lyric Video Maker — Free Lyric Video Generator & Creator",
+    "description": "Make lyric videos in minutes with AI. Upload any song, auto-transcribe and sync lyrics, generate stunning videos. Free online tool for YouTube, TikTok and Instagram.",
+    "keywords": [
+      "lyric video maker",
+      "ai lyric video maker",
+      "lyric video generator",
+      "ai lyric video generator",
+      "lyrics video maker",
+      "make lyric video"
+    ]
+  },
   "hero": {
-    "badge": "AI-powered lyric video creation",
-    "headline_start": "Create lyric videos with AI",
-    "headline_accent": "in minutes.",
-    "subheadline": "Upload one audio file and get an instant lyric video preview.",
-    "upload_title": "Upload your song to get an instant preview",
-    "cta": "Upload your song",
-    "secondary_cta": "Try a demo",
+    "badge": "AI Lyric Video Maker",
+    "headline_start": "AI Lyric Video Maker — turn any song into",
+    "headline_accent": "a lyric video.",
+    "subheadline": "Upload your song or paste a link. AI transcribes lyrics from the audio automatically, syncs every line to the beat, generates mood-driven visuals, and lets you preview before you export — free, no subscription needed.",
+    "upload_title": "Upload your song to generate a lyric video",
+    "cta": "Upload Your Song",
+    "secondary_cta": "See How It Works",
     "file_note": "Max 100MB · Formats: MP3, WAV, FLAC, AAC, OGG, M4A",
     "quick_points": {
       "free_preview": "Free preview",
-      "no_templates": "No templates",
+      "no_templates": "No manual timing",
       "fully_customizable": "Fully customizable"
     },
     "benefits": {
       "free_preview": {
-        "title": "Free preview",
-        "description": "Create and preview your video before purchasing. No credit card."
+        "title": "AI auto-transcribes lyrics",
+        "description": "Upload audio and let AI prepare editable lyrics automatically."
       },
       "customizable": {
-        "title": "Fully customizable",
-        "description": "Edit story, style, fonts, scenes, and timing to match your vision."
+        "title": "Beat-synced lyric timing",
+        "description": "Every line is synced to the song so the words land with the music."
       },
       "languages": {
-        "title": "90+ languages",
-        "description": "AI transcription prepares lyrics automatically for songs around the world."
+        "title": "YouTube, TikTok, Reels export",
+        "description": "Create lyric videos for 16:9, 9:16, and 1:1 publishing."
       },
       "secure_private": {
-        "title": "Private & secure",
-        "description": "Your audio and data are encrypted and never shared."
+        "title": "Free export, no subscription",
+        "description": "Start with free credits and export without a subscription."
       }
     },
     "loved_by": "Loved by creators, musicians, and marketers worldwide."
@@ -66,21 +78,21 @@
     }
   },
   "story": {
-    "title": "You already know this feeling.",
-    "p1": "The feeling of finishing the song. After hours of composing, writing, recording, mixing, and iterating.",
-    "p2": "You are excited to show it to the world. But you need a video. A music video worthy of your song.",
-    "quote": "I need a budget. I need time. I need to find people to help me.",
-    "p3": "In that moment, you feel stuck.",
-    "exists": "LyricVideo AI exists for that moment.",
-    "solution_left_1": "It was built by musicians, for musicians. We have been there, and we get it.",
-    "solution_left_2": "Our AI helps bring your vision to life without turning your song into a template.",
+    "title": "The song is done. The video isn't.",
+    "p1": "You spent weeks on the writing, the recording, the mix. The track finally sounds right.",
+    "p2": "Now you need something visual — something that matches the energy of the song — so people can actually find it and feel it.",
+    "quote": "Hiring a video editor costs too much. Learning After Effects takes too long. And generic templates don't match my sound.",
+    "p3": "So the song sits there. Finished, but invisible.",
+    "exists": "LyricVideoMaker closes that gap.",
+    "solution_left_1": "Upload your song. AI handles the transcription, the timing, and the first visual draft — in minutes, not days.",
+    "solution_left_2": "You stay in control of the creative direction. Change the words, the style, the mood. Export when it feels right.",
     "not_magic": {
-      "title": "Not a magic button",
-      "description": "This is a real lyric video workflow, available to every artist."
+      "title": "A real production tool",
+      "description": "Not a one-click gimmick. A lyric video workflow you can trust for a real release."
     },
     "human": {
-      "title": "AI + human creativity",
-      "description": "Merge AI with your creative direction: from idea to finished video in one place."
+      "title": "AI does the heavy lifting",
+      "description": "Transcription, sync, and rendering are automatic. Your taste and judgment shape the final cut."
     }
   },
   "creativity": {
@@ -90,28 +102,15 @@
   },
   "maker": {
     "title": "The AI Lyric Video Maker for Music",
-    "p1": "LyricVideo AI is an AI lyric video maker designed specifically for music. Most AI video tools are built for ads and reels. This is built for songs.",
+    "p1": "LyricVideoMaker is an AI lyric video maker designed specifically for music. Most AI video tools are built for ads and reels. This is built for songs.",
     "p2": "Start with lyrics and a song, then make it yours with story prompts, scenes, colors, fonts, and images.",
     "p3": "No video editing experience required.",
     "link": "Log in to access the editor"
   },
-  "stats": {
-    "title": "Used by Music Creators and Labels Worldwide",
-    "description": "Artists all over the world are already sharing their music this way."
-  },
   "export": {
     "title": "Export to Your Favorite Editor",
-    "description": "Start in LyricVideo AI. Finish in the tools you already use. Create your lyric video in minutes, then export for advanced editing later.",
+    "description": "Start in LyricVideoMaker. Finish in the tools you already use. Create your lyric video in minutes, then export for advanced editing later.",
     "link": "For filmmakers"
-  },
-  "try_free": {
-    "title": "Try it for free",
-    "description": "See your video before paying anything. No stress. No surprises.",
-    "preview": "Free preview",
-    "watermark": "No watermarks",
-    "rights": "You keep all rights",
-    "cancel": "Cancel anytime",
-    "button": "Upload your song to start"
   },
   "pricing": {
     "title": "Pricing",
@@ -126,7 +125,7 @@
   "credits_pack": {
     "title": "Add Credits Anytime",
     "description": "Best for finishing a single project. Plans are more cost-effective for ongoing creation.",
-    "included": "Watermark-free exports and commercial use included"
+    "included": "Exports and commercial use included"
   },
   "calculator": {
     "title": "How many credits do I need?"
@@ -141,35 +140,247 @@
   "pricing_cta": {
     "copy": "You've finished your song. Let people see it. Let people feel it. Do you have any doubts?"
   },
+  "how_it_works": {
+    "title": "How the AI Lyric Video Maker Works",
+    "steps": [
+      {
+        "title": "Upload your song",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. No account needed to start, and no manual lyric typing required. LyricVideoMaker starts from your real audio, not a blank timeline."
+      },
+      {
+        "title": "AI transcribes and syncs",
+        "description": "AI transcribes lyrics from the audio automatically, detects the beat, and syncs every line to the right moment. It supports 50+ languages, and every lyric line stays editable."
+      },
+      {
+        "title": "Preview and export",
+        "description": "Preview the full lyric video with your own lyrics and chosen style. Export for YouTube, TikTok, Reels, Shorts, or feed posts — free, no subscription required."
+      }
+    ]
+  },
+  "styles": {
+    "title": "Find your vibe",
+    "subtitle": "Every style, previewed with real lyrics. Click any to try it.",
+    "items": [
+      {
+        "name": "Neon Pulse",
+        "description": "Glowing type over dark gradients — built for electronic, pop, and synth-wave.",
+        "previewImage": "/style-previews/neon-pulse.png",
+        "free": true
+      },
+      {
+        "name": "Clean Slate",
+        "description": "White space, soft serif type, and gentle motion — for acoustic, indie, and folk.",
+        "previewImage": "/style-previews/clean-slate.png",
+        "free": true
+      },
+      {
+        "name": "Night Drive",
+        "description": "Moody colors, hard cuts, and bold sans-serif — made for hip-hop, trap, and R&B.",
+        "previewImage": "/style-previews/night-drive.png",
+        "free": true
+      },
+      {
+        "name": "Ink & Paper",
+        "description": "Handwritten texture over warm paper tones — for ballads, storytelling, and spoken word.",
+        "previewImage": "/style-previews/ink-paper.png",
+        "free": true
+      },
+      {
+        "name": "Minimal Mono",
+        "description": "Black and white, no decoration — when the words are enough.",
+        "previewImage": "/style-previews/minimal-mono.png",
+        "free": true
+      }
+    ]
+  },
+  "platforms": {
+    "title": "Made for wherever your music lives",
+    "items": [
+      {
+        "platform": "YouTube",
+        "description": "Full-length lyric videos in crisp 16:9 HD. Perfect for lyric channels and official audio uploads.",
+        "link_text": "Learn how to make a YouTube lyric video",
+        "link_href": "/how-to-make-a-lyric-video"
+      },
+      {
+        "platform": "TikTok",
+        "description": "Vertical 9:16 videos with bold, scroll-stopping lyric animations. Optimized for the first 3 seconds.",
+        "link_text": "Try the TikTok lyric video generator",
+        "link_href": "/tiktok-lyric-video-generator"
+      },
+      {
+        "platform": "Instagram",
+        "description": "Square and vertical formats for Reels, Stories, and feed posts. Aesthetic styles that match your grid.",
+        "link_text": "See Instagram-ready templates",
+        "link_href": "/lyric-video-templates"
+      }
+    ]
+  },
+  "comparison": {
+    "title": "The fastest way to a finished lyric video",
+    "columns": ["LyricVideoMaker", "Video editors", "General AI tools"],
+    "rows": [
+      { "label": "Time to finish", "values": ["~2 minutes", "2–6 hours", "15–30 minutes"] },
+      { "label": "Auto lyric detection", "values": ["✓", "✗ manual", "~ subtitles only"] },
+      { "label": "Beat-accurate sync", "values": ["✓", "✗ by hand", "✗"] },
+      { "label": "Lyric-specific styles", "values": ["✓ purpose-built", "✗ from scratch", "~ generic captions"] },
+      { "label": "50+ languages", "values": ["✓", "—", "~"] },
+      { "label": "Free, no subscription", "values": ["✓", "~ software cost", "✗ subscription"] }
+    ],
+    "note": "Built for one thing — lyric videos — and obsessively good at it."
+  },
+  "testimonials": {
+    "title": "How creators use the lyric video maker",
+    "description": "Artists, editors, and release teams use LyricVideoMaker to turn real songs into synced lyric videos for YouTube, TikTok, Reels, and release campaigns.",
+    "items": [
+      {
+        "id": "maya",
+        "name": "Maya R.",
+        "role": "Independent singer-songwriter",
+        "quote": "I uploaded a 3-minute demo and had editable, beat-synced lyrics before I opened my usual video editor. That saved me the whole first pass.",
+        "rating": 5,
+        "initials": "MR"
+      },
+      {
+        "id": "jonas",
+        "name": "Jonas K.",
+        "role": "Music producer",
+        "quote": "For client previews, the timing matters most. I can show the artist how every line lands with the beat before we spend time polishing visuals.",
+        "rating": 5,
+        "initials": "JK"
+      },
+      {
+        "id": "alina",
+        "name": "Alina S.",
+        "role": "TikTok music creator",
+        "quote": "The 9:16 preview helps me check whether the hook reads on a phone. I can export a short vertical version and post it the same day.",
+        "rating": 5,
+        "initials": "AS"
+      },
+      {
+        "id": "dante",
+        "name": "Dante V.",
+        "role": "YouTube lyric channel editor",
+        "quote": "I prepare 5 lyric videos a week. Starting with automatic transcription and synced lines keeps me out of manual subtitle timing.",
+        "rating": 5,
+        "initials": "DV"
+      },
+      {
+        "id": "sora",
+        "name": "Sora N.",
+        "role": "Video editor",
+        "quote": "When an artist sends a rough track, I use the lyric video maker to get a clean timing base. Then I can spend my time on style and pacing.",
+        "rating": 5,
+        "initials": "SN"
+      },
+      {
+        "id": "leah",
+        "name": "Leah M.",
+        "role": "Indie label coordinator",
+        "quote": "For release week, I need YouTube, TikTok, and Reels assets from the same song. Having those formats in one workflow keeps handoff simple.",
+        "rating": 5,
+        "initials": "LM"
+      },
+      {
+        "id": "niko",
+        "name": "Niko P.",
+        "role": "Electronic musician",
+        "quote": "My tracks rarely have clean pauses, so manual lyric timing gets messy fast. The beat sync gave me a usable first version in one upload.",
+        "rating": 5,
+        "initials": "NP"
+      },
+      {
+        "id": "camila",
+        "name": "Camila T.",
+        "role": "Social content lead",
+        "quote": "We test hooks before a release. A synced lyric clip tells us whether the chorus works on Reels before we book a full edit.",
+        "rating": 5,
+        "initials": "CT"
+      },
+      {
+        "id": "eli",
+        "name": "Eli W.",
+        "role": "Folk artist",
+        "quote": "I care more about readable words than flashy effects. Uploading the song first kept the video centered on the lyric and the vocal.",
+        "rating": 5,
+        "initials": "EW"
+      },
+      {
+        "id": "noor",
+        "name": "Noor H.",
+        "role": "R&B vocalist",
+        "quote": "The editable lines helped a lot. I fixed two phrases after transcription, previewed the full song, and exported a vertical version for TikTok.",
+        "rating": 5,
+        "initials": "NH"
+      },
+      {
+        "id": "marco",
+        "name": "Marco D.",
+        "role": "YouTube channel editor",
+        "quote": "A ten-second preview is easy. Watching the full track with synced lyrics tells me whether the pacing works for a lyrics channel.",
+        "rating": 5,
+        "initials": "MD"
+      },
+      {
+        "id": "tia",
+        "name": "Tia B.",
+        "role": "Bedroom producer",
+        "quote": "I used to skip lyric videos because the setup felt too big. Starting from the audio made it feel like part of finishing the song.",
+        "rating": 5,
+        "initials": "TB"
+      }
+    ]
+  },
   "faq": {
     "title": "FAQ",
-    "description": "Feel free to contact us for any questions or doubts. We'll be more than happy to help you!",
-    "rights": {
-      "question": "Can I post the video to YouTube or other platforms?",
-      "answer": "Yes. As long as you own the rights to the song or have permission from the artist, you can post the video on YouTube, Instagram, TikTok, or any other platform."
+    "description": "Everything you need to know before making your first AI lyric video.",
+    "free": {
+      "question": "Is this AI lyric video maker free?",
+      "answer": "Yes. Sign up, get free credits, make a lyric video, preview it, and export free — no subscription required and no credit card required."
     },
-    "free_preview": {
-      "question": "Is there a free trial?",
-      "answer": "Yes. When you sign up, you get free credits to create and preview videos. To export your video, you can upgrade or buy credits."
+    "lyrics": {
+      "question": "Do I need to type the lyrics myself?",
+      "answer": "No. Upload your audio and AI transcribes lyrics from the song automatically. You can also paste your own lyrics or edit any line after generation."
     },
-    "models": {
-      "question": "Which AI models do you use?",
-      "answer": "The workflow is provider-ready. Kie is the preferred visual generation path, while transcription, storyboard, and rendering stay replaceable."
+    "formats": {
+      "question": "What audio formats can I upload?",
+      "answer": "You can upload MP3, WAV, FLAC, AAC, and OGG files. You can also paste a link when you do not want to upload a file."
     },
-    "static_video": {
-      "question": "How do you generate the videos?",
-      "answer": "The MVP creates static lyric videos from lyrics, scene images, subtitle styling, and audio timing. Image-to-video and lip sync are later upgrades."
+    "platforms": {
+      "question": "Can I make videos for TikTok and YouTube?",
+      "answer": "Yes. Export 16:9 lyric videos for YouTube, 9:16 videos for TikTok, Reels, and Shorts, or 1:1 versions for feed posts."
     },
-    "credits": {
-      "question": "Can I purchase additional credits?",
-      "answer": "Yes. You can buy credit packs at any time and use them for transcription, images, and export jobs."
+    "languages": {
+      "question": "What languages do you support?",
+      "answer": "AI lyric transcription supports 50+ languages, including English, Spanish, Portuguese, Japanese, Korean, Hindi, and Mandarin."
+    },
+    "commercial": {
+      "question": "Can I use exported lyric videos commercially?",
+      "answer": "Yes, your exports are yours to use. Make sure you have the rights to the music you upload."
+    },
+    "accuracy": {
+      "question": "How accurate is the lyric transcription?",
+      "answer": "95%+ for clear vocals in supported languages. Every line is editable — click any lyric to fix it before generating your video."
+    },
+    "time": {
+      "question": "How long does it take to make a lyric video?",
+      "answer": "About 2 minutes for a typical 3-minute song. Transcription takes around 30 seconds, then rendering starts after you pick a style."
+    },
+    "account": {
+      "question": "Do I need to create an account to try it?",
+      "answer": "No. You can upload a song, see your transcribed lyrics, and preview styles without signing up. You only create a free account when you are ready to export."
+    },
+    "phone": {
+      "question": "Does it work on my phone?",
+      "answer": "Yes. Everything runs in the browser — no app or software to install. Works on iPhone, Android, and desktop."
     }
   },
   "cta": {
-    "line1": "You've finished your song.",
-    "line2": "Let people see it. Let people feel it.",
+    "line1": "Your song already has the story.",
+    "line2": "Now give it a video.",
     "line3": "Create your lyric video now:",
-    "button": "Upload your song"
+    "button": "Upload Your Song",
+    "note": "Free export. No subscription. No credit card required."
   },
   "footer": {
     "tagline": "Made by musicians for musicians.",

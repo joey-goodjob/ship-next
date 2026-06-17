@@ -261,6 +261,7 @@ export type EditorContextValue = {
   zoom: number;
   lyricsDirty: boolean;
   wordsDirty: boolean;
+  exportError: string;
   exporting: boolean;
   preparingAudio: boolean;
   creatingStory: boolean;
