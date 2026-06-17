@@ -12,6 +12,28 @@ import * as schema from '@/config/db/schema';
 const recentVerificationEmailSentAt = new Map<string, number>();
 const VERIFICATION_EMAIL_MIN_INTERVAL_MS = 60_000;
 
+function normalizeAuthDate(value: unknown, fieldName: string) {
+  if (value instanceof Date) {
+    if (!Number.isNaN(value.getTime())) return value;
+    throw new TypeError(`Invalid auth ${fieldName} date`);
+  }
+
+  if (typeof value === 'number' || typeof value === 'string') {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+
+  throw new TypeError(`Invalid auth ${fieldName} date`);
+}
+
+function normalizeVerificationDates(data: Record<string, unknown>) {
+  return {
+    expiresAt: normalizeAuthDate(data.expiresAt, 'expiresAt'),
+    createdAt: normalizeAuthDate(data.createdAt, 'createdAt'),
+    updatedAt: normalizeAuthDate(data.updatedAt, 'updatedAt'),
+  };
+}
+
 function getDatabaseProvider(provider: string): 'sqlite' | 'pg' | 'mysql' {
   switch (provider) {
     case 'sqlite':
@@ -121,6 +143,15 @@ export function getAuth(configs?: Record<string, string>) {
     },
     advanced: {
       database: { generateId: () => getUuid() },
+    },
+    databaseHooks: {
+      verification: {
+        create: {
+          before: async (verification) => ({
+            data: normalizeVerificationDates(verification),
+          }),
+        },
+      },
     },
     emailAndPassword: {
       enabled: emailAndPasswordEnabled,
