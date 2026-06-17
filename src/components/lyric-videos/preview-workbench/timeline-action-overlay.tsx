@@ -39,7 +39,7 @@ export function deriveTimelineActionOverlayModel(input: TimelineActionOverlayInp
   const { generationLocked = false, generationRun = null, generationSteps, latestExport, loadError = "", project, runtimeState, saveStatus, scenes, storyConfirmation } = input;
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const continuing = saveStatus === "saving";
-  const exportReady = project?.renderStatus === "ready" || latestExport?.status === "success";
+  const exportReady = project?.renderStatus === "ready" || latestExport?.status === "success" || latestExport?.status === "ready";
   const scenesReady =
     (progress.total > 0 && progress.success === progress.total && progress.processing === 0 && progress.failed === 0) ||
     project?.scenesStatus === "ready" ||

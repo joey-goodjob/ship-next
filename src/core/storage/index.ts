@@ -21,6 +21,21 @@ export interface StorageDownloadUploadOptions {
   disposition?: 'inline' | 'attachment';
 }
 
+export interface StorageDownloadOptions {
+  key: string;
+  bucket?: string;
+}
+
+export interface StorageDownloadResult {
+  success: boolean;
+  body?: Buffer;
+  contentType?: string;
+  bucket?: string;
+  key?: string;
+  error?: string;
+  provider: string;
+}
+
 /**
  * Storage upload result interface
  */
@@ -58,6 +73,9 @@ export interface StorageProvider {
 
   // get public url for key (optional)
   getPublicUrl?: (options: { key: string; bucket?: string }) => string;
+
+  // download file by private storage key (optional)
+  downloadFile?: (options: StorageDownloadOptions) => Promise<StorageDownloadResult>;
 
   // upload file
   uploadFile(options: StorageUploadOptions): Promise<StorageUploadResult>;
@@ -133,6 +151,18 @@ export class StorageManager {
     const provider = this.ensureDefaultProvider();
     if (!provider.exists) return false;
     return provider.exists(options);
+  }
+
+  async downloadFile(options: StorageDownloadOptions): Promise<StorageDownloadResult> {
+    const provider = this.ensureDefaultProvider();
+    if (!provider.downloadFile) {
+      return {
+        success: false,
+        error: 'Storage provider does not support private downloads',
+        provider: provider.name,
+      };
+    }
+    return provider.downloadFile(options);
   }
 
   // get public url using default provider (if supported)

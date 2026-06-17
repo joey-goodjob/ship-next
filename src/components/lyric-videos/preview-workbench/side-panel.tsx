@@ -34,7 +34,7 @@ type VisiblePanelTabsInput = {
 export function deriveVisiblePanelTabs(input: VisiblePanelTabsInput) {
   const { generationRun = null, generationSteps, project, runtimeState, scenes } = input;
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
-  const exportReady = project?.renderStatus === "ready" || runtimeState?.latestExportStatus === "success";
+  const exportReady = project?.renderStatus === "ready" || runtimeState?.latestExportStatus === "ready";
   const scenesReady =
     (progress.total > 0 && progress.success === progress.total && progress.processing === 0 && progress.failed === 0) ||
     project?.scenesStatus === "ready" ||

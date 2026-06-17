@@ -15,7 +15,7 @@ import { getUuid } from '@/lib/hash';
 import { logLyricStage } from '@/lib/lyric-video-log';
 import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
-import { deriveRuntimeState } from './status';
+import { deriveRuntimeState, normalizeExportStatus } from './status';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
 
 /**
@@ -237,12 +237,16 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
     };
   });
+  const normalizedExports = exports.map((item: any) => ({
+    ...item,
+    status: normalizeExportStatus(item.status),
+  }));
   const runtimeState = deriveRuntimeState({
     project: normalizedProject,
     generationRun,
     generationSteps,
     scenes: normalizedScenes,
-    exports,
+    exports: normalizedExports,
   });
 
   return {
@@ -254,7 +258,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
     lines: normalizedLines,
     scenes: normalizedScenes,
     cast,
-    exports,
+    exports: normalizedExports,
   };
 }
 

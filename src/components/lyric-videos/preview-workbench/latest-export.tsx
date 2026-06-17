@@ -16,9 +16,14 @@ export function LatestExport({
   const url = exportJob?.videoUrl || renderUrl;
   const status = isExporting ? "processing" : exportJob?.status || renderStatus;
   const isFailed = status === "failed";
+  const isQueued = status === "queued";
+  const isProcessing = status === "processing";
   const isReady = Boolean(url) && (status === "success" || status === "ready");
-  const title = isExporting ? "Preparing your MP4..." : isFailed ? "Export failed" : isReady ? "Your video is ready" : "Latest export";
-  const statusText = isExporting ? "Keep this page open while we prepare your MP4." : status || "empty";
+  const title = isExporting || isQueued || isProcessing ? "Preparing your MP4..." : isFailed ? "Export failed" : isReady ? "Your video is ready" : "Latest export";
+  const statusText =
+    isExporting || isQueued || isProcessing
+      ? "You can keep editing while Railway prepares the MP4."
+      : status || "empty";
   const filename = buildExportDownloadFilename(exportJob);
 
   return (
@@ -33,7 +38,7 @@ export function LatestExport({
             <p className="mt-[2px] truncate text-[11px] font-[650] text-[var(--editor-subtle)]">{statusText}</p>
           </div>
         </div>
-        {url && !isExporting ? (
+        {url && isReady && !isExporting ? (
           <a
             href={url}
             download={filename}

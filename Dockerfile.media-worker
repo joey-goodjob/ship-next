@@ -1,0 +1,23 @@
+FROM node:20-bookworm-slim
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ARG DATABASE_PROVIDER=postgres
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY src/config/db/schema.sqlite.ts src/config/db/schema.sqlite.ts
+
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY . .
+
+RUN cp "src/config/db/schema.${DATABASE_PROVIDER}.ts" src/config/db/schema.ts
+
+ENV NODE_ENV=production
+ENV FFMPEG_PATH=/usr/bin/ffmpeg
+
+CMD ["pnpm", "media-worker"]
