@@ -9,6 +9,7 @@ WORKDIR /app
 ARG DATABASE_PROVIDER=postgres
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY scripts/setup-db-schema.js scripts/setup-db-schema.js
 COPY src/config/db/schema.sqlite.ts src/config/db/schema.sqlite.ts
 
 RUN corepack enable && pnpm install --frozen-lockfile
