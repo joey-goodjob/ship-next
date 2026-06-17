@@ -1,21 +1,15 @@
-import { execFile } from 'node:child_process';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import { promisify } from 'node:util';
 import { and, eq } from 'drizzle-orm';
 import { envConfigs } from '@/config';
 import { db } from '@/core/db';
 import { lyricVideoExport, lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { buildCaptionChunks, type CaptionWord } from '@/lib/lyric-caption-chunks';
-import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
-import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
-import { fetchBytes, saveGeneratedFile } from './audio';
+import { logLyricStage } from '@/lib/lyric-video-log';
+import { createTask } from '@/modules/ai-tasks/service';
+import { createMediaJob } from './media-jobs';
 import { safeJson } from './json';
 import { getProjectDetails } from './project';
 import { LYRIC_VIDEO_DEFAULT_STYLE, type LyricLineInput } from './types';
-
-const execFileAsync = promisify(execFile);
 
 /**
  * 导出模块：把已生成好的歌词、scene 图片和音频渲染成 MP4。
@@ -55,14 +49,14 @@ export function cssHexToAss(hex: string, fallback: string) {
   return `&H00${bb}${gg}${rr}`;
 }
 
-function normalizeCaptionStyle(style?: unknown) {
+export function normalizeCaptionStyle(style?: unknown) {
   return {
     ...LYRIC_VIDEO_DEFAULT_STYLE,
     ...(style && typeof style === 'object' ? style : {}),
   } as typeof LYRIC_VIDEO_DEFAULT_STYLE & Record<string, unknown>;
 }
 
-function captionsAreEnabled(style?: unknown) {
+export function captionsAreEnabled(style?: unknown) {
   return normalizeCaptionStyle(style).captionsEnabled !== false;
 }
 
@@ -193,8 +187,8 @@ export async function queueExport(params: {
   settings?: unknown;
   watermark?: ExportWatermark;
 }) {
-  // 导出入口：创建视频类 `ai_task` 和 `lyric_video_export` 记录，
-  // 然后用本地 ffmpeg/ASS 渲染，成功或失败都会回写 export 和 project 状态。
+  // 导出入口：创建视频类 `ai_task`、`lyric_video_export` 和 `lyric_video_media_job`。
+  // 真正的 ffmpeg 渲染只由 Railway media-worker 执行，Vercel 只负责入队和查询状态。
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
   if (details.lines.length === 0) throw new Error('Add lyrics before export');
@@ -221,7 +215,7 @@ export async function queueExport(params: {
       id: getUuid(),
       projectId: params.projectId,
       userId: params.userId,
-      status: 'processing',
+      status: 'queued',
       format: 'mp4',
       resolution: details.project.resolution,
       aspectRatio: details.project.aspectRatio,
@@ -231,10 +225,24 @@ export async function queueExport(params: {
     })
     .returning();
 
+  const mediaJob = await createMediaJob({
+    kind: 'video_export',
+    projectId: params.projectId,
+    userId: params.userId,
+    exportId: exportJob.id,
+    input: {
+      exportId: exportJob.id,
+      taskId: task.id,
+      settings: exportSettings,
+      projectId: params.projectId,
+    },
+  });
+
   logLyricStage('export-video', 'db-inserted', {
     projectId: params.projectId,
     userId: params.userId,
     exportId: exportJob.id,
+    mediaJobId: mediaJob.id,
     taskId: task.id,
     status: exportJob.status,
     format: exportJob.format,
@@ -248,171 +256,8 @@ export async function queueExport(params: {
 
   await db()
     .update(lyricVideoProject)
-    .set({ renderStatus: 'processing', renderTaskId: task.id, pipelineStage: 'rendering', pipelineError: null })
+    .set({ renderStatus: 'queued', renderTaskId: task.id, pipelineStage: 'export_queued', pipelineError: null })
     .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 
-  try {
-    logLyricStage('export-video', 'render-start', {
-      projectId: params.projectId,
-      userId: params.userId,
-      exportId: exportJob.id,
-      taskId: task.id,
-    });
-    const rendered = await renderStaticVideo({
-      project: details.project,
-      lines: details.lines,
-      words: details.words,
-      scenes: details.scenes,
-      settings: params.settings,
-      watermark,
-      exportId: exportJob.id,
-    });
-
-    await Promise.all([
-      updateTask({ taskId: task.id, status: AITaskStatus.SUCCESS, taskResult: rendered }),
-      db()
-        .update(lyricVideoExport)
-        .set({ status: 'success', videoUrl: rendered.url, storageKey: rendered.storageKey })
-        .where(and(eq(lyricVideoExport.id, exportJob.id), eq(lyricVideoExport.userId, params.userId))),
-      db()
-        .update(lyricVideoProject)
-        .set({ renderStatus: 'ready', renderUrl: rendered.url, pipelineStage: 'export_ready', pipelineError: null })
-        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
-    ]);
-
-    logLyricStage('export-video', 'success', {
-      projectId: params.projectId,
-      userId: params.userId,
-      exportId: exportJob.id,
-      taskId: task.id,
-      status: 'success',
-      videoUrl: rendered.url,
-      storageKey: rendered.storageKey,
-      hasVideoUrl: Boolean(rendered.url),
-      pipelineStage: 'export_ready',
-      renderStatus: 'ready',
-    });
-
-    return { ...exportJob, status: 'success', videoUrl: rendered.url, storageKey: rendered.storageKey };
-  } catch (error: any) {
-    logLyricStageError('export-video', 'fail', error, {
-      projectId: params.projectId,
-      userId: params.userId,
-      exportId: exportJob.id,
-      taskId: task.id,
-    });
-    await Promise.all([
-      updateTask({ taskId: task.id, status: AITaskStatus.FAILED, taskResult: { error: error?.message } }),
-      db()
-        .update(lyricVideoExport)
-        .set({ status: 'failed', error: error?.message || 'Export failed' })
-        .where(and(eq(lyricVideoExport.id, exportJob.id), eq(lyricVideoExport.userId, params.userId))),
-      db()
-        .update(lyricVideoProject)
-        .set({ renderStatus: 'failed', pipelineStage: 'export_failed', pipelineError: error?.message || 'Export failed' })
-        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId))),
-    ]);
-    throw error;
-  }
-}
-
-export async function renderStaticVideo(params: {
-  project: any;
-  lines: any[];
-  words?: any[];
-  scenes: any[];
-  settings?: unknown;
-  watermark?: ExportWatermark | null;
-  exportId: string;
-}) {
-  const { width, height } = getDimensions(params.project.aspectRatio);
-  const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-renders', params.exportId);
-  await mkdir(tmpDir, { recursive: true });
-
-  try {
-    const audioPath = path.join(tmpDir, 'audio');
-    await writeFile(audioPath, await fetchBytes(params.project.audioUrl));
-
-    const scenesWithImages = params.scenes.filter((scene) => scene.imageUrl);
-    const concatLines: string[] = [];
-    for (let index = 0; index < scenesWithImages.length; index += 1) {
-      const scene = scenesWithImages[index];
-      const imagePath = path.join(tmpDir, `scene-${index}.png`);
-      await writeFile(imagePath, await fetchBytes(scene.imageUrl));
-      concatLines.push(`file '${imagePath.replace(/'/g, "'\\''")}'`);
-      concatLines.push(`duration ${Math.max(1, ((scene.endMs || scene.startMs + 4000) - (scene.startMs || 0)) / 1000)}`);
-    }
-    const lastImage = path.join(tmpDir, `scene-${scenesWithImages.length - 1}.png`);
-    concatLines.push(`file '${lastImage.replace(/'/g, "'\\''")}'`);
-
-    const concatPath = path.join(tmpDir, 'images.txt');
-    const assPath = path.join(tmpDir, 'subtitles.ass');
-    const outputPath = path.join(tmpDir, 'output.mp4');
-    const captionStyle = normalizeCaptionStyle(params.settings);
-    const subtitlesEnabled = captionsAreEnabled(captionStyle);
-    await writeFile(concatPath, concatLines.join('\n'));
-    if (subtitlesEnabled) {
-      await writeFile(
-        assPath,
-        buildAss({
-          lines: params.lines,
-          words: params.words,
-          scenes: params.scenes,
-          width,
-          height,
-          style: captionStyle,
-        })
-      );
-    }
-
-    const watermarkFilter = buildWatermarkDrawtextFilter({
-      watermark: params.watermark,
-      width,
-      height,
-    });
-    const videoFilter = [
-      `scale=${width}:${height}:force_original_aspect_ratio=increase`,
-      `crop=${width}:${height}`,
-      subtitlesEnabled ? `subtitles=${assPath}` : null,
-      watermarkFilter,
-    ]
-      .filter(Boolean)
-      .join(',');
-
-    await execFileAsync(envConfigs.ffmpeg_path || 'ffmpeg', [
-      '-y',
-      '-f',
-      'concat',
-      '-safe',
-      '0',
-      '-i',
-      concatPath,
-      '-i',
-      audioPath,
-      '-vf',
-      videoFilter,
-      '-shortest',
-      '-r',
-      '30',
-      '-c:v',
-      'libx264',
-      '-pix_fmt',
-      'yuv420p',
-      '-c:a',
-      'aac',
-      '-b:a',
-      '192k',
-      outputPath,
-    ]);
-
-    const body = await readFile(outputPath);
-    return saveGeneratedFile({
-      body,
-      key: `renders/${params.exportId}.mp4`,
-      contentType: 'video/mp4',
-      localDir: 'renders',
-    });
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true });
-  }
+  return exportJob;
 }

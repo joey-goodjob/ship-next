@@ -258,6 +258,16 @@ export function EditorProvider({
   }, [project, refresh, runtimeState, scenes]);
 
   useEffect(() => {
+    const activeExport = exports.some((item) => item.status === "queued" || item.status === "processing");
+    const activeRender = project?.renderStatus === "queued" || project?.renderStatus === "processing";
+    if (!activeExport && !activeRender) return;
+    const timer = window.setInterval(() => {
+      refresh();
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [exports, project?.renderStatus, refresh]);
+
+  useEffect(() => {
     const hasProcessingCast = cast.some((member) => member.providerTaskId && !member.referenceImageUrl && member.status !== "failed");
     if (!hasProcessingCast) return;
     const timer = window.setInterval(() => {

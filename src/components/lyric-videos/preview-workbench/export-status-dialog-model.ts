@@ -40,7 +40,7 @@ export function deriveExportStatusDialogModel({
     };
   }
 
-  if (!exporting && url) {
+  if (!exporting && url && (status === "ready" || status === "success")) {
     return {
       description: "Your MP4 is ready. Use the download button to save it to your browser's default download folder.",
       error: "",

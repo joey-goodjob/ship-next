@@ -843,6 +843,42 @@ export const lyricVideoExport = table(
   ]
 );
 
+export const lyricVideoMediaJob = table(
+  'lyric_video_media_job',
+  {
+    id: varchar191('id').primaryKey(),
+    kind: varchar191('kind').notNull(),
+    status: varchar191('status').notNull().default('queued'),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    exportId: varchar191('export_id').references(() => lyricVideoExport.id, { onDelete: 'cascade' }),
+    runId: varchar191('run_id').references(() => lyricVideoGenerationRun.id, { onDelete: 'set null' }),
+    stepId: varchar191('step_id').references(() => lyricVideoGenerationStep.id, { onDelete: 'set null' }),
+    inputJson: longtext('input_json'),
+    outputJson: longtext('output_json'),
+    error: text('error'),
+    lockedAt: timestamp('locked_at'),
+    lockedBy: varchar191('locked_by'),
+    attemptCount: int('attempt_count').notNull().default(0),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_media_job_status').on(t.kind, t.status, t.createdAt),
+    index('idx_lyric_video_media_job_project').on(t.projectId, t.createdAt),
+    index('idx_lyric_video_media_job_export').on(t.exportId),
+  ]
+);
+
 export type LyricVideoProject = typeof lyricVideoProject.$inferSelect;
 export type NewLyricVideoProject = typeof lyricVideoProject.$inferInsert;
 export type LyricVideoGenerationRun = typeof lyricVideoGenerationRun.$inferSelect;
@@ -859,3 +895,5 @@ export type LyricVideoCastMember = typeof lyricVideoCastMember.$inferSelect;
 export type NewLyricVideoCastMember = typeof lyricVideoCastMember.$inferInsert;
 export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
 export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;
+export type LyricVideoMediaJob = typeof lyricVideoMediaJob.$inferSelect;
+export type NewLyricVideoMediaJob = typeof lyricVideoMediaJob.$inferInsert;

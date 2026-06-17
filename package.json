@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "media-worker": "tsx scripts/with-env.ts tsx src/workers/media-worker.ts",
     "lint": "tsc --noEmit --pretty false",
     "postinstall": "mkdir -p data && (test -f src/config/db/schema.ts || cp src/config/db/schema.sqlite.ts src/config/db/schema.ts)",
     "db:setup": "node -e \"const p=process.env.DATABASE_PROVIDER||'sqlite'; require('fs').copyFileSync('src/config/db/schema.'+p+'.ts','src/config/db/schema.ts'); console.log('Schema set to '+p)\"",

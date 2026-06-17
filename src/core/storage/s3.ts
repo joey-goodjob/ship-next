@@ -1,5 +1,7 @@
 import type {
   StorageConfigs,
+  StorageDownloadOptions,
+  StorageDownloadResult,
   StorageDownloadUploadOptions,
   StorageProvider,
   StorageUploadOptions,
@@ -63,6 +65,56 @@ export class S3Provider implements StorageProvider {
       return false;
     }
   };
+
+  async downloadFile(options: StorageDownloadOptions): Promise<StorageDownloadResult> {
+    try {
+      const downloadBucket = options.bucket || this.configs.bucket;
+      if (!downloadBucket) {
+        return {
+          success: false,
+          error: 'Bucket is required',
+          provider: this.name,
+        };
+      }
+
+      const url = `${this.configs.endpoint}/${downloadBucket}/${options.key}`;
+      const { AwsClient } = await import('aws4fetch');
+      const client = new AwsClient({
+        accessKeyId: this.configs.accessKeyId,
+        secretAccessKey: this.configs.secretAccessKey,
+        region: this.configs.region,
+      });
+
+      const response = await client.fetch(
+        new Request(url, {
+          method: 'GET',
+        })
+      );
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `Download failed: ${response.statusText || response.status}`,
+          provider: this.name,
+        };
+      }
+
+      return {
+        success: true,
+        body: Buffer.from(await response.arrayBuffer()),
+        contentType: response.headers.get('content-type') || undefined,
+        bucket: downloadBucket,
+        key: options.key,
+        provider: this.name,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        provider: this.name,
+      };
+    }
+  }
 
   async uploadFile(
     options: StorageUploadOptions

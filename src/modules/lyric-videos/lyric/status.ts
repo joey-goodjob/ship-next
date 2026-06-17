@@ -26,6 +26,12 @@ export function isTerminalGenerationRunStatus(status?: string | null) {
   return TERMINAL_GENERATION_RUN_STATUSES.includes(status as (typeof TERMINAL_GENERATION_RUN_STATUSES)[number]);
 }
 
+export function normalizeExportStatus(status?: string | null) {
+  if (status === 'success') return 'ready';
+  if (status === 'pending') return 'queued';
+  return status || 'empty';
+}
+
 function fallbackPipelineStageForRun(params: { status: string; currentStage?: string | null }) {
   if (params.status === 'queued') return 'generation_queued';
   if (params.status === 'waiting_provider') return 'images_processing';
@@ -95,6 +101,6 @@ export function deriveRuntimeState(params: RuntimeStateInput) {
       processing: processingScenes,
       failed: failedScenes,
     },
-    latestExportStatus: latestExport?.status || project.renderStatus || 'empty',
+    latestExportStatus: normalizeExportStatus(latestExport?.status || project.renderStatus || 'empty'),
   };
 }
