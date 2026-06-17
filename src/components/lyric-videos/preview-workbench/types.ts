@@ -140,6 +140,7 @@ export type RuntimeState = {
 
 export type LyricExport = {
   id: string;
+  projectId?: string;
   status: string;
   videoUrl?: string | null;
   error?: string | null;

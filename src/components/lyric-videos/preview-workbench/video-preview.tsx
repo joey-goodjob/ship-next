@@ -57,7 +57,13 @@ export function VideoPreview() {
       />
       {shouldShowLatestExport ? (
         <div className="absolute right-[24px] top-[24px] z-20 w-[min(320px,calc(100%-48px))]">
-          <LatestExport exportJob={latestExport} isExporting={exporting} renderStatus={project?.renderStatus || "empty"} renderUrl={project?.renderUrl} />
+          <LatestExport
+            exportJob={latestExport}
+            isExporting={exporting}
+            projectId={project?.id}
+            renderStatus={project?.renderStatus || "empty"}
+            renderUrl={project?.renderUrl}
+          />
         </div>
       ) : null}
       <div

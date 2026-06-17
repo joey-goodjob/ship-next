@@ -15,6 +15,7 @@ import {
 } from './render';
 
 const execFileAsync = promisify(execFile);
+const FFMPEG_MAX_BUFFER_BYTES = 50 * 1024 * 1024;
 
 function trimSlashes(value: string) {
   return value.replace(/^\/+|\/+$/g, '');
@@ -158,6 +159,9 @@ export async function renderStaticVideoForWorker(params: {
 
     await execFileAsync(configs.ffmpeg_path || 'ffmpeg', [
       '-y',
+      '-hide_banner',
+      '-loglevel',
+      'warning',
       '-f',
       'concat',
       '-safe',
@@ -180,7 +184,7 @@ export async function renderStaticVideoForWorker(params: {
       '-b:a',
       '192k',
       outputPath,
-    ]);
+    ], { maxBuffer: FFMPEG_MAX_BUFFER_BYTES });
 
     return uploadRenderedVideo({
       body: await readFile(outputPath),

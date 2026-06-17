@@ -149,6 +149,7 @@ export function EditorWorkspace() {
         latestExport={latestExport}
         onOpenChange={setExportDialogOpen}
         open={exportDialogOpen}
+        projectId={project?.id}
         renderStatus={project?.renderStatus || "empty"}
         renderUrl={project?.renderUrl}
       />

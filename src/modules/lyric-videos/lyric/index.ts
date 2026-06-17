@@ -18,6 +18,7 @@ export * from './generation-runner';
 export * from './direction-detail';
 export * from './media-generation';
 export * from './media-jobs';
+export * from './export-download';
 export * from './cast-library';
 export * from './cast';
 export * from './render';

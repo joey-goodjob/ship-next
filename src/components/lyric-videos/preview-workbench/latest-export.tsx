@@ -1,24 +1,30 @@
 import { Download } from "lucide-react";
-import { buildExportDownloadFilename } from "./export-download";
+import { buildExportDownloadFilename, buildExportDownloadUrl } from "./export-download";
 import type { LyricExport } from "./types";
 
 export function LatestExport({
   exportJob,
   isExporting = false,
+  projectId,
   renderStatus,
   renderUrl,
 }: {
   exportJob?: LyricExport;
   isExporting?: boolean;
+  projectId?: string | null;
   renderStatus: string;
   renderUrl?: string | null;
 }) {
-  const url = exportJob?.videoUrl || renderUrl;
+  const url = buildExportDownloadUrl({
+    projectId: exportJob?.projectId || projectId,
+    exportId: exportJob?.id,
+  });
+  const hasRenderedVideo = Boolean(exportJob?.videoUrl || renderUrl);
   const status = isExporting ? "processing" : exportJob?.status || renderStatus;
   const isFailed = status === "failed";
   const isQueued = status === "queued";
   const isProcessing = status === "processing";
-  const isReady = Boolean(url) && (status === "success" || status === "ready");
+  const isReady = hasRenderedVideo && Boolean(url) && (status === "success" || status === "ready");
   const title = isExporting || isQueued || isProcessing ? "Preparing your MP4..." : isFailed ? "Export failed" : isReady ? "Your video is ready" : "Latest export";
   const statusText =
     isExporting || isQueued || isProcessing

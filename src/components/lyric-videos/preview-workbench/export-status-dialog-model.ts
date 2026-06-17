@@ -1,10 +1,11 @@
-import { buildExportDownloadFilename } from "./export-download";
+import { buildExportDownloadFilename, buildExportDownloadUrl } from "./export-download";
 import type { LyricExport } from "./types";
 
 type ExportStatusDialogInput = {
   exportError: string;
   exporting: boolean;
   latestExport?: LyricExport;
+  projectId?: string | null;
   renderStatus: string;
   renderUrl?: string | null;
 };
@@ -22,10 +23,15 @@ export function deriveExportStatusDialogModel({
   exportError,
   exporting,
   latestExport,
+  projectId,
   renderStatus,
   renderUrl,
 }: ExportStatusDialogInput): ExportStatusDialogModel {
-  const url = latestExport?.videoUrl || renderUrl || "";
+  const url = buildExportDownloadUrl({
+    projectId: latestExport?.projectId || projectId,
+    exportId: latestExport?.id,
+  });
+  const hasRenderedVideo = Boolean(latestExport?.videoUrl || renderUrl);
   const status = latestExport?.status || renderStatus;
   const error = exportError || latestExport?.error || "";
 
@@ -40,7 +46,7 @@ export function deriveExportStatusDialogModel({
     };
   }
 
-  if (!exporting && url && (status === "ready" || status === "success")) {
+  if (!exporting && hasRenderedVideo && url && (status === "ready" || status === "success")) {
     return {
       description: "Your MP4 is ready. Use the download button to save it to your browser's default download folder.",
       error: "",

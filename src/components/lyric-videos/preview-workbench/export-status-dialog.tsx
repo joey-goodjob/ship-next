@@ -18,6 +18,7 @@ export function ExportStatusDialog({
   latestExport,
   onOpenChange,
   open,
+  projectId,
   renderStatus,
   renderUrl,
 }: {
@@ -26,6 +27,7 @@ export function ExportStatusDialog({
   latestExport?: LyricExport;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  projectId?: string | null;
   renderStatus: string;
   renderUrl?: string | null;
 }) {
@@ -33,6 +35,7 @@ export function ExportStatusDialog({
     exportError,
     exporting,
     latestExport,
+    projectId,
     renderStatus,
     renderUrl,
   });
