@@ -11,6 +11,7 @@ import * as schema from '@/config/db/schema';
 
 const recentVerificationEmailSentAt = new Map<string, number>();
 const VERIFICATION_EMAIL_MIN_INTERVAL_MS = 60_000;
+const VERIFICATION_DATE_FIELDS = ['expiresAt', 'createdAt', 'updatedAt'] as const;
 
 function normalizeAuthDate(value: unknown, fieldName: string) {
   if (value instanceof Date) {
@@ -26,12 +27,16 @@ function normalizeAuthDate(value: unknown, fieldName: string) {
   throw new TypeError(`Invalid auth ${fieldName} date`);
 }
 
-function normalizeVerificationDates(data: Record<string, unknown>) {
-  return {
-    expiresAt: normalizeAuthDate(data.expiresAt, 'expiresAt'),
-    createdAt: normalizeAuthDate(data.createdAt, 'createdAt'),
-    updatedAt: normalizeAuthDate(data.updatedAt, 'updatedAt'),
-  };
+function normalizeVerificationDateFields<T extends Record<string, unknown>>(data: T): T {
+  let next: Record<string, unknown> | null = null;
+
+  for (const field of VERIFICATION_DATE_FIELDS) {
+    if (data[field] === undefined || data[field] === null) continue;
+    next ??= { ...data };
+    next[field] = normalizeAuthDate(data[field], field);
+  }
+
+  return (next ?? data) as T;
 }
 
 function getDatabaseProvider(provider: string): 'sqlite' | 'pg' | 'mysql' {
@@ -48,6 +53,46 @@ function getDatabaseProvider(provider: string): 'sqlite' | 'pg' | 'mysql' {
     default:
       throw new Error(`Unsupported database provider for auth: ${provider}`);
   }
+}
+
+function normalizeVerificationAdapterData(params: any, dataKey: 'data' | 'update') {
+  if (params.model !== 'verification') return params;
+  const data = params[dataKey];
+  if (!data || typeof data !== 'object') return params;
+
+  return {
+    ...params,
+    [dataKey]: normalizeVerificationDateFields(data),
+  };
+}
+
+function wrapVerificationDateAdapter<T extends Record<string, any>>(adapter: T): T {
+  const wrapped: Record<string, any> = {
+    ...adapter,
+    create: (params: any) => adapter.create(normalizeVerificationAdapterData(params, 'data')),
+    update: (params: any) => adapter.update(normalizeVerificationAdapterData(params, 'update')),
+    updateMany: (params: any) => adapter.updateMany(normalizeVerificationAdapterData(params, 'update')),
+  };
+
+  if (adapter.transaction) {
+    wrapped.transaction = (callback: any) =>
+      adapter.transaction((transactionAdapter: Record<string, any>) =>
+        callback(wrapVerificationDateAdapter(transactionAdapter))
+      );
+  }
+
+  return wrapped as T;
+}
+
+function createAuthDatabaseAdapter(): NonNullable<BetterAuthOptions['database']> {
+  const adapterFactory = drizzleAdapter(db(), {
+    provider: getDatabaseProvider(envConfigs.database_provider),
+    schema,
+  });
+
+  return ((options: BetterAuthOptions) => wrapVerificationDateAdapter(adapterFactory(options))) as NonNullable<
+    BetterAuthOptions['database']
+  >;
 }
 
 let authInstance: any;
@@ -129,10 +174,7 @@ export function getAuth(configs?: Record<string, string>) {
       } catch {}
       return origins;
     },
-    database: drizzleAdapter(db(), {
-      provider: getDatabaseProvider(envConfigs.database_provider),
-      schema,
-    }),
+    database: createAuthDatabaseAdapter(),
     socialProviders,
     user: {
       additionalFields: {
@@ -148,7 +190,7 @@ export function getAuth(configs?: Record<string, string>) {
       verification: {
         create: {
           before: async (verification) => ({
-            data: normalizeVerificationDates(verification),
+            data: normalizeVerificationDateFields(verification),
           }),
         },
       },
