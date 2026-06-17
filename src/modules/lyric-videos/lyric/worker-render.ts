@@ -3,7 +3,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { envConfigs } from '@/config';
+import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 import {
   buildAss,
@@ -20,7 +20,7 @@ function trimSlashes(value: string) {
   return value.replace(/^\/+|\/+$/g, '');
 }
 
-export function storageKeyFromUrl(url?: string | null) {
+export function storageKeyFromUrl(url?: string | null, configs: Record<string, string> = {}) {
   if (!url) return '';
   const value = String(url).trim();
   if (!value) return '';
@@ -28,7 +28,7 @@ export function storageKeyFromUrl(url?: string | null) {
 
   try {
     const parsed = new URL(value);
-    const publicDomain = String(envConfigs.storage_public_domain || '').trim();
+    const publicDomain = String(configs.storage_public_domain || '').trim();
     if (publicDomain) {
       const publicParsed = new URL(publicDomain);
       if (parsed.host === publicParsed.host) {
@@ -36,8 +36,8 @@ export function storageKeyFromUrl(url?: string | null) {
       }
     }
 
-    const endpoint = String(envConfigs.storage_endpoint || '').trim();
-    const bucket = String(envConfigs.storage_bucket || '').trim();
+    const endpoint = String(configs.storage_endpoint || '').trim();
+    const bucket = String(configs.storage_bucket || '').trim();
     if (endpoint && bucket) {
       const endpointParsed = new URL(endpoint);
       if (parsed.host === endpointParsed.host) {
@@ -52,25 +52,25 @@ export function storageKeyFromUrl(url?: string | null) {
   return '';
 }
 
-function resolveStorageKey(params: { key?: string | null; url?: string | null; label: string }) {
-  const key = String(params.key || '').trim() || storageKeyFromUrl(params.url);
+function resolveStorageKey(params: { key?: string | null; url?: string | null; label: string; configs: Record<string, string> }) {
+  const key = String(params.key || '').trim() || storageKeyFromUrl(params.url, params.configs);
   if (!key) throw new Error(`${params.label} storage key is required for media-worker`);
   return key;
 }
 
-async function writeStorageObjectToFile(params: { key: string; targetPath: string; label: string }) {
-  if (!isStorageConfigured()) throw new Error('Storage is required for media-worker');
-  const result = await getStorage().downloadFile({ key: params.key });
+async function writeStorageObjectToFile(params: { key: string; targetPath: string; label: string; configs: Record<string, string> }) {
+  if (!isStorageConfigured(params.configs)) throw new Error('Storage is required for media-worker');
+  const result = await getStorage(params.configs).downloadFile({ key: params.key });
   if (!result.success || !result.body) {
     throw new Error(result.error || `Download ${params.label} failed`);
   }
   await writeFile(params.targetPath, result.body);
 }
 
-async function uploadRenderedVideo(params: { body: Buffer; exportId: string }) {
-  if (!isStorageConfigured()) throw new Error('Storage is required for media-worker');
+async function uploadRenderedVideo(params: { body: Buffer; exportId: string; configs: Record<string, string> }) {
+  if (!isStorageConfigured(params.configs)) throw new Error('Storage is required for media-worker');
   const key = `renders/${params.exportId}.mp4`;
-  const result = await getStorage().uploadFile({
+  const result = await getStorage(params.configs).uploadFile({
     body: params.body,
     key,
     contentType: 'video/mp4',
@@ -88,6 +88,7 @@ export async function renderStaticVideoForWorker(params: {
   watermark?: ExportWatermark | null;
   exportId: string;
 }) {
+  const configs = await getAllConfigs();
   const { width, height } = getDimensions(params.project.aspectRatio);
   const tmpDir = path.join(os.tmpdir(), 'lyric-video-renders', params.exportId);
   await mkdir(tmpDir, { recursive: true });
@@ -98,8 +99,9 @@ export async function renderStaticVideoForWorker(params: {
       key: params.project.audioStorageKey || params.project.processedAudioStorageKey || params.project.originalAudioStorageKey,
       url: params.project.audioUrl || params.project.processedAudioUrl || params.project.originalAudioUrl,
       label: 'Audio',
+      configs,
     });
-    await writeStorageObjectToFile({ key: audioKey, targetPath: audioPath, label: 'audio' });
+    await writeStorageObjectToFile({ key: audioKey, targetPath: audioPath, label: 'audio', configs });
 
     const scenesWithImages = params.scenes.filter((scene) => scene.imageUrl);
     if (scenesWithImages.length === 0) throw new Error('Generate at least one scene image before export');
@@ -111,8 +113,9 @@ export async function renderStaticVideoForWorker(params: {
       const imageKey = resolveStorageKey({
         url: scene.imageUrl,
         label: `Scene ${index + 1} image`,
+        configs,
       });
-      await writeStorageObjectToFile({ key: imageKey, targetPath: imagePath, label: `scene ${index + 1} image` });
+      await writeStorageObjectToFile({ key: imageKey, targetPath: imagePath, label: `scene ${index + 1} image`, configs });
       concatLines.push(`file '${imagePath.replace(/'/g, "'\\''")}'`);
       concatLines.push(`duration ${Math.max(1, ((scene.endMs || scene.startMs + 4000) - (scene.startMs || 0)) / 1000)}`);
     }
@@ -153,7 +156,7 @@ export async function renderStaticVideoForWorker(params: {
       .filter(Boolean)
       .join(',');
 
-    await execFileAsync(envConfigs.ffmpeg_path || 'ffmpeg', [
+    await execFileAsync(configs.ffmpeg_path || 'ffmpeg', [
       '-y',
       '-f',
       'concat',
@@ -182,6 +185,7 @@ export async function renderStaticVideoForWorker(params: {
     return uploadRenderedVideo({
       body: await readFile(outputPath),
       exportId: params.exportId,
+      configs,
     });
   } finally {
     await rm(tmpDir, { recursive: true, force: true });

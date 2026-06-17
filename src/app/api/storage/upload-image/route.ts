@@ -3,6 +3,7 @@ import { envConfigs } from '@/config';
 import { md5 } from '@/lib/hash';
 import { respData, respErr } from '@/lib/resp';
 import { getAuth } from '@/core/auth';
+import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 
 const extFromMime = (mimeType: string) => {
@@ -20,10 +21,6 @@ const extFromMime = (mimeType: string) => {
   return map[mimeType] || '';
 };
 
-// Hard cap for inline base64 (no storage configured). Keep small — fits comfortably
-// in a TEXT column and a JSON response. Configurable via INLINE_IMAGE_MAX_KB.
-const INLINE_MAX_BYTES = (Number(envConfigs.inline_image_max_kb) || 2048) * 1024;
-
 export async function POST(req: Request) {
   try {
     const auth = getAuth();
@@ -34,8 +31,10 @@ export async function POST(req: Request) {
     const files = formData.getAll('files') as File[];
     if (!files.length) return respErr('No files provided');
 
-    const useStorage = isStorageConfigured();
-    const storage = useStorage ? getStorage() : null;
+    const configs = await getAllConfigs();
+    const inlineMaxBytes = (Number(configs.inline_image_max_kb || envConfigs.inline_image_max_kb) || 2048) * 1024;
+    const useStorage = isStorageConfigured(configs);
+    const storage = useStorage ? getStorage(configs) : null;
     const uploadResults: Array<{ url: string; key: string; filename: string; deduped: boolean }> = [];
 
     for (const file of files) {
@@ -48,8 +47,8 @@ export async function POST(req: Request) {
 
       // No storage configured → return data URL (caller persists it).
       if (!storage) {
-        if (body.length > INLINE_MAX_BYTES) {
-          const limitKb = Math.round(INLINE_MAX_BYTES / 1024);
+        if (body.length > inlineMaxBytes) {
+          const limitKb = Math.round(inlineMaxBytes / 1024);
           return respErr(
             `Image too large for inline storage (${(body.length / 1024).toFixed(0)}KB > ${limitKb}KB). Configure STORAGE_* env vars or use a smaller image.`,
           );

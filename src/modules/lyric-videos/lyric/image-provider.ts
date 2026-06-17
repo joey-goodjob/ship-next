@@ -144,8 +144,8 @@ export async function createLyricVideoImageProviderSelection(params: {
       apiKey: configs.wavespeed_api_key,
       baseUrl: configs.wavespeed_base_url,
       imageModel: configs.wavespeed_image_model || WAVESPEED_GPT_IMAGE_2_MODEL,
-      customStorage: isStorageConfigured(),
-      saveFiles: saveAIProviderFiles,
+      customStorage: isStorageConfigured(configs),
+      saveFiles: (files) => saveAIProviderFiles(files, configs),
       uuid: getUuid,
     }),
     model: configs.wavespeed_image_model || WAVESPEED_GPT_IMAGE_2_MODEL,
@@ -171,8 +171,8 @@ export async function createLyricVideoImageQueryProvider(params: {
       apiKey: configs.wavespeed_api_key,
       baseUrl: configs.wavespeed_base_url,
       imageModel: configs.wavespeed_image_model || WAVESPEED_GPT_IMAGE_2_MODEL,
-      customStorage: isStorageConfigured(),
-      saveFiles: saveAIProviderFiles,
+      customStorage: isStorageConfigured(configs),
+      saveFiles: (files) => saveAIProviderFiles(files, configs),
       uuid: getUuid,
     });
   }

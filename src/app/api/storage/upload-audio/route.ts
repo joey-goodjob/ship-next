@@ -6,6 +6,7 @@ import { envConfigs } from '@/config';
 import { getAuth } from '@/core/auth';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
+import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 import { buildAudioUploadKey } from '@/modules/storage/audio-upload';
 
@@ -66,8 +67,9 @@ export async function POST(req: Request) {
       filename: file.name,
     });
 
-    if (isStorageConfigured()) {
-      const storage = getStorage();
+    const configs = await getAllConfigs();
+    if (isStorageConfigured(configs)) {
+      const storage = getStorage(configs);
       const exists = await storage.exists({ key });
       const url = exists ? storage.getPublicUrl({ key }) : undefined;
       if (url) {
@@ -93,6 +95,10 @@ export async function POST(req: Request) {
         ...data,
       });
       return respData(data);
+    }
+
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      return respErr('Storage is required for audio uploads in production');
     }
 
     const target = path.join(process.cwd(), 'public', key);

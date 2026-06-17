@@ -2010,8 +2010,8 @@ export async function createKieProvider() {
   }
   return new KieProvider({
     apiKey: configs.kie_api_key,
-    customStorage: isStorageConfigured(),
-    saveFiles: saveAIProviderFiles,
+    customStorage: isStorageConfigured(configs),
+    saveFiles: (files) => saveAIProviderFiles(files, configs),
     uuid: getUuid,
   });
 }

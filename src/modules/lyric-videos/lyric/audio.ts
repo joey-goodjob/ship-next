@@ -8,6 +8,7 @@ import { db } from '@/core/db';
 import type { AIFile } from '@/core/ai';
 import { lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
+import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 import type { AudioAnalysisResult } from './types';
 
@@ -47,15 +48,22 @@ export async function saveGeneratedFile(params: {
   key: string;
   contentType: string;
   localDir: string;
+  configs?: Record<string, string>;
 }) {
-  if (isStorageConfigured()) {
-    const result = await getStorage().uploadFile({
+  const configs = params.configs || await getAllConfigs();
+
+  if (isStorageConfigured(configs)) {
+    const result = await getStorage(configs).uploadFile({
       body: params.body,
       key: params.key,
       contentType: params.contentType,
     });
     if (!result.success || !result.url) throw new Error(result.error || 'Upload failed');
     return { url: result.url, storageKey: result.key || params.key };
+  }
+
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    throw new Error('Storage is required for generated media in production');
   }
 
   const url = await saveLocalPublicFile({
@@ -269,10 +277,11 @@ export async function runLibrosaAnalysisForLocalFile(inputPath: string): Promise
   return JSON.parse(stdout) as AudioAnalysisResult;
 }
 
-export async function saveAIProviderFiles(files: AIFile[]) {
-  if (!isStorageConfigured()) return undefined;
+export async function saveAIProviderFiles(files: AIFile[], configs?: Record<string, string>) {
+  const storageConfigs = configs || await getAllConfigs();
+  if (!isStorageConfigured(storageConfigs)) return undefined;
 
-  const storage = getStorage();
+  const storage = getStorage(storageConfigs);
   const saved: AIFile[] = [];
   for (const file of files) {
     const result = await storage.downloadAndUpload({
