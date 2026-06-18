@@ -117,19 +117,23 @@
   "useCases": [
     {
       "title": "Vocal practice and rehearsal",
-      "description": "Practice timing, phrasing, and lyrics with line-by-line cues built from your song."
+      "description": "Practice timing, phrasing, and lyrics with line-by-line cues built from your song.",
+      "image": "/imgs/seo/karaoke-video-maker/use-case-1.png"
     },
     {
       "title": "Karaoke nights and events",
-      "description": "Create readable sing-along videos for parties, events, or casual karaoke nights."
+      "description": "Create readable sing-along videos for parties, events, or casual karaoke nights.",
+      "image": "/imgs/seo/karaoke-video-maker/use-case-2.png"
     },
     {
       "title": "YouTube karaoke channels",
-      "description": "Produce consistent karaoke-style lyric videos with a repeatable upload-to-export flow."
+      "description": "Produce consistent karaoke-style lyric videos with a repeatable upload-to-export flow.",
+      "image": "/imgs/seo/karaoke-video-maker/use-case-3.png"
     },
     {
       "title": "Cover performances",
-      "description": "Help listeners follow along with covers, acoustic sessions, or live performances."
+      "description": "Help listeners follow along with covers, acoustic sessions, or live performances.",
+      "image": "/imgs/seo/karaoke-video-maker/use-case-4.png"
     }
   ],
   "bottomCta": {

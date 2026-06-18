@@ -137,19 +137,23 @@
   "useCases": [
     {
       "title": "Video to lyrics",
-      "description": "粘贴支持的视频链接，把人声转成可编辑歌词，用于字幕、简介或二次使用。"
+      "description": "粘贴支持的视频链接，把人声转成可编辑歌词，用于字幕、简介或二次使用。",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
       "title": "YouTube 提取歌词",
-      "description": "歌曲已经在线时，可以从支持的 YouTube 链接快速得到歌词文本或字幕版本。"
+      "description": "歌曲已经在线时，可以从支持的 YouTube 链接快速得到歌词文本或字幕版本。",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-2.png"
     },
     {
       "title": "歌曲歌词单",
-      "description": "导出 TXT，用于 press kit、合作者、翻译、厂牌沟通和发行资料。"
+      "description": "导出 TXT，用于 press kit、合作者、翻译、厂牌沟通和发行资料。",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-3.png"
     },
     {
       "title": "同步字幕",
-      "description": "导出 LRC 或 SRT，用于音乐播放器、YouTube 字幕或视频剪辑软件。"
+      "description": "导出 LRC 或 SRT，用于音乐播放器、YouTube 字幕或视频剪辑软件。",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
   "bottomCta": {

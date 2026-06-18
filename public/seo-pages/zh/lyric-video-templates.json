@@ -27,7 +27,7 @@
   },
   "hero": {
     "badge": "歌词视频模板 — AI 匹配歌曲情绪",
-    "h1": "歌词视频模板",
+    "h1": "歌词视频模板 —— 匹配你歌曲的视觉风格",
     "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词、逐行同步节拍，并根据歌曲情绪生成匹配的视觉风格 — 不是通用模板。预览效果后导出 — 免费，无需订阅。",
     "primaryCta": "用我的歌试模板 — 免费",
     "secondaryCta": "查看制作流程"
@@ -152,19 +152,23 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "获取适合完整歌曲 16:9 歌词视频的视觉风格，节奏舒适。"
+      "description": "获取适合完整歌曲 16:9 歌词视频的视觉风格，节奏舒适。",
+      "image": "/imgs/seo/lyric-video-templates/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "获取竖屏安全的视觉风格，大号可读歌词适合短视频平台。"
+      "description": "获取竖屏安全的视觉风格，大号可读歌词适合短视频平台。",
+      "image": "/imgs/seo/lyric-video-templates/use-case-2.png"
     },
     {
       "title": "曲风匹配画面",
-      "description": "AI 根据曲风匹配视觉风格 — 民谣和嘻哈、流行会得到不同的画面。"
+      "description": "AI 根据曲风匹配视觉风格 — 民谣和嘻哈、流行会得到不同的画面。",
+      "image": "/imgs/seo/lyric-video-templates/use-case-3.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个风格一致的歌词视频片段。"
+      "description": "从一首单曲生成多个风格一致的歌词视频片段。",
+      "image": "/imgs/seo/lyric-video-templates/use-case-4.png"
     }
   ],
   "bottomCta": {

@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "VEED 替代方案 — AI 歌词视频，免费",
-    "h1": "VEED 替代方案",
+    "h1": "VEED 替代方案 —— 从歌曲开始，不用时间轴",
     "subhead": "VEED 是通用视频编辑器 — 适合字幕和口播，但做歌词视频仍然要手动摆文字、在时间轴上对齐。LyricVideoMaker 从歌曲出发：上传音频，AI 自动转写歌词、同步节拍、生成画面。免费导出，无需订阅。",
     "primaryCta": "免费做歌词视频",
     "secondaryCta": "查看制作流程"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "将整首歌导出为 16:9 歌词视频 — 不用在时间轴上拼接。"
+      "description": "将整首歌导出为 16:9 歌词视频 — 不用在时间轴上拼接。",
+      "image": "/imgs/seo/veed-alternative/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频，不用重建时间轴。"
+      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频，不用重建时间轴。",
+      "image": "/imgs/seo/veed-alternative/use-case-2.png"
     },
     {
       "title": "单曲发行",
-      "description": "从终混版几分钟内拿到歌词视频 — 不用编辑器、不用设计师、不用时间轴。"
+      "description": "从终混版几分钟内拿到歌词视频 — 不用编辑器、不用设计师、不用时间轴。",
+      "image": "/imgs/seo/veed-alternative/use-case-3.png"
     },
     {
       "title": "歌词频道批量内容",
-      "description": "一首接一首上传歌曲，拿到成品歌词视频 — 比在 VEED 编辑器里逐个制作快得多。"
+      "description": "一首接一首上传歌曲，拿到成品歌词视频 — 比在 VEED 编辑器里逐个制作快得多。",
+      "image": "/imgs/seo/veed-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

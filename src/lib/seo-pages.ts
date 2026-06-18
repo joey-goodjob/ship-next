@@ -116,11 +116,10 @@ export type SeoPageContent = {
 export type SeoTextItem = {
   title: string;
   description: string;
-};
-
-export type SeoStepItem = SeoTextItem & {
   image?: string;
 };
+
+export type SeoStepItem = SeoTextItem;
 
 export type SeoFaqItem = {
   question: string;
@@ -485,6 +484,9 @@ function assertTextItems(value: unknown, label: string) {
     assertRecord(item, `${label}[${index}]`);
     assertNonEmptyString(item.title, `${label}[${index}].title`);
     assertNonEmptyString(item.description, `${label}[${index}].description`);
+    if ("image" in item && item.image !== undefined) {
+      assertPublicImagePath(item.image, `${label}[${index}].image`);
+    }
   });
 }
 

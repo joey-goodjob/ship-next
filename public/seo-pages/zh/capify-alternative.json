@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "Capify 替代方案 — AI 歌词视频，免费",
-    "h1": "Capify 替代方案",
+    "h1": "Capify 替代方案 —— 免费 AI 歌词视频工具",
     "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词、逐行同步节拍，并生成匹配歌曲情绪的视觉画面。预览完整歌词视频后导出 — 免费，无需订阅。",
     "primaryCta": "免费做同款视频",
     "secondaryCta": "查看制作流程"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面。"
+      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面。",
+      "image": "/imgs/seo/capify-alternative/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频。"
+      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频。",
+      "image": "/imgs/seo/capify-alternative/use-case-2.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。"
+      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。",
+      "image": "/imgs/seo/capify-alternative/use-case-3.png"
     },
     {
       "title": "歌词频道批量上传",
-      "description": "需要频繁上传歌词视频时，使用可重复的上传到导出流程。"
+      "description": "需要频繁上传歌词视频时，使用可重复的上传到导出流程。",
+      "image": "/imgs/seo/capify-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

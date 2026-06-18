@@ -54,7 +54,7 @@
     "loved_by": "深受创作者、音乐人和营销团队喜爱。"
   },
   "featured": {
-    "title": "由 AI 音乐视频社区用 💚 创作",
+    "title": "由 LyricVideoMaker 社区创作",
     "description": "发现全球音乐视频创作者的精彩作品",
     "explore_cta": "查看更多",
     "cards": {
@@ -197,42 +197,6 @@
       {
         "title": "预览并导出视频",
         "description": "用你的真实歌词和选择的风格预览整支歌词视频。然后导出 YouTube、TikTok、Reels、Shorts 或社媒动态版本，免费导出，无需订阅。"
-      }
-    ]
-  },
-  "styles": {
-    "title": "找到你的风格",
-    "subtitle": "每种风格都用真实歌词预览。点击任意一个试试。",
-    "items": [
-      {
-        "name": "Neon Pulse",
-        "description": "深色渐变上的霓虹字体——适合电子、流行和合成器浪潮。",
-        "previewImage": "/style-previews/neon-pulse.png",
-        "free": true
-      },
-      {
-        "name": "Clean Slate",
-        "description": "留白、柔和衬线字体和轻柔动效——适合民谣、独立和原声音乐。",
-        "previewImage": "/style-previews/clean-slate.png",
-        "free": true
-      },
-      {
-        "name": "Night Drive",
-        "description": "暗色调、快速切换和粗体无衬线——为说唱、trap 和 R&B 而生。",
-        "previewImage": "/style-previews/night-drive.png",
-        "free": true
-      },
-      {
-        "name": "Ink & Paper",
-        "description": "手写质感搭配暖色纸张——适合叙事歌曲、抒情和口语表达。",
-        "previewImage": "/style-previews/ink-paper.png",
-        "free": true
-      },
-      {
-        "name": "Minimal Mono",
-        "description": "黑白无装饰——当文字本身就够了。",
-        "previewImage": "/style-previews/minimal-mono.png",
-        "free": true
       }
     ]
   },
@@ -425,7 +389,7 @@
     "description": "开始制作第一支 AI 歌词视频前，你可能会关心这些问题。",
     "free": {
       "question": "这个 AI 歌词视频制作工具免费吗？",
-      "answer": "是的。注册后可以获得免费积分，用来创建、预览并导出歌词视频。无需订阅，也无需信用卡。"
+      "answer": "可以。无需账号即可开始 —— 上传歌曲并免费预览。注册免费账号即可获得免费积分、保存项目并导出。无需订阅，也无需信用卡。"
     },
     "lyrics": {
       "question": "我需要自己输入歌词吗？",
@@ -462,6 +426,26 @@
     "phone": {
       "question": "手机上能用吗？",
       "answer": "可以在手机浏览器打开项目和观看视频，但完整制作流程更建议用电脑。上传歌曲、编辑歌词、调整画面和导出视频时，桌面端会舒服很多；手机更适合查看预览或播放成片。"
+    },
+    "free_preview": {
+      "question": "付费前可以先预览吗？",
+      "answer": "可以。上传歌曲、检查 AI 同步的歌词，并在花费任何积分前预览完整歌词视频。只有导出时才会消耗积分。"
+    },
+    "credits": {
+      "question": "积分怎么用？",
+      "answer": "生成和导出视频时会消耗积分。免费版包含 150 个一次性积分；Creator、Pro、Ultra 每月补充积分，你也可以随时单独购买积分包。"
+    },
+    "static_video": {
+      "question": "更简单的视频会更省积分吗？",
+      "answer": "会。只有同步文字加风格化背景的简洁歌词视频，比完整 AI 生成画面更省积分；不需要复杂画面时能让积分用得更久。"
+    },
+    "models": {
+      "question": "Premium AI 模型有什么不同？",
+      "answer": "Pro 和 Ultra 包含的高级模型能生成更精细、更高质量的画面。免费版和 Creator 使用标准模型，对多数歌词视频已经够用。"
+    },
+    "rights": {
+      "question": "导出的视频可以商用吗？",
+      "answer": "可以。只要你拥有上传音乐的版权，导出的视频就归你所有，可用于商业用途，包括变现频道和付费发行。"
     }
   },
   "cta": {

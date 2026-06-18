@@ -28,7 +28,7 @@
   },
   "hero": {
     "badge": "Lyric video templates — AI-generated, matched to your song",
-    "h1": "Lyric Video Templates",
+    "h1": "Lyric Video Templates — Visual Styles Matched to Your Song",
     "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visual styles driven by the song's mood — not generic templates. Preview the result, then export — free, no subscription needed.",
     "primaryCta": "Try Templates with My Song — Free",
     "secondaryCta": "See How It Works"
@@ -153,19 +153,23 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Get a visual style that works for a full-song 16:9 lyric video with readable pacing."
+      "description": "Get a visual style that works for a full-song 16:9 lyric video with readable pacing.",
+      "image": "/imgs/seo/lyric-video-templates/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Get vertical-safe visual styles with large, readable lyrics for short-form platforms."
+      "description": "Get vertical-safe visual styles with large, readable lyrics for short-form platforms.",
+      "image": "/imgs/seo/lyric-video-templates/use-case-2.png"
     },
     {
       "title": "Genre-matched aesthetics",
-      "description": "AI matches the visual style to your genre — acoustic gets a different look than hip-hop or pop."
+      "description": "AI matches the visual style to your genre — acoustic gets a different look than hip-hop or pop.",
+      "image": "/imgs/seo/lyric-video-templates/use-case-3.png"
     },
     {
       "title": "Release week content",
-      "description": "Generate multiple lyric video clips with consistent visual styles from one single."
+      "description": "Generate multiple lyric video clips with consistent visual styles from one single.",
+      "image": "/imgs/seo/lyric-video-templates/use-case-4.png"
     }
   ],
   "bottomCta": {

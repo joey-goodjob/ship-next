@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "Neural Frames alternative — AI lyric video maker, free",
-    "h1": "Neural Frames Alternative",
+    "h1": "Neural Frames Alternative — AI Visuals That Keep Lyrics Readable",
     "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
     "primaryCta": "Make a Readable Lyric Video Free",
     "secondaryCta": "See How It Works"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Export the entire track as a 16:9 lyric video with AI visuals AND readable lyrics."
+      "description": "Export the entire track as a 16:9 lyric video with AI visuals AND readable lyrics.",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical lyric video with mood-matched visuals."
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video with mood-matched visuals.",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-2.png"
     },
     {
       "title": "Artists who need lyrics on screen",
-      "description": "When fans need to learn the words, not just see pretty visuals — LyricVideoMaker keeps lyrics front and center."
+      "description": "When fans need to learn the words, not just see pretty visuals — LyricVideoMaker keeps lyrics front and center.",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-3.png"
     },
     {
       "title": "Lyric channels and frequent uploads",
-      "description": "Use a repeatable flow with auto-transcription and visual generation — faster than Neural Frames for lyric content."
+      "description": "Use a repeatable flow with auto-transcription and visual generation — faster than Neural Frames for lyric content.",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

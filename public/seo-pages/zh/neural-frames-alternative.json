@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "Neural Frames 替代方案 — AI 歌词视频，免费",
-    "h1": "Neural Frames 替代方案",
+    "h1": "Neural Frames 替代方案 —— AI 画面也保歌词清晰",
     "subhead": "Neural Frames 生成 AI 画面，但歌词经常被画面淹没。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 转写同步歌词，生成匹配情绪的画面，同时保持歌词清晰可读。免费导出，无需订阅。",
     "primaryCta": "免费做可读歌词视频",
     "secondaryCta": "查看制作流程"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "将整首歌导出为 16:9 歌词视频，带 AI 画面和可读歌词。"
+      "description": "将整首歌导出为 16:9 歌词视频，带 AI 画面和可读歌词。",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成带情绪匹配画面的 9:16 竖屏歌词视频。"
+      "description": "把副歌或 hook 剪成带情绪匹配画面的 9:16 竖屏歌词视频。",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-2.png"
     },
     {
       "title": "需要歌词可见的音乐人",
-      "description": "当粉丝需要学歌词，而不只是看漂亮画面时 — LyricVideoMaker 让歌词始终在屏幕中心。"
+      "description": "当粉丝需要学歌词，而不只是看漂亮画面时 — LyricVideoMaker 让歌词始终在屏幕中心。",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-3.png"
     },
     {
       "title": "歌词频道批量上传",
-      "description": "用自动转写和画面生成的可重复流程 — 做歌词内容比 Neural Frames 更快。"
+      "description": "用自动转写和画面生成的可重复流程 — 做歌词内容比 Neural Frames 更快。",
+      "image": "/imgs/seo/neural-frames-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "Kapwing 替代方案 — AI 歌词视频，免费",
-    "h1": "Kapwing 歌词视频替代方案",
+    "h1": "Kapwing 歌词视频替代方案 —— 不用时间轴，只要你的歌",
     "subhead": "Kapwing 是通用视频编辑器 — 在里面做歌词视频意味着手动打歌词、拖文字、逐行对时间。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 自动转写同步，预览后导出 — 免费，无需订阅。",
     "primaryCta": "免费做歌词视频",
     "secondaryCta": "查看制作流程"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面 — 不用在时间轴上操作。"
+      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面 — 不用在时间轴上操作。",
+      "image": "/imgs/seo/kapwing-alternative/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频 — 比在 Kapwing 编辑器里搭建更快。"
+      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频 — 比在 Kapwing 编辑器里搭建更快。",
+      "image": "/imgs/seo/kapwing-alternative/use-case-2.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个歌词片段 — 不用在通用编辑器里重新搭建每一个。"
+      "description": "从一首单曲生成多个歌词片段 — 不用在通用编辑器里重新搭建每一个。",
+      "image": "/imgs/seo/kapwing-alternative/use-case-3.png"
     },
     {
       "title": "没有剪辑经验的音乐人",
-      "description": "不用学 Kapwing 的时间轴和文字工具就能做歌词视频。上传歌曲，拿到视频。"
+      "description": "不用学 Kapwing 的时间轴和文字工具就能做歌词视频。上传歌曲，拿到视频。",
+      "image": "/imgs/seo/kapwing-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

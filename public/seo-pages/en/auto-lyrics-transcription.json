@@ -137,19 +137,23 @@
   "useCases": [
     {
       "title": "Video to lyrics",
-      "description": "Paste a supported video link and turn the vocal track into editable lyrics for captions, descriptions, or reuse."
+      "description": "Paste a supported video link and turn the vocal track into editable lyrics for captions, descriptions, or reuse.",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
       "title": "YouTube lyric extraction",
-      "description": "Get lyrics from a YouTube video when the song is already online and you need a quick text or subtitle version."
+      "description": "Get lyrics from a YouTube video when the song is already online and you need a quick text or subtitle version.",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-2.png"
     },
     {
       "title": "Song lyric sheets",
-      "description": "Export TXT for press kits, collaborators, translators, labels, and publishing notes."
+      "description": "Export TXT for press kits, collaborators, translators, labels, and publishing notes.",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-3.png"
     },
     {
       "title": "Synced captions",
-      "description": "Export LRC or SRT when you need timed lyrics for music players, YouTube captions, or video editors."
+      "description": "Export LRC or SRT when you need timed lyrics for music players, YouTube captions, or video editors.",
+      "image": "/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
   "bottomCta": {

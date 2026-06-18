@@ -26,7 +26,7 @@
   },
   "hero": {
     "badge": "歌曲转歌词视频 — 上传一次，AI 搞定剩下的",
-    "h1": "歌曲转歌词视频：一次上传生成歌词视频",
+    "h1": "歌曲转歌词视频 —— 上传一次，AI 全搞定",
     "subhead": "上传歌曲或粘贴链接，AI 自动转写每一行歌词并同步节拍，根据歌曲情绪生成视觉方向。预览完整歌词视频，用免费积分导出 YouTube、TikTok 或 Reels 格式。",
     "primaryCta": "把歌曲变成视频",
     "secondaryCta": "查看使用流程"
@@ -115,19 +115,23 @@
   "useCases": [
     {
       "title": "YouTube 全长歌词视频",
-      "description": "导出完整 16:9 歌词视频，保留干净的 intro/outro 空间用于频道品牌露出，并用清晰节奏和同步歌词让观众跟住整首歌。"
+      "description": "导出完整 16:9 歌词视频，保留干净的 intro/outro 空间用于频道品牌露出，并用清晰节奏和同步歌词让观众跟住整首歌。",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "截取 hook 或副歌，导出 9:16 竖屏片段，在信息流中抓住注意力。"
+      "description": "截取 hook 或副歌，导出 9:16 竖屏片段，在信息流中抓住注意力。",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-2.png"
     },
     {
       "title": "Demo 和投稿预览",
-      "description": "让未发布的歌曲更容易理解，方便发给厂牌、合作方或经纪人。"
+      "description": "让未发布的歌曲更容易理解，方便发给厂牌、合作方或经纪人。",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-3.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从同一首歌做出多个歌词素材，每天发布新鲜内容，而不是重复同一张封面。"
+      "description": "从同一首歌做出多个歌词素材，每天发布新鲜内容，而不是重复同一张封面。",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-4.png"
     }
   ],
   "bottomCta": {

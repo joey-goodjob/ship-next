@@ -28,7 +28,7 @@
   },
   "hero": {
     "badge": "Song to lyric video — upload once, AI does the rest",
-    "h1": "Song to Lyric Video in One Upload",
+    "h1": "Song to Lyric Video — Upload Once, AI Does the Rest",
     "subhead": "Upload your song or paste a link. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free, no subscription needed.",
     "primaryCta": "Turn My Song into a Video",
     "secondaryCta": "See How It Works"
@@ -117,19 +117,23 @@
   "useCases": [
     {
       "title": "Full YouTube lyric video",
-      "description": "Export a complete 16:9 lyric video with clean intro/outro space for channel branding, readable pacing, and synced lyrics that keep viewers following the song."
+      "description": "Export a complete 16:9 lyric video with clean intro/outro space for channel branding, readable pacing, and synced lyrics that keep viewers following the song.",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical clip that stops the scroll."
+      "description": "Cut the hook or chorus into a 9:16 vertical clip that stops the scroll.",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-2.png"
     },
     {
       "title": "Demo and pitch previews",
-      "description": "Make an unreleased song easier to follow when sharing with labels, collaborators, or managers."
+      "description": "Make an unreleased song easier to follow when sharing with labels, collaborators, or managers.",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-3.png"
     },
     {
       "title": "Release week content",
-      "description": "Create multiple lyric assets from one song so every post is fresh content, not the same cover art."
+      "description": "Create multiple lyric assets from one song so every post is fresh content, not the same cover art.",
+      "image": "/imgs/seo/song-to-lyric-video/use-case-4.png"
     }
   ],
   "bottomCta": {

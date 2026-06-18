@@ -14,28 +14,27 @@
     ]
   },
   "seo": {
-    "title": "AI Lyric Video Generator — Create Lyric Videos Free Online",
+    "title": "AI Lyric Video Generator — Create Synced Lyric Videos Online",
     "description": "AI lyric video generator that turns any song into a synced lyric video. Auto-transcribe lyrics, sync to the beat, preview, and export for YouTube & TikTok.",
     "keywords": [
       "lyric video generator",
       "ai lyric video generator",
       "lyric video creator",
       "lyrics video generator",
-      "free lyric video generator",
       "generate lyric video from audio",
       "lyrics to video",
       "auto lyric video generator"
     ]
   },
   "hero": {
-    "badge": "AI lyric video generator — free to export, no signup to start",
-    "h1": "Free AI Lyric Video Generator",
-    "subhead": "Generate a fully synced lyric video from any song — AI transcribes the lyrics, times them to the beat, and adds mood-driven visuals. Preview, then export free.",
-    "primaryCta": "Generate My Lyric Video — Free",
+    "badge": "AI lyric video generator — upload a song, get a synced lyric video",
+    "h1": "AI Lyric Video Generator — Turn Any Song Into a Synced Lyric Video",
+    "subhead": "Generate a fully synced lyric video from any song — AI transcribes the lyrics, times them to the beat, and adds mood-driven visuals. Preview, then export.",
+    "primaryCta": "Generate My Lyric Video",
     "secondaryCta": "See How It Works"
   },
   "trust": [
-    "Free — no signup to start",
+    "No signup to start",
     "Lyrics auto-detected from your audio",
     "Beat-accurate sync",
     "Export free, no subscription"
@@ -67,7 +66,7 @@
   },
   "whyChoose": {
     "title": "Why Generate Lyric Videos on LyricVideoMaker",
-    "description": "Most lyric video generators are caption tools in disguise — they make you type lyrics and drag text on a timeline. LyricVideoMaker is built for music: it reads your audio and treats the lyrics as the centerpiece, not an afterthought.",
+    "description": "Most lyric video generators still make you type lyrics and drag text on a timeline. LyricVideoMaker is built for music: it reads your audio and treats the lyrics as the centerpiece, not an afterthought.",
     "highlight": {
       "title": "The lyric video creator that does the typing for you",
       "description": "Transcription, beat sync, and visuals happen automatically from your audio. You review and adjust — you never build from a blank timeline."
@@ -102,7 +101,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing, then export in HD — 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full lyric video before publishing, then export in HD — 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. No subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
@@ -147,26 +146,30 @@
   "useCases": [
     {
       "title": "Independent artist releases",
-      "description": "Generate a lyric video for your single without a designer, editor, or music video budget."
+      "description": "Generate a lyric video for your single without a designer, editor, or music video budget.",
+      "image": "/imgs/seo/lyric-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Generate a vertical lyric video from the hook or chorus that stops the scroll."
+      "description": "Generate a vertical lyric video from the hook or chorus that stops the scroll.",
+      "image": "/imgs/seo/lyric-video-generator/use-case-2.png"
     },
     {
       "title": "YouTube lyric videos",
-      "description": "Generate a full-length 16:9 lyric video that gives your audio upload more context than a static cover."
+      "description": "Generate a full-length 16:9 lyric video that gives your audio upload more context than a static cover.",
+      "image": "/imgs/seo/lyric-video-generator/use-case-3.png"
     },
     {
       "title": "Release week content",
-      "description": "Generate multiple lyric clips from one single — fresh content for every day of release week."
+      "description": "Generate multiple lyric clips from one single — fresh content for every day of release week.",
+      "image": "/imgs/seo/lyric-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Your lyric video is one upload away.",
-    "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — free, no subscription.",
-    "button": "Generate My Lyric Video — Free",
-    "upsell": "Free to export · No subscription · No credit card required"
+    "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — no subscription needed.",
+    "button": "Generate My Lyric Video",
+    "upsell": "No signup · No subscription · No credit card"
   },
   "relatedTools": {
     "title": "Related Lyric Video Tools",

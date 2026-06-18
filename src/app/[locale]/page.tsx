@@ -5,7 +5,6 @@ import { Hero } from "@/blocks/hero";
 import { FeaturedCreators } from "@/blocks/featured-creators";
 import { Features } from "@/blocks/features";
 import { HowItWorks } from "@/blocks/how-it-works";
-import { StylesGallery } from "@/blocks/styles-gallery";
 import { Platforms } from "@/blocks/platforms";
 import { Comparison } from "@/blocks/comparison";
 import { Testimonials } from "@/blocks/testimonials";
@@ -70,13 +69,43 @@ export default async function HomePage({ params }: PageParams) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale, namespace: "landing.seo" });
+  const url = `${baseUrl()}${localizedPath(locale)}`;
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: envConfigs.app_name,
+      url: baseUrl(),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: envConfigs.app_name,
+      url: baseUrl(),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: envConfigs.app_name,
+      applicationCategory: "MultimediaApplication",
+      operatingSystem: "Web",
+      url,
+      description: t("description"),
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header variant="heroOverlay" />
       <Hero />
       <HowItWorks />
       <Features />
-      <StylesGallery />
       <FeaturedCreators />
       <Platforms />
       <Comparison />

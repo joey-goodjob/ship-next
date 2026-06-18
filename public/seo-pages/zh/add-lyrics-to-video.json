@@ -28,7 +28,7 @@
   },
   "hero": {
     "badge": "AI 在线给视频加歌词，自动同步节拍",
-    "h1": "自动给视频添加歌词",
+    "h1": "给视频添加歌词 —— 全程自动",
     "subhead": "上传视频、添加音频文件，或粘贴支持的链接。AI 自动从音频转写歌词，逐行同步到节拍，把歌词叠加到原视频画面上，预览后即可免费导出 — 无需订阅。",
     "primaryCta": "免费给视频加歌词",
     "secondaryCta": "查看制作流程"
@@ -49,7 +49,7 @@
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍，支持 50 多种语言。渲染前可以点击任意歌词行修正文字。歌词时间跟着音乐走，副歌、重复句、即兴唱段和人声进入点会更自然地落在画面上。",
+        "description": "AI 自动从音频转写文字，并逐行同步，支持 50 多种语言。渲染前可以点击任意行修正文字。文字时间跟着音频走，每一行都在被唱出或说出的那一刻落到画面上。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
@@ -72,8 +72,8 @@
         "description": "把歌词放在真正适合视频的位置，让文字清晰可读，同时避开人物表情、舞蹈动作、产品镜头和关键瞬间。"
       },
       {
-        "title": "为音乐设计，不是粘贴字幕",
-        "description": "普通字幕工具通常跟随语音时间轴，把文字固定在底部。LyricVideoMaker 把歌词当成视觉层处理，让歌词跟着歌曲节奏出现。"
+        "title": "同步的文字层，不是钉在底部的字",
+        "description": "不是把文字死板地钉在画面底部，LyricVideoMaker 把同步的歌词（或字幕）当成视觉层处理，让它跟着音频出现，并在你的原画面上保持清晰可读。"
       },
       {
         "title": "改一行歌词，不用重做剪辑",
@@ -121,19 +121,23 @@
   "useCases": [
     {
       "title": "音乐 MV",
-      "description": "给正式 MV、表演剪辑或视觉视频加上歌词，让观众跟得上歌词，同时保留原本画面。"
+      "description": "给正式 MV、表演剪辑或视觉视频加上歌词，让观众跟得上歌词，同时保留原本画面。",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-1.png"
     },
     {
       "title": "现场演出视频",
-      "description": "给 live set、cover、录音室 session 或排练片段叠加歌词，让现场能量和歌词内容同时被看见。"
+      "description": "给 live set、cover、录音室 session 或排练片段叠加歌词，让现场能量和歌词内容同时被看见。",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-2.png"
     },
     {
       "title": "婚礼和活动视频",
-      "description": "给 first dance、活动高光或纪念视频加上歌词，当歌曲本身就是画面情绪的一部分。"
+      "description": "给 first dance、活动高光或纪念视频加上歌词，当歌曲本身就是画面情绪的一部分。",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-3.png"
     },
     {
       "title": "旅行蒙太奇和粉丝剪辑",
-      "description": "给旅行素材、配乐剪辑和社媒短片加上同步歌词，不用手动重建时间轴。"
+      "description": "给旅行素材、配乐剪辑和社媒短片加上同步歌词，不用手动重建时间轴。",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-4.png"
     }
   ],
   "bottomCta": {

@@ -25,7 +25,7 @@
   },
   "hero": {
     "badge": "VEED alternative — AI lyric video maker, free",
-    "h1": "VEED Alternative for Lyric Videos",
+    "h1": "VEED Alternative for Lyric Videos — Start From the Song",
     "subhead": "VEED is a general video editor — great for subtitles and talking heads, but lyric videos still mean manual text placement and timeline work. LyricVideoMaker starts from the song: upload audio, AI auto-transcribes lyrics, syncs every line to the beat, and generates visuals. Export free, no subscription needed.",
     "primaryCta": "Make a Lyric Video Free",
     "secondaryCta": "See How It Works"
@@ -154,19 +154,23 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Export the entire track as a 16:9 lyric video — no timeline assembly required."
+      "description": "Export the entire track as a 16:9 lyric video — no timeline assembly required.",
+      "image": "/imgs/seo/veed-alternative/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical lyric video without rebuilding a timeline."
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video without rebuilding a timeline.",
+      "image": "/imgs/seo/veed-alternative/use-case-2.png"
     },
     {
       "title": "Artist single releases",
-      "description": "Get a lyric video from the final mix in minutes — no editor, no designer, no timeline."
+      "description": "Get a lyric video from the final mix in minutes — no editor, no designer, no timeline.",
+      "image": "/imgs/seo/veed-alternative/use-case-3.png"
     },
     {
       "title": "Lyric channels and batch content",
-      "description": "Upload songs one after another and get finished lyric videos — faster than building each one in VEED's editor."
+      "description": "Upload songs one after another and get finished lyric videos — faster than building each one in VEED's editor.",
+      "image": "/imgs/seo/veed-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {

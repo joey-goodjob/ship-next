@@ -14,26 +14,25 @@
     ]
   },
   "seo": {
-    "title": "AI 歌词视频生成器 — 免费在线制作 Lyric Video",
+    "title": "AI 歌词视频生成器 — 在线制作同步 Lyric Video",
     "description": "AI 歌词视频生成器：从任意歌曲自动转写歌词、逐行同步节拍、可选风格，导出适配 YouTube 和 TikTok。免费，无需订阅。",
     "keywords": [
       "歌词视频生成器",
       "AI 歌词视频生成器",
       "歌词视频制作工具",
       "歌曲转歌词视频",
-      "音频生成歌词视频",
-      "免费歌词视频生成器"
+      "音频生成歌词视频"
     ]
   },
   "hero": {
-    "badge": "AI 歌词视频生成器 — 免费导出，无需注册即可开始",
-    "h1": "免费 AI 歌词视频生成器",
-    "subhead": "从任意歌曲生成完整同步的歌词视频 —— AI 自动转写歌词、逐行卡到节拍、配上情绪化画面。预览后免费导出。",
-    "primaryCta": "免费生成歌词视频",
+    "badge": "AI 歌词视频生成器 —— 上传歌曲，自动生成同步歌词视频",
+    "h1": "AI 歌词视频生成器 —— 把任意歌曲变成同步歌词视频",
+    "subhead": "从任意歌曲生成完整同步的歌词视频 —— AI 自动转写歌词、逐行卡到节拍、配上情绪化画面。预览后即可导出。",
+    "primaryCta": "生成我的歌词视频",
     "secondaryCta": "查看制作流程"
   },
   "trust": [
-    "免费 — 无需注册即可开始",
+    "无需注册即可开始",
     "AI 自动从音频识别歌词",
     "节拍精准同步",
     "免费导出，无需订阅"
@@ -65,7 +64,7 @@
   },
   "whyChoose": {
     "title": "为什么在 LyricVideoMaker 生成歌词视频",
-    "description": "大多数歌词视频生成器其实是伪装的字幕工具 — 让你手动打歌词、在时间轴上拖文字。LyricVideoMaker 是为音乐而生的：它读取你的音频，把歌词当成画面主角，而不是事后补上的字幕。",
+    "description": "大多数歌词视频生成器仍然要你手动打歌词、在时间轴上拖文字。LyricVideoMaker 是为音乐而生的：它读取你的音频，把歌词当成画面主角，而不是事后随便补上的文字。",
     "highlight": {
       "title": "帮你把歌词打好的歌词视频工具",
       "description": "转写、节拍同步和画面都从音频自动完成。你只需检查和调整 — 永远不用从空白时间轴开始。"
@@ -100,7 +99,7 @@
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整歌词视频，然后导出 HD — 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "description": "发布前先看完整歌词视频，然后导出 HD — 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。无需订阅即可导出。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
@@ -145,26 +144,30 @@
   "useCases": [
     {
       "title": "独立音乐人发歌",
-      "description": "不用设计师、剪辑师或 MV 预算，直接为单曲生成歌词视频。"
+      "description": "不用设计师、剪辑师或 MV 预算，直接为单曲生成歌词视频。",
+      "image": "/imgs/seo/lyric-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "从副歌或 hook 生成竖屏歌词视频，适合短视频传播。"
+      "description": "从副歌或 hook 生成竖屏歌词视频，适合短视频传播。",
+      "image": "/imgs/seo/lyric-video-generator/use-case-2.png"
     },
     {
       "title": "YouTube 歌词视频",
-      "description": "生成完整 16:9 歌词视频，比静态封面更有观看价值。"
+      "description": "生成完整 16:9 歌词视频，比静态封面更有观看价值。",
+      "image": "/imgs/seo/lyric-video-generator/use-case-3.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。"
+      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。",
+      "image": "/imgs/seo/lyric-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "你的歌词视频，只差一次上传。",
-    "description": "上传歌曲，让 AI 搞定歌词和画面，免费导出成品歌词视频，无需订阅。",
-    "button": "免费生成歌词视频",
-    "upsell": "免费导出 · 无需订阅 · 无需信用卡"
+    "description": "上传歌曲，让 AI 搞定歌词和画面，导出成品歌词视频，无需订阅。",
+    "button": "生成我的歌词视频",
+    "upsell": "无需注册 · 无需订阅 · 无需信用卡"
   },
   "relatedTools": {
     "title": "更多歌词视频工具",

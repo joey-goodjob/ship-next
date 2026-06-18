@@ -7,15 +7,26 @@ import { cn } from "@/lib/utils";
 const CAROUSEL_INTERVAL_MS = 3500;
 
 const SAMPLE_MATERIALS = [
-  { title: "Ace", description: "Cinematic character sample", image: "/character-library/openart-seed/ace-showcase.png" },
-  { title: "Jay", description: "Music video lead sample", image: "/character-library/openart-seed/jay-showcase.png" },
-  { title: "Jayden", description: "Animated lyric video sample", image: "/character-library/openart-seed/jayden-showcase.png" },
-  { title: "Kai", description: "Stylized portrait sample", image: "/character-library/openart-seed/kai-showcase.png" },
-  { title: "Luna", description: "Dream pop visual sample", image: "/character-library/openart-seed/luna-showcase.png" },
-  { title: "Rosa", description: "Warm story scene sample", image: "/character-library/openart-seed/rosa-showcase.png" },
-  { title: "Tex", description: "Performance scene sample", image: "/character-library/openart-seed/tex-showcase.png" },
-  { title: "Ty", description: "Bold character sample", image: "/character-library/openart-seed/ty-showcase.png" },
-  { title: "Vera", description: "Editorial visual sample", image: "/character-library/openart-seed/vera-showcase.png" },
+  {
+    title: "Video 17",
+    description: "AI video material sample",
+    video: "/external/freebeat-seedance/homeGrid-v1-17.mp4",
+  },
+  {
+    title: "Video 11",
+    description: "AI video material sample",
+    video: "/external/freebeat-seedance/homeGrid-v1-11.mp4",
+  },
+  {
+    title: "Video 2",
+    description: "AI video material sample",
+    video: "/external/freebeat-seedance/homeGrid-v1-2.mp4",
+  },
+  {
+    title: "Video 7",
+    description: "AI video material sample",
+    video: "/external/freebeat-seedance/homeGrid-v1-7.mp4",
+  },
 ] as const;
 
 export function LyricVideoMaterialCarousel() {
@@ -75,7 +86,18 @@ export function LyricVideoMaterialCarousel() {
       </div>
 
       <div className="relative h-[320px] overflow-hidden rounded-[18px] border border-brand-line bg-brand-soft sm:h-[380px] lg:h-[430px]">
-        <img key={activeMaterial.image} src={activeMaterial.image} alt={activeLabel} className="h-full w-full object-cover" />
+        <video
+          key={activeMaterial.video}
+          className="h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-label={activeLabel}
+        >
+          <source src={activeMaterial.video} type="video/mp4" />
+        </video>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/72 via-black/18 to-transparent p-5 text-white">
           <p className="text-lg font-black">{activeMaterial.description}</p>
         </div>
@@ -101,7 +123,7 @@ export function LyricVideoMaterialCarousel() {
       <div className="mt-5 flex items-center justify-center gap-2">
         {SAMPLE_MATERIALS.map((material, index) => (
           <button
-            key={material.image}
+            key={material.video}
             type="button"
             aria-label={`Show ${material.title}`}
             onClick={() => setActiveIndex(index)}

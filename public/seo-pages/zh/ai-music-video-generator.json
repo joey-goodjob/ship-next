@@ -27,7 +27,7 @@
   },
   "hero": {
     "badge": "AI 音乐视频生成器 — 歌词变画面",
-    "h1": "AI 音乐视频生成器",
+    "h1": "AI 音乐视频生成器 —— 把歌曲变成画面",
     "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词、逐行同步节拍，并根据歌曲情绪和主题生成匹配的视觉画面。预览完整音乐视频后导出 — 免费，无需订阅。",
     "primaryCta": "免费制作音乐视频",
     "secondaryCta": "查看制作流程"
@@ -160,19 +160,23 @@
   "useCases": [
     {
       "title": "YouTube 完整音乐视频",
-      "description": "将整首歌变成 AI 生成的音乐视频，16:9 横屏导出。"
+      "description": "将整首歌变成 AI 生成的音乐视频，16:9 横屏导出。",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成竖屏 AI 音乐视频片段，适合短视频传播。"
+      "description": "把副歌或 hook 剪成竖屏 AI 音乐视频片段，适合短视频传播。",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-2.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个视觉片段 — 发歌周每天都有新鲜内容。"
+      "description": "从一首单曲生成多个视觉片段 — 发歌周每天都有新鲜内容。",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-3.png"
     },
     {
       "title": "没有拍摄素材的音乐人",
-      "description": "有成品歌曲但没有拍摄预算时，AI 直接从歌词生成画面。"
+      "description": "有成品歌曲但没有拍摄预算时，AI 直接从歌词生成画面。",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {

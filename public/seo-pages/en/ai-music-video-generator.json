@@ -27,7 +27,7 @@
   },
   "hero": {
     "badge": "AI music video generator — from lyrics to visuals",
-    "h1": "AI Music Video Generator from Lyrics",
+    "h1": "AI Music Video Generator from Lyrics — Turn a Song Into Visuals",
     "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free, no subscription needed.",
     "primaryCta": "Make a Free Music Video",
     "secondaryCta": "See How It Works"
@@ -160,19 +160,23 @@
   "useCases": [
     {
       "title": "YouTube full-length music video",
-      "description": "Turn the entire track into an AI-generated music video with lyrics and export in 16:9."
+      "description": "Turn the entire track into an AI-generated music video with lyrics and export in 16:9.",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a vertical AI music video clip that stops the scroll."
+      "description": "Cut the hook or chorus into a vertical AI music video clip that stops the scroll.",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-2.png"
     },
     {
       "title": "Release week content",
-      "description": "Generate multiple visual clips from one single — fresh AI music video content for every day of release week."
+      "description": "Generate multiple visual clips from one single — fresh AI music video content for every day of release week.",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-3.png"
     },
     {
       "title": "Artists without filmed footage",
-      "description": "When you have a finished track but no video shoot budget, AI generates the visuals from your lyrics."
+      "description": "When you have a finished track but no video shoot budget, AI generates the visuals from your lyrics.",
+      "image": "/imgs/seo/ai-music-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {

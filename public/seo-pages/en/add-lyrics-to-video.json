@@ -53,7 +53,7 @@
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to fix a word before rendering. The lyric timing follows the music, so hooks, repeated lines, ad-libs, and vocal entrances feel natural on screen.",
+        "description": "AI transcribes the audio automatically and syncs every line in 50+ languages. Click any line to fix a word before rendering. The text follows the audio, so each line lands on screen right as it's sung or spoken.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
@@ -76,8 +76,8 @@
         "description": "Place the lyric overlay where it supports the scene instead of covering faces, dancers, products, or the moment viewers came to see."
       },
       {
-        "title": "Built for music, not subtitle paste-ins",
-        "description": "Subtitle tools usually follow speech timing and pin plain text to the bottom. LyricVideoMaker treats lyrics as a visual layer that moves with the rhythm of the song."
+        "title": "Synced text, not text pinned to the bottom",
+        "description": "Instead of pinning plain text to the bottom of the frame, LyricVideoMaker places synced lyrics — or captions — as a visual layer that moves with the audio and stays readable over your footage."
       },
       {
         "title": "Fix one line without rebuilding the edit",
@@ -125,19 +125,23 @@
   "useCases": [
     {
       "title": "Music videos",
-      "description": "Add lyrics to official footage, performance cuts, or visualizers so viewers can follow the song without losing the video."
+      "description": "Add lyrics to official footage, performance cuts, or visualizers so viewers can follow the song without losing the video.",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-1.png"
     },
     {
       "title": "Performance recordings",
-      "description": "Overlay lyrics on live sets, covers, studio sessions, and rehearsal clips while keeping the energy of the original recording."
+      "description": "Overlay lyrics on live sets, covers, studio sessions, and rehearsal clips while keeping the energy of the original recording.",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-2.png"
     },
     {
       "title": "Wedding and event videos",
-      "description": "Put lyrics on first-dance edits, highlight reels, or event recaps when the song carries the emotion of the scene."
+      "description": "Put lyrics on first-dance edits, highlight reels, or event recaps when the song carries the emotion of the scene.",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-3.png"
     },
     {
       "title": "Travel montages and fan edits",
-      "description": "Add synced lyric overlays to footage, soundtrack cuts, and short social edits without rebuilding the timeline by hand."
+      "description": "Add synced lyric overlays to footage, soundtrack cuts, and short social edits without rebuilding the timeline by hand.",
+      "image": "/imgs/seo/add-lyrics-to-video/use-case-4.png"
     }
   ],
   "bottomCta": {

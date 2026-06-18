@@ -158,19 +158,23 @@
   "useCases": [
     {
       "title": "MP3 singles to YouTube lyric video",
-      "description": "Turn a finished audio master into a full-length 16:9 MP4 lyric video for your channel."
+      "description": "Turn a finished audio master into a full-length 16:9 MP4 lyric video for your channel.",
+      "image": "/imgs/seo/audio-to-lyric-video/use-case-youtube.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Convert the hook or chorus into a 9:16 vertical lyric video that stops the scroll."
+      "description": "Convert the hook or chorus into a 9:16 vertical lyric video that stops the scroll.",
+      "image": "/imgs/seo/audio-to-lyric-video/use-case-tiktok.png"
     },
     {
       "title": "Unreleased demos",
-      "description": "Turn a demo audio file into a lyric video preview to share with collaborators or tease on socials."
+      "description": "Turn a demo audio file into a lyric video preview to share with collaborators or tease on socials.",
+      "image": "/imgs/seo/audio-to-lyric-video/use-case-demo.png"
     },
     {
       "title": "Lyric channels and frequent uploads",
-      "description": "Use a repeatable audio-to-video workflow when you need to upload lyric videos regularly."
+      "description": "Use a repeatable audio-to-video workflow when you need to upload lyric videos regularly.",
+      "image": "/imgs/seo/audio-to-lyric-video/use-case-batch.png"
     }
   ],
   "bottomCta": {

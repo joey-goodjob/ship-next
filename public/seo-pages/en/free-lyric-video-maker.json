@@ -35,7 +35,7 @@
   },
   "hero": {
     "badge": "Free lyric video maker online — make it, preview it, export it",
-    "h1": "Free Lyric Video Maker",
+    "h1": "Free Lyric Video Maker — Make & Export, No Subscription",
     "subhead": "Upload a song — lyrics are transcribed and synced automatically. Preview the full lyric video and export free, no subscription needed.",
     "primaryCta": "Make a Free Lyric Video",
     "secondaryCta": "See How It Works"
@@ -98,19 +98,23 @@
   "useCases": [
     {
       "title": "YouTube lyric videos",
-      "description": "Full-length, 16:9 HD — ready to upload and monetize."
+      "description": "Full-length, 16:9 HD — ready to upload and monetize.",
+      "image": "/imgs/seo/free-lyric-video-maker/use-case-1.png"
     },
     {
       "title": "TikTok lyric videos",
-      "description": "Vertical 9:16 with trend-ready styles for short-form hooks."
+      "description": "Vertical 9:16 with trend-ready styles for short-form hooks.",
+      "image": "/imgs/seo/free-lyric-video-maker/use-case-2.png"
     },
     {
       "title": "Instagram Reels",
-      "description": "9:16 and 1:1 formats for Reels and feed posts."
+      "description": "9:16 and 1:1 formats for Reels and feed posts.",
+      "image": "/imgs/seo/free-lyric-video-maker/use-case-3.png"
     },
     {
       "title": "Karaoke-style videos",
-      "description": "Word-by-word highlighted lyrics synced to the beat."
+      "description": "Word-by-word highlighted lyrics synced to the beat.",
+      "image": "/imgs/seo/free-lyric-video-maker/use-case-4.png"
     }
   ],
   "faq": {
