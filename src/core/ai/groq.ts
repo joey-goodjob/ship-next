@@ -125,6 +125,10 @@ function sanitizeOutputPart(value: string) {
     .slice(0, 60) || 'audio';
 }
 
+function shouldWriteRawOutput() {
+  return process.env.NODE_ENV !== 'production' && !process.env.VERCEL;
+}
+
 async function writeWhisperRawOutput(params: {
   raw: any;
   model: string;
@@ -133,6 +137,8 @@ async function writeWhisperRawOutput(params: {
   language?: string;
   prompt?: string;
 }) {
+  if (!shouldWriteRawOutput()) return;
+
   const outputDir = path.join(process.cwd(), 'output');
   const outputFilename = `${shanghaiTimestampForFilename()}-groq-whisper-${sanitizeOutputPart(params.filename)}.json`;
   const outputPath = path.join(outputDir, outputFilename);
@@ -147,8 +153,12 @@ async function writeWhisperRawOutput(params: {
     response: params.raw,
   };
 
-  await mkdir(outputDir, { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+  try {
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+  } catch (error) {
+    console.warn('[groq] failed to write raw transcription output', error);
+  }
 }
 
 /**
