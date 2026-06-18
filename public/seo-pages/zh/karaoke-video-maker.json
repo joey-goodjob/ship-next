@@ -8,6 +8,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -41,15 +42,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。AI 直接从音频处理 — 你不用从零搭建卡拉 OK 时间轴。"
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。AI 直接从音频处理 — 你不用从零搭建卡拉 OK 时间轴。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。导出前可以点击任意歌词行修改词句。提示时间会让下一句歌词在演唱者需要前出现。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。导出前可以点击任意歌词行修改词句。提示时间会让下一句歌词在演唱者需要前出现。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "像唱歌的人一样看预览 — 检查歌词提示是否准时出现、文字在任何屏幕上是否清晰、副歌是否自然。导出时选择 16:9 适配 YouTube 和电视，9:16 适配 TikTok，1:1 适配信息流。免费导出，无需订阅。"
+        "description": "像唱歌的人一样看预览 — 检查歌词提示是否准时出现、文字在任何屏幕上是否清晰、副歌是否自然。导出时选择 16:9 适配 YouTube 和电视，9:16 适配 TikTok，1:1 适配信息流。免费导出，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -84,7 +88,7 @@
       },
       {
         "question": "怎么不打歌词就做卡拉 OK 视频？",
-        "answer": "上传音频后 AI 会自动转写每一行歌词，支持 50 多种语言。点击任意行即可编辑 — 不需要手动输入。"
+        "answer": "不需要。上传歌曲，AI 自动转写每一行歌词（支持 50+ 语言）并安排好跟唱提示时机。导出前可逐行修改。"
       },
       {
         "question": "这和人声消除一样吗？",
@@ -96,7 +100,7 @@
       },
       {
         "question": "导出的卡拉 OK 视频可以商用吗？",
-        "answer": "可以 — 导出的视频归你所有，包括用于变现频道和活动。请确保你拥有上传音乐的版权。"
+        "answer": "可以。你导出的卡拉 OK 视频可用于变现频道、活动和场所。只需确保你拥有上传歌曲的版权。"
       },
       {
         "question": "卡拉 OK 视频可以导出什么格式？",
@@ -129,6 +133,32 @@
   "bottomCta": {
     "title": "每首歌都值得一个跟唱版本。",
     "description": "上传歌曲，让 AI 搞定歌词和时间，免费导出卡拉 OK 风格歌词视频，无需订阅。",
-    "button": "开始制作卡拉 OK 视频"
+    "button": "开始制作卡拉 OK 视频",
+    "upsell": "免费导出 · 无需订阅 · 无需信用卡"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "歌词视频模板",
+        "description": "AI 匹配你歌曲的视觉风格。"
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "自动歌词转写",
+        "description": "导出带时间轴的 TXT、LRC、SRT 歌词。"
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "免费歌词视频制作工具",
+        "description": "免费制作并导出歌词视频。"
+      }
+    ]
   }
 }

@@ -6,6 +6,7 @@ import { HeroToolSection } from "@/components/seo-sections/hero-tool-section";
 import { HowToSection } from "@/components/seo-sections/how-to-section";
 import { ManifestoSection } from "@/components/seo-sections/manifesto-section";
 import { MethodComparisonSection } from "@/components/seo-sections/method-comparison-section";
+import { RelatedToolsSection } from "@/components/seo-sections/related-tools-section";
 import { StylesSection } from "@/components/seo-sections/styles-section";
 import { ToolkitSection } from "@/components/seo-sections/toolkit-section";
 import { TrustStripSection } from "@/components/seo-sections/trust-strip-section";
@@ -44,6 +45,9 @@ const SECTION_RENDERERS: Record<SeoSectionType, (page: SeoPageContent) => ReactN
       description={requireSectionData(page.toolkit, "toolkit", "toolkit").description}
       items={requireSectionData(page.useCases, "toolkit", "useCases")}
     />
+  ),
+  relatedTools: (page) => (
+    <RelatedToolsSection content={requireSectionData(page.relatedTools, "relatedTools", "relatedTools")} />
   ),
   bottomCta: (page) => <BottomCtaSection content={requireSectionData(page.bottomCta, "bottomCta", "bottomCta")} />,
 };

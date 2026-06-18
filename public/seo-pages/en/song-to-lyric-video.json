@@ -8,19 +8,22 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "Song to Lyric Video — AI Turns Any Song into a Lyrics Video",
-    "description": "Turn any song into a lyric video. Upload audio or paste a link, auto-sync lyrics to the beat, preview, and export for YouTube, TikTok, and Reels.",
+    "description": "Song to lyric video in one upload. AI auto-syncs lyrics to the beat, you preview the result, then export for YouTube, TikTok, and Reels. Free to start.",
     "keywords": [
       "song to lyric video",
       "song lyrics to video",
       "song to lyrics video converter",
       "song lyrics to video ai",
       "turn song into lyric video",
-      "how to make a song lyrics video on youtube"
+      "how to make a song lyrics video on youtube",
+      "how to create song lyrics video",
+      "how to make a lyric video for a song"
     ]
   },
   "hero": {
@@ -41,15 +44,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels."
+        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs every line",
-        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The AI also reads the mood, energy, and pacing of your song to generate visuals that match the music, not just random backgrounds."
+        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The AI also reads the mood, energy, and pacing of your song to generate visuals that match the music, not just random backgrounds.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before you publish. Export in 16:9 for YouTube, 9:16 for TikTok and Reels, or 1:1 for feed posts — all from one upload. Free, no subscription required."
+        "description": "Watch the full lyric video before you publish. Export in 16:9 for YouTube, 9:16 for TikTok and Reels, or 1:1 for feed posts — all from one upload. Free, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -80,7 +86,7 @@
     "items": [
       {
         "question": "Can I turn a song into a lyric video without typing the lyrics?",
-        "answer": "Yes. Upload your audio and the AI transcribes every lyric line automatically, synced to the beat. No manual typing needed, in 50+ languages."
+        "answer": "No. Upload the song and AI transcribes and syncs every lyric line automatically in 50+ languages — no manual typing. Edit any line if needed."
       },
       {
         "question": "What if I already have the lyrics?",
@@ -96,11 +102,11 @@
       },
       {
         "question": "Is this song to lyric video converter free?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required and no credit card required."
+        "answer": "Yes. Turning your song into a lyric video is free — sign up for free credits and export, no subscription or credit card."
       },
       {
         "question": "Can I use the exported video commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels. Make sure you have rights to the music you upload."
+        "answer": "Yes. The video you make from your song is yours to monetize and release. Just make sure you have the rights to the song you upload."
       }
     ]
   },
@@ -129,6 +135,32 @@
   "bottomCta": {
     "title": "Your song already has everything it needs.",
     "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free, no subscription needed.",
-    "button": "Turn My Song into a Video"
+    "button": "Turn My Song into a Video",
+    "upsell": "Free · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "Audio to Lyric Video Converter",
+        "description": "Convert MP3 or WAV into a lyric video."
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "Automatic Lyrics Transcription",
+        "description": "Get beat-synced TXT, LRC, or SRT lyrics."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      }
+    ]
   }
 }

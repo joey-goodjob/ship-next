@@ -8,12 +8,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "TikTok 歌词视频生成器 — AI 自动生成竖屏歌词视频",
-    "description": "上传歌曲，AI 自动转写歌词并同步节拍，竖屏 9:16 预览，避开 TikTok 按钮区域，免费导出。同时适用于 Reels 和 Shorts。",
+    "description": "TikTok 歌词视频生成器：上传歌曲，AI 自动转写并同步歌词，竖屏 9:16 预览并避开 TikTok 按钮区域，免费导出，同样适用于 Reels 和 Shorts。",
     "keywords": [
       "tiktok lyric video generator",
       "tiktok lyric video maker",
@@ -41,15 +42,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。TikTok 歌词视频生成器从音频出发，你不需要手动输入任何歌词。选择最能让人停下滑动的 15 到 30 秒片段，或使用完整歌曲。"
+        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。TikTok 歌词视频生成器从音频出发，你不需要手动输入任何歌词。选择最能让人停下滑动的 15 到 30 秒片段，或使用完整歌曲。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 自动转写并同步歌词",
-        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。TikTok 歌词视频制作工具会自动将文字放在竖屏安全区域内，确保歌词不会被点赞、评论、分享按钮遮挡。"
+        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。TikTok 歌词视频制作工具会自动将文字放在竖屏安全区域内，确保歌词不会被点赞、评论、分享按钮遮挡。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "竖屏预览并导出 9:16",
-        "description": "在手机尺寸画面上观看草稿。确认第一句歌词在 2 秒内出现、文字在 6 寸屏幕上清晰可读、没有被 TikTok 界面遮挡。导出 9:16 高清视频——同一个文件可直接发 TikTok、Instagram Reels 和 YouTube Shorts。"
+        "description": "在手机尺寸画面上观看草稿。确认第一句歌词在 2 秒内出现、文字在 6 寸屏幕上清晰可读、没有被 TikTok 界面遮挡。导出 9:16 高清视频——同一个文件可直接发 TikTok、Instagram Reels 和 YouTube Shorts。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -100,7 +104,7 @@
       },
       {
         "question": "TikTok 歌词视频可以商用吗？",
-        "answer": "可以。导出的视频归你所有，包括用于已开通收益的账号。请确保你拥有上传音乐的使用权。"
+        "answer": "可以。你的 TikTok 歌词视频归你所有，包括变现账号和品牌账号。只需确保你拥有上传音乐的版权。"
       }
     ]
   },
@@ -129,6 +133,32 @@
   "bottomCta": {
     "title": "你的下一首爆款，值得配上画面。",
     "description": "上传歌曲，让 AI 处理歌词，导出竖屏歌词视频——免费，无需订阅，直接发 TikTok。",
-    "button": "免费制作 TikTok 歌词视频"
+    "button": "免费制作 TikTok 歌词视频",
+    "upsell": "免费导出 · 无需订阅 · 一次渲染通用 TikTok / Reels / Shorts"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "免费歌词视频制作工具",
+        "description": "免费制作并导出歌词视频。"
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "歌曲转歌词视频",
+        "description": "一首歌上传，产出成品歌词视频。"
+      },
+      {
+        "slug": "ai-music-video-generator",
+        "label": "AI 音乐视频生成器",
+        "description": "用歌词生成 AI 画面场景。"
+      }
+    ]
   }
 }

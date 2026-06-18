@@ -9,12 +9,13 @@
       "howItWorks",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "AI Lyric Video Generator — Create Lyric Videos Free Online",
-    "description": "Generate lyric videos from any song with AI. Auto-transcribe, sync lyrics to the beat, preview styles, and export for YouTube and TikTok online.",
+    "description": "AI lyric video generator that turns any song into a synced lyric video. Auto-transcribe lyrics, sync to the beat, preview, and export for YouTube & TikTok.",
     "keywords": [
       "lyric video generator",
       "ai lyric video generator",
@@ -22,13 +23,14 @@
       "lyrics video generator",
       "free lyric video generator",
       "generate lyric video from audio",
-      "lyrics to video"
+      "lyrics to video",
+      "auto lyric video generator"
     ]
   },
   "hero": {
     "badge": "AI lyric video generator — free to export, no signup to start",
     "h1": "Free AI Lyric Video Generator",
-    "subhead": "Generate a fully synced lyric video from any song. Upload your audio or paste a link — AI auto-transcribes the lyrics, syncs every line to the beat, and generates mood-driven visuals. No editing skills, no timeline. Preview the full lyric video, then export free, no subscription needed.",
+    "subhead": "Generate a fully synced lyric video from any song — AI transcribes the lyrics, times them to the beat, and adds mood-driven visuals. Preview, then export free.",
     "primaryCta": "Generate My Lyric Video — Free",
     "secondaryCta": "See How It Works"
   },
@@ -90,15 +92,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drag in an audio file — MP3, WAV, FLAC, AAC, or OGG — or paste a link. No account needed to start, and no manual lyric typing required."
+        "description": "Drag in an audio file — MP3, WAV, FLAC, AAC, or OGG — or paste a link. No account needed to start, and no manual lyric typing required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "Review your lyrics and pick a style",
-        "description": "AI transcribes and syncs every line in about 30 seconds. Edit any line you want, then preview templates with your actual lyrics until one fits the song."
+        "description": "AI transcribes and syncs every line in about 30 seconds. Edit any line you want, then preview templates with your actual lyrics until one fits the song.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing, then export in HD — 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full lyric video before publishing, then export in HD — 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -162,5 +167,30 @@
     "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — free, no subscription.",
     "button": "Generate My Lyric Video — Free",
     "upsell": "Free to export · No subscription · No credit card required"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "Audio to Lyric Video Converter",
+        "description": "Convert MP3 or WAV into a lyric video."
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "Lyric Video Templates",
+        "description": "AI visual styles matched to your song."
+      }
+    ]
   }
 }

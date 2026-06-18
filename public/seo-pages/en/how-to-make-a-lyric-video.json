@@ -8,6 +8,7 @@
       "howItWorks",
       "whyChoose",
       "faq",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -178,15 +179,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. No account is needed to start, and no manual lyric typing is required. This gives you a quick first draft before you decide whether you need Canva, After Effects, or a freelancer."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. No account is needed to start, and no manual lyric typing is required. This gives you a quick first draft before you decide whether you need Canva, After Effects, or a freelancer.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to edit the words or timing. The system also reads the song's mood and creates visuals that feel connected to the track."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to edit the words or timing. The system also reads the song's mood and creates visuals that feel connected to the track.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. You can export free, no subscription required."
+        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. You can export free, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -244,6 +248,32 @@
   "bottomCta": {
     "title": "Your song already knows the timing. Let AI turn it into a lyric video.",
     "description": "Upload your track, let AI transcribe and sync the lyrics, preview the result, and export a finished lyric video free, no subscription needed.",
-    "button": "Make My Lyric Video"
+    "button": "Make My Lyric Video",
+    "upsell": "Free to start · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      },
+      {
+        "slug": "karaoke-video-maker",
+        "label": "Karaoke Video Maker",
+        "description": "Sing-along lyric videos with cue timing."
+      }
+    ]
   }
 }

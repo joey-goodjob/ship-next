@@ -8,6 +8,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -22,7 +23,11 @@
       "how to put lyrics on video",
       "how to add lyrics to a video",
       "put lyrics on video",
-      "app to add lyrics to video"
+      "app to add lyrics to video",
+      "add lyrics to video automatically online free",
+      "how to put lyrics on video automatically",
+      "how to put lyrics on a video",
+      "how to add song lyrics to a video"
     ]
   },
   "hero": {
@@ -43,15 +48,18 @@
     "steps": [
       {
         "title": "Upload your video",
-        "description": "Start with your MP4, MOV, or WebM video, or add a separate MP3, WAV, FLAC, AAC, or OGG audio track. You can also paste a supported link when the song or performance is already online. No account needed to start, and no manual lyric typing required."
+        "description": "Start with your MP4, MOV, or WebM video, or add a separate MP3, WAV, FLAC, AAC, or OGG audio track. You can also paste a supported link when the song or performance is already online. No account needed to start, and no manual lyric typing required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to fix a word before rendering. The lyric timing follows the music, so hooks, repeated lines, ad-libs, and vocal entrances feel natural on screen."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat in 50+ languages. Click any line to fix a word before rendering. The lyric timing follows the music, so hooks, repeated lines, ad-libs, and vocal entrances feel natural on screen.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full video with lyrics before publishing. Move the lyric block away from faces, products, or action in the frame, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full video with lyrics before publishing. Move the lyric block away from faces, products, or action in the frame, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -102,7 +110,11 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes — your exports are yours to use for channels, campaigns, releases, and client work. Make sure you have the rights to the music and footage you upload."
+        "answer": "Yes. The videos you add lyrics to are yours to publish — channels, campaigns, and client work included. Just confirm you hold the rights to the footage and the music."
+      },
+      {
+        "question": "How to put lyrics on video automatically?",
+        "answer": "Upload your video or audio and AI adds the synced lyric layer for you — no manual timing. You can add lyrics to video automatically online free with free credits, then export in the format you need."
       }
     ]
   },
@@ -131,6 +143,32 @@
   "bottomCta": {
     "title": "Hours of manual lyric syncing, gone.",
     "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free, no subscription needed.",
-    "button": "Add Lyrics to My Video — Free"
+    "button": "Add Lyrics to My Video — Free",
+    "upsell": "Free export · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "Audio to Lyric Video Converter",
+        "description": "Convert MP3 or WAV into a lyric video."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      },
+      {
+        "slug": "karaoke-video-maker",
+        "label": "Karaoke Video Maker",
+        "description": "Sing-along lyric videos with cue timing."
+      }
+    ]
   }
 }

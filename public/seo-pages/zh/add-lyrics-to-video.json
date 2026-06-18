@@ -8,6 +8,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -43,15 +44,18 @@
     "steps": [
       {
         "title": "上传视频",
-        "description": "从 MP4、MOV 或 WebM 视频开始，也可以添加单独的 MP3、WAV、FLAC、AAC 或 OGG 音频轨。歌曲或演出已经在线时，也可以粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。"
+        "description": "从 MP4、MOV 或 WebM 视频开始，也可以添加单独的 MP3、WAV、FLAC、AAC 或 OGG 音频轨。歌曲或演出已经在线时，也可以粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍，支持 50 多种语言。渲染前可以点击任意歌词行修正文字。歌词时间跟着音乐走，副歌、重复句、即兴唱段和人声进入点会更自然地落在画面上。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍，支持 50 多种语言。渲染前可以点击任意歌词行修正文字。歌词时间跟着音乐走，副歌、重复句、即兴唱段和人声进入点会更自然地落在画面上。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "发布前先预览完整带歌词的视频。把歌词块移动到不会遮挡人物、产品或关键动作的位置，再导出为 16:9 YouTube、9:16 TikTok/Reels/Shorts，或 1:1 信息流格式。免费导出，无需订阅。"
+        "description": "发布前先预览完整带歌词的视频。把歌词块移动到不会遮挡人物、产品或关键动作的位置，再导出为 16:9 YouTube、9:16 TikTok/Reels/Shorts，或 1:1 信息流格式。免费导出，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -102,7 +106,11 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以 — 导出内容可用于频道、广告、发行和客户项目。请确保你拥有上传音乐和视频素材的使用权。"
+        "answer": "可以。你加好歌词的视频归你所有，可用于频道、推广和客户项目。只需确认你拥有所用画面和音乐的版权。"
+      },
+      {
+        "question": "怎么自动给视频加歌词？",
+        "answer": "上传视频或音频，AI 会自动为你叠加同步歌词层 —— 无需手动打轴。可以用免费额度在线自动给视频加歌词，然后按需要的格式导出。"
       }
     ]
   },
@@ -131,6 +139,32 @@
   "bottomCta": {
     "title": "手动同步歌词的几个小时，可以省掉了。",
     "description": "上传视频或音频，让 AI 自动转写并同步歌词，免费导出带歌词叠层的视频，无需订阅。",
-    "button": "免费给视频加歌词"
+    "button": "免费给视频加歌词",
+    "upsell": "免费导出 · 无需订阅 · 无需信用卡"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "音频转歌词视频",
+        "description": "把 MP3 或 WAV 转成歌词视频。"
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok 歌词视频生成器",
+        "description": "竖屏 9:16 的 TikTok 歌词片段。"
+      },
+      {
+        "slug": "karaoke-video-maker",
+        "label": "卡拉 OK 视频制作",
+        "description": "带提示时机的跟唱歌词视频。"
+      }
+    ]
   }
 }

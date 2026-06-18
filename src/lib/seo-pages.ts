@@ -97,6 +97,10 @@ export type SeoPageContent = {
     description: string;
   };
   useCases?: SeoTextItem[];
+  relatedTools?: {
+    title: string;
+    items: SeoRelatedToolItem[];
+  };
   faq?: {
     title: string;
     items: SeoFaqItem[];
@@ -123,6 +127,12 @@ export type SeoFaqItem = {
   answer: string;
 };
 
+export type SeoRelatedToolItem = {
+  slug: string;
+  label: string;
+  description: string;
+};
+
 export const SEO_SECTION_TYPES = [
   "heroTool",
   "trust",
@@ -134,6 +144,7 @@ export const SEO_SECTION_TYPES = [
   "whyChoose",
   "faq",
   "toolkit",
+  "relatedTools",
   "bottomCta",
 ] as const;
 
@@ -296,6 +307,9 @@ function validateSelectedSection(page: SeoPageContent, section: SeoSectionType, 
     case "toolkit":
       validateToolkitSection(page, where);
       return;
+    case "relatedTools":
+      validateRelatedToolsSection(page, where);
+      return;
     case "bottomCta":
       validateBottomCtaSection(page, where);
       return;
@@ -444,6 +458,18 @@ function validateFaqSection(page: SeoPageContent, where: string) {
   assertRecord(page.faq, `${where}.faq`);
   assertNonEmptyString(page.faq.title, `${where}.faq.title`);
   assertFaqItems(page.faq.items, `${where}.faq.items`);
+}
+
+function validateRelatedToolsSection(page: SeoPageContent, where: string) {
+  assertRecord(page.relatedTools, `${where}.relatedTools`);
+  assertNonEmptyString(page.relatedTools.title, `${where}.relatedTools.title`);
+  assertArray(page.relatedTools.items, `${where}.relatedTools.items`);
+  page.relatedTools.items.forEach((item, index) => {
+    assertRecord(item, `${where}.relatedTools.items[${index}]`);
+    assertNonEmptyString(item.slug, `${where}.relatedTools.items[${index}].slug`);
+    assertNonEmptyString(item.label, `${where}.relatedTools.items[${index}].label`);
+    assertNonEmptyString(item.description, `${where}.relatedTools.items[${index}].description`);
+  });
 }
 
 function validateBottomCtaSection(page: SeoPageContent, where: string) {

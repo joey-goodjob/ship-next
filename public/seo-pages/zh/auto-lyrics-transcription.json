@@ -9,12 +9,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "自动歌词转写 — AI 歌曲转文字工具",
-    "description": "用 AI 从歌曲或支持的视频链接自动转写歌词。支持 50+ 语言，逐行同步节拍，可导出 TXT、LRC 或 SRT — 免费，无需订阅。",
+    "description": "自动歌词转写：用 AI 从歌曲或视频链接自动转写歌词，逐行同步节拍，支持 50+ 语言，可导出 TXT、LRC 或 SRT。免费，无需订阅。",
     "keywords": [
       "自动歌词转写",
       "歌曲提取歌词",
@@ -42,15 +43,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。AI 会听真实演唱，帮你完成转写。"
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。AI 会听真实演唱，帮你完成转写。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。即使是 ad-lib、多层和声、快速段落，AI 也能处理。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。即使是 ad-lib、多层和声、快速段落，AI 也能处理。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "检查完整转写结果和节拍时间。你可以下载 TXT、LRC 或 SRT，用于字幕、简介、播放器歌词或视频剪辑 — 也可以直接预览同一份同步歌词生成的歌词视频。免费导出，无需订阅。"
+        "description": "检查完整转写结果和节拍时间。你可以下载 TXT、LRC 或 SRT，用于字幕、简介、播放器歌词或视频剪辑 — 也可以直接预览同一份同步歌词生成的歌词视频。免费导出，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -151,6 +155,32 @@
   "bottomCta": {
     "title": "歌词就在歌里，让 AI 帮你写下来。",
     "description": "上传歌曲，几秒拿到节拍同步的歌词，免费导出或继续制作歌词视频，无需订阅。",
-    "button": "转写我的歌词"
+    "button": "转写我的歌词",
+    "upsell": "还需要画面？一键把同步歌词转成歌词视频。"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "音频转歌词视频",
+        "description": "把 MP3 或 WAV 转成歌词视频。"
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "歌曲转歌词视频",
+        "description": "一首歌上传，产出成品歌词视频。"
+      },
+      {
+        "slug": "karaoke-video-maker",
+        "label": "卡拉 OK 视频制作",
+        "description": "带提示时机的跟唱歌词视频。"
+      }
+    ]
   }
 }

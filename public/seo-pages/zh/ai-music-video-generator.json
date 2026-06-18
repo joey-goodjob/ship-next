@@ -9,12 +9,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "AI 音乐视频生成器 — 从歌词生成 MV 画面，免费在线",
-    "description": "上传歌曲，AI 自动转写歌词、同步节拍，并根据歌词情绪生成匹配画面。预览完整音乐视频后导出 — 免费，无需订阅。",
+    "description": "AI 音乐视频生成器：上传歌曲，AI 自动转写歌词、同步节拍，并根据歌词情绪生成匹配画面。预览后导出 — 免费，无需订阅。",
     "keywords": [
       "AI 音乐视频生成器",
       "AI 从歌词生成 MV",
@@ -82,15 +83,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。你的歌词会成为后续所有画面的创意来源。"
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。你的歌词会成为后续所有画面的创意来源。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并生成画面",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。然后读取歌曲的情绪、主题和情感走向，生成匹配的视觉场景。点击任意歌词行即可编辑。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。然后读取歌曲的情绪、主题和情感走向，生成匹配的视觉场景。点击任意歌词行即可编辑。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。确认画面匹配歌曲的能量和情绪，然后选择导出：16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。"
+        "description": "发布前先看完整预览。确认画面匹配歌曲的能量和情绪，然后选择导出：16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -129,7 +133,7 @@
       },
       {
         "question": "需要自己输入歌词吗？",
-        "answer": "不需要。上传音频后 AI 会自动转写每一行歌词，支持 50 多种语言。你可以点击任意行进行编辑。"
+        "answer": "不需要。上传歌曲后 AI 自动转写每一行歌词，支持 50+ 语言，这些歌词还会驱动生成的画面。需要可逐行修改。"
       },
       {
         "question": "歌词视频和 AI 音乐视频有什么区别？",
@@ -137,11 +141,15 @@
       },
       {
         "question": "导出的音乐视频可以商用吗？",
-        "answer": "可以 — 导出的视频归你所有，包括用于变现频道和付费发行。请确保你拥有上传音乐的版权。"
+        "answer": "可以。你导出的 AI 音乐视频归你所有，包括变现频道和付费发行。只需确保你拥有背后歌曲的版权。"
       },
       {
         "question": "可以导出什么格式？",
-        "answer": "16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。所有格式来自同一次上传。"
+        "answer": "可导出 16:9 适配 YouTube、9:16 适配 TikTok/Reels/Shorts、1:1 适配信息流 —— 一次上传，所有格式都有。"
+      },
+      {
+        "question": "每个场景里的人物会长得一样吗？",
+        "answer": "请预期的是整体风格和情绪一致，而不是逐帧完全相同的人物。AI 会匹配你歌曲的整体观感 —— 任何想调整的场景都可以单独重新生成。"
       }
     ]
   },
@@ -170,6 +178,32 @@
   "bottomCta": {
     "title": "你的歌词已经在讲一个故事，让 AI 把它呈现出来。",
     "description": "上传歌曲，AI 从歌词生成画面，免费导出成品音乐视频，无需订阅。",
-    "button": "开始制作音乐视频"
+    "button": "开始制作音乐视频",
+    "upsell": "免费导出 · 无需订阅 · 无需信用卡"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "歌词视频模板",
+        "description": "AI 匹配你歌曲的视觉风格。"
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok 歌词视频生成器",
+        "description": "竖屏 9:16 的 TikTok 歌词片段。"
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "歌曲转歌词视频",
+        "description": "一首歌上传，产出成品歌词视频。"
+      }
+    ]
   }
 }

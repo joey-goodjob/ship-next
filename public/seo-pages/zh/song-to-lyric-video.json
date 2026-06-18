@@ -8,12 +8,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "歌曲转歌词视频 — AI 一键把歌曲变成歌词视频",
-    "description": "上传歌曲或粘贴链接，AI 自动转写歌词并同步节拍，生成与音乐情绪匹配的视觉，导出 YouTube、TikTok、Reels 格式。免费。",
+    "description": "歌曲转歌词视频，一次上传即可。AI 自动转写并同步歌词，生成匹配情绪的画面，导出 YouTube、TikTok、Reels 格式。免费。",
     "keywords": [
       "song to lyric video",
       "song lyrics to video",
@@ -41,15 +42,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。"
+        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写歌词并同步节拍",
-        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。AI 还会分析歌曲的情绪、能量和节奏，生成与音乐匹配的视觉方向，而不是随机背景。"
+        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。AI 还会分析歌曲的情绪、能量和节奏，生成与音乐匹配的视觉方向，而不是随机背景。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "发布前观看完整歌词视频。导出 16:9 用于 YouTube，9:16 用于 TikTok 和 Reels，1:1 用于信息流帖子——全部来自一次上传。免费，无需订阅。"
+        "description": "发布前观看完整歌词视频。导出 16:9 用于 YouTube，9:16 用于 TikTok 和 Reels，1:1 用于信息流帖子——全部来自一次上传。免费，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -80,7 +84,7 @@
     "items": [
       {
         "question": "不打歌词也能 turn song into lyric video 吗？",
-        "answer": "可以。上传音频，AI 自动转写每一行歌词并同步节拍。不需要手动输入，支持 50 多种语言。"
+        "answer": "不需要。上传歌曲，AI 自动转写并同步每一行歌词，支持 50+ 语言，无需手动打字。需要可逐行修改。"
       },
       {
         "question": "如果我已经有歌词文件怎么办？",
@@ -96,11 +100,11 @@
       },
       {
         "question": "这个 song to lyric video converter 免费吗？",
-        "answer": "是的。注册后领取免费积分，制作并导出歌词视频——无需订阅，也无需信用卡。"
+        "answer": "免费。把歌曲做成歌词视频是免费的 —— 注册领免费额度即可导出，无需订阅或信用卡。"
       },
       {
         "question": "导出的视频可以商用吗？",
-        "answer": "可以。导出的视频归你所有，包括用于已开通收益的频道。请确保你拥有上传音乐的使用权。"
+        "answer": "可以。用你的歌曲做出的视频归你所有，可商用、可变现。只需确保你拥有上传歌曲的版权。"
       }
     ]
   },
@@ -129,6 +133,32 @@
   "bottomCta": {
     "title": "你的歌曲已经拥有它需要的一切。",
     "description": "上传一次，让 AI 处理歌词，导出任何平台都能用的歌词视频——免费，无需订阅。",
-    "button": "把歌曲变成视频"
+    "button": "把歌曲变成视频",
+    "upsell": "免费 · 无需订阅 · 无需信用卡"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "音频转歌词视频",
+        "description": "把 MP3 或 WAV 转成歌词视频。"
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "自动歌词转写",
+        "description": "导出带时间轴的 TXT、LRC、SRT 歌词。"
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok 歌词视频生成器",
+        "description": "竖屏 9:16 的 TikTok 歌词片段。"
+      }
+    ]
   }
 }
