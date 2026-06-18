@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "AI Music Video Generator from Lyrics — Song to Visual, Free",
-    "description": "Turn your song into an AI music video with lyrics. Upload audio, AI transcribes lyrics, syncs to the beat, and generates mood-driven visuals. Preview and export free, no subscription.",
+    "description": "Turn lyrics and audio into an AI music video. Transcribe, sync, generate mood visuals, preview the result, and export with free credits included.",
     "keywords": [
       "ai music video generator from lyrics",
       "ai music video generator from lyrics free",
@@ -74,7 +74,7 @@
         ]
       }
     ],
-    "note": "LyricsVideo.ai keeps the lyric layer available either way, so your AI music video can still remain readable when the words matter.",
+    "note": "LyricVideoMaker keeps the lyric layer available either way, so your AI music video can still remain readable when the words matter.",
     "cta": "Generate My Music Video"
   },
   "howItWorks": {
@@ -95,8 +95,8 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Make AI Music Videos on LyricsVideo.ai",
-    "description": "Generic AI video tools make you describe scenes in a text box. LyricsVideo.ai starts from your actual song — the AI reads the lyrics and generates visuals that match the mood, so the music video feels like it belongs to the track.",
+    "title": "Why Make AI Music Videos on LyricVideoMaker",
+    "description": "Generic AI video tools make you describe scenes in a text box. LyricVideoMaker starts from your actual song — the AI reads the lyrics and generates visuals that match the mood, so the music video feels like it belongs to the track.",
     "highlight": {
       "title": "Visuals generated from your lyrics, not a text prompt",
       "description": "The AI uses the meaning, mood, and emotional arc of your lyrics to drive scene generation. You don't write a video prompt — you upload a song."
@@ -133,7 +133,7 @@
       },
       {
         "question": "What is the difference between a lyric video and an AI music video?",
-        "answer": "In a lyric video, the words are the main visual. In an AI music video, the lyrics inspire scene-by-scene imagery and visuals. LyricsVideo.ai can do both — the lyrics stay on screen while AI-generated visuals play behind them."
+        "answer": "In a lyric video, the words are the main visual. In an AI music video, the lyrics inspire scene-by-scene imagery and visuals. LyricVideoMaker can do both — the lyrics stay on screen while AI-generated visuals play behind them."
       },
       {
         "question": "Can I use exported music videos commercially?",

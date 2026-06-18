@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Kapwing 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找做歌词视频的 Kapwing 替代方案？LyricsVideo.ai 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
+    "description": "在找做歌词视频的 Kapwing 替代方案？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
     "keywords": [
       "Kapwing 替代",
       "Kapwing 替代方案",
@@ -25,7 +25,7 @@
   "hero": {
     "badge": "Kapwing 替代方案 — AI 歌词视频，免费",
     "h1": "Kapwing 歌词视频替代方案",
-    "subhead": "Kapwing 是通用视频编辑器 — 在里面做歌词视频意味着手动打歌词、拖文字、逐行对时间。LyricsVideo.ai 专为歌词视频设计：上传歌曲，AI 自动转写同步，预览后导出 — 免费，无需订阅。",
+    "subhead": "Kapwing 是通用视频编辑器 — 在里面做歌词视频意味着手动打歌词、拖文字、逐行对时间。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 自动转写同步，预览后导出 — 免费，无需订阅。",
     "primaryCta": "免费试用",
     "secondaryCta": "查看制作流程"
   },
@@ -36,10 +36,10 @@
     "免费导出，无需订阅或信用卡"
   ],
   "comparisonTable": {
-    "title": "Kapwing 和 LyricsVideo.ai 做歌词视频有什么不同",
-    "description": "Kapwing 适合通用视频编辑；LyricsVideo.ai 围绕歌词视频流程设计：歌曲进去，同步歌词视频出来。",
+    "title": "Kapwing 和 LyricVideoMaker 做歌词视频有什么不同",
+    "description": "Kapwing 适合通用视频编辑；LyricVideoMaker 围绕歌词视频流程设计：歌曲进去，同步歌词视频出来。",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Kapwing"
     ],
     "rows": [
@@ -67,13 +67,13 @@
       {
         "label": "Kapwing 更适合",
         "values": [
-          "当项目主要是歌词视频时，用 LyricsVideo.ai 更直接",
+          "当项目主要是歌词视频时，用 LyricVideoMaker 更直接",
           "播客、meme、字幕剪辑和混合素材编辑更适合 Kapwing"
         ]
       }
     ],
-    "note": "公平的对比是专用流程和通用灵活性的对比：Kapwing 更广，LyricsVideo.ai 省掉歌词视频里最繁琐的步骤。",
-    "cta": "免费试用 LyricsVideo.ai"
+    "note": "公平的对比是专用流程和通用灵活性的对比：Kapwing 更广，LyricVideoMaker 省掉歌词视频里最繁琐的步骤。",
+    "cta": "免费试用 LyricVideoMaker"
   },
   "howItWorks": {
     "title": "这个 Kapwing 替代方案如何制作歌词视频",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 做歌词视频，而不是从通用编辑器开始",
-    "description": "Kapwing 是很好的通用编辑器，但在里面做歌词视频意味着所有苦活都自己干 — 打歌词、对时间、放文字。LyricsVideo.ai 把最痛的部分自动化了：转写、节拍同步和画面生成。",
+    "title": "为什么在 LyricVideoMaker 做歌词视频，而不是从通用编辑器开始",
+    "description": "Kapwing 是很好的通用编辑器，但在里面做歌词视频意味着所有苦活都自己干 — 打歌词、对时间、放文字。LyricVideoMaker 把最痛的部分自动化了：转写、节拍同步和画面生成。",
     "highlight": {
       "title": "专为歌词视频设计，不是通用编辑器",
-      "description": "LyricsVideo.ai 只做一件事：把歌曲变成歌词视频。上传音频，拿到节拍同步的歌词和 AI 画面，预览后导出。没有时间轴，没有文字图层，没有手动对时间。"
+      "description": "LyricVideoMaker 只做一件事：把歌曲变成歌词视频。上传音频，拿到节拍同步的歌词和 AI 画面，预览后导出。没有时间轴，没有文字图层，没有手动对时间。"
     },
     "cards": [
       {
@@ -106,7 +106,7 @@
       },
       {
         "title": "少做手动文字摆放",
-        "description": "LyricsVideo.ai 会先准备歌词和时间，你的编辑重点是检查和修正，而不是手动搭每一行。"
+        "description": "LyricVideoMaker 会先准备歌词和时间，你的编辑重点是检查和修正，而不是手动搭每一行。"
       },
       {
         "title": "音乐画面始终是核心",
@@ -118,12 +118,12 @@
     "title": "Kapwing 替代方案常见问题",
     "items": [
       {
-        "question": "LyricsVideo.ai 作为 Kapwing 替代方案免费吗？",
+        "question": "LyricVideoMaker 作为 Kapwing 替代方案免费吗？",
         "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
       },
       {
-        "question": "做歌词视频 LyricsVideo.ai 和 Kapwing 有什么不同？",
-        "answer": "Kapwing 是通用视频编辑器 — 你要自己打歌词放在时间轴上。LyricsVideo.ai 从音频自动转写歌词、同步节拍、生成 AI 画面，然后导出成品歌词视频。"
+        "question": "做歌词视频 LyricVideoMaker 和 Kapwing 有什么不同？",
+        "answer": "Kapwing 是通用视频编辑器 — 你要自己打歌词放在时间轴上。LyricVideoMaker 从音频自动转写歌词、同步节拍、生成 AI 画面，然后导出成品歌词视频。"
       },
       {
         "question": "需要像在 Kapwing 里一样手动打歌词吗？",
@@ -131,7 +131,7 @@
       },
       {
         "question": "什么时候还应该用 Kapwing？",
-        "answer": "Kapwing 更适合通用视频编辑 — 播客片段、字幕剪辑或混合内容项目。专门做歌词视频时，LyricsVideo.ai 更快更专业。"
+        "answer": "Kapwing 更适合通用视频编辑 — 播客片段、字幕剪辑或混合内容项目。专门做歌词视频时，LyricVideoMaker 更快更专业。"
       },
       {
         "question": "导出的歌词视频可以商用吗？",
@@ -141,7 +141,7 @@
   },
   "toolkit": {
     "title": "Kapwing 替代方案 — 使用场景",
-    "description": "你在 Kapwing 里手动做的歌词视频工作，LyricsVideo.ai 全部自动完成 — 带 AI 转写、节拍同步和免费导出。"
+    "description": "你在 Kapwing 里手动做的歌词视频工作，LyricVideoMaker 全部自动完成 — 带 AI 转写、节拍同步和免费导出。"
   },
   "useCases": [
     {
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "跳过时间轴，上传歌曲让 AI 搞定。",
     "description": "用你原本打算在 Kapwing 里编辑的同一首歌试试 — AI 搞定歌词和画面，免费导出，无需订阅。",
-    "button": "免费试用 LyricsVideo.ai"
+    "button": "免费试用 LyricVideoMaker"
   }
 }

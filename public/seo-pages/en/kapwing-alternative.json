@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Kapwing Alternative for Lyric Videos — AI-Powered, Free",
-    "description": "Looking for a Kapwing alternative for lyric videos? LyricsVideo.ai auto-transcribes lyrics, syncs to the beat, generates visuals, and exports free — no subscription.",
+    "description": "Need a Kapwing alternative for lyric videos? Start from audio, auto-sync lyrics to the beat, generate visuals, and export without timeline editing.",
     "keywords": [
       "kapwing lyric video maker",
       "kapwing alternative",
@@ -25,7 +25,7 @@
   "hero": {
     "badge": "Kapwing alternative — AI lyric video maker, free",
     "h1": "Kapwing Alternative for Lyric Videos",
-    "subhead": "Kapwing is a general video editor — making lyric videos in it means typing lyrics, dragging text, and timing every line by hand. LyricsVideo.ai is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, preview, and export — free, no subscription needed.",
+    "subhead": "Kapwing is a general video editor — making lyric videos in it means typing lyrics, dragging text, and timing every line by hand. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, preview, and export — free, no subscription needed.",
     "primaryCta": "Try It Free",
     "secondaryCta": "See How It Works"
   },
@@ -36,10 +36,10 @@
     "Export free, no subscription or credit card"
   ],
   "comparisonTable": {
-    "title": "Kapwing vs LyricsVideo.ai for Lyric Videos",
-    "description": "Kapwing is useful for general editing. LyricsVideo.ai is built around the lyric video workflow: song in, synced lyric video out.",
+    "title": "Kapwing vs LyricVideoMaker for Lyric Videos",
+    "description": "Kapwing is useful for general editing. LyricVideoMaker is built around the lyric video workflow: song in, synced lyric video out.",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Kapwing"
     ],
     "rows": [
@@ -67,13 +67,13 @@
       {
         "label": "When Kapwing is better",
         "values": [
-          "Use LyricsVideo.ai when the project is mainly a lyric video",
+          "Use LyricVideoMaker when the project is mainly a lyric video",
           "Use Kapwing for podcasts, memes, subtitled clips, and mixed-media edits"
         ]
       }
     ],
-    "note": "The fair comparison is specialization versus flexibility: Kapwing is broader, while LyricsVideo.ai removes the lyric-video chores.",
-    "cta": "Try LyricsVideo.ai Free"
+    "note": "The fair comparison is specialization versus flexibility: Kapwing is broader, while LyricVideoMaker removes the lyric-video chores.",
+    "cta": "Try LyricVideoMaker Free"
   },
   "howItWorks": {
     "title": "How This Kapwing Alternative Makes Lyric Videos",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Make Lyric Videos on LyricsVideo.ai Instead of a General Editor",
-    "description": "Kapwing is a great general editor, but making lyric videos in it means doing all the hard work yourself — typing lyrics, timing each line, placing text. LyricsVideo.ai automates the painful parts: transcription, beat sync, and visual generation.",
+    "title": "Why Make Lyric Videos on LyricVideoMaker Instead of a General Editor",
+    "description": "Kapwing is a great general editor, but making lyric videos in it means doing all the hard work yourself — typing lyrics, timing each line, placing text. LyricVideoMaker automates the painful parts: transcription, beat sync, and visual generation.",
     "highlight": {
       "title": "Built for lyric videos, not general editing",
-      "description": "LyricsVideo.ai does one thing well: turn a song into a lyric video. Upload audio, get beat-synced lyrics with AI visuals, preview, and export. No timeline, no text layers, no manual timing."
+      "description": "LyricVideoMaker does one thing well: turn a song into a lyric video. Upload audio, get beat-synced lyrics with AI visuals, preview, and export. No timeline, no text layers, no manual timing."
     },
     "cards": [
       {
@@ -106,7 +106,7 @@
       },
       {
         "title": "Less manual text placement",
-        "description": "LyricsVideo.ai prepares the lyrics and timing before you review, so editing is about correction instead of building every line by hand."
+        "description": "LyricVideoMaker prepares the lyrics and timing before you review, so editing is about correction instead of building every line by hand."
       },
       {
         "title": "Music visuals stay central",
@@ -118,12 +118,12 @@
     "title": "Kapwing Alternative FAQ",
     "items": [
       {
-        "question": "Is LyricsVideo.ai free as a Kapwing alternative?",
+        "question": "Is LyricVideoMaker free as a Kapwing alternative?",
         "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
       },
       {
-        "question": "How is LyricsVideo.ai different from Kapwing for lyric videos?",
-        "answer": "Kapwing is a general video editor — you type lyrics and place them on a timeline. LyricsVideo.ai auto-transcribes lyrics from audio, syncs to the beat, generates AI visuals, and exports a finished lyric video."
+        "question": "How is LyricVideoMaker different from Kapwing for lyric videos?",
+        "answer": "Kapwing is a general video editor — you type lyrics and place them on a timeline. LyricVideoMaker auto-transcribes lyrics from audio, syncs to the beat, generates AI visuals, and exports a finished lyric video."
       },
       {
         "question": "Do I need to type lyrics like in Kapwing?",
@@ -131,7 +131,7 @@
       },
       {
         "question": "When should I still use Kapwing?",
-        "answer": "Kapwing is better for general video editing — podcast clips, memes, subtitle edits, or mixed-media projects. For lyric videos specifically, LyricsVideo.ai is faster and more specialized."
+        "answer": "Kapwing is better for general video editing — podcast clips, memes, subtitle edits, or mixed-media projects. For lyric videos specifically, LyricVideoMaker is faster and more specialized."
       },
       {
         "question": "Can I use exported lyric videos commercially?",
@@ -141,7 +141,7 @@
   },
   "toolkit": {
     "title": "Kapwing Alternative — Use Cases",
-    "description": "Everything you'd build manually in Kapwing for lyric videos, LyricsVideo.ai does automatically — with AI transcription, beat sync, and free export."
+    "description": "Everything you'd build manually in Kapwing for lyric videos, LyricVideoMaker does automatically — with AI transcription, beat sync, and free export."
   },
   "useCases": [
     {
@@ -163,7 +163,7 @@
   ],
   "bottomCta": {
     "title": "Skip the timeline. Upload your song and let AI do the rest.",
-    "description": "Try LyricsVideo.ai with the same song you'd edit in Kapwing — AI handles lyrics and visuals, export free with no subscription needed.",
-    "button": "Try LyricsVideo.ai Free"
+    "description": "Try LyricVideoMaker with the same song you'd edit in Kapwing — AI handles lyrics and visuals, export free with no subscription needed.",
+    "button": "Try LyricVideoMaker Free"
   }
 }

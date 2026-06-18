@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Neural Frames Alternative — AI Lyric Video Maker, Free",
-    "description": "Looking for a Neural Frames alternative for lyric videos? LyricsVideo.ai auto-transcribes lyrics, syncs to the beat, generates mood-driven visuals, and exports free.",
+    "description": "Need a Neural Frames alternative for lyric videos? Start with lyrics-first AI visuals that keep words readable, synced, and ready to export.",
     "keywords": [
       "neural frames ai lyric video maker",
       "neural frames lyric video",
@@ -25,7 +25,7 @@
   "hero": {
     "badge": "Neural Frames alternative — AI lyric video maker, free",
     "h1": "Neural Frames Alternative",
-    "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricsVideo.ai is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
+    "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
     "primaryCta": "Try It Free",
     "secondaryCta": "See How It Works"
   },
@@ -36,10 +36,10 @@
     "Export free, no subscription or credit card"
   ],
   "comparisonTable": {
-    "title": "Neural Frames vs LyricsVideo.ai for Lyric Videos",
+    "title": "Neural Frames vs LyricVideoMaker for Lyric Videos",
     "description": "Both tools can create AI-powered music visuals. The difference is whether readable, beat-synced lyrics are the center of the result.",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Neural Frames"
     ],
     "rows": [
@@ -67,13 +67,13 @@
       {
         "label": "When Neural Frames is better",
         "values": [
-          "Use LyricsVideo.ai when fans need to read and sing the words",
+          "Use LyricVideoMaker when fans need to read and sing the words",
           "Use Neural Frames when the main goal is generative music visuals"
         ]
       }
     ],
-    "note": "For lyric content, the words must remain the product. LyricsVideo.ai keeps AI visuals in service of the lyric layer.",
-    "cta": "Try LyricsVideo.ai Free"
+    "note": "For lyric content, the words must remain the product. LyricVideoMaker keeps AI visuals in service of the lyric layer.",
+    "cta": "Try LyricVideoMaker Free"
   },
   "howItWorks": {
     "title": "How This Neural Frames Alternative Makes Lyric Videos",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Make AI Lyric Videos on LyricsVideo.ai",
-    "description": "AI visual generators are exciting, but lyric videos need one non-negotiable thing: the words must stay readable and synced. LyricsVideo.ai generates mood-driven visuals while keeping the lyrics front and center.",
+    "title": "Why Make AI Lyric Videos on LyricVideoMaker",
+    "description": "AI visual generators are exciting, but lyric videos need one non-negotiable thing: the words must stay readable and synced. LyricVideoMaker generates mood-driven visuals while keeping the lyrics front and center.",
     "highlight": {
       "title": "AI visuals + readable lyrics, not one or the other",
-      "description": "Neural Frames gives you visuals. LyricsVideo.ai gives you visuals AND lyrics — transcribed, synced, readable, and exportable. You don't have to choose."
+      "description": "Neural Frames gives you visuals. LyricVideoMaker gives you visuals AND lyrics — transcribed, synced, readable, and exportable. You don't have to choose."
     },
     "cards": [
       {
@@ -118,12 +118,12 @@
     "title": "Neural Frames Alternative FAQ",
     "items": [
       {
-        "question": "Is LyricsVideo.ai free as a Neural Frames alternative?",
+        "question": "Is LyricVideoMaker free as a Neural Frames alternative?",
         "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
       },
       {
-        "question": "How is LyricsVideo.ai different from Neural Frames?",
-        "answer": "Neural Frames is strongest when the main goal is generative music visuals. LyricsVideo.ai is built for lyric videos: it auto-transcribes lyrics, syncs to the beat, generates matching visuals, and keeps lyrics readable on screen."
+        "question": "How is LyricVideoMaker different from Neural Frames?",
+        "answer": "Neural Frames is strongest when the main goal is generative music visuals. LyricVideoMaker is built for lyric videos: it auto-transcribes lyrics, syncs to the beat, generates matching visuals, and keeps lyrics readable on screen."
       },
       {
         "question": "Do I need to type lyrics like in Neural Frames?",
@@ -131,7 +131,7 @@
       },
       {
         "question": "Can I get AI visuals AND readable lyrics?",
-        "answer": "Yes. LyricsVideo.ai generates mood-driven visuals while keeping lyrics synced and readable. You don't have to choose between pretty visuals and readable words."
+        "answer": "Yes. LyricVideoMaker generates mood-driven visuals while keeping lyrics synced and readable. You don't have to choose between pretty visuals and readable words."
       },
       {
         "question": "Can I use exported lyric videos commercially?",
@@ -154,7 +154,7 @@
     },
     {
       "title": "Artists who need lyrics on screen",
-      "description": "When fans need to learn the words, not just see pretty visuals — LyricsVideo.ai keeps lyrics front and center."
+      "description": "When fans need to learn the words, not just see pretty visuals — LyricVideoMaker keeps lyrics front and center."
     },
     {
       "title": "Lyric channels and frequent uploads",
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "AI visuals that don't bury the lyrics.",
     "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
-    "button": "Try LyricsVideo.ai Free"
+    "button": "Try LyricVideoMaker Free"
   }
 }

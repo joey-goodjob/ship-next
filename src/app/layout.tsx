@@ -3,7 +3,6 @@ import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
-import { locales } from "@/config/locale";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,20 +28,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const locale = await getLocale();
-  const appUrl = envConfigs.app_url || '';
 
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
-      <head>
-        {locales.map((loc) => (
-          <link
-            key={loc}
-            rel="alternate"
-            hrefLang={loc}
-            href={`${appUrl}${loc === 'en' ? '' : `/${loc}`}`}
-          />
-        ))}
-      </head>
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"

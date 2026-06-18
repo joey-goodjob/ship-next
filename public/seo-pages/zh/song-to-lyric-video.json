@@ -12,7 +12,7 @@
     ]
   },
   "seo": {
-    "title": "Song to Lyric Video — AI 一键把歌曲变成歌词视频",
+    "title": "歌曲转歌词视频 — AI 一键把歌曲变成歌词视频",
     "description": "上传歌曲或粘贴链接，AI 自动转写歌词并同步节拍，生成与音乐情绪匹配的视觉，导出 YouTube、TikTok、Reels 格式。免费。",
     "keywords": [
       "song to lyric video",
@@ -24,9 +24,9 @@
     ]
   },
   "hero": {
-    "badge": "Song to Lyric Video — 上传一次，AI 搞定剩下的",
-    "h1": "Song to Lyric Video：一次上传生成歌词视频",
-    "subhead": "上传歌曲或粘贴链接，AI 自动转写每一行歌词并同步节拍，根据歌曲情绪生成视觉方向。预览完整歌词视频，导出 YouTube、TikTok 或 Reels 格式——免费，无需订阅。",
+    "badge": "歌曲转歌词视频 — 上传一次，AI 搞定剩下的",
+    "h1": "歌曲转歌词视频：一次上传生成歌词视频",
+    "subhead": "上传歌曲或粘贴链接，AI 自动转写每一行歌词并同步节拍，根据歌曲情绪生成视觉方向。预览完整歌词视频，用免费积分导出 YouTube、TikTok 或 Reels 格式。",
     "primaryCta": "把歌曲变成视频",
     "secondaryCta": "查看使用流程"
   },
@@ -34,14 +34,14 @@
     "AI 自动转写歌词",
     "支持全曲和片段",
     "YouTube、TikTok、Reels 导出",
-    "免费导出，无需订阅，无需信用卡"
+    "免费积分可用于导出"
   ],
   "howItWorks": {
-    "title": "Song to Lyric Video 使用流程",
+    "title": "歌曲转歌词视频使用流程",
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。Song lyrics to video AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。"
+        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。"
       },
       {
         "title": "AI 转写歌词并同步节拍",
@@ -54,8 +54,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 把歌曲变成歌词视频",
-    "description": "大多数 song-to-video 工具需要你手动打歌词、拖到时间轴上、逐行对齐时间点。LyricsVideo.ai 从音频出发，AI 帮你完成歌词工作——从歌曲到成片，几分钟而不是几小时。",
+    "title": "为什么在 LyricVideoMaker 把歌曲变成歌词视频",
+    "description": "大多数 song-to-video 工具需要你手动打歌词、拖到时间轴上、逐行对齐时间点。LyricVideoMaker 从音频出发，AI 帮你完成歌词工作——从歌曲到成片，几分钟而不是几小时。",
     "highlight": {
       "title": "视觉由歌曲驱动，不是由模板驱动",
       "description": "AI 会把歌曲里的每个元素转成视频决策：歌词变成随节拍同步的动态文字；速度决定转场推进；情绪影响视觉风格和配色；段落结构决定 intro、主歌、副歌和留白。最终像是从这首歌长出来的，而不是套一个通用模板。"
@@ -63,7 +63,7 @@
     "cards": [
       {
         "title": "让整首歌都清楚可读",
-        "description": "LyricsVideo.ai 会为 intro、主歌、副歌、桥段和纯音乐段落留出合适空间，让完整歌曲有清晰结构，而不是变成一整段堆在一起的歌词。"
+        "description": "LyricVideoMaker 会为 intro、主歌、副歌、桥段和纯音乐段落留出合适空间，让完整歌曲有清晰结构，而不是变成一整段堆在一起的歌词。"
       },
       {
         "title": "让 YouTube 上传更像成片",
@@ -76,7 +76,7 @@
     ]
   },
   "faq": {
-    "title": "Song to Lyric Video 常见问题",
+    "title": "歌曲转歌词视频常见问题",
     "items": [
       {
         "question": "不打歌词也能 turn song into lyric video 吗？",

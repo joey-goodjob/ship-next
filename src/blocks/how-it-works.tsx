@@ -44,9 +44,9 @@ export async function HowItWorks() {
                   </span>
                 </div>
                 <div className="px-1 pb-2">
-                  <h3 className="text-base font-semibold leading-6 text-brand-ink lg:text-xl lg:leading-7">
+                  <p className="text-base font-semibold leading-6 text-brand-ink lg:text-xl lg:leading-7">
                     Step {index + 1}: {step.title}
-                  </h3>
+                  </p>
                   <p className="mt-3 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">
                     {step.description}
                   </p>

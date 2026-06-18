@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Automatic Lyrics Transcription — AI Song-to-Text Tool",
-    "description": "Transcribe lyrics from any song or supported video link automatically with AI. 50+ languages, beat-synced lyrics, and TXT, LRC, or SRT export — free, no subscription.",
+    "description": "Transcribe lyrics from songs or supported video links with AI. Get beat-synced TXT, LRC, or SRT exports in 50+ languages.",
     "keywords": [
       "automatic lyrics transcription",
       "video to lyrics",
@@ -76,8 +76,8 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Transcribe Song Lyrics on LyricsVideo.ai",
-    "description": "Transcribing lyrics by ear means replaying the same line ten times, guessing slang, and rebuilding timing later. LyricsVideo.ai gives you a song-first workflow: transcript, timing, export, and lyric video preview in one place.",
+    "title": "Why Transcribe Song Lyrics on LyricVideoMaker",
+    "description": "Transcribing lyrics by ear means replaying the same line ten times, guessing slang, and rebuilding timing later. LyricVideoMaker gives you a song-first workflow: transcript, timing, export, and lyric video preview in one place.",
     "highlight": {
       "title": "A transcript that already knows the timing",
       "description": "When transcription finishes, the result is already synced. Download the lyrics from the result page, or use the same timed lines to preview a lyric video without re-uploading the song."

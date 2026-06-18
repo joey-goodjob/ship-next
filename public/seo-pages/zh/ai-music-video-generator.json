@@ -74,7 +74,7 @@
         ]
       }
     ],
-    "note": "LyricsVideo.ai 会保留歌词层能力，所以当文字很重要时，AI 音乐视频也可以保持可读。",
+    "note": "LyricVideoMaker 会保留歌词层能力，所以当文字很重要时，AI 音乐视频也可以保持可读。",
     "cta": "生成我的音乐视频"
   },
   "howItWorks": {
@@ -95,8 +95,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 制作 AI 音乐视频",
-    "description": "通用 AI 视频工具让你在文本框里描述场景。LyricsVideo.ai 从你的真实歌曲出发 — AI 读取歌词内容，生成匹配情绪的画面，让音乐视频真正属于这首歌。",
+    "title": "为什么在 LyricVideoMaker 制作 AI 音乐视频",
+    "description": "通用 AI 视频工具让你在文本框里描述场景。LyricVideoMaker 从你的真实歌曲出发 — AI 读取歌词内容，生成匹配情绪的画面，让音乐视频真正属于这首歌。",
     "highlight": {
       "title": "画面来自歌词，不是文字提示词",
       "description": "AI 根据歌词的含义、情绪和情感走向驱动场景生成。你不需要写视频提示词 — 你只需要上传一首歌。"
@@ -133,7 +133,7 @@
       },
       {
         "question": "歌词视频和 AI 音乐视频有什么区别？",
-        "answer": "歌词视频里，文字是主要画面。AI 音乐视频里，歌词启发逐场景的画面生成。LyricsVideo.ai 两者兼顾 — 歌词留在屏幕上，AI 生成的画面在背后播放。"
+        "answer": "歌词视频里，文字是主要画面。AI 音乐视频里，歌词启发逐场景的画面生成。LyricVideoMaker 两者兼顾 — 歌词留在屏幕上，AI 生成的画面在背后播放。"
       },
       {
         "question": "导出的音乐视频可以商用吗？",

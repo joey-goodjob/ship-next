@@ -73,7 +73,7 @@ export async function Hero() {
                 <span className="mx-auto flex size-16 items-center justify-center rounded-[16px] bg-brand-accent-soft text-brand-accent-hover shadow-[inset_0_0_0_1px_var(--brand-accent-hairline)]">
                   <Icon className="size-7" />
                 </span>
-                <h3 className="mt-5 text-base font-semibold leading-6 text-brand-ink">{t(`hero.benefits.${key}.title`)}</h3>
+                <p className="mt-5 text-base font-semibold leading-6 text-brand-ink">{t(`hero.benefits.${key}.title`)}</p>
                 <p className="mt-3 text-sm font-normal leading-5 text-brand-muted">
                   {t(`hero.benefits.${key}.description`)}
                 </p>

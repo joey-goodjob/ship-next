@@ -95,8 +95,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 把音频转成歌词视频",
-    "description": "把音频转成歌词视频通常要在转写工具、字幕编辑器和视频时间轴之间来回切换。LyricsVideo.ai 把它变成一个从上传音频到生成视频的流程，适合歌曲、demo 和社媒发布。",
+    "title": "为什么在 LyricVideoMaker 把音频转成歌词视频",
+    "description": "把音频转成歌词视频通常要在转写工具、字幕编辑器和视频时间轴之间来回切换。LyricVideoMaker 把它变成一个从上传音频到生成视频的流程，适合歌曲、demo 和社媒发布。",
     "highlight": {
       "title": "一个音频文件输入，一个成品歌词视频输出",
       "description": "上传一个音频文件，项目就从歌曲本身开始生成：歌词、时间、情绪画面和导出规格都在同一个流程里完成。"

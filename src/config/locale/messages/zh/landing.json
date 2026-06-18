@@ -99,21 +99,37 @@
     "accent": "你手里。",
     "description": "每个细节都能改，也可以保持简单快速发布。"
   },
-  "maker": {
-    "title": "为音乐而生的 AI 歌词视频工具",
-    "p1": "LyricVideoMaker 是专门为音乐设计的 AI 歌词视频工具。大多数 AI 视频工具是为广告和短视频做的，而它是为歌曲做的。",
-    "p2": "从歌词和歌曲开始，然后用故事提示词、场景、颜色、字体和图片把它变成你的作品。",
-    "p3": "不需要视频剪辑经验。",
-    "link": "登录进入编辑器"
-  },
-  "export": {
-    "title": "导出到你熟悉的编辑器",
-    "description": "从 LyricVideoMaker 开始，再进入你已经熟悉的工具。几分钟内完成歌词视频，之后还可以继续高级剪辑。",
-    "link": "给视频创作者"
-  },
+  "feature_cards": [
+    {
+      "icon": "lyrics",
+      "title": "AI 歌词对齐",
+      "description": "上传歌曲，AI 自动转写每一句并卡准节拍。任意歌词可改、任意时间轴可微调——支持 50+ 种语言，几分钟搞定，而不是几天。",
+      "tags": ["自动转写", "节拍同步", "50+ 语言"],
+      "cta": "上传你的歌曲",
+      "href": "/#create"
+    },
+    {
+      "icon": "video",
+      "title": "为音乐而生的 AI 歌词视频工具",
+      "description": "为歌曲而做，不是为广告和短视频。从歌词开始，再用故事提示词、场景、颜色、字体和图片把它变成你的作品。不需要视频剪辑经验。",
+      "tags": ["场景", "字体", "颜色"],
+      "cta": "进入编辑器",
+      "href": "/#create"
+    },
+    {
+      "icon": "export",
+      "title": "导出到你熟悉的编辑器",
+      "description": "在你已经熟悉的工具里收尾。几分钟内完成歌词视频，再导出到 Premiere、DaVinci Resolve 或 Final Cut Pro 做高级剪辑。",
+      "tags": ["Premiere", "DaVinci", "Final Cut"],
+      "cta": "给视频创作者",
+      "href": "/pricing"
+    }
+  ],
   "pricing": {
     "title": "价格",
-    "description": "选择最适合你的方案"
+    "description": "选择最适合你的方案",
+    "seoTitle": "歌词视频制作价格 — 免费积分、创作者与 Pro 方案",
+    "seoDescription": "查看 LyricVideoMaker 价格、免费积分、创作者订阅和加购积分包，为 YouTube、TikTok、Reels 制作 AI 歌词视频。"
   },
   "pricing_plans": {
     "free": { "name": "免费版", "note": "无需信用卡", "cta": "获取免费版" },
@@ -366,8 +382,8 @@
       "answer": "一首 3 分钟的歌曲大约需要 2 分钟。转写大约 30 秒，选好风格后开始渲染。"
     },
     "account": {
-      "question": "试用需要注册账号吗？",
-      "answer": "不需要。你可以直接上传歌曲、查看转写好的歌词、预览风格效果。只有在导出时才需要创建免费账号。"
+      "question": "免费导出需要注册账号吗？",
+      "answer": "需要注册免费账号。注册后会获得赠送积分，可用于生成并免费导出歌词视频，无需订阅或信用卡。"
     },
     "phone": {
       "question": "手机上能用吗？",

@@ -27,7 +27,7 @@ function localizedPath(locale: string, slug: string) {
 }
 
 function buildJsonLd(page: SeoPageContent, locale: string, slug: string) {
-  const url = `${baseUrl()}${localizedPath(locale, slug)}/`;
+  const url = `${baseUrl()}${localizedPath(locale, slug)}`;
   const hasHeroTool = page.layout.sections.includes("heroTool");
   const hasFaq = page.layout.sections.includes("faq");
 
@@ -83,16 +83,16 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     description: page.seo.description,
     keywords: page.seo.keywords,
     alternates: {
-      canonical: `${path}/`,
+      canonical: path,
       languages: {
-        en: `/${slug}/`,
-        zh: `/zh/${slug}/`,
+        en: `/${slug}`,
+        zh: `/zh/${slug}`,
       },
     },
     openGraph: {
       title: page.seo.title,
       description: page.seo.description,
-      url: `${baseUrl()}${path}/`,
+      url: `${baseUrl()}${path}`,
       type: "website",
     },
   };

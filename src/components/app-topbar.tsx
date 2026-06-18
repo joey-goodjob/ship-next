@@ -40,7 +40,7 @@ function DiscordIcon({ className }: { className?: string }) {
 
 export function AppTopbar({
   brand,
-  brandHref = "/create",
+  brandHref = "/",
   helpLink,
   pricingLink,
   discordLink,

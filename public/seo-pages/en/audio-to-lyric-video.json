@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Audio to Lyric Video — AI Converter, Upload MP3 & Get Video",
-    "description": "Convert any audio file to a lyric video automatically. Upload MP3, WAV, FLAC, AAC, or OGG, and AI transcribes lyrics, syncs every line, previews, and exports free. No subscription needed.",
+    "description": "Convert MP3, WAV, FLAC, AAC, or OGG into a synced lyric video. AI transcribes lyrics, times each line, previews, and exports online.",
     "keywords": [
       "audio to lyric video",
       "audio to lyric video ai",
@@ -96,8 +96,8 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Convert Audio to Lyric Video on LyricsVideo.ai",
-    "description": "Converting audio to a lyric video usually means moving between a transcription app, subtitle editor, and video timeline. LyricsVideo.ai turns that into one upload-to-video flow built for songs, demos, and social releases.",
+    "title": "Why Convert Audio to Lyric Video on LyricVideoMaker",
+    "description": "Converting audio to a lyric video usually means moving between a transcription app, subtitle editor, and video timeline. LyricVideoMaker turns that into one upload-to-video flow built for songs, demos, and social releases.",
     "highlight": {
       "title": "One audio file in, a finished lyric video out",
       "description": "Upload one audio file and the project starts from the song itself: lyrics, timing, mood-driven visuals, and export settings stay in the same workflow."

@@ -13,7 +13,7 @@
   },
   "seo": {
     "title": "Song to Lyric Video — AI Turns Any Song into a Lyrics Video",
-    "description": "Turn any song into a lyric video. Upload audio or paste a link, AI transcribes and syncs lyrics to the beat, preview and export for YouTube, TikTok, and Reels. Free.",
+    "description": "Turn any song into a lyric video. Upload audio or paste a link, auto-sync lyrics to the beat, preview, and export for YouTube, TikTok, and Reels.",
     "keywords": [
       "song to lyric video",
       "song lyrics to video",
@@ -54,8 +54,8 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Turn Songs into Lyric Videos on LyricsVideo.ai",
-    "description": "Most song-to-video tools make you type lyrics, drag them onto a timeline, and manually set every timing point. LyricsVideo.ai starts from the audio and does the lyric work for you — so you go from song to finished lyric video in minutes, not hours.",
+    "title": "Why Turn Songs into Lyric Videos on LyricVideoMaker",
+    "description": "Most song-to-video tools make you type lyrics, drag them onto a timeline, and manually set every timing point. LyricVideoMaker starts from the audio and does the lyric work for you — so you go from song to finished lyric video in minutes, not hours.",
     "highlight": {
       "title": "Visuals driven by your song, not by templates",
       "description": "The AI turns each part of your song into a video decision: lyrics become beat-synced animated text, tempo shapes transition pacing, mood guides style and color, and song structure shapes intros, verses, choruses, and breathing room. It feels built from the song, not dropped onto a generic preset."
@@ -63,7 +63,7 @@
     "cards": [
       {
         "title": "Keep the whole song readable",
-        "description": "LyricsVideo.ai builds space for intros, verses, choruses, bridges, and instrumental breaks, so a full track feels structured instead of becoming one long wall of text."
+        "description": "LyricVideoMaker builds space for intros, verses, choruses, bridges, and instrumental breaks, so a full track feels structured instead of becoming one long wall of text."
       },
       {
         "title": "Make YouTube uploads feel finished",

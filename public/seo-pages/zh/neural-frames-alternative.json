@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Neural Frames 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 Neural Frames 替代方案做歌词视频？LyricsVideo.ai 自动转写歌词、同步节拍、生成画面，歌词始终可读。免费导出，无需订阅。",
+    "description": "在找 Neural Frames 替代方案做歌词视频？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，歌词始终可读。免费导出，无需订阅。",
     "keywords": [
       "Neural Frames 替代",
       "Neural Frames 替代方案",
@@ -25,7 +25,7 @@
   "hero": {
     "badge": "Neural Frames 替代方案 — AI 歌词视频，免费",
     "h1": "Neural Frames 替代方案",
-    "subhead": "Neural Frames 生成 AI 画面，但歌词经常被画面淹没。LyricsVideo.ai 专为歌词视频设计：上传歌曲，AI 转写同步歌词，生成匹配情绪的画面，同时保持歌词清晰可读。免费导出，无需订阅。",
+    "subhead": "Neural Frames 生成 AI 画面，但歌词经常被画面淹没。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 转写同步歌词，生成匹配情绪的画面，同时保持歌词清晰可读。免费导出，无需订阅。",
     "primaryCta": "免费试用",
     "secondaryCta": "查看制作流程"
   },
@@ -36,10 +36,10 @@
     "免费导出，无需订阅或信用卡"
   ],
   "comparisonTable": {
-    "title": "Neural Frames 和 LyricsVideo.ai 做歌词视频有什么不同",
+    "title": "Neural Frames 和 LyricVideoMaker 做歌词视频有什么不同",
     "description": "两者都可以做 AI 音乐视觉；关键差异是：可读、同步的歌词是不是结果中心。",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Neural Frames"
     ],
     "rows": [
@@ -67,13 +67,13 @@
       {
         "label": "Neural Frames 更适合",
         "values": [
-          "粉丝需要读歌词、跟唱时，用 LyricsVideo.ai 更直接",
+          "粉丝需要读歌词、跟唱时，用 LyricVideoMaker 更直接",
           "主要目标是生成式音乐画面时，Neural Frames 更适合"
         ]
       }
     ],
-    "note": "做歌词内容时，歌词必须仍然是产品。LyricsVideo.ai 让 AI 画面服务于歌词层。",
-    "cta": "免费试用 LyricsVideo.ai"
+    "note": "做歌词内容时，歌词必须仍然是产品。LyricVideoMaker 让 AI 画面服务于歌词层。",
+    "cta": "免费试用 LyricVideoMaker"
   },
   "howItWorks": {
     "title": "这个 Neural Frames 替代方案如何制作歌词视频",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 制作 AI 歌词视频",
-    "description": "AI 画面生成很有吸引力，但歌词视频有一个不能丢的核心：文字必须清楚、同步。LyricsVideo.ai 生成情绪驱动的画面，同时让歌词始终在屏幕中心。",
+    "title": "为什么在 LyricVideoMaker 制作 AI 歌词视频",
+    "description": "AI 画面生成很有吸引力，但歌词视频有一个不能丢的核心：文字必须清楚、同步。LyricVideoMaker 生成情绪驱动的画面，同时让歌词始终在屏幕中心。",
     "highlight": {
       "title": "AI 画面 + 可读歌词，不用二选一",
-      "description": "Neural Frames 给你画面。LyricsVideo.ai 给你画面和歌词 — 转写、同步、可读、可导出。你不需要选择。"
+      "description": "Neural Frames 给你画面。LyricVideoMaker 给你画面和歌词 — 转写、同步、可读、可导出。你不需要选择。"
     },
     "cards": [
       {
@@ -118,12 +118,12 @@
     "title": "Neural Frames 替代方案常见问题",
     "items": [
       {
-        "question": "LyricsVideo.ai 作为 Neural Frames 替代方案免费吗？",
+        "question": "LyricVideoMaker 作为 Neural Frames 替代方案免费吗？",
         "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
       },
       {
-        "question": "LyricsVideo.ai 和 Neural Frames 有什么不同？",
-        "answer": "Neural Frames 更适合主要目标是生成式音乐画面的项目。LyricsVideo.ai 专为歌词视频设计：自动转写歌词、同步节拍、生成匹配画面，并保持歌词在屏幕上清晰可读。"
+        "question": "LyricVideoMaker 和 Neural Frames 有什么不同？",
+        "answer": "Neural Frames 更适合主要目标是生成式音乐画面的项目。LyricVideoMaker 专为歌词视频设计：自动转写歌词、同步节拍、生成匹配画面，并保持歌词在屏幕上清晰可读。"
       },
       {
         "question": "需要像在 Neural Frames 一样手动输入歌词吗？",
@@ -131,7 +131,7 @@
       },
       {
         "question": "可以同时拥有 AI 画面和可读歌词吗？",
-        "answer": "可以。LyricsVideo.ai 生成情绪驱动的画面，同时保持歌词同步可读。你不用在漂亮画面和清晰歌词之间做选择。"
+        "answer": "可以。LyricVideoMaker 生成情绪驱动的画面，同时保持歌词同步可读。你不用在漂亮画面和清晰歌词之间做选择。"
       },
       {
         "question": "导出的歌词视频可以商用吗？",
@@ -154,7 +154,7 @@
     },
     {
       "title": "需要歌词可见的音乐人",
-      "description": "当粉丝需要学歌词，而不只是看漂亮画面时 — LyricsVideo.ai 让歌词始终在屏幕中心。"
+      "description": "当粉丝需要学歌词，而不只是看漂亮画面时 — LyricVideoMaker 让歌词始终在屏幕中心。"
     },
     {
       "title": "歌词频道批量上传",
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "AI 画面不会淹没歌词。",
     "description": "上传歌曲，拿到转写好的歌词和情绪驱动的画面，免费导出 — 无需订阅。",
-    "button": "免费试用 LyricsVideo.ai"
+    "button": "免费试用 LyricVideoMaker"
   }
 }

@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "VEED 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 VEED 替代方案做歌词视频？LyricsVideo.ai 自动从音频转写歌词、同步节拍、生成画面，免费导出 — 不用时间轴编辑。",
+    "description": "在找 VEED 替代方案做歌词视频？LyricVideoMaker 自动从音频转写歌词、同步节拍、生成画面，免费导出 — 不用时间轴编辑。",
     "keywords": [
       "VEED 替代",
       "VEED 替代方案",
@@ -25,7 +25,7 @@
   "hero": {
     "badge": "VEED 替代方案 — AI 歌词视频，免费",
     "h1": "VEED 替代方案",
-    "subhead": "VEED 是通用视频编辑器 — 适合字幕和口播，但做歌词视频仍然要手动摆文字、在时间轴上对齐。LyricsVideo.ai 从歌曲出发：上传音频，AI 自动转写歌词、同步节拍、生成画面。免费导出，无需订阅。",
+    "subhead": "VEED 是通用视频编辑器 — 适合字幕和口播，但做歌词视频仍然要手动摆文字、在时间轴上对齐。LyricVideoMaker 从歌曲出发：上传音频，AI 自动转写歌词、同步节拍、生成画面。免费导出，无需订阅。",
     "primaryCta": "免费试用",
     "secondaryCta": "查看制作流程"
   },
@@ -36,10 +36,10 @@
     "免费导出，无需订阅或信用卡"
   ],
   "comparisonTable": {
-    "title": "VEED 和 LyricsVideo.ai 做歌词视频有什么不同",
-    "description": "VEED 适合需要通用编辑器的项目；当目标是把一首歌变成歌词视频时，LyricsVideo.ai 更直接。",
+    "title": "VEED 和 LyricVideoMaker 做歌词视频有什么不同",
+    "description": "VEED 适合需要通用编辑器的项目；当目标是把一首歌变成歌词视频时，LyricVideoMaker 更直接。",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "VEED"
     ],
     "rows": [
@@ -67,13 +67,13 @@
       {
         "label": "VEED 更适合",
         "values": [
-          "歌曲优先的歌词视频用 LyricsVideo.ai 更直接",
+          "歌曲优先的歌词视频用 LyricVideoMaker 更直接",
           "口播剪辑、字幕和通用社媒视频更适合 VEED"
         ]
       }
     ],
-    "note": "区别在流程形状：VEED 给你编辑工具；LyricsVideo.ai 直接把歌曲变成项目。",
-    "cta": "免费试用 LyricsVideo.ai"
+    "note": "区别在流程形状：VEED 给你编辑工具；LyricVideoMaker 直接把歌曲变成项目。",
+    "cta": "免费试用 LyricVideoMaker"
   },
   "howItWorks": {
     "title": "这个 VEED 替代方案如何制作歌词视频",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 做歌词视频，而不是从时间轴编辑器开始",
-    "description": "VEED 是好用的通用编辑器，但在 VEED 里做歌词视频意味着打歌词、摆文字、对时间、在时间轴上拼接。LyricsVideo.ai 省掉了所有这些 — 上传歌曲就能拿到成品歌词视频。",
+    "title": "为什么在 LyricVideoMaker 做歌词视频，而不是从时间轴编辑器开始",
+    "description": "VEED 是好用的通用编辑器，但在 VEED 里做歌词视频意味着打歌词、摆文字、对时间、在时间轴上拼接。LyricVideoMaker 省掉了所有这些 — 上传歌曲就能拿到成品歌词视频。",
     "highlight": {
       "title": "歌曲进去，歌词视频出来 — 不用时间轴",
-      "description": "VEED 给你时间轴和文字工具。LyricsVideo.ai 从歌曲上传直接给你成品歌词视频 — 歌词转写、同步、画面全部自动完成。"
+      "description": "VEED 给你时间轴和文字工具。LyricVideoMaker 从歌曲上传直接给你成品歌词视频 — 歌词转写、同步、画面全部自动完成。"
     },
     "cards": [
       {
@@ -118,12 +118,12 @@
     "title": "VEED 替代方案常见问题",
     "items": [
       {
-        "question": "LyricsVideo.ai 作为 VEED 替代方案免费吗？",
+        "question": "LyricVideoMaker 作为 VEED 替代方案免费吗？",
         "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
       },
       {
-        "question": "LyricsVideo.ai 和 VEED 做歌词视频有什么不同？",
-        "answer": "VEED 是通用视频编辑器 — 你要打歌词、摆文字、在时间轴上对齐。LyricsVideo.ai 自动从音频转写歌词、同步节拍、生成画面，直接给你成品歌词视频，不用时间轴。"
+        "question": "LyricVideoMaker 和 VEED 做歌词视频有什么不同？",
+        "answer": "VEED 是通用视频编辑器 — 你要打歌词、摆文字、在时间轴上对齐。LyricVideoMaker 自动从音频转写歌词、同步节拍、生成画面，直接给你成品歌词视频，不用时间轴。"
       },
       {
         "question": "需要像在 VEED 一样手动输入歌词吗？",
@@ -131,7 +131,7 @@
       },
       {
         "question": "VEED 在哪些场景仍然更好？",
-        "answer": "VEED 更适合通用视频编辑、口播内容、字幕片段和混合社媒内容。专门做歌词视频的话，LyricsVideo.ai 更快，因为它就是为这一件事设计的。"
+        "answer": "VEED 更适合通用视频编辑、口播内容、字幕片段和混合社媒内容。专门做歌词视频的话，LyricVideoMaker 更快，因为它就是为这一件事设计的。"
       },
       {
         "question": "导出的歌词视频可以商用吗？",
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "跳过时间轴，从歌曲开始。",
     "description": "上传歌曲，让 AI 搞定歌词和画面，免费导出成品歌词视频，无需订阅。",
-    "button": "免费试用 LyricsVideo.ai"
+    "button": "免费试用 LyricVideoMaker"
   }
 }

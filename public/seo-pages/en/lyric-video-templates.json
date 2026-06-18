@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Lyric Video Templates — AI Visual Styles for Your Song, Free",
-    "description": "Get lyric video styles that match your song. Upload audio, AI transcribes lyrics, syncs to the beat, and generates mood-driven visuals. Preview and export free — no subscription.",
+    "description": "Get lyric video styles matched to your song. Upload audio, auto-sync lyrics, preview mood-driven visuals, and export for every release channel.",
     "keywords": [
       "lyric video templates",
       "lyric video template",
@@ -75,7 +75,7 @@
     ]
   },
   "howItWorks": {
-    "title": "How Lyric Video Templates Work on LyricsVideo.ai",
+    "title": "How Lyric Video Templates Work on LyricVideoMaker",
     "steps": [
       {
         "title": "Upload your song",
@@ -92,8 +92,8 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Get Lyric Video Templates on LyricsVideo.ai",
-    "description": "Most lyric video template tools give you a gallery of generic backgrounds and expect you to type lyrics on top. LyricsVideo.ai starts from your song — AI transcribes the lyrics, syncs them, and generates visuals that actually match the music.",
+    "title": "Why Get Lyric Video Templates on LyricVideoMaker",
+    "description": "Most lyric video template tools give you a gallery of generic backgrounds and expect you to type lyrics on top. LyricVideoMaker starts from your song — AI transcribes the lyrics, syncs them, and generates visuals that actually match the music.",
     "highlight": {
       "title": "Visuals matched to your song, not picked from a gallery",
       "description": "The AI reads the mood, energy, and genre of your song and generates matching visual styles. A ballad gets a different look than a rap hook — automatically."

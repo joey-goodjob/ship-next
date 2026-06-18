@@ -12,8 +12,8 @@
     ]
   },
   "seo": {
-    "title": "Free Lyric Video Maker Online — 自动生成歌词，免费导出",
-    "description": "免费 AI 歌词视频制作工具。上传歌曲，自动转写并同步歌词，预览完整效果，免费导出——无需订阅。",
+    "title": "免费歌词视频制作工具 — 自动生成歌词并在线导出",
+    "description": "免费 AI 歌词视频制作工具。上传歌曲，自动转写并同步歌词，预览完整效果，用免费积分开始导出。",
     "keywords": [
       "free lyric video maker",
       "lyric video creator free",
@@ -25,9 +25,9 @@
     ]
   },
   "hero": {
-    "badge": "Free Lyric Video Maker Online — 免费制作，免费导出",
-    "h1": "Free Lyric Video Maker",
-    "subhead": "上传歌曲，歌词自动转写并同步。预览完整歌词视频效果，免费导出——无需订阅。",
+    "badge": "免费歌词视频制作工具 — 无需注册即可开始",
+    "h1": "免费歌词视频制作工具",
+    "subhead": "上传歌曲，AI 自动转写并同步歌词。预览完整歌词视频效果，用免费积分开始导出，无需订阅。",
     "primaryCta": "免费制作歌词视频",
     "secondaryCta": "查看使用流程"
   },
@@ -35,7 +35,7 @@
     "无需注册即可试用",
     "歌词自动转写",
     "完整视频免费预览",
-    "免费导出，无需订阅"
+    "免费积分可用于导出"
   ],
   "manifesto": {
     "title": "「免费」通常是什么意思——在这里是什么意思",
@@ -63,7 +63,7 @@
     ]
   },
   "howItWorks": {
-    "title": "Free Lyric Video Maker 使用流程",
+    "title": "免费歌词视频制作工具使用流程",
     "steps": [
       {
         "title": "上传你的歌曲",
@@ -102,7 +102,7 @@
     }
   ],
   "faq": {
-    "title": "Free Lyric Video Maker 常见问题",
+    "title": "免费歌词视频制作工具常见问题",
     "items": [
       {
         "question": "这个 lyric video creator 真的免费吗？",

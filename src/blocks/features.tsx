@@ -1,9 +1,32 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/core/i18n/navigation";
-import { Clapperboard, Upload, WandSparkles } from "lucide-react";
+import { ArrowRight, AudioLines, Clapperboard, Upload, WandSparkles } from "lucide-react";
+
+type FeatureCard = {
+  icon: "lyrics" | "video" | "export";
+  title: string;
+  description: string;
+  tags: string[];
+  cta: string;
+  href: string;
+};
+
+const CARD_ICONS = {
+  lyrics: AudioLines,
+  video: WandSparkles,
+  export: Clapperboard,
+} as const;
+
+// Swap these for real screenshots later — keep the order aligned with feature_cards.
+const CARD_IMAGES: Record<FeatureCard["icon"], string | undefined> = {
+  lyrics: undefined,
+  video: undefined,
+  export: undefined,
+};
 
 export async function Features() {
   const t = await getTranslations("landing");
+  const cards = t.raw("feature_cards") as FeatureCard[];
 
   return (
     <>
@@ -54,65 +77,71 @@ export async function Features() {
       </section>
 
       <section className="bg-brand-soft px-5 py-[70px] text-brand-ink lg:py-[120px]">
-        <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <h2 className="flex items-center gap-3 text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">
-              <WandSparkles className="size-7" />
-              {t("maker.title")}
-            </h2>
-            <div className="mt-6 space-y-5 text-sm font-normal leading-5 lg:mt-8 lg:text-base lg:leading-6">
-              <p>{t("maker.p1")}</p>
-              <p>{t("maker.p2")}</p>
-              <p>{t("maker.p3")}</p>
-            </div>
-            <Link href="/#create" className="mt-6 inline-flex items-center gap-2 border-b border-brand-ink text-base font-semibold leading-6">
-              {t("maker.link")} <span>→</span>
-            </Link>
-          </div>
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-6 lg:gap-8">
+          {cards.map((card, index) => {
+            const Icon = CARD_ICONS[card.icon];
+            const imageSrc = CARD_IMAGES[card.icon];
+            const imageFirst = index % 2 === 0;
 
-          <div className="relative rounded-sm bg-brand-preview-gradient p-3 shadow-xl">
-            <div className="overflow-hidden bg-brand-panel shadow-sm">
-              <div className="flex h-8 items-center border-b bg-brand-panel-strong px-3 text-[10px] font-semibold text-brand-muted">
-                LyricVideoMaker Editor
-              </div>
-              <div className="grid aspect-video grid-cols-[0.72fr_1fr] gap-4 p-5">
-                <div className="relative overflow-hidden rounded-sm bg-brand-stage-gradient">
-                  <span className="absolute bottom-8 left-1/2 -translate-x-1/2 text-2xl font-bold leading-8 text-brand-accent drop-shadow">TIME ME</span>
+            return (
+              <article
+                key={card.title}
+                className="grid items-stretch overflow-hidden rounded-2xl border border-brand-line bg-brand-panel shadow-[0_18px_50px_var(--brand-elevation-shadow-soft)] lg:grid-cols-2"
+              >
+                <div
+                  className={`relative min-h-[240px] bg-brand-stage-gradient lg:min-h-[320px] ${
+                    imageFirst ? "lg:order-1" : "lg:order-2"
+                  }`}
+                >
+                  {imageSrc ? (
+                    <img src={imageSrc} alt={card.title} className="h-full w-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <span className="rounded-full border border-brand-line bg-brand-panel/70 px-4 py-1.5 text-xs font-medium text-brand-muted">
+                        Image placeholder
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-3 text-xs">
-                  <div className="h-8 rounded bg-brand-soft" />
-                  <div className="h-14 rounded bg-brand-soft" />
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 8 }).map((_, index) => (
-                      <div key={index} className="aspect-square rounded bg-brand-tile-gradient" />
+
+                <div
+                  className={`flex flex-col justify-center gap-5 p-8 lg:p-12 ${
+                    imageFirst ? "lg:order-2" : "lg:order-1"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-brand-accent-soft text-brand-accent">
+                      <Icon className="size-5" />
+                    </span>
+                    <h2 className="text-xl font-bold leading-7 lg:text-2xl lg:leading-8">{card.title}</h2>
+                  </div>
+
+                  <p className="text-sm font-normal leading-6 text-brand-muted lg:text-base lg:leading-7">
+                    {card.description}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {card.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-brand-line bg-brand-panel-strong px-3 py-1 text-xs font-medium text-brand-ink"
+                      >
+                        {tag}
+                      </span>
                     ))}
                   </div>
+
+                  <Link
+                    href={card.href}
+                    className="mt-1 inline-flex h-11 w-fit items-center gap-2 rounded-full bg-brand-accent px-5 text-sm font-semibold leading-5 text-brand-accent-ink hover:bg-brand-accent-hover"
+                  >
+                    {card.cta}
+                    <ArrowRight className="size-4" />
+                  </Link>
                 </div>
-              </div>
-              <div className="h-10 border-t bg-brand-panel-strong" />
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <section className="bg-brand-soft px-5 py-[70px] text-brand-ink lg:py-[120px]">
-        <div className="mx-auto grid max-w-[1200px] items-center gap-14 lg:grid-cols-2">
-          <div>
-            <h2 className="flex items-center gap-3 text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">
-              <Clapperboard className="size-7" />
-              {t("export.title")}
-            </h2>
-            <p className="mt-5 max-w-xl text-sm font-normal leading-5 lg:mt-7 lg:text-base lg:leading-6">{t("export.description")}</p>
-            <Link href="/pricing" className="mt-6 inline-flex items-center gap-2 border-b border-brand-ink text-base font-semibold leading-6">
-              {t("export.link")} <span>→</span>
-            </Link>
-          </div>
-          <div className="flex items-center justify-center gap-8">
-            <img src="/lyricedits-assets/premiere.svg" alt="Premiere" className="w-24 lg:w-32" />
-            <img src="/lyricedits-assets/davinci-big.png" alt="DaVinci Resolve" className="w-28 lg:w-36" />
-            <img src="/lyricedits-assets/fcpx-big.png" alt="Final Cut Pro" className="w-24 lg:w-32" />
-          </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 

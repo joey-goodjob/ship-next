@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { WorkspaceLayoutClient } from "./workspace-layout-client";
 
 export const metadata: Metadata = {
   robots: {
@@ -8,10 +7,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function WorkspaceLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <WorkspaceLayoutClient>{children}</WorkspaceLayoutClient>;
+  return children;
 }

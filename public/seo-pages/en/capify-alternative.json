@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Capify Alternative — AI Lyric Video Maker, Free to Export",
-    "description": "Looking for a Capify alternative? LyricsVideo.ai auto-transcribes lyrics from audio, syncs to the beat, generates visuals, and exports free — no subscription needed.",
+    "description": "Need a Capify alternative for lyric videos? Upload audio, auto-transcribe lyrics, sync lines to the beat, generate visuals, and export online.",
     "keywords": [
       "capify ai lyric video maker",
       "capify lyric video maker",
@@ -36,10 +36,10 @@
     "Export free, no subscription or credit card"
   ],
   "comparisonTable": {
-    "title": "Capify vs LyricsVideo.ai for Lyric Videos",
+    "title": "Capify vs LyricVideoMaker for Lyric Videos",
     "description": "If you are comparing lyric video tools, test them with the same song and look at lyric accuracy, timing, visuals, and export fit.",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Capify"
     ],
     "rows": [
@@ -80,7 +80,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Try LyricsVideo.ai with the same song you used in Capify and compare the results."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Try LyricVideoMaker with the same song you used in Capify and compare the results."
       },
       {
         "title": "AI transcribes and syncs",
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Test Your Lyric Video on LyricsVideo.ai",
-    "description": "If you are comparing Capify with another lyric video maker, the best test is the same song. LyricsVideo.ai focuses on the parts that decide whether the result works: lyric accuracy, beat timing, readable layout, and visuals that fit the track.",
+    "title": "Why Test Your Lyric Video on LyricVideoMaker",
+    "description": "If you are comparing Capify with another lyric video maker, the best test is the same song. LyricVideoMaker focuses on the parts that decide whether the result works: lyric accuracy, beat timing, readable layout, and visuals that fit the track.",
     "highlight": {
       "title": "AI transcription + visuals, not just text on video",
-      "description": "LyricsVideo.ai transcribes lyrics automatically, syncs them to the beat, and generates visuals driven by the song's mood. You don't type lyrics or pick templates — upload a song and get a finished video."
+      "description": "LyricVideoMaker transcribes lyrics automatically, syncs them to the beat, and generates visuals driven by the song's mood. You don't type lyrics or pick templates — upload a song and get a finished video."
     },
     "cards": [
       {
@@ -106,7 +106,7 @@
       },
       {
         "title": "Mood visuals are part of the workflow",
-        "description": "LyricsVideo.ai treats visuals as part of the song interpretation, not just a background layer behind text."
+        "description": "LyricVideoMaker treats visuals as part of the song interpretation, not just a background layer behind text."
       },
       {
         "title": "Readable lyrics stay the benchmark",
@@ -118,12 +118,12 @@
     "title": "Capify Alternative FAQ",
     "items": [
       {
-        "question": "Is LyricsVideo.ai free as a Capify alternative?",
+        "question": "Is LyricVideoMaker free as a Capify alternative?",
         "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
       },
       {
-        "question": "How is LyricsVideo.ai different from Capify?",
-        "answer": "LyricsVideo.ai auto-transcribes lyrics from audio, syncs every line to the beat, generates mood-driven AI visuals, and exports in multiple formats — all from one upload."
+        "question": "How is LyricVideoMaker different from Capify?",
+        "answer": "LyricVideoMaker auto-transcribes lyrics from audio, syncs every line to the beat, generates mood-driven AI visuals, and exports in multiple formats — all from one upload."
       },
       {
         "question": "Do I need to type lyrics like in Capify?",
@@ -141,7 +141,7 @@
   },
   "toolkit": {
     "title": "Capify Alternative — Use Cases",
-    "description": "Everything you do in Capify, you can try in LyricsVideo.ai — with AI transcription, beat sync, and free export."
+    "description": "Everything you do in Capify, you can try in LyricVideoMaker — with AI transcription, beat sync, and free export."
   },
   "useCases": [
     {
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "Same song, different result. Try it free.",
     "description": "Upload the same track you used in Capify. AI handles the lyrics and visuals — export free, no subscription.",
-    "button": "Try LyricsVideo.ai Free"
+    "button": "Try LyricVideoMaker Free"
   }
 }

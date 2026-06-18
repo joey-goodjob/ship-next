@@ -66,7 +66,7 @@ export type ExportWatermark = {
 };
 
 export function normalizeExportWatermark(watermark?: ExportWatermark | null): ExportWatermark {
-  const text = String(watermark?.text || envConfigs.app_name || 'LyricsVideo.ai').trim() || 'LyricsVideo.ai';
+  const text = String(watermark?.text || envConfigs.app_name || 'LyricVideoMaker').trim() || 'LyricVideoMaker';
   return {
     enabled: Boolean(watermark?.enabled),
     text,
@@ -108,7 +108,7 @@ export function buildWatermarkDrawtextFilter(params: {
   const shortEdge = Math.min(params.width, params.height);
   const fontSize = Math.max(24, Math.round(shortEdge * 0.032));
   const padding = Math.max(24, Math.round(shortEdge * 0.05));
-  const text = escapeDrawtextText(watermark.text || 'LyricsVideo.ai');
+  const text = escapeDrawtextText(watermark.text || 'LyricVideoMaker');
 
   return [
     `drawtext=text='${text}'`,

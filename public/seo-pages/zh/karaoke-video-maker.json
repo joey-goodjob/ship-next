@@ -54,8 +54,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 制作卡拉 OK 视频",
-    "description": "手动制作卡拉 OK 视频意味着听写歌词、逐行对时间、测试跟唱可读性。LyricsVideo.ai 全部自动完成 — 上传歌曲，拿到跟唱歌词视频。",
+    "title": "为什么在 LyricVideoMaker 制作卡拉 OK 视频",
+    "description": "手动制作卡拉 OK 视频意味着听写歌词、逐行对时间、测试跟唱可读性。LyricVideoMaker 全部自动完成 — 上传歌曲，拿到跟唱歌词视频。",
     "highlight": {
       "title": "AI 搞定最难的部分：歌词和时间",
       "description": "卡拉 OK 的时间要求比普通歌词视频更严格 — 下一行歌词必须在唱歌者需要前出现。AI 转写和节拍同步可以自动做到这一点。"

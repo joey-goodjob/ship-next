@@ -55,7 +55,7 @@ function TestimonialCard({ item }: { item: TestimonialWallItem }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-sm font-semibold leading-5 text-white">{item.name}</h3>
+          <p className="truncate text-sm font-semibold leading-5 text-white">{item.name}</p>
           <p className="truncate text-xs leading-5 text-white/52">{item.role}</p>
         </div>
       </div>

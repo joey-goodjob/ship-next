@@ -67,7 +67,7 @@ export function LyricVideoMaterialCarousel() {
             <Images className="size-4 text-brand-accent-hover" />
             Sample Materials
           </p>
-          <h3 className="mt-2 truncate text-2xl font-black tracking-[-0.012em] text-brand-ink">{activeMaterial.title}</h3>
+          <p className="mt-2 truncate text-2xl font-black tracking-[-0.012em] text-brand-ink">{activeMaterial.title}</p>
         </div>
         <span className="shrink-0 rounded-md border border-brand-line bg-brand-soft px-3 py-1 text-xs font-black text-brand-muted">
           {activeIndex + 1}/{SAMPLE_MATERIALS.length}

@@ -74,7 +74,7 @@
     ]
   },
   "howItWorks": {
-    "title": "LyricsVideo.ai 歌词视频模板制作流程",
+    "title": "LyricVideoMaker 歌词视频模板制作流程",
     "steps": [
       {
         "title": "上传歌曲",
@@ -91,8 +91,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 获取歌词视频模板",
-    "description": "大多数歌词视频模板工具给你一个通用背景库，让你自己在上面打歌词。LyricsVideo.ai 从你的歌曲出发 — AI 转写歌词、同步节拍，并生成真正匹配音乐的视觉风格。",
+    "title": "为什么在 LyricVideoMaker 获取歌词视频模板",
+    "description": "大多数歌词视频模板工具给你一个通用背景库，让你自己在上面打歌词。LyricVideoMaker 从你的歌曲出发 — AI 转写歌词、同步节拍，并生成真正匹配音乐的视觉风格。",
     "highlight": {
       "title": "画面匹配歌曲，不是从模板库里挑",
       "description": "AI 读取歌曲的情绪、能量和曲风，自动生成匹配的视觉风格。抒情歌和说唱 hook 会自动得到不同的画面。"

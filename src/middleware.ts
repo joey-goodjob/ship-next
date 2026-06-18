@@ -15,8 +15,25 @@ function getLegacyPath(pathname: string) {
   return { locale, segments };
 }
 
+// Consolidated SEO pages: redirect retired slugs to their canonical owner.
+// "lyric video maker" lives on the homepage; "ai lyric video generator"
+// is a same-page cluster of /lyric-video-generator.
+const SEO_REDIRECTS: Record<string, string> = {
+  'lyric-video-maker': '/',
+  'ai-lyric-video-generator': '/lyric-video-generator',
+};
+
 export default function middleware(request: NextRequest) {
   const { locale, segments } = getLegacyPath(request.nextUrl.pathname);
+
+  if (segments.length === 1 && SEO_REDIRECTS[segments[0]]) {
+    const target = SEO_REDIRECTS[segments[0]];
+    const url = request.nextUrl.clone();
+    url.pathname = `${localePrefix(locale)}${target === '/' ? '' : target}` || '/';
+    url.search = '';
+    url.hash = '';
+    return NextResponse.redirect(url, 308);
+  }
 
   if (segments.join('/') === 'dashboard') {
     const url = request.nextUrl.clone();

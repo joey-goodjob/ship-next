@@ -43,7 +43,7 @@
     "description": "There are four practical ways to create a lyric video in 2026. The right choice depends on whether you need speed, manual design control, advanced motion graphics, or a hands-off custom result.",
     "quickAnswer": {
       "title": "Quick answer",
-      "description": "If you need a good-looking lyric video this week, start with an AI lyric video maker. LyricsVideo.ai turns your audio into a synced lyric video by transcribing the song automatically, matching each line to the beat, generating visuals from the song's mood, and letting you preview before export. Canva is useful when you want manual template control, After Effects is best for advanced custom motion, and a freelancer makes sense when budget matters less than handing off the work. A simple rule: use AI first when you need speed, use Canva when you want a light template edit, use After Effects when the video itself is a major campaign asset, and hire out when you want custom work without managing the timeline yourself.",
+      "description": "If you need a good-looking lyric video this week, start with an AI lyric video maker. LyricVideoMaker turns your audio into a synced lyric video by transcribing the song automatically, matching each line to the beat, generating visuals from the song's mood, and letting you preview before export. Canva is useful when you want manual template control, After Effects is best for advanced custom motion, and a freelancer makes sense when budget matters less than handing off the work. A simple rule: use AI first when you need speed, use Canva when you want a light template edit, use After Effects when the video itself is a major campaign asset, and hire out when you want custom work without managing the timeline yourself.",
       "cta": "Try the AI Method Free"
     },
     "methods": [
@@ -51,7 +51,7 @@
         "title": "Method 1: Use an AI lyric video maker",
         "meta": "Time: about 2 minutes | Cost: free credits | Skill: none",
         "bestFor": "Best for artists, creators, and music marketers who want the fastest reliable way to make a lyric video without manual timing.",
-        "description": "This is the most direct answer to how to make a lyric video today: upload the audio, let AI do the slow work, then review the result. LyricsVideo.ai is built around the parts that usually take the longest: lyric transcription, line timing, beat sync, visual direction, and export formatting. Instead of typing lyrics into a timeline, you start from the song itself. The AI transcribes lyrics from the audio automatically, supports 50+ languages, syncs every line to the beat, and creates visuals that follow the mood of the track. You can still edit lyrics, adjust the result, preview the full video, and export for YouTube, TikTok, Reels, Shorts, or feed posts. It is free to start, no subscription needed, and no credit card is required to try the workflow. Use this method when the song is ready but the video is not, when you need several versions for different channels, or when you want to see whether a lyric video direction works before paying for custom motion graphics. It is also the safest first pass for independent artists because it turns the unknowns into something visible: line breaks, lyric timing, screen readability, and overall mood.",
+        "description": "This is the most direct answer to how to make a lyric video today: upload the audio, let AI do the slow work, then review the result. LyricVideoMaker is built around the parts that usually take the longest: lyric transcription, line timing, beat sync, visual direction, and export formatting. Instead of typing lyrics into a timeline, you start from the song itself. The AI transcribes lyrics from the audio automatically, supports 50+ languages, syncs every line to the beat, and creates visuals that follow the mood of the track. You can still edit lyrics, adjust the result, preview the full video, and export for YouTube, TikTok, Reels, Shorts, or feed posts. It is free to start, no subscription needed, and no credit card is required to try the workflow. Use this method when the song is ready but the video is not, when you need several versions for different channels, or when you want to see whether a lyric video direction works before paying for custom motion graphics. It is also the safest first pass for independent artists because it turns the unknowns into something visible: line breaks, lyric timing, screen readability, and overall mood.",
         "steps": [
           "Upload an MP3, WAV, FLAC, AAC, or OGG file, or paste a link when you want to start from an online source.",
           "Let AI auto-transcribe the lyrics, sync each line to the beat, and generate visuals that fit the song's mood.",
@@ -191,16 +191,16 @@
     ]
   },
   "whyChoose": {
-    "title": "Why Make Lyric Videos on LyricsVideo.ai",
-    "description": "Manual lyric videos ask you to solve transcription, timing, visual style, and export format one by one. LyricsVideo.ai starts from the audio and gives you a previewable video fast, so you can make a decision before spending hours in a design tool.",
+    "title": "Why Make Lyric Videos on LyricVideoMaker",
+    "description": "Manual lyric videos ask you to solve transcription, timing, visual style, and export format one by one. LyricVideoMaker starts from the audio and gives you a previewable video fast, so you can make a decision before spending hours in a design tool.",
     "highlight": {
       "title": "The first draft is fast enough to judge",
-      "description": "A lyric video does not become useful after the export. It becomes useful when you can see whether the timing, text size, and visual mood fit the song. LyricsVideo.ai gives you that review moment quickly."
+      "description": "A lyric video does not become useful after the export. It becomes useful when you can see whether the timing, text size, and visual mood fit the song. LyricVideoMaker gives you that review moment quickly."
     },
     "cards": [
       {
         "title": "Designed around songs",
-        "description": "Generic video editors start with a blank canvas. LyricsVideo.ai starts with the track, so the workflow follows the music instead of forcing you to build every scene from scratch."
+        "description": "Generic video editors start with a blank canvas. LyricVideoMaker starts with the track, so the workflow follows the music instead of forcing you to build every scene from scratch."
       },
       {
         "title": "Easy to check before release",
@@ -221,15 +221,15 @@
       },
       {
         "question": "How long does it take to make a lyric video?",
-        "answer": "With LyricsVideo.ai, about 2 minutes for a first AI-generated video. In Canva, plan for about 1-2 hours. In After Effects, expect 4+ hours for a first custom version. A freelancer usually takes 2-7 days."
+        "answer": "With LyricVideoMaker, about 2 minutes for a first AI-generated video. In Canva, plan for about 1-2 hours. In After Effects, expect 4+ hours for a first custom version. A freelancer usually takes 2-7 days."
       },
       {
         "question": "How to create a lyric video if I do not have the lyrics written down?",
-        "answer": "Upload the audio to LyricsVideo.ai. The AI transcribes lyrics from the audio automatically, syncs them to the beat, and lets you click any line to edit if needed."
+        "answer": "Upload the audio to LyricVideoMaker. The AI transcribes lyrics from the audio automatically, syncs them to the beat, and lets you click any line to edit if needed."
       },
       {
         "question": "What is the best lyric video maker for YouTube and TikTok?",
-        "answer": "For speed and automation, use an AI lyric video maker. LyricsVideo.ai exports 16:9 for YouTube and 9:16 for TikTok, Reels, and Shorts from the same song workflow. That matters because the best lyric video maker is not only the one with good visuals; it is the one that helps you turn one track into the formats you actually need for release week."
+        "answer": "For speed and automation, use an AI lyric video maker. LyricVideoMaker exports 16:9 for YouTube and 9:16 for TikTok, Reels, and Shorts from the same song workflow. That matters because the best lyric video maker is not only the one with good visuals; it is the one that helps you turn one track into the formats you actually need for release week."
       },
       {
         "question": "Do I need After Effects to make a professional lyric video?",

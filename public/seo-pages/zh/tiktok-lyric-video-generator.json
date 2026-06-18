@@ -12,7 +12,7 @@
     ]
   },
   "seo": {
-    "title": "TikTok Lyric Video Generator — AI 自动生成竖屏歌词视频",
+    "title": "TikTok 歌词视频生成器 — AI 自动生成竖屏歌词视频",
     "description": "上传歌曲，AI 自动转写歌词并同步节拍，竖屏 9:16 预览，避开 TikTok 按钮区域，免费导出。同时适用于 Reels 和 Shorts。",
     "keywords": [
       "tiktok lyric video generator",
@@ -24,9 +24,9 @@
     ]
   },
   "hero": {
-    "badge": "TikTok Lyric Video Generator — 竖屏、AI 驱动、免费导出",
-    "h1": "TikTok Lyric Video Generator — 竖屏歌词清晰可读",
-    "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词并逐行同步节拍。在 9:16 竖屏画面中预览，自动避开 TikTok 按钮区域，直接导出——免费，无需订阅。一次导出同时适用于 TikTok、Reels 和 Shorts。",
+    "badge": "TikTok 歌词视频生成器 — 竖屏、AI 驱动、免费积分可导出",
+    "h1": "TikTok 歌词视频生成器 — 竖屏歌词清晰可读",
+    "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词并逐行同步节拍。在 9:16 竖屏画面中预览，自动避开 TikTok 按钮区域，用免费积分导出。一次导出同时适用于 TikTok、Reels 和 Shorts。",
     "primaryCta": "制作 TikTok 歌词视频",
     "secondaryCta": "查看使用流程"
   },
@@ -34,18 +34,18 @@
     "AI 自动转写歌词",
     "9:16 竖屏导出",
     "Safe zone 避开 TikTok 按钮",
-    "免费导出，无需订阅"
+    "免费积分可用于导出"
   ],
   "howItWorks": {
-    "title": "TikTok Lyric Video Generator 使用流程",
+    "title": "TikTok 歌词视频生成器使用流程",
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。TikTok lyric video generator 从音频出发，你不需要手动输入任何歌词。选择最能让人停下滑动的 15 到 30 秒片段，或使用完整歌曲。"
+        "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。TikTok 歌词视频生成器从音频出发，你不需要手动输入任何歌词。选择最能让人停下滑动的 15 到 30 秒片段，或使用完整歌曲。"
       },
       {
         "title": "AI 自动转写并同步歌词",
-        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。TikTok lyric video maker 会自动将文字放在竖屏安全区域内，确保歌词不会被点赞、评论、分享按钮遮挡。"
+        "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。TikTok 歌词视频制作工具会自动将文字放在竖屏安全区域内，确保歌词不会被点赞、评论、分享按钮遮挡。"
       },
       {
         "title": "竖屏预览并导出 9:16",
@@ -54,8 +54,8 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么在 LyricsVideo.ai 制作 TikTok 歌词视频",
-    "description": "大多数歌词视频工具是为 YouTube 设计的——横屏、全长、桌面优先。LyricsVideo.ai 是从一开始就为竖屏、短视频、手机优先内容设计的 TikTok lyric video generator。",
+    "title": "为什么在 LyricVideoMaker 制作 TikTok 歌词视频",
+    "description": "大多数歌词视频工具是为 YouTube 设计的——横屏、全长、桌面优先。LyricVideoMaker 从一开始就为竖屏、短视频、手机优先内容设计。",
     "highlight": {
       "title": "竖屏优先，不是横屏硬改",
       "description": "每一次预览、每一次文字排版、每一次导出都围绕 9:16 手机屏幕和 TikTok 安全区域设计。你不是在裁剪横屏视频——你是在从零构建一个竖屏歌词视频。"
@@ -76,7 +76,7 @@
     ]
   },
   "faq": {
-    "title": "TikTok Lyric Video Generator 常见问题",
+    "title": "TikTok 歌词视频生成器常见问题",
     "items": [
       {
         "question": "TikTok 歌词视频多长比较合适？",
@@ -84,7 +84,7 @@
       },
       {
         "question": "How to add song lyrics to TikTok video，不用手打歌词？",
-        "answer": "上传音频到这个 TikTok lyric video generator，AI 自动转写并同步每一行歌词——不需要手动输入，支持 50 多种语言。"
+        "answer": "上传音频到 TikTok 歌词视频生成器，AI 会自动转写并同步每一行歌词——不需要手动输入，支持 50 多种语言。"
       },
       {
         "question": "歌词会避开 TikTok 的按钮和标题吗？",
@@ -95,7 +95,7 @@
         "answer": "可以。9:16 导出文件同时适用于 TikTok、Instagram Reels 和 YouTube Shorts。一次渲染，三个平台。"
       },
       {
-        "question": "这个 TikTok lyric video maker 免费吗？",
+        "question": "这个 TikTok 歌词视频制作工具免费吗？",
         "answer": "是的。注册后领取免费积分，制作并导出你的 TikTok 歌词视频——无需订阅，也无需信用卡。"
       },
       {
@@ -105,7 +105,7 @@
     ]
   },
   "toolkit": {
-    "title": "TikTok Lyric Video Generator 使用场景",
+    "title": "TikTok 歌词视频生成器使用场景",
     "description": "一首歌，多个 TikTok 瞬间——把 hook、verse 和副歌拆成竖屏歌词片段，让人停下滑动。"
   },
   "useCases": [

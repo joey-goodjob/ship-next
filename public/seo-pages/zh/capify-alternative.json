@@ -14,7 +14,7 @@
   },
   "seo": {
     "title": "Capify 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 Capify 替代方案？LyricsVideo.ai 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
+    "description": "在找 Capify 替代方案？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
     "keywords": [
       "Capify 替代",
       "Capify 替代方案",
@@ -36,10 +36,10 @@
     "免费导出，无需订阅或信用卡"
   ],
   "comparisonTable": {
-    "title": "Capify 和 LyricsVideo.ai 做歌词视频怎么比",
+    "title": "Capify 和 LyricVideoMaker 做歌词视频怎么比",
     "description": "如果你正在对比歌词视频工具，最直接的方法是用同一首歌测试歌词准确度、时间同步、画面和导出适配。",
     "columns": [
-      "LyricsVideo.ai",
+      "LyricVideoMaker",
       "Capify"
     ],
     "rows": [
@@ -93,11 +93,11 @@
     ]
   },
   "whyChoose": {
-    "title": "为什么用 LyricsVideo.ai 测试你的歌词视频",
-    "description": "如果你正在比较 Capify 和另一个歌词视频工具，最好的测试就是同一首歌。LyricsVideo.ai 关注真正决定结果的部分：歌词准确、节拍时间、清晰版式和贴合歌曲的画面。",
+    "title": "为什么用 LyricVideoMaker 测试你的歌词视频",
+    "description": "如果你正在比较 Capify 和另一个歌词视频工具，最好的测试就是同一首歌。LyricVideoMaker 关注真正决定结果的部分：歌词准确、节拍时间、清晰版式和贴合歌曲的画面。",
     "highlight": {
       "title": "AI 转写 + 画面生成，不只是文字贴在视频上",
-      "description": "LyricsVideo.ai 自动转写歌词、同步节拍，并根据歌曲情绪生成画面。你不用打歌词、不用选模板 — 上传歌曲就能拿到成品视频。"
+      "description": "LyricVideoMaker 自动转写歌词、同步节拍，并根据歌曲情绪生成画面。你不用打歌词、不用选模板 — 上传歌曲就能拿到成品视频。"
     },
     "cards": [
       {
@@ -106,7 +106,7 @@
       },
       {
         "title": "情绪画面进入流程",
-        "description": "LyricsVideo.ai 把视觉当成歌曲理解的一部分，而不是只在文字背后放一层背景。"
+        "description": "LyricVideoMaker 把视觉当成歌曲理解的一部分，而不是只在文字背后放一层背景。"
       },
       {
         "title": "歌词可读性是判断标准",
@@ -118,12 +118,12 @@
     "title": "Capify 替代方案常见问题",
     "items": [
       {
-        "question": "LyricsVideo.ai 作为 Capify 替代方案免费吗？",
+        "question": "LyricVideoMaker 作为 Capify 替代方案免费吗？",
         "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
       },
       {
-        "question": "LyricsVideo.ai 和 Capify 有什么不同？",
-        "answer": "LyricsVideo.ai 从音频自动转写歌词、逐行同步节拍、生成情绪驱动的 AI 画面，并支持多格式导出 — 全部一次上传搞定。"
+        "question": "LyricVideoMaker 和 Capify 有什么不同？",
+        "answer": "LyricVideoMaker 从音频自动转写歌词、逐行同步节拍、生成情绪驱动的 AI 画面，并支持多格式导出 — 全部一次上传搞定。"
       },
       {
         "question": "需要像 Capify 一样手动输入歌词吗？",
@@ -141,7 +141,7 @@
   },
   "toolkit": {
     "title": "Capify 替代方案 — 使用场景",
-    "description": "你在 Capify 里做的一切，都可以在 LyricsVideo.ai 试试 — 带 AI 转写、节拍同步和免费导出。"
+    "description": "你在 Capify 里做的一切，都可以在 LyricVideoMaker 试试 — 带 AI 转写、节拍同步和免费导出。"
   },
   "useCases": [
     {
@@ -164,6 +164,6 @@
   "bottomCta": {
     "title": "同一首歌，不同结果。免费试试。",
     "description": "上传你在 Capify 里用过的那首歌，AI 搞定歌词和画面 — 免费导出，无需订阅。",
-    "button": "免费试用 LyricsVideo.ai"
+    "button": "免费试用 LyricVideoMaker"
   }
 }

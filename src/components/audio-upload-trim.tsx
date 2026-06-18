@@ -770,7 +770,7 @@ export function AudioUploadTrim({
                   Step 1
                 </span>
                 <div>
-                  <h3 className="mt-5 text-xl font-bold leading-7 text-brand-ink lg:text-2xl lg:leading-8">Upload your song</h3>
+                  <p className="mt-5 text-xl font-bold leading-7 text-brand-ink lg:text-2xl lg:leading-8">Upload your song</p>
                   <p className="mt-2 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">Choose one audio file to start your lyric video.</p>
                 </div>
               </div>
