@@ -8,7 +8,8 @@ import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
-import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription, runLibrosaAnalysisForLocalFile } from './audio';
+import { prepareAudioClipForTranscription } from './audio';
+import { analyzeAudioWithMediaWorker } from './audio-analysis-jobs';
 import { parseJson, parseJsonLoose, safeJson } from './json';
 import { getProject } from './project';
 import { callKieGeminiChat } from './llm';
@@ -62,6 +63,7 @@ export function asrSnapshot(params: {
   result: AsrDraftResult;
   audioAnalysis?: AudioAnalysisResult;
   audioAnalysisError?: string;
+  audioAnalysisJobId?: string;
 }) {
   return {
     provider: params.provider,
@@ -72,6 +74,7 @@ export function asrSnapshot(params: {
     raw: params.result.raw,
     audioAnalysis: params.audioAnalysis,
     audioAnalysisError: params.audioAnalysisError,
+    audioAnalysisJobId: params.audioAnalysisJobId,
     createdAt: new Date().toISOString(),
   };
 }
@@ -954,7 +957,7 @@ export function groupWordsIntoLyricLines(words: any[]): LyricLineInput[] {
  * 1. 校验项目和音频是否存在。
  * 2. 创建 aiTask，记录本次 ASR 成本、供应商、模型和项目 id。
  * 3. 标记项目进入 asr_processing。
- * 4. 准备可转写音频，并并行执行“语音转写”和“librosa 音频分析”。
+ * 4. 准备可转写音频，并并行执行“语音转写”和“Railway audio_analysis job”。
  * 5. 清洗 ASR words，精修 ASR segments，生成 transcriptionRaw 快照。
  * 6. 在事务中清空旧 words/lines，写入新 words，并把项目状态改为 asr_ready。
  * 7. 成功则更新 aiTask；失败则把任务和项目都标记为失败。
@@ -1014,8 +1017,10 @@ export async function runAsr(params: {
     });
     const [result, analysisResult] = await Promise.all([
       transcriptionPromise,
-      analyzeAudioWithLibrosa({
+      analyzeAudioWithMediaWorker({
+        userId: params.userId,
         projectId: params.projectId,
+        project: transcriptionProject,
         audioUrl: transcriptionAudioUrl,
       }),
     ]);
@@ -1041,6 +1046,7 @@ export async function runAsr(params: {
       result: asrResult,
       audioAnalysis: analysisResult.audioAnalysis,
       audioAnalysisError: analysisResult.audioAnalysisError,
+      audioAnalysisJobId: analysisResult.audioAnalysisJobId,
     });
     const lines = await replaceLyrics({
       userId: params.userId,
@@ -1080,6 +1086,7 @@ export async function runAsr(params: {
       wordCount: asrResult.words.length,
       audioAnalysisPresent: Boolean(analysisResult.audioAnalysis),
       audioAnalysisError: analysisResult.audioAnalysisError,
+      audioAnalysisJobId: analysisResult.audioAnalysisJobId,
       pipelineStage: 'lyrics_ready',
       lyricsStatus: 'ready',
     });
@@ -1093,6 +1100,7 @@ export async function runAsr(params: {
       rawSegments: asrResult.rawSegments,
       audioAnalysis: analysisResult.audioAnalysis,
       audioAnalysisError: analysisResult.audioAnalysisError,
+      audioAnalysisJobId: analysisResult.audioAnalysisJobId,
       project: updated,
       taskId: task.id,
       provider,

@@ -8,11 +8,11 @@ import {
   claimNextMediaJob,
   markMediaJobFailed,
   markMediaJobReady,
-  type MediaJobKind,
 } from '@/modules/lyric-videos/lyric/media-jobs';
 import { getProjectDetails } from '@/modules/lyric-videos/lyric/project';
 import { parseJsonField } from '@/modules/lyric-videos/lyric/json';
 import { renderStaticVideoForWorker } from '@/modules/lyric-videos/lyric/worker-render';
+import { analyzeAudioForWorker } from '@/modules/lyric-videos/lyric/worker-audio-analysis';
 
 const workerId = process.env.MEDIA_WORKER_ID || `${os.hostname()}:${process.pid}`;
 const pollIntervalMs = Math.max(250, Number(process.env.MEDIA_WORKER_POLL_INTERVAL_MS) || 2000);
@@ -125,13 +125,53 @@ async function processVideoExportJob(job: Awaited<ReturnType<typeof claimNextMed
   });
 }
 
-async function processClaimedJob(kind: MediaJobKind) {
-  const job = await claimNextMediaJob({ workerId, kinds: [kind] });
+async function processAudioAnalysisJob(job: Awaited<ReturnType<typeof claimNextMediaJob>>) {
+  if (!job) throw new Error('audio_analysis job is required');
+  const details = await getProjectDetails({ userId: job.userId, id: job.projectId });
+  if (!details) throw new Error(`Project not found: ${job.projectId}`);
+
+  const input = parseJsonField<Record<string, unknown>>(job.inputJson, {});
+
+  logLyricStage('media-worker', 'audio-analysis-start', {
+    workerId,
+    jobId: job.id,
+    projectId: job.projectId,
+    userId: job.userId,
+    runId: job.runId,
+    stepId: job.stepId,
+  });
+
+  const result = await analyzeAudioForWorker({
+    jobId: job.id,
+    input,
+    project: details.project,
+  });
+
+  await markMediaJobReady({ jobId: job.id, output: result });
+
+  logLyricStage('media-worker', 'audio-analysis-ready', {
+    workerId,
+    jobId: job.id,
+    projectId: job.projectId,
+    userId: job.userId,
+    runId: job.runId,
+    stepId: job.stepId,
+    bpm: result.audioAnalysis?.bpm,
+    key: result.audioAnalysis?.key,
+  });
+}
+
+async function processClaimedJob() {
+  const job = await claimNextMediaJob({ workerId });
   if (!job) return false;
 
   try {
     if (job.kind === 'video_export') {
       await processVideoExportJob(job);
+      return true;
+    }
+    if (job.kind === 'audio_analysis') {
+      await processAudioAnalysisJob(job);
       return true;
     }
     throw new Error(`Unsupported media job kind: ${job.kind}`);
@@ -152,7 +192,7 @@ async function processClaimedJob(kind: MediaJobKind) {
 
 async function tick() {
   const results = await Promise.all(
-    Array.from({ length: concurrency }, () => processClaimedJob('video_export'))
+    Array.from({ length: concurrency }, () => processClaimedJob())
   );
   return results.some(Boolean);
 }

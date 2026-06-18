@@ -4,7 +4,7 @@ import { lyricVideoMediaJob, type LyricVideoMediaJob, type NewLyricVideoMediaJob
 import { getUuid } from '@/lib/hash';
 import { safeJson } from './json';
 
-export const MEDIA_JOB_KINDS = ['video_export'] as const;
+export const MEDIA_JOB_KINDS = ['video_export', 'audio_analysis'] as const;
 export const MEDIA_JOB_STATUSES = ['queued', 'processing', 'ready', 'failed'] as const;
 
 export type MediaJobKind = (typeof MEDIA_JOB_KINDS)[number];
@@ -43,6 +43,40 @@ export async function createMediaJob(params: {
 
   const [job] = await db().insert(lyricVideoMediaJob).values(data).returning();
   return job;
+}
+
+export async function getMediaJobById(params: {
+  jobId: string;
+  userId?: string;
+}) {
+  const where = params.userId
+    ? and(eq(lyricVideoMediaJob.id, params.jobId), eq(lyricVideoMediaJob.userId, params.userId))
+    : eq(lyricVideoMediaJob.id, params.jobId);
+  const [job] = await db().select().from(lyricVideoMediaJob).where(where).limit(1);
+  return job || null;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function waitForMediaJob(params: {
+  jobId: string;
+  userId?: string;
+  timeoutMs: number;
+  pollIntervalMs?: number;
+}) {
+  const startedAt = Date.now();
+  const pollIntervalMs = Math.max(250, params.pollIntervalMs || 1000);
+
+  while (Date.now() - startedAt <= params.timeoutMs) {
+    const job = await getMediaJobById({ jobId: params.jobId, userId: params.userId });
+    if (!job) return null;
+    if (job.status === 'ready' || job.status === 'failed') return job;
+    await sleep(pollIntervalMs);
+  }
+
+  return getMediaJobById({ jobId: params.jobId, userId: params.userId });
 }
 
 export async function claimNextMediaJob(params: {

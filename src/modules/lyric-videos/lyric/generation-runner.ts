@@ -4,7 +4,8 @@ import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, l
 import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getAllConfigs } from '@/modules/config/service';
-import { analyzeAudioWithLibrosa, prepareAudioClipForTranscription } from './audio';
+import { prepareAudioClipForTranscription } from './audio';
+import { analyzeAudioWithMediaWorker } from './audio-analysis-jobs';
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
 import { buildFailureSnapshot, createLyricVideoError } from './diagnostics';
 import { parseJsonField, requestHash, safeJson } from './json';
@@ -718,9 +719,13 @@ export async function executeGenerationRun(params: {
         prompt: transcriptionProject.title,
         transcribeModel: options.transcribeModel,
       }),
-      analyzeAudioWithLibrosa({
+      analyzeAudioWithMediaWorker({
+        userId: params.userId,
         projectId: params.projectId,
+        project: transcriptionProject,
         audioUrl: transcriptionAudioUrl,
+        runId: params.run.id,
+        stepId: currentStep.id,
       }),
     ]);
     const refinedLines = refineAsrSegmentsWithWords({
@@ -754,6 +759,7 @@ export async function executeGenerationRun(params: {
       result: asrResult,
       audioAnalysis: analysisResult.audioAnalysis,
       audioAnalysisError: analysisResult.audioAnalysisError,
+      audioAnalysisJobId: analysisResult.audioAnalysisJobId,
     });
     const lines = await replaceLyrics({
       userId: params.userId,
@@ -811,6 +817,7 @@ export async function executeGenerationRun(params: {
       scenesStatus: skeletonScenes.length > 0 ? 'lyrics_draft' : 'empty',
       audioAnalysis: analysisResult.audioAnalysis,
       audioAnalysisError: analysisResult.audioAnalysisError,
+      audioAnalysisJobId: analysisResult.audioAnalysisJobId,
     };
     await markGenerationStepSuccess({
       userId: params.userId,

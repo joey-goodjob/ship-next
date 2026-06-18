@@ -14,6 +14,12 @@ import type { AudioAnalysisResult } from './types';
 
 const execFileAsync = promisify(execFile);
 
+function canRunInlineAudioAnalysis() {
+  if (process.env.MEDIA_WORKER === 'true' || process.env.MEDIA_WORKER_ID) return true;
+  if (process.env.LYRIC_VIDEO_ALLOW_INLINE_AUDIO_ANALYSIS === 'true') return true;
+  return process.env.NODE_ENV !== 'production' && !process.env.VERCEL;
+}
+
 /**
  * 音频辅助模块：负责下载、保存、裁剪和分析音频。
  *
@@ -241,6 +247,9 @@ export async function analyzeAudioWithLibrosa(params: {
   audioUrl?: string | null;
 }): Promise<{ audioAnalysis?: AudioAnalysisResult; audioAnalysisError?: string }> {
   if (!params.audioUrl) return { audioAnalysisError: 'No audio URL available for analysis' };
+  if (!canRunInlineAudioAnalysis()) {
+    return { audioAnalysisError: 'Inline audio analysis is disabled in production' };
+  }
 
   const analysisId = getUuid();
   const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-audio-analysis', `${params.projectId}-${analysisId}`);
@@ -266,6 +275,10 @@ export async function analyzeAudioWithLibrosa(params: {
 }
 
 export async function runLibrosaAnalysisForLocalFile(inputPath: string): Promise<AudioAnalysisResult> {
+  if (!canRunInlineAudioAnalysis()) {
+    throw new Error('Inline audio analysis is disabled in production');
+  }
+
   const scriptPath = path.join(process.cwd(), 'scripts', 'analyze_audio.py');
   const pythonPath = process.env.LYRIC_VIDEO_PYTHON_PATH || 'python3';
   const { stdout } = (await execFileAsync(pythonPath, [scriptPath, '--input', inputPath], {
