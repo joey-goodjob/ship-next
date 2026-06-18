@@ -1,9 +1,15 @@
-import Image from "next/image";
 import { CirclePlay, Layers3, Upload, WandSparkles } from "lucide-react";
 import type { SeoPageContent } from "@/lib/seo-pages";
 import { SectionHeading } from "./section-heading";
 
 const USE_CASE_ICONS = [CirclePlay, Layers3, WandSparkles, Upload] as const;
+const SEO_IMAGE_VERSION = "20260618";
+
+function getUseCaseImageSrc(src: string) {
+  if (!src.startsWith("/imgs/seo/")) return src;
+
+  return `${src}?v=${SEO_IMAGE_VERSION}`;
+}
 
 export function ToolkitSection({
   title,
@@ -16,25 +22,24 @@ export function ToolkitSection({
 }) {
   return (
     <section className="px-5 py-[70px] lg:py-[120px]">
-      <div className="mx-auto max-w-[1180px]">
+      <div className="mx-auto max-w-[1340px]">
         <SectionHeading title={title} description={description} />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {items.map((item, index) => {
             const Icon = USE_CASE_ICONS[index % USE_CASE_ICONS.length];
             return (
-              <article key={item.title} className="rounded-md border border-brand-line bg-brand-panel p-5 shadow-sm">
+              <article key={item.title} className="rounded-md border border-brand-line bg-brand-panel p-6 shadow-sm">
                 {item.image ? (
-                  <div className="relative mb-5 aspect-video overflow-hidden rounded-md">
-                    <Image
-                      src={item.image}
+                  <div className="relative mb-6 aspect-square overflow-hidden rounded-md bg-brand-soft/40">
+                    <img
+                      src={getUseCaseImageSrc(item.image)}
                       alt={item.title}
-                      fill
-                      sizes="(min-width: 1024px) 280px, (min-width: 768px) 50vw, 100vw"
-                      className="object-cover"
+                      className="h-full w-full object-contain"
+                      loading="lazy"
                     />
                   </div>
                 ) : (
-                  <div className="mb-5 flex aspect-video items-center justify-center rounded-md bg-brand-stage-gradient text-brand-panel">
+                  <div className="mb-6 flex aspect-square items-center justify-center rounded-md bg-brand-stage-gradient text-brand-panel">
                     <Icon className="size-12 drop-shadow" />
                   </div>
                 )}
