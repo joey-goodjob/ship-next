@@ -8,6 +8,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: envConfigs.app_name,
   description: envConfigs.app_description,
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
