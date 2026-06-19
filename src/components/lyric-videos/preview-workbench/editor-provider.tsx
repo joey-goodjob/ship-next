@@ -30,6 +30,7 @@ import type {
   VisualGenerationResponse,
 } from "./types";
 import {
+  calculatePreviewTotalDurationSeconds,
   clamp,
   createWordsFromLines,
   deriveLinesFromWords,
@@ -143,14 +144,12 @@ export function EditorProvider({
   const storyReviewProjectRef = useRef<string | null>(null);
 
   const totalDuration = useMemo(() => {
-    const candidates = [
-      project?.audioDurationMs || 0,
-      ...lines.map((line) => line.endMs || 0),
-      ...words.map((word) => word.endMs || 0),
-      ...scenes.map((scene) => scene.endMs || 0),
-      20110,
-    ];
-    return Math.max(...candidates) / 1000;
+    return calculatePreviewTotalDurationSeconds({
+      audioDurationMs: project?.audioDurationMs,
+      lines,
+      words,
+      scenes,
+    });
   }, [lines, project?.audioDurationMs, scenes, words]);
 
   const latestExport = exports[0];
