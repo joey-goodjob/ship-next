@@ -4,7 +4,7 @@ import { lyricVideoMediaJob, type LyricVideoMediaJob, type NewLyricVideoMediaJob
 import { getUuid } from '@/lib/hash';
 import { safeJson } from './json';
 
-export const MEDIA_JOB_KINDS = ['video_export', 'audio_analysis'] as const;
+export const MEDIA_JOB_KINDS = ['video_export', 'audio_analysis', 'audio_trim'] as const;
 export const MEDIA_JOB_STATUSES = ['queued', 'processing', 'ready', 'failed'] as const;
 
 export type MediaJobKind = (typeof MEDIA_JOB_KINDS)[number];

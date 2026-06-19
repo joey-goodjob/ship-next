@@ -25,6 +25,7 @@ assert.deepEqual(
     exporting: false,
     latestExport: {
       id: "d7523292-2642-414f-b5f1-9197002ebffd",
+      projectId: "project_1",
       status: "success",
       videoUrl: "/renders/d7523292-2642-414f-b5f1-9197002ebffd.mp4",
       resolution: "1080p",
@@ -39,7 +40,7 @@ assert.deepEqual(
     filename: "lyric-video-d7523292.mp4",
     status: "ready",
     title: "Your video is ready",
-    url: "/renders/d7523292-2642-414f-b5f1-9197002ebffd.mp4",
+    url: "/api/lyric-videos/project_1/exports/d7523292-2642-414f-b5f1-9197002ebffd/download",
   },
 );
 
