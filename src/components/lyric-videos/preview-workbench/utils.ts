@@ -74,6 +74,21 @@ export function formatDurationMs(ms: number) {
   return `${Math.max(0, ms / 1000).toFixed(2)}s`;
 }
 
+export function calculatePreviewTotalDurationSeconds(params: {
+  audioDurationMs?: number | null;
+  lines?: Array<Pick<LyricLine, "endMs">>;
+  words?: Array<Pick<LyricWord, "endMs">>;
+  scenes?: Array<Pick<LyricScene, "endMs">>;
+}) {
+  const candidates = [
+    params.audioDurationMs || 0,
+    ...(params.lines || []).map((line) => line.endMs || 0),
+    ...(params.words || []).map((word) => word.endMs || 0),
+    ...(params.scenes || []).map((scene) => scene.endMs || 0),
+  ];
+  return Math.max(0, ...candidates) / 1000;
+}
+
 export function getPreviewStageStyle(aspectRatio?: string) {
   if (aspectRatio === "9:16") {
     return {
