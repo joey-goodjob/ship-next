@@ -108,7 +108,7 @@ export async function prepareAudioClipWithMediaWorker(params: {
   stepId?: string | null;
 }) {
   const existingProcessedUrl = trimString(params.project.processedAudioUrl);
-  if (existingProcessedUrl && params.project.audioUrl === existingProcessedUrl) {
+  if (existingProcessedUrl && params.project.audioUrl === existingProcessedUrl && !shouldQueueAudioTrimJob(params.project)) {
     await markProjectAsrProcessing({ userId: params.userId, projectId: params.project.id });
     return params.project;
   }

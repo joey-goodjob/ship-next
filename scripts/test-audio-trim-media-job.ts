@@ -23,6 +23,18 @@ assert.equal(input.trimEndMs, 67_890);
 assert.equal(input.clipDurationMs, 55_545);
 assert.equal(shouldQueueAudioTrimJob(project), true);
 assert.equal(shouldQueueAudioTrimJob({ ...project, trimStartMs: 0, trimEndMs: 180_000 }), false);
+assert.equal(
+  shouldQueueAudioTrimJob({
+    ...project,
+    audioUrl: project.originalAudioUrl,
+    audioStorageKey: project.originalAudioStorageKey,
+    processedAudioUrl: project.originalAudioUrl,
+    processedAudioStorageKey: project.originalAudioStorageKey,
+    trimStartMs: 0,
+    trimEndMs: 13_000,
+  }),
+  true,
+);
 
 const output = parseAudioTrimJobOutput({
   processedAudioUrl: 'https://cdn.example.com/processed-audio/project-1.mp3',
