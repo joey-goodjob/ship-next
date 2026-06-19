@@ -681,6 +681,8 @@ export async function executeGenerationRun(params: {
     const transcriptionProject = await prepareAudioClipForTranscription({
       userId: params.userId,
       project: params.project,
+      runId: params.run.id,
+      stepId: currentStep.id,
     });
     const transcriptionAudioUrl = transcriptionProject.processedAudioUrl || transcriptionProject.audioUrl;
     const audioPrepareSnapshot = {

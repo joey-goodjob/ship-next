@@ -13,6 +13,7 @@ import { getProjectDetails } from '@/modules/lyric-videos/lyric/project';
 import { parseJsonField } from '@/modules/lyric-videos/lyric/json';
 import { renderStaticVideoForWorker } from '@/modules/lyric-videos/lyric/worker-render';
 import { analyzeAudioForWorker } from '@/modules/lyric-videos/lyric/worker-audio-analysis';
+import { trimAudioForWorker } from '@/modules/lyric-videos/lyric/worker-audio-trim';
 
 const workerId = process.env.MEDIA_WORKER_ID || `${os.hostname()}:${process.pid}`;
 const pollIntervalMs = Math.max(250, Number(process.env.MEDIA_WORKER_POLL_INTERVAL_MS) || 2000);
@@ -161,6 +162,62 @@ async function processAudioAnalysisJob(job: Awaited<ReturnType<typeof claimNextM
   });
 }
 
+async function processAudioTrimJob(job: Awaited<ReturnType<typeof claimNextMediaJob>>) {
+  if (!job) throw new Error('audio_trim job is required');
+  const details = await getProjectDetails({ userId: job.userId, id: job.projectId });
+  if (!details) throw new Error(`Project not found: ${job.projectId}`);
+
+  const input = parseJsonField<Record<string, unknown>>(job.inputJson, {});
+
+  logLyricStage('media-worker', 'audio-trim-start', {
+    workerId,
+    jobId: job.id,
+    projectId: job.projectId,
+    userId: job.userId,
+    runId: job.runId,
+    stepId: job.stepId,
+  });
+
+  const result = await trimAudioForWorker({
+    jobId: job.id,
+    input,
+    project: details.project,
+  });
+
+  await Promise.all([
+    db()
+      .update(lyricVideoProject)
+      .set({
+        audioUrl: result.processedAudioUrl,
+        audioStorageKey: result.processedAudioStorageKey,
+        originalAudioUrl: result.originalAudioUrl || details.project.originalAudioUrl,
+        originalAudioStorageKey: result.originalAudioStorageKey || details.project.originalAudioStorageKey,
+        audioDurationMs: result.audioDurationMs,
+        trimStartMs: result.trimStartMs,
+        trimEndMs: result.trimEndMs,
+        processedAudioUrl: result.processedAudioUrl,
+        processedAudioStorageKey: result.processedAudioStorageKey,
+        lyricsStatus: 'asr_processing',
+        pipelineStage: 'asr_processing',
+        pipelineError: null,
+      })
+      .where(and(eq(lyricVideoProject.id, job.projectId), eq(lyricVideoProject.userId, job.userId))),
+    markMediaJobReady({ jobId: job.id, output: result }),
+  ]);
+
+  logLyricStage('media-worker', 'audio-trim-ready', {
+    workerId,
+    jobId: job.id,
+    projectId: job.projectId,
+    userId: job.userId,
+    runId: job.runId,
+    stepId: job.stepId,
+    processedAudioStorageKey: result.processedAudioStorageKey,
+    trimStartMs: result.trimStartMs,
+    trimEndMs: result.trimEndMs,
+  });
+}
+
 async function processClaimedJob() {
   const job = await claimNextMediaJob({ workerId });
   if (!job) return false;
@@ -172,6 +229,10 @@ async function processClaimedJob() {
     }
     if (job.kind === 'audio_analysis') {
       await processAudioAnalysisJob(job);
+      return true;
+    }
+    if (job.kind === 'audio_trim') {
+      await processAudioTrimJob(job);
       return true;
     }
     throw new Error(`Unsupported media job kind: ${job.kind}`);

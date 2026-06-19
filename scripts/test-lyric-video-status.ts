@@ -208,7 +208,7 @@ function assertRuntimeState() {
       exports: [{ id: 'export_1', status: 'success' }],
     });
     assert.deepEqual(state.sceneImageSummary, { total: 4, success: 2, processing: 1, failed: 1 });
-    assert.equal(state.latestExportStatus, 'success');
+    assert.equal(state.latestExportStatus, 'ready');
   }
 }
 

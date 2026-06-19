@@ -2,15 +2,12 @@ import { execFile } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { and, eq } from 'drizzle-orm';
-import { envConfigs } from '@/config';
-import { db } from '@/core/db';
 import type { AIFile } from '@/core/ai';
-import { lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 import type { AudioAnalysisResult } from './types';
+import { prepareAudioClipWithMediaWorker } from './audio-trim-jobs';
 
 const execFileAsync = promisify(execFile);
 
@@ -116,130 +113,8 @@ export function normalizeClipMs(params: { startMs?: unknown; endMs?: unknown; du
  * `processedAudioStorageKey` 和 pipeline 状态。返回的 project 会继续交给
  * ElevenLabs 转写。
  */
-export async function prepareAudioClipForTranscription(params: { userId: string; project: any }) {
-  const existingProcessedUrl = params.project.processedAudioUrl || '';
-  if (existingProcessedUrl && params.project.audioUrl === existingProcessedUrl) {
-    console.info('[lyric-video] reusing existing processed audio', {
-      projectId: params.project.id,
-      processedAudioUrl: existingProcessedUrl,
-    });
-    await db()
-      .update(lyricVideoProject)
-      .set({
-        lyricsStatus: 'asr_processing',
-        pipelineStage: 'asr_processing',
-        pipelineError: null,
-      })
-      .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)));
-    return params.project;
-  }
-
-  const originalAudioUrl = params.project.originalAudioUrl || params.project.audioUrl;
-  if (!originalAudioUrl) throw new Error('Upload audio before transcription');
-
-  const clip = normalizeClipMs({
-    startMs: params.project.trimStartMs,
-    endMs: params.project.trimEndMs,
-    durationMs: params.project.audioDurationMs,
-  });
-  const clipId = getUuid();
-  const tmpDir = path.join(process.cwd(), '.next', 'lyric-video-audio', `${params.project.id}-${clipId}`);
-  const inputPath = path.join(tmpDir, 'source-audio');
-  const outputPath = path.join(tmpDir, 'processed.mp3');
-  console.info('[lyric-video] preparing audio clip', {
-    projectId: params.project.id,
-    originalAudioUrl,
-    sourceDurationMs: params.project.audioDurationMs,
-    trimStartMs: clip.startMs,
-    trimEndMs: clip.endMs,
-    clipDurationMs: clip.durationMs,
-    ffmpegPath: envConfigs.ffmpeg_path || 'ffmpeg',
-    tmpDir,
-  });
-
-  await db()
-    .update(lyricVideoProject)
-    .set({
-      lyricsStatus: 'asr_processing',
-      pipelineStage: 'audio_processing',
-      pipelineError: null,
-    })
-    .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)));
-
-  try {
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(inputPath, await fetchBytes(originalAudioUrl));
-    console.info('[lyric-video] running ffmpeg trim', {
-      projectId: params.project.id,
-      args: ['-ss', String(clip.startMs / 1000), '-i', inputPath, '-t', String(clip.durationMs / 1000), outputPath],
-    });
-    await execFileAsync(envConfigs.ffmpeg_path || 'ffmpeg', [
-      '-y',
-      '-ss',
-      String(clip.startMs / 1000),
-      '-i',
-      inputPath,
-      '-t',
-      String(clip.durationMs / 1000),
-      '-vn',
-      '-acodec',
-      'libmp3lame',
-      '-b:a',
-      '192k',
-      outputPath,
-    ]);
-
-    const saved = await saveGeneratedFile({
-      body: await readFile(outputPath),
-      key: `processed-audio/${params.project.id}-${clipId}.mp3`,
-      contentType: 'audio/mpeg',
-      localDir: 'processed-audio',
-    });
-    console.info('[lyric-video] processed audio saved', {
-      projectId: params.project.id,
-      processedAudioUrl: saved.url,
-      processedAudioStorageKey: saved.storageKey,
-    });
-
-    const [updated] = await db()
-      .update(lyricVideoProject)
-      .set({
-        audioUrl: saved.url,
-        audioStorageKey: saved.storageKey,
-        originalAudioUrl,
-        originalAudioStorageKey: params.project.originalAudioStorageKey || params.project.audioStorageKey,
-        audioDurationMs: clip.durationMs,
-        trimStartMs: clip.startMs,
-        trimEndMs: clip.endMs,
-        processedAudioUrl: saved.url,
-        processedAudioStorageKey: saved.storageKey,
-        lyricsStatus: 'asr_processing',
-        pipelineStage: 'asr_processing',
-        pipelineError: null,
-      })
-      .where(and(eq(lyricVideoProject.id, params.project.id), eq(lyricVideoProject.userId, params.userId)))
-      .returning();
-
-    return updated || {
-      ...params.project,
-      audioUrl: saved.url,
-      audioStorageKey: saved.storageKey,
-      originalAudioUrl,
-      audioDurationMs: clip.durationMs,
-      trimStartMs: clip.startMs,
-      trimEndMs: clip.endMs,
-      processedAudioUrl: saved.url,
-      processedAudioStorageKey: saved.storageKey,
-    };
-  } catch (error: any) {
-    console.error('[lyric-video] audio trim failed', {
-      projectId: params.project.id,
-      error: error?.message || error,
-    });
-    throw new Error(error?.message ? `Audio trim failed: ${error.message}` : 'Audio trim failed');
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true });
-  }
+export async function prepareAudioClipForTranscription(params: { userId: string; project: any; runId?: string | null; stepId?: string | null }) {
+  return prepareAudioClipWithMediaWorker(params);
 }
 
 export async function analyzeAudioWithLibrosa(params: {
