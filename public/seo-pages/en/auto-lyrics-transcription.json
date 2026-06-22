@@ -7,6 +7,7 @@
       "howItWorks",
       "styles",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -186,5 +187,56 @@
         "description": "Sing-along lyric videos with cue timing."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "How accurate is AI lyrics transcription?",
+      "body": [
+        "The AI handles clear vocals well across most genres, including fast sections, layered harmonies, and ad-libs that are hard to catch by ear. It is built for review, not blind trust: every line comes back with its timing so you can scan the whole transcript and fix anything before you use it.",
+        "Accuracy depends on the mix. A clean lead vocal transcribes more reliably than a heavily distorted or buried one, which is why the result page lets you click any line and correct a word in seconds rather than starting over."
+      ]
+    },
+    {
+      "heading": "TXT, LRC, or SRT: which export to choose",
+      "body": [
+        "TXT gives you clean lyrics line by line — best for descriptions, lyric sheets, posts, and quick edits where timing does not matter. LRC carries timestamps for music players, karaoke-style displays, and streaming workflows that show synced lyrics.",
+        "SRT is subtitle-ready, so it drops straight into video editors, YouTube captions, Reels, and Shorts, or translation workflows. Because all three come from the same synced transcript, you can export whichever fits the next step — or several at once."
+      ]
+    },
+    {
+      "heading": "From a transcript to a finished lyric video",
+      "body": [
+        "Automatic lyrics transcription is also the cheapest on-ramp to a full lyric video. When the transcript finishes, the lines are already timed, so turning them into a visual lyric video costs almost nothing extra — no re-uploading the song or rebuilding the timing.",
+        "From the result page you can keep going with Preview as Lyric Video and let the AI add beat-matched motion and mood-driven visuals on top of the lyrics you just reviewed. The transcript you needed becomes a video you can publish."
+      ]
+    },
+    {
+      "heading": "Transcribing finished songs, demos, and tricky vocals",
+      "body": [
+        "The tool works on polished masters, rough demos, and everything in between. Upload an MP3, WAV, FLAC, AAC, OGG, or M4A and it reads the vocal performance directly, so you do not have to prep or clean the file first.",
+        "It is built for song-shaped material rather than a generic speech transcript: repeated choruses, hooks, and fast verses stay readable and grouped the way a song actually flows, instead of being flattened into one long block of text."
+      ]
+    },
+    {
+      "heading": "Getting lyrics from a video link",
+      "body": [
+        "When a song is already online, paste a supported video link and the AI transcribes the vocals into editable, timestamped lyrics — useful when you need a quick text or subtitle version of a track you do not have as a file.",
+        "From there the workflow is the same: review the lines, fix anything off, then export TXT, LRC, or SRT, or continue into a full lyric video. Just make sure you have the rights to the track you are transcribing."
+      ]
+    },
+    {
+      "heading": "Why song-first beats a generic speech tool",
+      "body": [
+        "General transcription tools are tuned for speech — meetings, podcasts, interviews — and tend to mistime music, miss sung phrasing, and dump everything into paragraphs. Automatic lyrics transcription is tuned for songs, so timing follows the beat and the output reads like lyrics.",
+        "That difference shows up everywhere downstream: tighter caption timing, cleaner LRC for players, and a transcript that is genuinely ready to become a lyric video instead of one you have to reformat by hand."
+      ]
+    },
+    {
+      "heading": "Where transcribed lyrics get used",
+      "body": [
+        "Once you have an accurate, timestamped transcript, it feeds a surprising number of jobs. Artists use TXT for press kits, distributor lyric fields, and publishing notes; video teams use SRT for YouTube captions and editor subtitles; and music apps use LRC to show synced lyrics during playback.",
+        "Having one reviewed transcript means you are not re-typing the same words for each destination. Export the format the next step needs, or carry the timing straight into a lyric video — the transcription is the reusable source everything else is built from."
+      ]
+    }
+  ]
 }

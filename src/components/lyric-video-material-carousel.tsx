@@ -8,22 +8,18 @@ const CAROUSEL_INTERVAL_MS = 3500;
 
 const SAMPLE_MATERIALS = [
   {
-    title: "Video 17",
     description: "AI video material sample",
     video: "/external/freebeat-seedance/homeGrid-v1-17.mp4",
   },
   {
-    title: "Video 11",
     description: "AI video material sample",
     video: "/external/freebeat-seedance/homeGrid-v1-11.mp4",
   },
   {
-    title: "Video 2",
     description: "AI video material sample",
     video: "/external/freebeat-seedance/homeGrid-v1-2.mp4",
   },
   {
-    title: "Video 7",
     description: "AI video material sample",
     video: "/external/freebeat-seedance/homeGrid-v1-7.mp4",
   },
@@ -34,7 +30,7 @@ export function LyricVideoMaterialCarousel() {
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const activeMaterial = SAMPLE_MATERIALS[activeIndex] || SAMPLE_MATERIALS[0];
-  const activeLabel = useMemo(() => `${activeMaterial.title}: ${activeMaterial.description}`, [activeMaterial]);
+  const activeLabel = useMemo(() => `${activeMaterial.description} ${activeIndex + 1}`, [activeMaterial, activeIndex]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -78,7 +74,6 @@ export function LyricVideoMaterialCarousel() {
             <Images className="size-4 text-brand-accent-hover" />
             Sample Materials
           </p>
-          <p className="mt-2 truncate text-2xl font-black tracking-[-0.012em] text-brand-ink">{activeMaterial.title}</p>
         </div>
         <span className="shrink-0 rounded-md border border-brand-line bg-brand-soft px-3 py-1 text-xs font-black text-brand-muted">
           {activeIndex + 1}/{SAMPLE_MATERIALS.length}
@@ -125,7 +120,7 @@ export function LyricVideoMaterialCarousel() {
           <button
             key={material.video}
             type="button"
-            aria-label={`Show ${material.title}`}
+            aria-label={`Show material ${index + 1}`}
             onClick={() => setActiveIndex(index)}
             className={cn(
               "h-2.5 rounded-full transition-[background-color,width] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",

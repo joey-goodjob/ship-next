@@ -7,6 +7,7 @@
       "styles",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -202,5 +203,56 @@
         "description": "Sing-along lyric videos with cue timing."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "How AI matches a style to your song",
+      "body": [
+        "Instead of dropping you into a gallery of generic backgrounds, the templates start from your track. The AI reads the song's mood, energy, and genre, then generates a visual style that fits — so a ballad and a rap hook get genuinely different looks without you comparing dozens of presets.",
+        "You upload the audio, the AI transcribes and times the lyrics, and the matched style is applied to your real words. You preview the result and adjust, rather than guessing which fixed template might suit your music."
+      ]
+    },
+    {
+      "heading": "Lyric video styles by genre",
+      "body": [
+        "Acoustic and singer-songwriter tracks tend to suit clean type, generous spacing, and gentle motion. Pop and dance benefit from bolder type and beat-reactive movement. Hip-hop and trap read well with tighter, high-contrast layouts, while cinematic and ambient songs fit slower, mood-led visuals.",
+        "Because the direction is generated from your song rather than chosen at random, every template feels like it belongs to the track — and you can still steer it if you want a different vibe."
+      ]
+    },
+    {
+      "heading": "Vertical, square, and widescreen layouts",
+      "body": [
+        "The same song can drive layouts built for each destination: a wide 16:9 presentation with room for full-song pacing on YouTube, a vertical 9:16 composition with large, phone-safe lyrics for TikTok, Reels, and Shorts, and a balanced 1:1 cut for feed posts.",
+        "Each layout keeps the lyrics readable in its own frame, so you are not cropping a widescreen design into a vertical space and hoping the words still fit."
+      ]
+    },
+    {
+      "heading": "Fonts, colors, and backgrounds you control",
+      "body": [
+        "Matched does not mean locked. Every template lets you adjust fonts, color palettes, and backgrounds so the lyric video fits your release art and brand — no design tools required. Change a palette to match a single cover, or pick a font that suits the genre.",
+        "The AI gives you a strong starting point shaped by the song; the controls let you make it unmistakably yours before exporting."
+      ]
+    },
+    {
+      "heading": "Why mood-matched beats a fixed gallery",
+      "body": [
+        "A fixed template gallery makes you do the matching: scroll, guess, apply, and hope a look meant for someone else's song suits yours. Mood-matched styling flips that — the track's energy and genre shape the layout direction before you spend time comparing options.",
+        "The result is less busywork and a more cohesive video, because the style was generated for your song instead of borrowed from a generic preset."
+      ]
+    },
+    {
+      "heading": "Consistent styling across a release",
+      "body": [
+        "Use the same visual direction across a full lyric video, a hook clip, and a feed post so a release reads as one campaign rather than a pile of mismatched videos. The matched style carries across formats from a single upload.",
+        "That consistency is what makes an artist's lyric videos feel like part of the same world — recognizable type, color, and motion from track to track."
+      ]
+    },
+    {
+      "heading": "Try a template with your own song",
+      "body": [
+        "The fastest way to judge a style is to see it on your actual track, not a demo. Upload your song, let the AI transcribe and time the lyrics, and preview the matched template with your real words and timing — then adjust fonts, colors, or the look until it fits the release.",
+        "Because you are previewing the finished result rather than browsing thumbnails, you can tell in seconds whether a style suits the song instead of committing to a template and hoping it works."
+      ]
+    }
+  ]
 }

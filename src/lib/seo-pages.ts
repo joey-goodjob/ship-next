@@ -101,6 +101,7 @@ export type SeoPageContent = {
     title: string;
     items: SeoRelatedToolItem[];
   };
+  contentSections?: SeoContentBlock[];
   faq?: {
     title: string;
     items: SeoFaqItem[];
@@ -132,6 +133,11 @@ export type SeoRelatedToolItem = {
   description: string;
 };
 
+export type SeoContentBlock = {
+  heading: string;
+  body: string[];
+};
+
 export const SEO_SECTION_TYPES = [
   "heroTool",
   "trust",
@@ -144,6 +150,7 @@ export const SEO_SECTION_TYPES = [
   "faq",
   "toolkit",
   "relatedTools",
+  "contentSections",
   "bottomCta",
 ] as const;
 
@@ -309,6 +316,9 @@ function validateSelectedSection(page: SeoPageContent, section: SeoSectionType, 
     case "relatedTools":
       validateRelatedToolsSection(page, where);
       return;
+    case "contentSections":
+      validateContentSections(page, where);
+      return;
     case "bottomCta":
       validateBottomCtaSection(page, where);
       return;
@@ -468,6 +478,18 @@ function validateRelatedToolsSection(page: SeoPageContent, where: string) {
     assertNonEmptyString(item.slug, `${where}.relatedTools.items[${index}].slug`);
     assertNonEmptyString(item.label, `${where}.relatedTools.items[${index}].label`);
     assertNonEmptyString(item.description, `${where}.relatedTools.items[${index}].description`);
+  });
+}
+
+function validateContentSections(page: SeoPageContent, where: string) {
+  assertArray(page.contentSections, `${where}.contentSections`);
+  page.contentSections.forEach((block, index) => {
+    assertRecord(block, `${where}.contentSections[${index}]`);
+    assertNonEmptyString(block.heading, `${where}.contentSections[${index}].heading`);
+    assertStringArray(block.body, `${where}.contentSections[${index}].body`);
+    if (block.body.length === 0) {
+      throw new Error(`${where}.contentSections[${index}].body must include at least one paragraph`);
+    }
   });
 }
 

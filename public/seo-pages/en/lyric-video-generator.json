@@ -7,6 +7,7 @@
       "manifesto",
       "whyChoose",
       "howItWorks",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -195,5 +196,49 @@
         "description": "AI visual styles matched to your song."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "What is an AI lyric video generator?",
+      "body": [
+        "An AI lyric video generator turns a song into a finished video where the lyrics are the visual centerpiece — animated, styled, and synced to the music. Instead of typing words into a timeline, you upload the audio and the generator transcribes the lyrics, times each line to the beat, and builds matching visuals automatically.",
+        "It is different from a subtitle generator, which pins plain text to the bottom of an existing clip. A lyric video generator creates the whole video around the words, so the result feels designed for the song rather than captioned after the fact."
+      ]
+    },
+    {
+      "heading": "How the generator turns audio into a synced video",
+      "body": [
+        "The pipeline runs in a few automatic stages. First, AI transcription reads the vocal and writes out the lyrics line by line. Then beat analysis aligns each line to the song's tempo and energy, so words land on the beat instead of merely near it.",
+        "From there the generator builds a storyboard and creates mood-driven visual scenes that follow the song's structure — intros, verses, choruses, and instrumental breaks. You review the synced lyrics, adjust anything, preview the full result, and export. The slow, manual parts are done before you start."
+      ]
+    },
+    {
+      "heading": "Lyric video styles for every genre",
+      "body": [
+        "Different songs need different looks, and the generator reads mood, energy, and genre to match one. A soft acoustic ballad gets calm type and gentle motion; a rap hook gets bolder, tighter pacing; an EDM drop gets higher-energy movement that reacts to the beat.",
+        "Because the style is driven by your track rather than picked from a fixed gallery, the lyric video feels specific to the song. You can still fine-tune fonts, colors, and backgrounds, but you do not start from a blank canvas or a preset that was never meant for your music."
+      ]
+    },
+    {
+      "heading": "What you can edit before exporting",
+      "body": [
+        "Automatic does not mean locked. Every lyric line is editable: click to fix a misheard word, merge or split lines for readability, or nudge timing so a phrase lands exactly where you want it. You can also swap the visual style and adjust fonts, colors, and backgrounds to fit a release.",
+        "This review-and-refine step is the point — the generator does the heavy lifting, then hands you control over the details that make a lyric video feel finished rather than auto-generated."
+      ]
+    },
+    {
+      "heading": "Lyric video generator vs a manual editor",
+      "body": [
+        "In a general video editor, a lyric video means transcribing by ear, splitting lines, dragging text, syncing each cue, and re-rendering for every aspect ratio — hours of repetitive work before you know if it looks good. The generator compresses that into one upload and a quick review.",
+        "Even if you eventually polish a release in another tool, generating a draft first gives you a working reference for line breaks, pacing, and mood in minutes, at almost no cost — which is why it is the fastest first step for most songs."
+      ]
+    },
+    {
+      "heading": "From one song to every format",
+      "body": [
+        "A single project exports in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, and 1:1 for feed posts. You generate the lyric video once and get every format you need, instead of rebuilding the same idea for each platform.",
+        "That makes the generator practical for a real release: one upload becomes a full-length video, a vertical hook clip, and a square teaser, all sharing the same lyrics and visual direction."
+      ]
+    }
+  ]
 }

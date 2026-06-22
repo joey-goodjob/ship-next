@@ -7,6 +7,7 @@
       "comparisonTable",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -209,5 +210,42 @@
         "description": "One song in, a finished lyric video out."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Lyric video vs AI music video — which do you want",
+      "body": [
+        "Both start from the same song, but they aim at different viewers. A lyric video makes the words the centerpiece so fans can read and sing along. An AI music video puts generated scenes in the lead, telling the song's story through imagery while the lyrics play a supporting role.",
+        "The AI music video generator can do both: lyrics inspire scene-by-scene visuals, and you can keep the words on screen over those visuals when they matter. So the question is simply how much you want the imagery to carry versus the text."
+      ]
+    },
+    {
+      "heading": "How AI turns your lyrics into scenes",
+      "body": [
+        "Upload your song and the AI transcribes the lyrics, then reads their meaning, mood, and emotional arc to drive scene generation. Instead of you writing a video prompt, the words themselves become the creative brief — each section of the song suggests its own imagery, pacing, and color.",
+        "The generator builds a storyboard from the lyrics and song structure, then creates matching scenes. You review the result and can regenerate any scene you want to adjust, so the final video reflects the track rather than a generic template."
+      ]
+    },
+    {
+      "heading": "Keeping style and characters consistent",
+      "body": [
+        "Generative video is strongest at consistent style and mood, and that is what to expect across scenes — a coherent look and feel rather than identical, frame-perfect characters. When a project uses a main character, the AI carries that character's description across scenes to keep them recognizable.",
+        "Setting expectations here matters: aim for a consistent world and aesthetic, and use per-scene regeneration to nudge any moment that drifts. That is how you get a music video that hangs together visually."
+      ]
+    },
+    {
+      "heading": "When you have a song but no footage",
+      "body": [
+        "Not every release comes with a shoot budget. If you have a finished track but no filmed footage, the AI music video generator turns the lyrics into visuals so the song still gets a video worth watching — no camera, crew, or location required.",
+        "It is a practical option for independent artists, producers, and labels who want more than a static cover for an audio upload but cannot justify a full production for every track."
+      ]
+    },
+    {
+      "heading": "Lyrics on screen or pure visuals — your choice",
+      "body": [
+        "You are not locked into one style. Keep the lyrics visible over the AI scenes for a video fans can follow word for word, or let the imagery lead with minimal text for a more cinematic feel. The same project supports both, so you can match the format to the song and the platform.",
+        "Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts — one upload, every format."
+      ]
+    }
+  ]
 }

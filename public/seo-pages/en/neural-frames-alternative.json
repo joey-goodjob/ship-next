@@ -7,6 +7,7 @@
       "comparisonTable",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -203,5 +204,56 @@
         "description": "Vertical 9:16 lyric clips for TikTok."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Neural Frames makes AI visuals; this makes readable lyric videos",
+      "body": [
+        "Neural Frames is a generative tool for AI music visuals — striking, motion-driven art created from your sound. LyricVideoMaker is built for lyric videos, where the non-negotiable is that the words stay readable and synced. Both can produce AI-powered music visuals; the difference is whether the lyrics are the product.",
+        "So the decision comes down to what your video is for: pure visual spectacle, or a video fans can read and sing along to."
+      ]
+    },
+    {
+      "heading": "When Neural Frames is the better choice",
+      "body": [
+        "If your goal is generative music visuals — abstract, evolving AI art driven by the track, with no need for on-screen words — Neural Frames is built for exactly that, and it is impressive at it.",
+        "When the visuals themselves are the main asset and readable lyrics are not the point, that is the right tool, and nothing here argues otherwise."
+      ]
+    },
+    {
+      "heading": "When LyricVideoMaker wins",
+      "body": [
+        "When fans need to read and sing the words, lyrics cannot get lost behind the visuals. LyricVideoMaker transcribes the lyrics, syncs them to the beat, and keeps them clearly on screen while AI-generated visuals play in support — so the line someone came for is always legible.",
+        "If readability and accurate timing matter as much as the look, that is the gap this fills."
+      ]
+    },
+    {
+      "heading": "Switching from Neural Frames",
+      "body": [
+        "There is nothing to migrate. Upload the same song and you will get a lyric video where the words stay front and center, with mood-driven visuals behind them — ready to compare in minutes.",
+        "Use Neural Frames when the visuals are the whole point, and switch here when the lyrics have to remain readable."
+      ]
+    },
+    {
+      "heading": "Visuals and readable lyrics, not one or the other",
+      "body": [
+        "The usual trade-off is pretty visuals or readable words. LyricVideoMaker is designed so you do not have to choose: the visuals respond to the song's mood and energy, but they are shaped around the lyric layer rather than competing with it.",
+        "That keeps a video useful for fans who want to follow along, without giving up a look that feels generated for the track."
+      ]
+    },
+    {
+      "heading": "Choose based on what your fans need",
+      "body": [
+        "The simplest way to decide is to picture the viewer. If they will watch for the art and the motion, a generative visual tool fits. If they will watch to learn the words, sing along, or follow the story of the song, readable lyrics have to win.",
+        "For lyric-led channels and releases, keeping the words clear is the whole job — which is the case LyricVideoMaker is built for."
+      ]
+    },
+    {
+      "heading": "Built for lyric-first channels",
+      "body": [
+        "Lyric channels, sing-along accounts, and artists who release words-on-screen videos have a specific need: every line has to be legible and on time, video after video. A repeatable, lyric-first workflow matters more there than one-off visual spectacle.",
+        "LyricVideoMaker is built around that consistency — transcribe, sync, keep the words readable, export — so a channel can publish visual songs without ever losing the core text layer that its audience shows up for."
+      ]
+    }
+  ]
 }

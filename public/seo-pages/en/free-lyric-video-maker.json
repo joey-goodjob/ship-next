@@ -7,6 +7,7 @@
       "manifesto",
       "howItWorks",
       "toolkit",
+      "contentSections",
       "faq",
       "relatedTools",
       "bottomCta"
@@ -184,5 +185,56 @@
         "description": "AI visual styles matched to your song."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "What you get with the free lyric video maker",
+      "body": [
+        "The free lyric video maker gives you a real, finished video — not a locked watermarked preview. Every free project runs the same pipeline as the paid plans: AI lyric transcription straight from your uploaded audio, beat-accurate line timing, a set of free visual styles, full-quality export, and the ability to fix any line before you download.",
+        "You start with free credits, no credit card, and no trial countdown running in the background. The lyric video you make for free is genuinely yours — preview the whole thing, switch styles, correct a misheard word, and export an MP4 ready for YouTube, TikTok, Reels, or Shorts."
+      ]
+    },
+    {
+      "heading": "Free vs paid: what is actually limited",
+      "body": [
+        "Most 'free' lyric video makers hide the catch until the final click — a watermark stamped across the export, a paywall the moment you hit download, or a forced subscription before you can save anything. This free lyric video maker is built the opposite way. The only real limit is how many videos your free credits cover, not whether the result is usable.",
+        "When you outgrow the free credits, upgrading adds monthly credits, premium AI visual models, longer projects, and faster rendering. The core workflow — upload, transcribe, sync, preview, export — is never held back on the free plan."
+      ]
+    },
+    {
+      "heading": "Who the free lyric video maker is for",
+      "body": [
+        "The free plan is ideal for independent artists releasing a first single, bedroom producers testing a hook before a full rollout, students and hobbyists making a lyric video for fun, and creators deciding whether AI lyric videos fit their channel before paying anything.",
+        "It is also the fastest way to pressure-test the tool with your own song. Upload the track you actually care about, watch how the AI transcribes and times the lyrics, and judge the result against what a freelancer or a manual editor would give you — all before spending a cent."
+      ]
+    },
+    {
+      "heading": "How to make a free lyric video, step by step",
+      "body": [
+        "Start by uploading an MP3, WAV, FLAC, AAC, OGG, or M4A file up to 100MB. The free lyric video maker reads the audio directly, so there is no need to type or paste lyrics first. In about thirty seconds the AI transcribes every line and locks it to the beat.",
+        "Then review the synced lyrics line by line, fix any word the AI misheard, and pick a free visual style that matches the song's mood. Preview the full video, confirm the timing feels right, and export in the aspect ratio your platform needs. The whole flow runs in your browser — no app and no install."
+      ]
+    },
+    {
+      "heading": "Free now, room to grow later",
+      "body": [
+        "Because free and paid plans share one project format, nothing you make on the free plan is throwaway work. The lyric videos you create stay in your account, and the styles and settings you learn on the free tier carry straight over if you upgrade.",
+        "That means you can launch on the free lyric video maker today and only pay when your release schedule, video length, or visual ambitions actually outgrow it. There is no pressure to commit before you have seen what the tool does with your music."
+      ]
+    },
+    {
+      "heading": "Free lyric videos for every platform",
+      "body": [
+        "One free upload can become several assets. Export a full-length 16:9 lyric video for a YouTube release, a vertical 9:16 cut of the hook for TikTok, Reels, and Shorts, and a square 1:1 version for feed posts — all from the same project, all on the free plan.",
+        "This is what makes a free lyric video maker genuinely useful for a release week: instead of paying per video, you can spin up platform-specific versions of the same song and keep your feed fresh without a new budget each time."
+      ]
+    },
+    {
+      "heading": "Free lyric video maker vs doing it by hand",
+      "body": [
+        "Making a lyric video manually means transcribing the song by ear, splitting it into readable lines, dragging each line onto a timeline, nudging timings until they match the beat, and re-rendering for every aspect ratio. It is hours of repetitive work before you ever see whether the idea looks good.",
+        "A free lyric video maker collapses that into one upload. The AI does the transcription and timing, you review instead of rebuild, and the first watchable draft arrives in minutes. Even if you later polish it elsewhere, starting free gives you a finished reference for line breaks, pacing, and mood at zero cost."
+      ]
+    }
+  ]
 }

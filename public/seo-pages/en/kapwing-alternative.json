@@ -7,6 +7,7 @@
       "comparisonTable",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -203,5 +204,56 @@
         "description": "Overlay synced lyrics on your footage."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Kapwing is a general editor; this is a lyric video specialist",
+      "body": [
+        "Kapwing is a flexible, browser-based video editor that does a bit of everything — subtitles, social clips, memes, podcast cuts. LyricVideoMaker does one thing: turn a song into a synced lyric video. That focus is the whole difference. A specialist removes the lyric-video chores a general editor leaves to you.",
+        "So the choice is not 'which tool is better' in the abstract; it is whether your project is mainly a lyric video, in which case a purpose-built flow beats a general timeline."
+      ]
+    },
+    {
+      "heading": "When Kapwing is the better choice",
+      "body": [
+        "Kapwing is the right call for general editing: podcast clips, talking-head videos, memes, subtitled social posts, and mixed-media projects that combine many kinds of footage. If you need a versatile editor for lots of formats, that breadth is exactly the point.",
+        "It is genuinely good at those jobs, and nothing here suggests otherwise — the comparison is about specialization versus flexibility, not good versus bad."
+      ]
+    },
+    {
+      "heading": "When LyricVideoMaker wins",
+      "body": [
+        "When the job is a lyric video, the general-editor path means typing lyrics, splitting lines, dragging text, and timing every cue by hand. LyricVideoMaker does that automatically: upload the song, get transcribed and beat-synced lyrics with mood-driven visuals, then preview and export.",
+        "For songs specifically, that is faster, more consistent, and less error-prone than building each line on a timeline."
+      ]
+    },
+    {
+      "heading": "Switching from Kapwing for lyric videos",
+      "body": [
+        "You do not migrate anything. Upload the same song you would have edited in Kapwing and compare the finished lyric video in minutes. There are no layers to rebuild and no timeline to set up before you see a result.",
+        "Keep Kapwing for the projects it suits, and use LyricVideoMaker for the lyric videos — they solve different problems."
+      ]
+    },
+    {
+      "heading": "Why a specialist beats a timeline for lyric videos",
+      "body": [
+        "A blank timeline assumes you will assemble everything: text, timing, transitions, formats. For a four-minute song that is dozens of lines to place by hand. A specialist starts from the audio, so the structure is already pointed in the right direction before you review.",
+        "That is why the same lyric video that takes an evening in a general editor takes a few minutes here — the slow, repetitive parts are automated, not manual."
+      ]
+    },
+    {
+      "heading": "What you skip by not using a general editor",
+      "body": [
+        "Choosing the specialist means skipping the lyric-video grunt work: no transcribing by ear, no line-by-line text placement, no manual beat-matching, and no re-exporting separately for YouTube, TikTok, and feed posts.",
+        "You trade the flexibility of a general editor for speed and consistency on the one job — which is the right trade when that job is a lyric video."
+      ]
+    },
+    {
+      "heading": "A quick way to decide",
+      "body": [
+        "Ask one question: is this project mainly a lyric video, or a mix of editing tasks? If it is a lyric video, the specialist path gets you there faster with less manual work. If it is podcast clips, subtitled posts, or mixed footage, a general editor like Kapwing earns its place.",
+        "Many creators end up using both — a general editor for everyday content and LyricVideoMaker whenever a song needs a lyric video — because each is strongest at a different job."
+      ]
+    }
+  ]
 }

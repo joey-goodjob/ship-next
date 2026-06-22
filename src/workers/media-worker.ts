@@ -6,8 +6,11 @@ import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { AITaskStatus, updateTask } from '@/modules/ai-tasks/service';
 import {
   claimNextMediaJob,
+  heartbeatMediaJob,
   markMediaJobFailed,
   markMediaJobReady,
+  recoverStaleMediaJobs,
+  runWithMediaJobHeartbeat,
 } from '@/modules/lyric-videos/lyric/media-jobs';
 import { getProjectDetails } from '@/modules/lyric-videos/lyric/project';
 import { parseJsonField } from '@/modules/lyric-videos/lyric/json';
@@ -19,6 +22,10 @@ const workerId = process.env.MEDIA_WORKER_ID || `${os.hostname()}:${process.pid}
 const pollIntervalMs = Math.max(250, Number(process.env.MEDIA_WORKER_POLL_INTERVAL_MS) || 2000);
 const concurrency = Math.max(1, Number(process.env.MEDIA_WORKER_CONCURRENCY) || 1);
 const runOnce = process.env.MEDIA_WORKER_RUN_ONCE === 'true';
+const jobStaleAfterMs = Math.max(60_000, Number(process.env.MEDIA_WORKER_JOB_STALE_AFTER_MS) || 300_000);
+const jobHeartbeatMs = Math.max(5_000, Number(process.env.MEDIA_WORKER_JOB_HEARTBEAT_MS) || 30_000);
+const jobMaxAttempts = Math.max(1, Number(process.env.MEDIA_WORKER_JOB_MAX_ATTEMPTS) || 3);
+const recoveryLimit = Math.max(1, Number(process.env.MEDIA_WORKER_RECOVERY_LIMIT) || 10);
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -55,6 +62,22 @@ async function markVideoExportFailed(params: {
       .set({ renderStatus: 'failed', pipelineStage: 'export_failed', pipelineError: message })
       .where(and(eq(lyricVideoProject.id, exportJob.projectId), eq(lyricVideoProject.userId, exportJob.userId))),
   ]);
+}
+
+async function markAudioTrimFailed(params: {
+  projectId: string;
+  userId: string;
+  error: unknown;
+}) {
+  const message = params.error instanceof Error ? params.error.message : String(params.error || 'Audio trim failed');
+  await db()
+    .update(lyricVideoProject)
+    .set({
+      lyricsStatus: 'failed',
+      pipelineStage: 'asr_failed',
+      pipelineError: message,
+    })
+    .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
 }
 
 async function processVideoExportJob(job: Awaited<ReturnType<typeof claimNextMediaJob>>) {
@@ -218,24 +241,45 @@ async function processAudioTrimJob(job: Awaited<ReturnType<typeof claimNextMedia
   });
 }
 
+async function processMediaJob(job: NonNullable<Awaited<ReturnType<typeof claimNextMediaJob>>>) {
+  if (job.kind === 'video_export') {
+    await processVideoExportJob(job);
+    return;
+  }
+  if (job.kind === 'audio_analysis') {
+    await processAudioAnalysisJob(job);
+    return;
+  }
+  if (job.kind === 'audio_trim') {
+    await processAudioTrimJob(job);
+    return;
+  }
+  throw new Error(`Unsupported media job kind: ${job.kind}`);
+}
+
+async function syncFailedMediaJobSideEffects(job: NonNullable<Awaited<ReturnType<typeof claimNextMediaJob>>>, error: unknown) {
+  if (job.kind === 'video_export') {
+    await markVideoExportFailed({ exportId: job.exportId, error });
+    return;
+  }
+  if (job.kind === 'audio_trim') {
+    await markAudioTrimFailed({ projectId: job.projectId, userId: job.userId, error });
+  }
+}
+
 async function processClaimedJob() {
   const job = await claimNextMediaJob({ workerId });
   if (!job) return false;
 
   try {
-    if (job.kind === 'video_export') {
-      await processVideoExportJob(job);
-      return true;
-    }
-    if (job.kind === 'audio_analysis') {
-      await processAudioAnalysisJob(job);
-      return true;
-    }
-    if (job.kind === 'audio_trim') {
-      await processAudioTrimJob(job);
-      return true;
-    }
-    throw new Error(`Unsupported media job kind: ${job.kind}`);
+    await runWithMediaJobHeartbeat({
+      jobId: job.id,
+      workerId,
+      heartbeatMs: jobHeartbeatMs,
+      heartbeat: heartbeatMediaJob,
+      run: () => processMediaJob(job),
+    });
+    return true;
   } catch (error) {
     logLyricStageError('media-worker', 'job-failed', error, {
       workerId,
@@ -245,13 +289,40 @@ async function processClaimedJob() {
     });
     await Promise.all([
       markMediaJobFailed({ jobId: job.id, error }),
-      job.kind === 'video_export' ? markVideoExportFailed({ exportId: job.exportId, error }) : Promise.resolve(),
+      syncFailedMediaJobSideEffects(job, error),
     ]);
     return true;
   }
 }
 
+async function recoverStaleJobs() {
+  const recovered = await recoverStaleMediaJobs({
+    workerId,
+    staleAfterMs: jobStaleAfterMs,
+    maxAttempts: jobMaxAttempts,
+    limit: recoveryLimit,
+  });
+  if (recovered.requeued.length || recovered.failed.length) {
+    logLyricStage('media-worker', 'stale-jobs-recovered', {
+      workerId,
+      requeuedJobIds: recovered.requeued.map((job) => job.id),
+      failedJobIds: recovered.failed.map((job) => job.id),
+      staleAfterMs: jobStaleAfterMs,
+      maxAttempts: jobMaxAttempts,
+    });
+  }
+
+  await Promise.all(
+    recovered.failed.map((job) =>
+      syncFailedMediaJobSideEffects(job, new Error(job.error || 'Media job timed out'))
+    )
+  );
+
+  return recovered.requeued.length + recovered.failed.length;
+}
+
 async function tick() {
+  await recoverStaleJobs();
   const results = await Promise.all(
     Array.from({ length: concurrency }, () => processClaimedJob())
   );
@@ -264,6 +335,10 @@ async function main() {
     pollIntervalMs,
     concurrency,
     runOnce,
+    jobStaleAfterMs,
+    jobHeartbeatMs,
+    jobMaxAttempts,
+    recoveryLimit,
   });
 
   while (true) {

@@ -6,6 +6,7 @@
       "trust",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -174,5 +175,49 @@
         "description": "Sing-along lyric videos with cue timing."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Add lyrics or captions to any video",
+      "body": [
+        "Add Lyrics to Video takes a video you already have and lays synced words on top of it. Upload your footage, and the AI reads the audio to transcribe the lyrics — or the spoken captions — then times each line to match what is being sung or said, so the text appears exactly when it should.",
+        "It works whether the words are a song's lyrics or plain captions, because the timing comes from the audio itself rather than a manual timeline. You get a video with synced text baked in, ready to publish, without typing or dragging anything."
+      ]
+    },
+    {
+      "heading": "Keep the text off faces and the action",
+      "body": [
+        "The point of adding lyrics to existing footage is to support the video, not cover it. You can position the lyric layer where it stays readable without hiding faces, dancers, products, captions, or the moment viewers came to see — so the words add to the scene instead of competing with it.",
+        "Preview the whole video with the text in place before you export, and move the lyric block until it sits cleanly in the frame on every platform you are publishing to."
+      ]
+    },
+    {
+      "heading": "Built for music videos, performances, and events",
+      "body": [
+        "Add lyrics to official music videos and visualizers so fans can follow the song, overlay them on live sets, covers, and studio sessions to keep the energy of the recording, or put them on first-dance edits and event recaps where the song carries the emotion.",
+        "It also fits travel montages, fan edits, and short social cuts — any footage where the missing piece is a clean, synced lyric or caption layer rather than a whole new video."
+      ]
+    },
+    {
+      "heading": "How automatic lyric placement works",
+      "body": [
+        "Upload a video or add a separate audio track, and the AI transcribes the words from the audio in 50+ languages, then syncs each line to the beat or speech. The lyric timing follows the actual recording, so hooks, repeated lines, and entrances feel natural on screen rather than mistimed.",
+        "Because the words come from the audio, you skip the slowest part of captioning a video by hand — no transcribing by ear, no dragging text cues one by one."
+      ]
+    },
+    {
+      "heading": "Fix one line without rebuilding the edit",
+      "body": [
+        "If the transcript needs a correction, click the line, adjust the words, and keep moving — the timing workflow continues without starting the video over. That makes it safe to use on footage you care about, because a single wrong word is a quick fix rather than a re-edit.",
+        "You stay in control of wording and placement throughout, while the AI handles the transcription and sync that would otherwise eat the most time."
+      ]
+    },
+    {
+      "heading": "From upload to a finished, captioned video",
+      "body": [
+        "The flow is short: upload your video or audio, let the AI transcribe and sync the words, position the lyric layer off the action, preview the result, and export in 16:9, 9:16, or 1:1. What used to be an evening of manual lyric syncing becomes a few minutes in the browser.",
+        "The original footage stays the focus, with a clean synced lyric or caption layer added on top — ready for channels, campaigns, releases, or client work."
+      ]
+    }
+  ]
 }

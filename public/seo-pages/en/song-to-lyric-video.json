@@ -6,6 +6,7 @@
       "trust",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -166,5 +167,49 @@
         "description": "Vertical 9:16 lyric clips for TikTok."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "From a finished song to a shareable video",
+      "body": [
+        "If you already have a song, the missing piece is usually the video — and that is exactly the gap this fills. Upload the track and the AI transcribes the lyrics, times every line to the beat, and builds mood-driven visuals around them, so a finished song becomes a finished, shareable lyric video without a separate editing project.",
+        "The whole flow is song-first: you think 'I have this track, I want a video for it,' and the tool follows that path instead of making you assemble scenes, type captions, and guess at timing in a general editor."
+      ]
+    },
+    {
+      "heading": "Full song or a short clip — your call",
+      "body": [
+        "The same upload works two ways. Use the full track to produce a complete lyric video for a YouTube release or a music channel, with room for an intro, verses, choruses, and breathing space during instrumental sections.",
+        "Or pick a single section — the hook, the chorus, the most quotable line — and export a short vertical clip for TikTok, Reels, and Shorts. One song, one upload, and you can produce both the long release version and the short social cuts from it."
+      ]
+    },
+    {
+      "heading": "Making a song lyric video for YouTube",
+      "body": [
+        "For YouTube, a song lyric video gives an audio upload far more reason to be watched than a static cover image. Export a full-length 16:9 video with readable pacing, clean space for a title moment, and lyrics that keep viewers following along to the end.",
+        "Because the timing comes from the song itself, the lyrics stay locked to the music across the whole track — so even a five-minute song reads as a structured video rather than a scrolling wall of text."
+      ]
+    },
+    {
+      "heading": "What the AI reads in your song",
+      "body": [
+        "Turning a song into a video is a series of decisions, and the AI makes them from the audio. It reads the lyrics for the words, the beat and tempo for line timing and transition pacing, and the mood and energy for visual style and color.",
+        "Song structure shapes the rest: intros, verses, choruses, bridges, and instrumental breaks each get appropriate treatment, so the finished video feels built from your track rather than dropped onto a generic preset."
+      ]
+    },
+    {
+      "heading": "Turning one song into release-week assets",
+      "body": [
+        "A single track can carry a whole release week. From one upload you can produce a full YouTube lyric video, a chorus highlight for TikTok, a square cut for feed posts, and a short teaser to tease the drop — all sharing the same lyric timing and visual direction.",
+        "That consistency makes a release feel like one campaign instead of a pile of unrelated clips, and it means you are not starting a new project every time you need fresh content for a different platform."
+      ]
+    },
+    {
+      "heading": "Why start from the song, not a template",
+      "body": [
+        "Starting from a template makes you bend your song to fit someone else's layout. Starting from the song flips it: the audio drives the lyrics, the timing, and the visual direction, so the video is shaped by your track instead of forced into a preset.",
+        "That is why a song-first flow tends to feel more finished — the intro space, the chorus emphasis, and the pacing all follow the music, not a generic frame the song happens to land in."
+      ]
+    }
+  ]
 }

@@ -23,6 +23,14 @@ const subscribedFilter = buildWatermarkDrawtextFilter({
 
 assert.equal(subscribedFilter, null, "subscribed export should not include a watermark filter");
 
+const defaultBrandFilter = buildWatermarkDrawtextFilter({
+  watermark: { enabled: true },
+  width: 1920,
+  height: 1080,
+});
+
+assert.ok(defaultBrandFilter?.includes("LyricVideoMaker.app"), "default watermark should use the app-name .app brand suffix");
+
 const portraitFilter = buildWatermarkDrawtextFilter({
   watermark: { enabled: true, text: "LyricsVideo.ai" },
   width: 1080,
@@ -36,12 +44,12 @@ assert.ok(portraitFilter.includes("y=h-th-54"), "9:16 watermark should anchor ne
 
 const storedSettings = buildExportSettings({
   settings: { captionsEnabled: false, resolution: "1080p" },
-  watermark: { enabled: true, text: "LyricsVideo.ai" },
+  watermark: { enabled: true },
 });
 
 assert.deepEqual(
   storedSettings.watermark,
-  { enabled: true, text: "LyricsVideo.ai" },
+  { enabled: true, text: "LyricVideoMaker.app" },
   "export settings should record the server-side watermark decision",
 );
 assert.equal(storedSettings.captionsEnabled, false, "export settings should preserve client export settings");

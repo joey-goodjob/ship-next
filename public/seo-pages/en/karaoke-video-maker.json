@@ -6,6 +6,7 @@
       "trust",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -166,5 +167,56 @@
         "description": "Make and export lyric videos free."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "What makes a good karaoke video",
+      "body": [
+        "A good karaoke video lives or dies on timing. The next line has to appear before the singer needs it, the current line has to stay readable at a glance, and the highlight has to track the beat so people know exactly where they are in the song. The karaoke video maker handles all three automatically from your uploaded audio.",
+        "Because the lyrics are transcribed and beat-synced rather than dropped onto a rough timer, cues land early enough to follow and the text stays large and legible — the difference between a video people can actually sing to and one they give up on after the first chorus."
+      ]
+    },
+    {
+      "heading": "Sing-along mode and true karaoke",
+      "body": [
+        "The karaoke video maker supports two ways to perform. Sing-along mode keeps the original track and overlays beat-synced, highlighted lyrics so a room can join in instantly. True karaoke mode removes the lead vocal so the singer carries the melody, with the lyric cues guiding them line by line.",
+        "Both modes start from the same upload and the same synced lyrics, so you can produce a sing-along version for casual nights and a vocal-removed version for serious practice or a karaoke channel without rebuilding the project."
+      ]
+    },
+    {
+      "heading": "Karaoke videos for parties, channels, and practice",
+      "body": [
+        "For parties and events, a karaoke video maker turns any song into instant entertainment — no special hardware, just a screen and the synced lyrics. For YouTube karaoke channels, a repeatable upload-to-export flow keeps a back catalog looking consistent track after track.",
+        "For singers and students, karaoke videos are a practice tool: the cue timing trains phrasing and breath control, and being able to fix any lyric line means the words on screen are the words actually being sung."
+      ]
+    },
+    {
+      "heading": "Readable on phones, TVs, and projectors",
+      "body": [
+        "Karaoke gets watched on everything from a phone propped on a table to a living-room TV to a projector at a venue. The karaoke video maker sizes and places the lyrics so they stay readable across all of them, and the beat-synced highlight keeps a whole group locked to the same line.",
+        "Export in 16:9 for TVs and YouTube, 9:16 for mobile karaoke and short-form clips, or 1:1 for feed posts — one upload covers the screen wherever the singing happens."
+      ]
+    },
+    {
+      "heading": "How to make a karaoke video without typing lyrics",
+      "body": [
+        "Upload your song and the karaoke video maker transcribes every line automatically, in 50+ languages, then syncs the cues to the beat. You never start from a blank timeline or a lyrics document — the hardest part of making a karaoke video is already done before you touch anything.",
+        "From there you review the lines, adjust any word, choose a highlight style, preview how it sings, and export. What used to take an evening of manual timing in a video editor now takes a few minutes in the browser."
+      ]
+    },
+    {
+      "heading": "Karaoke video maker vs vocal-removal apps",
+      "body": [
+        "A vocal-removal app only strips the lead vocal — you are left with a backing track and no words on screen. A karaoke video maker does the part that actually matters for singing: it transcribes the lyrics, times the cues to the beat, highlights each line as it comes, and renders a video you can play anywhere.",
+        "With true karaoke mode you get both at once — the lead vocal removed and synced, highlighted lyrics on screen — so there is no stitching a muted track together with a separate lyrics file. One upload becomes a complete, performable karaoke video."
+      ]
+    },
+    {
+      "heading": "From upload to a finished karaoke video",
+      "body": [
+        "The full path is short. Upload your song, let the AI transcribe and beat-sync the lyrics, choose sing-along or true karaoke, pick a highlight style, and preview how it performs on screen. When the cues land where you want them, export for the screen you will play it on.",
+        "Everything runs in the browser, so there is no software to learn and no project files to manage. Because the lyrics are editable at every step, the words on screen always match the words being sung — which is exactly what separates a karaoke video people enjoy from one that throws them off."
+      ]
+    }
+  ]
 }

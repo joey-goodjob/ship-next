@@ -6,6 +6,7 @@
       "trust",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -164,5 +165,56 @@
         "description": "Generate AI scenes from your lyrics."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Why vertical lyric videos win on TikTok",
+      "body": [
+        "TikTok is a full-screen, sound-on, phone-first feed, and a horizontal lyric video shrunk into that space wastes most of the screen. A vertical 9:16 lyric video fills the frame, puts the words at eye level, and reads instantly with one thumb on the screen — which is exactly how people scroll.",
+        "The TikTok lyric video generator builds vertical from the start instead of cropping a widescreen video down. The lyrics are sized for a phone, the motion is tuned for short attention spans, and the hook lands fast enough to stop the scroll before someone swipes away."
+      ]
+    },
+    {
+      "heading": "TikTok safe zones, explained",
+      "body": [
+        "On TikTok, the right edge holds the like, comment, share, and profile buttons, and the bottom holds the caption and username. Anything you place there gets covered. The generator keeps your lyrics inside the safe zone automatically, so the words stay fully visible after the app's interface loads on top of your video.",
+        "That means no more exporting a clip, posting it, and discovering your best line is hidden behind the share button. What you preview is what your audience actually reads in the feed."
+      ]
+    },
+    {
+      "heading": "The best length for a TikTok lyric video",
+      "body": [
+        "Short wins on TikTok. A 15 to 30 second clip built around the catchiest line usually outperforms a full song, because it gets to the hook fast and loops cleanly. Pick the chorus or the one line people would repeat after a single listen, and set your start and end points around it.",
+        "The first two seconds matter most. The generator gets your first lyric on screen quickly so a scroller sees words moving with the music immediately — the signal that there is something to stay for."
+      ]
+    },
+    {
+      "heading": "One render for TikTok, Reels, and Shorts",
+      "body": [
+        "Vertical 9:16 is the shared format across TikTok, Instagram Reels, and YouTube Shorts, so a single export from the TikTok lyric video generator posts natively to all three. You do not re-edit or re-crop for each platform — one render, three feeds.",
+        "For a release, that turns one hook into a repeatable short-form routine: cut several lyric moments from the same song and post a fresh vertical clip across every platform without rebuilding anything."
+      ]
+    },
+    {
+      "heading": "Making lyrics readable on a phone screen",
+      "body": [
+        "Readability is the whole game in a feed. Lyrics squeezed down from a widescreen layout end up too small to catch at a glance, so the generator sizes type for a vertical phone screen and keeps one or two lines on screen at a time instead of a wall of text.",
+        "Combined with beat-synced timing, that keeps the words easy to follow even when someone is watching with the volume low or half-distracted — the normal state of a scrolling viewer."
+      ]
+    },
+    {
+      "heading": "How to add song lyrics to a TikTok video without typing",
+      "body": [
+        "Upload your track and the TikTok lyric video generator transcribes every line automatically, in 50+ languages, then syncs it to the beat inside a vertical frame. You never paste a lyrics document or drag text on a timeline — the words come from the audio itself.",
+        "From there you trim to the section you want, fix any line the AI misheard, confirm nothing sits under the TikTok buttons, and export. A scroll-stopping vertical lyric clip goes from upload to ready in a couple of minutes."
+      ]
+    },
+    {
+      "heading": "Make a lyric clip that loops",
+      "body": [
+        "The best short-form lyric clips feel endless — the end flows back into the start so viewers watch twice without noticing. Choosing a self-contained line or a clean phrase as your start and end points makes a clip loop naturally, which quietly boosts watch time.",
+        "Pick the most repeatable moment of the song, keep it tight at 15 to 30 seconds, and let the beat-synced lyrics carry it. A loop-friendly hook clip is often what turns one line into a sound people reuse."
+      ]
+    }
+  ]
 }

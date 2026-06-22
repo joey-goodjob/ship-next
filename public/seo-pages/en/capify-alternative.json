@@ -7,6 +7,7 @@
       "comparisonTable",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -203,5 +204,49 @@
         "description": "Generate AI scenes from your lyrics."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Capify and LyricVideoMaker: same goal, different approach",
+      "body": [
+        "Capify and LyricVideoMaker are after the same outcome — turning a song into a lyric video without a manual editing project. Both lean on AI, so the real question is not whether they automate the work, but how good the result is on your actual track: lyric accuracy, beat timing, readable layout, and visuals that fit the song.",
+        "That makes this an unusually direct comparison. Run the same song through both, then judge the transcript, the sync, and the look side by side instead of comparing feature lists on paper."
+      ]
+    },
+    {
+      "heading": "When Capify might be the better fit",
+      "body": [
+        "If you already have a Capify workflow you are happy with, your team is trained on it, and it produces results you like for your genre, there is little reason to switch for its own sake. Sticking with a tool your process is built around has real value.",
+        "The fair way to frame it: Capify is a capable option, and the goal here is not to claim it is bad — it is to give you a free, like-for-like result to compare against so the decision is based on output, not marketing."
+      ]
+    },
+    {
+      "heading": "When LyricVideoMaker wins",
+      "body": [
+        "LyricVideoMaker focuses on the parts that decide whether a lyric video actually works: transcription you can trust and correct, beat-accurate timing, mood-driven visuals generated from the song, and clean multi-format export — all from one upload, free to start.",
+        "If your current result feels generic, the lyrics drift off the beat, or the words get lost behind the visuals, those are exactly the areas this tool is built to get right."
+      ]
+    },
+    {
+      "heading": "Switching from Capify takes one upload",
+      "body": [
+        "There is nothing to migrate. Upload the same song you used in Capify and you will have a finished lyric video to compare in a couple of minutes — no project files to move, no setup, no learning curve before you can judge the result.",
+        "Because the free plan exports real videos, you can A/B the two without committing money or time up front."
+      ]
+    },
+    {
+      "heading": "The honest test: same song, side by side",
+      "body": [
+        "The most reliable comparison is practical, not theoretical. Use the exact track you already tested in Capify, generate it here, and inspect four things: are the lyrics correct, do lines land on the beat, is the text readable across verse and chorus, and do the visuals feel specific to the song?",
+        "Whichever tool makes the words easiest to follow on the moments that matter is the right one for that track."
+      ]
+    },
+    {
+      "heading": "What to look for in an AI lyric video maker",
+      "body": [
+        "Beyond the first impression, weigh the things that matter over many videos: editability when the AI mishears a word, consistency of timing on fast sections, export formats for every platform, and pricing that fits how often you publish.",
+        "A good AI lyric video maker should remove the chores — typing, timing, formatting — while leaving you in control of wording and look. That balance, more than any single feature, is what to compare."
+      ]
+    }
+  ]
 }

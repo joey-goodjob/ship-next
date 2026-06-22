@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { BottomCtaSection } from "@/components/seo-sections/bottom-cta-section";
 import { ComparisonTableSection } from "@/components/seo-sections/comparison-table-section";
+import { ContentSectionsSection } from "@/components/seo-sections/content-sections-section";
 import { FaqSection } from "@/components/seo-sections/faq-section";
 import { HeroToolSection } from "@/components/seo-sections/hero-tool-section";
 import { HowToSection } from "@/components/seo-sections/how-to-section";
@@ -48,6 +49,9 @@ const SECTION_RENDERERS: Record<SeoSectionType, (page: SeoPageContent) => ReactN
   ),
   relatedTools: (page) => (
     <RelatedToolsSection content={requireSectionData(page.relatedTools, "relatedTools", "relatedTools")} />
+  ),
+  contentSections: (page) => (
+    <ContentSectionsSection blocks={requireSectionData(page.contentSections, "contentSections", "contentSections")} />
   ),
   bottomCta: (page) => <BottomCtaSection content={requireSectionData(page.bottomCta, "bottomCta", "bottomCta")} />,
 };

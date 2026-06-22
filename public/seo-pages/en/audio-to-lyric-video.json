@@ -7,6 +7,7 @@
       "comparisonTable",
       "howItWorks",
       "whyChoose",
+      "contentSections",
       "faq",
       "toolkit",
       "relatedTools",
@@ -207,5 +208,42 @@
         "description": "Overlay synced lyrics on your footage."
       }
     ]
-  }
+  },
+  "contentSections": [
+    {
+      "heading": "Supported audio formats and specs",
+      "body": [
+        "The converter accepts MP3, WAV, FLAC, AAC, OGG, and M4A files up to 100MB, which covers finished masters, lossless bounces, and compressed exports alike. For the cleanest transcription, upload audio at 128kbps or higher with a clear lead vocal.",
+        "The finished lyric video exports as an MP4 with your original audio intact, in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. One audio upload can feed every output shape."
+      ]
+    },
+    {
+      "heading": "From a master, a bounce, or a rough demo",
+      "body": [
+        "You do not need a polished, mastered file to start. A finished MP3 master, a WAV bounce from your session, or a rough demo all work — the converter treats whatever you upload as the source of truth and builds the lyric timing and visuals around the actual recording.",
+        "That makes it useful early in a release cycle: you can turn a demo into a shareable lyric video to test a hook or get feedback before the final mix exists."
+      ]
+    },
+    {
+      "heading": "MP3 to a YouTube or TikTok lyric video",
+      "body": [
+        "The most common path is an MP3 single into a finished lyric video. Upload the full track for a 16:9 YouTube release, or pick the hook and export a vertical 9:16 clip for TikTok, Reels, and Shorts — both from the same file.",
+        "Because the conversion keeps your audio central, the lyric timing and visual pacing follow the song itself, not a generic subtitle timer bolted onto a clip."
+      ]
+    },
+    {
+      "heading": "What 'converter' really means here",
+      "body": [
+        "Audio-to-lyric-video usually implies juggling three tools: a transcription app for the words, a subtitle editor for timing, and a video editor for the visuals. This converter collapses that into one upload-to-video flow built specifically for songs.",
+        "You get a deterministic, clear process — known input formats, automatic transcription and sync, a preview, and a defined export — instead of moving files between apps and rebuilding the song in a timeline."
+      ]
+    },
+    {
+      "heading": "Audio in, MP4 out — what stays and what is added",
+      "body": [
+        "Your uploaded track stays at the center of the result: the converter keeps the original audio and builds synced lyrics and mood-driven visuals on top of it. Nothing about the music is replaced — the video is assembled around the recording you provided.",
+        "You review the transcribed lines, fix anything the AI misheard, confirm the timing and look, and export. The output is a shareable MP4 lyric video made from the audio you already have."
+      ]
+    }
+  ]
 }
