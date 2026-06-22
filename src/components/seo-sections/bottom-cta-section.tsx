@@ -3,12 +3,12 @@ import type { SeoPageContent } from "@/lib/seo-pages";
 
 export function BottomCtaSection({ content }: { content: NonNullable<SeoPageContent["bottomCta"]> }) {
   return (
-    <section className="bg-brand-ink px-5 py-[70px] text-center text-brand-panel lg:py-24">
+    <section className="bg-[#151519] px-5 py-[70px] text-center text-white lg:py-24">
       <div className="mx-auto max-w-[780px]">
         <h2 className="text-balance text-xl font-bold leading-[25px] lg:text-4xl lg:leading-10">
           {content.title}
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-sm font-normal leading-5 text-brand-panel/78 lg:text-base lg:leading-6">
+        <p className="mx-auto mt-5 max-w-2xl text-sm font-normal leading-5 text-white/72 lg:text-base lg:leading-6">
           {content.description}
         </p>
         <a
@@ -19,7 +19,7 @@ export function BottomCtaSection({ content }: { content: NonNullable<SeoPageCont
           <ArrowRight className="size-4" />
         </a>
         {content.upsell && (
-          <p className="mt-4 text-xs leading-4 text-brand-panel/50">
+          <p className="mt-4 text-xs leading-4 text-white/50">
             {content.upsell}
           </p>
         )}

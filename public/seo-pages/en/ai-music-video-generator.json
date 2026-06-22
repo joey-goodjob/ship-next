@@ -9,12 +9,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "AI Music Video Generator from Lyrics — Song to Visual, Free",
-    "description": "Turn lyrics and audio into an AI music video. Transcribe, sync, generate mood visuals, preview the result, and export with free credits included.",
+    "description": "AI music video generator from lyrics: upload a song and AI generates mood-driven scenes synced to your lyrics. Preview, then export. Free to start.",
     "keywords": [
       "ai music video generator from lyrics",
       "ai music video generator from lyrics free",
@@ -26,7 +27,7 @@
   },
   "hero": {
     "badge": "AI music video generator — from lyrics to visuals",
-    "h1": "AI Music Video Generator from Lyrics",
+    "h1": "AI Music Video Generator from Lyrics — Turn a Song Into Visuals",
     "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free, no subscription needed.",
     "primaryCta": "Make a Free Music Video",
     "secondaryCta": "See How It Works"
@@ -82,15 +83,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Your song's lyrics become the creative source for everything that follows."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Your song's lyrics become the creative source for everything that follows.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and generates visuals",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Then it reads the song's mood, themes, and emotional arc to generate matching visual scenes. Click any lyric line to edit."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Then it reads the song's mood, themes, and emotional arc to generate matching visual scenes. Click any lyric line to edit.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full AI music video before publishing. Confirm the visuals match your song's energy, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full AI music video before publishing. Confirm the visuals match your song's energy, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -129,7 +133,7 @@
       },
       {
         "question": "Do I need to type the lyrics myself?",
-        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. You can click any line to edit if needed."
+        "answer": "No. Upload your song and AI transcribes every lyric line for you in 50+ languages — the same lyrics then drive the generated scenes. Edit any line if needed."
       },
       {
         "question": "What is the difference between a lyric video and an AI music video?",
@@ -137,11 +141,15 @@
       },
       {
         "question": "Can I use exported music videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+        "answer": "Yes. The AI music videos you export are yours, monetized channels and paid releases included. Just make sure you own the rights to the song behind them."
       },
       {
         "question": "What formats can I export in?",
-        "answer": "16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. All formats from one upload."
+        "answer": "Export 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts — every format from one song upload."
+      },
+      {
+        "question": "Will the characters look the same in every scene?",
+        "answer": "Expect a consistent style and mood across scenes rather than identical characters frame to frame. The AI matches your song's look and feel — and you can regenerate any scene you want to adjust."
       }
     ]
   },
@@ -152,24 +160,54 @@
   "useCases": [
     {
       "title": "YouTube full-length music video",
-      "description": "Turn the entire track into an AI-generated music video with lyrics and export in 16:9."
+      "description": "Turn the entire track into an AI-generated music video with lyrics and export in 16:9.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/ai-music-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a vertical AI music video clip that stops the scroll."
+      "description": "Cut the hook or chorus into a vertical AI music video clip that stops the scroll.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/ai-music-video-generator/use-case-2.png"
     },
     {
       "title": "Release week content",
-      "description": "Generate multiple visual clips from one single — fresh AI music video content for every day of release week."
+      "description": "Generate multiple visual clips from one single — fresh AI music video content for every day of release week.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/ai-music-video-generator/use-case-3.png"
     },
     {
       "title": "Artists without filmed footage",
-      "description": "When you have a finished track but no video shoot budget, AI generates the visuals from your lyrics."
+      "description": "When you have a finished track but no video shoot budget, AI generates the visuals from your lyrics.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/ai-music-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Your lyrics already tell a story. Let AI show it.",
     "description": "Upload your song, let AI generate visuals from the lyrics, and export your music video — free, no subscription needed.",
-    "button": "Make My Music Video"
+    "button": "Make My Music Video",
+    "upsell": "Free export · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "Lyric Video Templates",
+        "description": "AI visual styles matched to your song."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "Song to Lyric Video",
+        "description": "One song in, a finished lyric video out."
+      }
+    ]
   }
 }

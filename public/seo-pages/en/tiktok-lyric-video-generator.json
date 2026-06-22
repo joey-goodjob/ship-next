@@ -8,12 +8,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "TikTok Lyric Video Generator — AI-Powered, Vertical Format",
-    "description": "Create vertical lyric videos for TikTok. Upload a song, auto-sync lyrics, preview 9:16 safe zones, and export for Reels and Shorts too.",
+    "description": "TikTok lyric video generator for vertical 9:16 clips. Upload a song, auto-sync lyrics, preview inside TikTok safe zones, and export for Reels and Shorts.",
     "keywords": [
       "tiktok lyric video generator",
       "tiktok lyric video maker",
@@ -41,15 +42,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track."
+        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs every line",
-        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The TikTok lyric video maker positions text inside the vertical safe zone so your words are never buried under TikTok's like, comment, and share buttons."
+        "description": "Lyrics are transcribed automatically from the audio and synced to the beat — in 50+ languages. Click any line to edit. The TikTok lyric video maker positions text inside the vertical safe zone so your words are never buried under TikTok's like, comment, and share buttons.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview vertically and export in 9:16",
-        "description": "Watch the draft on a phone-sized canvas before you post. Confirm the first lyric lands within 2 seconds, text is large enough for a 6-inch screen, and nothing is hidden by TikTok UI. Export in 9:16 HD — the same file works on TikTok, Instagram Reels, and YouTube Shorts."
+        "description": "Watch the draft on a phone-sized canvas before you post. Confirm the first lyric lands within 2 seconds, text is large enough for a 6-inch screen, and nothing is hidden by TikTok UI. Export in 9:16 HD — the same file works on TikTok, Instagram Reels, and YouTube Shorts.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -100,7 +104,7 @@
       },
       {
         "question": "Can I use TikTok lyric videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized accounts. Make sure you have rights to the music you upload."
+        "answer": "Yes. Your TikTok lyric videos are yours, including monetized and brand accounts. Just make sure you have the rights to the music you upload."
       }
     ]
   },
@@ -111,24 +115,54 @@
   "useCases": [
     {
       "title": "Hook clips for TikTok",
-      "description": "Turn the catchiest 15 seconds into a vertical lyric video that gets to the words fast."
+      "description": "Turn the catchiest 15 seconds into a vertical lyric video that gets to the words fast.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/tiktok-lyric-video-generator/use-case-1.png"
     },
     {
       "title": "Release week content",
-      "description": "Cut multiple lyric clips from one single so you post fresh content every day instead of the same asset."
+      "description": "Cut multiple lyric clips from one single so you post fresh content every day instead of the same asset.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/tiktok-lyric-video-generator/use-case-2.png"
     },
     {
       "title": "Reels and Shorts reposts",
-      "description": "Export once in 9:16 and post the same lyric video to TikTok, Instagram Reels, and YouTube Shorts."
+      "description": "Export once in 9:16 and post the same lyric video to TikTok, Instagram Reels, and YouTube Shorts.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/tiktok-lyric-video-generator/use-case-3.png"
     },
     {
       "title": "Fan-friendly lyric clips",
-      "description": "Give fans a readable lyric version of the best line so they can share it before they even know the full song."
+      "description": "Give fans a readable lyric version of the best line so they can share it before they even know the full song.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/tiktok-lyric-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Your next viral sound deserves visuals to match.",
     "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free, no subscription needed.",
-    "button": "Make My TikTok Lyric Video"
+    "button": "Make My TikTok Lyric Video",
+    "upsell": "Free export · No subscription · One render for TikTok, Reels & Shorts"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "Song to Lyric Video",
+        "description": "One song in, a finished lyric video out."
+      },
+      {
+        "slug": "ai-music-video-generator",
+        "label": "AI Music Video Generator",
+        "description": "Generate AI scenes from your lyrics."
+      }
+    ]
   }
 }

@@ -9,6 +9,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -24,9 +25,9 @@
   },
   "hero": {
     "badge": "Neural Frames alternative — AI lyric video maker, free",
-    "h1": "Neural Frames Alternative",
+    "h1": "Neural Frames Alternative — AI Visuals That Keep Lyrics Readable",
     "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
-    "primaryCta": "Try It Free",
+    "primaryCta": "Make a Readable Lyric Video Free",
     "secondaryCta": "See How It Works"
   },
   "trust": [
@@ -80,15 +81,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. AI generates visuals that match the song's mood while keeping lyrics readable."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. AI generates visuals that match the song's mood while keeping lyrics readable.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -119,7 +123,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a Neural Frames alternative?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+        "answer": "Yes. LyricVideoMaker is free as a Neural Frames alternative — free credits to start and export, no subscription or card."
       },
       {
         "question": "How is LyricVideoMaker different from Neural Frames?",
@@ -127,7 +131,7 @@
       },
       {
         "question": "Do I need to type lyrics like in Neural Frames?",
-        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+        "answer": "No. AI transcribes every lyric line from your audio in 50+ languages and keeps them readable on screen. Edit any line if needed."
       },
       {
         "question": "Can I get AI visuals AND readable lyrics?",
@@ -135,7 +139,11 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+        "answer": "Yes. The lyric videos you export are fully yours — monetized channels and commercial releases included. Just make sure you have the rights to the track."
+      },
+      {
+        "question": "How hard is it to switch from Neural Frames?",
+        "answer": "There's nothing to migrate. Upload the same song you used in Neural Frames and you'll have a finished lyric video in a couple of minutes — no project files to move, no setup."
       }
     ]
   },
@@ -146,24 +154,54 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Export the entire track as a 16:9 lyric video with AI visuals AND readable lyrics."
+      "description": "Export the entire track as a 16:9 lyric video with AI visuals AND readable lyrics.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/neural-frames-alternative/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical lyric video with mood-matched visuals."
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video with mood-matched visuals.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/neural-frames-alternative/use-case-2.png"
     },
     {
       "title": "Artists who need lyrics on screen",
-      "description": "When fans need to learn the words, not just see pretty visuals — LyricVideoMaker keeps lyrics front and center."
+      "description": "When fans need to learn the words, not just see pretty visuals — LyricVideoMaker keeps lyrics front and center.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/neural-frames-alternative/use-case-3.png"
     },
     {
       "title": "Lyric channels and frequent uploads",
-      "description": "Use a repeatable flow with auto-transcription and visual generation — faster than Neural Frames for lyric content."
+      "description": "Use a repeatable flow with auto-transcription and visual generation — faster than Neural Frames for lyric content.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/neural-frames-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "AI visuals that don't bury the lyrics.",
     "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
-    "button": "Try LyricVideoMaker Free"
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "ai-music-video-generator",
+        "label": "AI Music Video Generator",
+        "description": "Generate AI scenes from your lyrics."
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "Lyric Video Templates",
+        "description": "AI visual styles matched to your song."
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok Lyric Video Generator",
+        "description": "Vertical 9:16 lyric clips for TikTok."
+      }
+    ]
   }
 }

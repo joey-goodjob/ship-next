@@ -97,6 +97,10 @@ export type SeoPageContent = {
     description: string;
   };
   useCases?: SeoTextItem[];
+  relatedTools?: {
+    title: string;
+    items: SeoRelatedToolItem[];
+  };
   faq?: {
     title: string;
     items: SeoFaqItem[];
@@ -112,15 +116,20 @@ export type SeoPageContent = {
 export type SeoTextItem = {
   title: string;
   description: string;
-};
-
-export type SeoStepItem = SeoTextItem & {
   image?: string;
 };
+
+export type SeoStepItem = SeoTextItem;
 
 export type SeoFaqItem = {
   question: string;
   answer: string;
+};
+
+export type SeoRelatedToolItem = {
+  slug: string;
+  label: string;
+  description: string;
 };
 
 export const SEO_SECTION_TYPES = [
@@ -134,6 +143,7 @@ export const SEO_SECTION_TYPES = [
   "whyChoose",
   "faq",
   "toolkit",
+  "relatedTools",
   "bottomCta",
 ] as const;
 
@@ -296,6 +306,9 @@ function validateSelectedSection(page: SeoPageContent, section: SeoSectionType, 
     case "toolkit":
       validateToolkitSection(page, where);
       return;
+    case "relatedTools":
+      validateRelatedToolsSection(page, where);
+      return;
     case "bottomCta":
       validateBottomCtaSection(page, where);
       return;
@@ -446,6 +459,18 @@ function validateFaqSection(page: SeoPageContent, where: string) {
   assertFaqItems(page.faq.items, `${where}.faq.items`);
 }
 
+function validateRelatedToolsSection(page: SeoPageContent, where: string) {
+  assertRecord(page.relatedTools, `${where}.relatedTools`);
+  assertNonEmptyString(page.relatedTools.title, `${where}.relatedTools.title`);
+  assertArray(page.relatedTools.items, `${where}.relatedTools.items`);
+  page.relatedTools.items.forEach((item, index) => {
+    assertRecord(item, `${where}.relatedTools.items[${index}]`);
+    assertNonEmptyString(item.slug, `${where}.relatedTools.items[${index}].slug`);
+    assertNonEmptyString(item.label, `${where}.relatedTools.items[${index}].label`);
+    assertNonEmptyString(item.description, `${where}.relatedTools.items[${index}].description`);
+  });
+}
+
 function validateBottomCtaSection(page: SeoPageContent, where: string) {
   assertRecord(page.bottomCta, `${where}.bottomCta`);
   assertNonEmptyString(page.bottomCta.title, `${where}.bottomCta.title`);
@@ -459,6 +484,9 @@ function assertTextItems(value: unknown, label: string) {
     assertRecord(item, `${label}[${index}]`);
     assertNonEmptyString(item.title, `${label}[${index}].title`);
     assertNonEmptyString(item.description, `${label}[${index}].description`);
+    if ("image" in item && item.image !== undefined) {
+      assertPublicImagePath(item.image, `${label}[${index}].image`);
+    }
   });
 }
 
@@ -524,9 +552,18 @@ function assertNonEmptyString(value: unknown, label: string): asserts value is s
 
 function assertPublicImagePath(value: unknown, label: string): asserts value is string {
   assertNonEmptyString(value, label);
-  if (!value.startsWith("/") || value.includes("..") || value.includes("://")) {
-    throw new Error(`${label} must be a public absolute image path`);
+  if (value.startsWith("/") && !value.includes("..") && !value.includes("://")) {
+    return;
   }
+
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:" || url.protocol === "http:") return;
+  } catch {
+    // Fall through to the shared validation error.
+  }
+
+  throw new Error(`${label} must be a public image path or an http(s) image URL`);
 }
 
 function isValidSeoSlug(slug: string) {

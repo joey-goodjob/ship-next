@@ -10,14 +10,17 @@
   },
   "seo": {
     "title": "AI Lyric Video Maker — Free Lyric Video Generator & Creator",
-    "description": "Make lyric videos in minutes with AI. Upload a song, auto-transcribe and sync lyrics, preview styles, and export for YouTube, TikTok, and Reels.",
+    "description": "AI lyric video maker that turns any song into a synced lyric video. Auto-transcribe lyrics, pick a style, preview, and export for YouTube, TikTok & Reels.",
     "keywords": [
       "lyric video maker",
       "ai lyric video maker",
       "lyric video generator",
       "ai lyric video generator",
       "lyrics video maker",
-      "make lyric video"
+      "make lyric video",
+      "lyrical video maker",
+      "video lyrics maker",
+      "ai lyrics video maker"
     ]
   },
   "hero": {
@@ -55,7 +58,7 @@
     "loved_by": "Loved by creators, musicians, and marketers worldwide."
   },
   "featured": {
-    "title": "Made with 💚 by AI Music Video Community",
+    "title": "Made by the LyricVideoMaker community",
     "description": "Discover amazing creations from music video creators worldwide",
     "explore_cta": "Explore More",
     "cards": {
@@ -105,7 +108,11 @@
       "icon": "lyrics",
       "title": "AI Lyric Sync",
       "description": "Upload your song and let AI transcribe every line and lock it to the beat. Edit any lyric and fine-tune any timing — in 50+ languages, in minutes, not days.",
-      "tags": ["Transcription", "Beat Sync", "50+ Languages"],
+      "tags": [
+        "Transcription",
+        "Beat Sync",
+        "50+ Languages"
+      ],
       "cta": "Upload your song",
       "href": "/#create"
     },
@@ -113,7 +120,11 @@
       "icon": "video",
       "title": "The AI Lyric Video Maker",
       "description": "Built for songs, not ads or reels. Start from your lyrics, then make it yours with story prompts, scenes, colors, fonts, and images. No video editing experience required.",
-      "tags": ["Scenes", "Fonts", "Colors"],
+      "tags": [
+        "Scenes",
+        "Fonts",
+        "Colors"
+      ],
       "cta": "Open the editor",
       "href": "/#create"
     },
@@ -121,7 +132,11 @@
       "icon": "export",
       "title": "Export to Your Favorite Editor",
       "description": "Finish in the tools you already use. Create your lyric video in minutes, then export to Premiere, DaVinci Resolve, or Final Cut Pro for advanced editing.",
-      "tags": ["Premiere", "DaVinci", "Final Cut"],
+      "tags": [
+        "Premiere",
+        "DaVinci",
+        "Final Cut"
+      ],
       "cta": "For filmmakers",
       "href": "/pricing"
     }
@@ -133,10 +148,26 @@
     "seoDescription": "Compare LyricVideoMaker plans, free credits, monthly creator tiers, and credit packs for making AI lyric videos for YouTube, TikTok, and Reels."
   },
   "pricing_plans": {
-    "free": { "name": "Free", "note": "No credit card required", "cta": "Get Free" },
-    "creator": { "name": "Creator", "note": "Billed monthly", "cta": "Get Creator" },
-    "pro": { "name": "Pro", "note": "Billed monthly", "cta": "Get Pro" },
-    "ultra": { "name": "Ultra", "note": "Billed monthly", "cta": "Get Ultra" }
+    "free": {
+      "name": "Free",
+      "note": "No credit card required",
+      "cta": "Get Free"
+    },
+    "creator": {
+      "name": "Creator",
+      "note": "Billed monthly",
+      "cta": "Get Creator"
+    },
+    "pro": {
+      "name": "Pro",
+      "note": "Billed monthly",
+      "cta": "Get Pro"
+    },
+    "ultra": {
+      "name": "Ultra",
+      "note": "Billed monthly",
+      "cta": "Get Ultra"
+    }
   },
   "credits_pack": {
     "title": "Add Credits Anytime",
@@ -173,42 +204,6 @@
       }
     ]
   },
-  "styles": {
-    "title": "Find your vibe",
-    "subtitle": "Every style, previewed with real lyrics. Click any to try it.",
-    "items": [
-      {
-        "name": "Neon Pulse",
-        "description": "Glowing type over dark gradients — built for electronic, pop, and synth-wave.",
-        "previewImage": "/style-previews/neon-pulse.png",
-        "free": true
-      },
-      {
-        "name": "Clean Slate",
-        "description": "White space, soft serif type, and gentle motion — for acoustic, indie, and folk.",
-        "previewImage": "/style-previews/clean-slate.png",
-        "free": true
-      },
-      {
-        "name": "Night Drive",
-        "description": "Moody colors, hard cuts, and bold sans-serif — made for hip-hop, trap, and R&B.",
-        "previewImage": "/style-previews/night-drive.png",
-        "free": true
-      },
-      {
-        "name": "Ink & Paper",
-        "description": "Handwritten texture over warm paper tones — for ballads, storytelling, and spoken word.",
-        "previewImage": "/style-previews/ink-paper.png",
-        "free": true
-      },
-      {
-        "name": "Minimal Mono",
-        "description": "Black and white, no decoration — when the words are enough.",
-        "previewImage": "/style-previews/minimal-mono.png",
-        "free": true
-      }
-    ]
-  },
   "platforms": {
     "title": "Made for wherever your music lives",
     "items": [
@@ -234,14 +229,60 @@
   },
   "comparison": {
     "title": "The fastest way to a finished lyric video",
-    "columns": ["LyricVideoMaker", "Video editors", "General AI tools"],
+    "columns": [
+      "LyricVideoMaker",
+      "Video editors",
+      "General AI tools"
+    ],
     "rows": [
-      { "label": "Time to finish", "values": ["~2 minutes", "2–6 hours", "15–30 minutes"] },
-      { "label": "Auto lyric detection", "values": ["✓", "✗ manual", "~ subtitles only"] },
-      { "label": "Beat-accurate sync", "values": ["✓", "✗ by hand", "✗"] },
-      { "label": "Lyric-specific styles", "values": ["✓ purpose-built", "✗ from scratch", "~ generic captions"] },
-      { "label": "50+ languages", "values": ["✓", "—", "~"] },
-      { "label": "Free, no subscription", "values": ["✓", "~ software cost", "✗ subscription"] }
+      {
+        "label": "Time to finish",
+        "values": [
+          "~2 minutes",
+          "2–6 hours",
+          "15–30 minutes"
+        ]
+      },
+      {
+        "label": "Auto lyric detection",
+        "values": [
+          "✓",
+          "✗ manual",
+          "~ subtitles only"
+        ]
+      },
+      {
+        "label": "Beat-accurate sync",
+        "values": [
+          "✓",
+          "✗ by hand",
+          "✗"
+        ]
+      },
+      {
+        "label": "Lyric-specific styles",
+        "values": [
+          "✓ purpose-built",
+          "✗ from scratch",
+          "~ generic captions"
+        ]
+      },
+      {
+        "label": "50+ languages",
+        "values": [
+          "✓",
+          "—",
+          "~"
+        ]
+      },
+      {
+        "label": "Free, no subscription",
+        "values": [
+          "✓",
+          "~ software cost",
+          "✗ subscription"
+        ]
+      }
     ],
     "note": "Built for one thing — lyric videos — and obsessively good at it."
   },
@@ -352,7 +393,7 @@
     "description": "Everything you need to know before making your first AI lyric video.",
     "free": {
       "question": "Is this AI lyric video maker free?",
-      "answer": "Yes. Sign up, get free credits, make a lyric video, preview it, and export free — no subscription required and no credit card required."
+      "answer": "Yes. You can start without an account — upload your song and preview free. Create a free account to get free credits, save projects, and export. No subscription, no credit card."
     },
     "lyrics": {
       "question": "Do I need to type the lyrics myself?",
@@ -388,7 +429,27 @@
     },
     "phone": {
       "question": "Does it work on my phone?",
-      "answer": "Yes. Everything runs in the browser — no app or software to install. Works on iPhone, Android, and desktop."
+      "answer": "Yes, you can open projects in a mobile browser and watch previews or finished videos, but the full creation workflow is better on desktop. Uploading songs, editing lyrics, adjusting visuals, and exporting are much more comfortable on a computer."
+    },
+    "free_preview": {
+      "question": "Can I preview my lyric video before paying?",
+      "answer": "Yes. Upload a song, review the AI-synced lyrics, and preview the full lyric video before you spend any credits. You only use credits when you export."
+    },
+    "credits": {
+      "question": "How do credits work?",
+      "answer": "Credits are used when you generate and export a video. The free plan includes 150 one-time credits; Creator, Pro, and Ultra refill credits every month, and you can buy one-time credit packs anytime."
+    },
+    "static_video": {
+      "question": "Do simpler videos cost fewer credits?",
+      "answer": "Yes. A clean lyric video with synced text over a styled background uses fewer credits than full AI-generated scenes, so your credits go further when you don't need heavy visuals."
+    },
+    "models": {
+      "question": "What do premium AI models add?",
+      "answer": "Premium models, included on Pro and Ultra, generate more detailed, higher-quality visuals. Free and Creator use standard models that work well for most lyric videos."
+    },
+    "rights": {
+      "question": "Can I use exported videos commercially?",
+      "answer": "Yes. Your exports are yours to use commercially — monetized channels and paid releases included — as long as you have the rights to the music you upload."
     }
   },
   "cta": {

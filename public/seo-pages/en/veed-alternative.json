@@ -9,11 +9,12 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
-    "title": "VEED Alternative for Lyric Videos — AI Song-First Workflow, Free",
+    "title": "VEED Alternative for Lyric Videos — Song-First AI, Free",
     "description": "Need a VEED alternative for lyric videos? Start from audio, auto-sync lyrics, generate song-first visuals, and export without timeline editing.",
     "keywords": [
       "veed alternative lyric video",
@@ -24,9 +25,9 @@
   },
   "hero": {
     "badge": "VEED alternative — AI lyric video maker, free",
-    "h1": "VEED Alternative for Lyric Videos",
+    "h1": "VEED Alternative for Lyric Videos — Start From the Song",
     "subhead": "VEED is a general video editor — great for subtitles and talking heads, but lyric videos still mean manual text placement and timeline work. LyricVideoMaker starts from the song: upload audio, AI auto-transcribes lyrics, syncs every line to the beat, and generates visuals. Export free, no subscription needed.",
-    "primaryCta": "Try It Free",
+    "primaryCta": "Make a Lyric Video Free",
     "secondaryCta": "See How It Works"
   },
   "trust": [
@@ -80,15 +81,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. No dragging text boxes, no adjusting timestamps frame by frame. AI also generates visuals matched to the song's mood."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. No dragging text boxes, no adjusting timestamps frame by frame. AI also generates visuals matched to the song's mood.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and timing feels right, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and timing feels right, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -119,7 +123,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a VEED alternative?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+        "answer": "Yes. As a VEED alternative, LyricVideoMaker is free — free credits to start, export included, no subscription or credit card."
       },
       {
         "question": "How is LyricVideoMaker different from VEED for lyric videos?",
@@ -127,7 +131,7 @@
       },
       {
         "question": "Do I need to type lyrics like in VEED?",
-        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit if needed."
+        "answer": "No. Instead of typing and placing text like in VEED, AI transcribes the lyrics from your audio in 50+ languages. You just review and edit."
       },
       {
         "question": "Is VEED still better for some projects?",
@@ -135,7 +139,11 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+        "answer": "Yes. Your exports are yours for monetized channels and paid releases — the same freedom you'd expect from VEED. Just make sure you have the rights to the music you upload."
+      },
+      {
+        "question": "How hard is it to switch from VEED?",
+        "answer": "There's nothing to migrate. Upload the same song you used in VEED and you'll have a finished lyric video in a couple of minutes — no project files to move, no setup."
       }
     ]
   },
@@ -146,24 +154,54 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Export the entire track as a 16:9 lyric video — no timeline assembly required."
+      "description": "Export the entire track as a 16:9 lyric video — no timeline assembly required.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/veed-alternative/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical lyric video without rebuilding a timeline."
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video without rebuilding a timeline.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/veed-alternative/use-case-2.png"
     },
     {
       "title": "Artist single releases",
-      "description": "Get a lyric video from the final mix in minutes — no editor, no designer, no timeline."
+      "description": "Get a lyric video from the final mix in minutes — no editor, no designer, no timeline.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/veed-alternative/use-case-3.png"
     },
     {
       "title": "Lyric channels and batch content",
-      "description": "Upload songs one after another and get finished lyric videos — faster than building each one in VEED's editor."
+      "description": "Upload songs one after another and get finished lyric videos — faster than building each one in VEED's editor.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/veed-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Skip the timeline. Start from the song.",
     "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
-    "button": "Try LyricVideoMaker Free"
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      },
+      {
+        "slug": "add-lyrics-to-video",
+        "label": "Add Lyrics to Video",
+        "description": "Overlay synced lyrics on your footage."
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "Automatic Lyrics Transcription",
+        "description": "Get beat-synced TXT, LRC, or SRT lyrics."
+      }
+    ]
   }
 }
