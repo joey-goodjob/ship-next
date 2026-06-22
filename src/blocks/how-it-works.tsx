@@ -8,9 +8,9 @@ type HowItWorksStep = {
 };
 
 const STEP_IMAGES = [
-  "/seo-pages/ai-lyric-video-generator/how-to-1.png",
-  "/seo-pages/ai-lyric-video-generator/how-to-2.png",
-  "/seo-pages/ai-lyric-video-generator/how-to-3.png",
+  "/seo-pages/ai-lyric-video-generator/how-to-1.webp",
+  "/seo-pages/ai-lyric-video-generator/how-to-2.webp",
+  "/seo-pages/ai-lyric-video-generator/how-to-3.webp",
 ] as const;
 
 export async function HowItWorks() {

@@ -44,17 +44,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV 或 FLAC 文件，或粘贴链接。无需创建账号即可开始。AI 从音频出发，你不需要手动输入任何歌词。完整歌曲可用于 YouTube，截取片段可用于 TikTok 和 Reels。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写歌词并同步节拍",
         "description": "歌词从音频自动转写，逐行同步节拍——支持 50 多种语言。点击任意一行即可编辑。AI 还会分析歌曲的情绪、能量和节奏，生成与音乐匹配的视觉方向，而不是随机背景。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "发布前观看完整歌词视频。导出 16:9 用于 YouTube，9:16 用于 TikTok 和 Reels，1:1 用于信息流帖子——全部来自一次上传。免费，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

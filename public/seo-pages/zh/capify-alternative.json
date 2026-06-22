@@ -83,17 +83,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并同步",
         "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。AI 还会读取歌曲情绪，生成匹配的视觉画面。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

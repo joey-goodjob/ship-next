@@ -70,17 +70,17 @@
       {
         "title": "上传你的歌曲",
         "description": "拖入 MP3、WAV 或 FLAC 文件，无需创建账号即可开始。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "歌词自动生成",
         "description": "AI 自动转写歌词并逐行同步节拍，点击任意一行即可编辑。有现成歌词？也可以直接粘贴。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并免费导出",
         "description": "观看完整歌词视频预览，满意后直接导出——无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

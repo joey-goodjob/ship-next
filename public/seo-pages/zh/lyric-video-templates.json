@@ -81,17 +81,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。AI 读取歌曲情绪来匹配视觉风格 — 你不用在通用模板库里挑选。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并生成画面",
         "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。视觉风格根据歌曲的能量、曲风和情绪自动生成。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "在发布前看完整预览。确认歌词清晰可读、视觉风格匹配歌曲，然后导出 16:9 适配 YouTube，9:16 适配 TikTok 和 Reels，1:1 适配信息流。免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

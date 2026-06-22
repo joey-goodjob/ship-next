@@ -46,17 +46,17 @@
       {
         "title": "上传视频",
         "description": "从 MP4、MOV 或 WebM 视频开始，也可以添加单独的 MP3、WAV、FLAC、AAC 或 OGG 音频轨。歌曲或演出已经在线时，也可以粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并同步",
         "description": "AI 自动从音频转写文字，并逐行同步，支持 50 多种语言。渲染前可以点击任意行修正文字。文字时间跟着音频走，每一行都在被唱出或说出的那一刻落到画面上。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "发布前先预览完整带歌词的视频。把歌词块移动到不会遮挡人物、产品或关键动作的位置，再导出为 16:9 YouTube、9:16 TikTok/Reels/Shorts，或 1:1 信息流格式。免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

@@ -93,17 +93,17 @@
       {
         "title": "Upload your song",
         "description": "Drag in an audio file — MP3, WAV, FLAC, AAC, or OGG — or paste a link. No account needed to start, and no manual lyric typing required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "Review your lyrics and pick a style",
         "description": "AI transcribes and syncs every line in about 30 seconds. Edit any line you want, then preview templates with your actual lyrics until one fits the song.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "Preview and export",
         "description": "Watch the full lyric video before publishing, then export in HD — 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. No subscription required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },
@@ -200,44 +200,169 @@
   "contentSections": [
     {
       "heading": "What is an AI lyric video generator?",
-      "body": [
-        "An AI lyric video generator turns a song into a finished video where the lyrics are the visual centerpiece — animated, styled, and synced to the music. Instead of typing words into a timeline, you upload the audio and the generator transcribes the lyrics, times each line to the beat, and builds matching visuals automatically.",
-        "It is different from a subtitle generator, which pins plain text to the bottom of an existing clip. A lyric video generator creates the whole video around the words, so the result feels designed for the song rather than captioned after the fact."
+      "intro": "An AI lyric video generator turns a song into a finished video where the lyrics are the visual centerpiece — animated, styled, and synced to the music. Instead of typing words into a timeline, you upload the audio and the generator transcribes the lyrics, times each line to the beat, and builds matching visuals automatically.",
+      "bullets": [
+        "Input: an audio file of your song — no video footage and no typing required.",
+        "What it does: transcribes the lyrics, aligns each line to the beat, and generates mood-driven visuals.",
+        "Output: a finished MP4 lyric video in 16:9, 9:16, or 1:1.",
+        "Not a subtitle generator: a subtitle tool only pins plain text to the bottom of an existing clip."
       ]
     },
     {
-      "heading": "How the generator turns audio into a synced video",
-      "body": [
-        "The pipeline runs in a few automatic stages. First, AI transcription reads the vocal and writes out the lyrics line by line. Then beat analysis aligns each line to the song's tempo and energy, so words land on the beat instead of merely near it.",
-        "From there the generator builds a storyboard and creates mood-driven visual scenes that follow the song's structure — intros, verses, choruses, and instrumental breaks. You review the synced lyrics, adjust anything, preview the full result, and export. The slow, manual parts are done before you start."
+      "heading": "What the generator does automatically vs what you control",
+      "intro": "Automatic does not mean locked. The generator handles the slow, repetitive work, and you keep control of the details that make a release feel finished.",
+      "table": {
+        "columns": [
+          "Done automatically by the AI",
+          "In your control"
+        ],
+        "rows": [
+          [
+            "Transcribing the lyrics from your audio",
+            "Fixing any misheard word"
+          ],
+          [
+            "Aligning every line to the beat",
+            "Nudging the timing of a line"
+          ],
+          [
+            "Detecting song structure and instrumental gaps",
+            "Showing a title card or visualizer in those gaps"
+          ],
+          [
+            "Generating mood-matched visual scenes",
+            "Switching the visual style"
+          ],
+          [
+            "Sizing and placing the lyrics for each format",
+            "Adjusting fonts, colors, and backgrounds"
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Lyric video styles by genre",
+      "intro": "The generator reads your song's mood, energy, and genre and leans the visual direction to match — so a ballad and a rap hook never get the same look.",
+      "table": {
+        "columns": [
+          "Genre",
+          "Visual direction the AI leans toward"
+        ],
+        "rows": [
+          [
+            "Acoustic / singer-songwriter",
+            "Clean type, generous spacing, gentle motion"
+          ],
+          [
+            "Pop / dance",
+            "Bold type, bright color, beat-reactive movement"
+          ],
+          [
+            "Hip-hop / trap",
+            "Tight, high-contrast layouts with punchy timing"
+          ],
+          [
+            "EDM / electronic",
+            "High-energy motion that hits on the drop"
+          ],
+          [
+            "Ballad / cinematic",
+            "Slower pacing, moody color, atmospheric visuals"
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Lyric video generator specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Detail"
+        ],
+        "rows": [
+          [
+            "Input formats",
+            "MP3, WAV, FLAC, AAC, OGG, M4A (up to 100MB)"
+          ],
+          [
+            "Output",
+            "MP4 video with your original audio"
+          ],
+          [
+            "Aspect ratios",
+            "16:9 for YouTube, 9:16 for TikTok/Reels/Shorts, 1:1 for feed"
+          ],
+          [
+            "Languages",
+            "50+ languages, auto-detected from the vocal"
+          ],
+          [
+            "Lyrics",
+            "Auto-transcribed and editable line by line"
+          ],
+          [
+            "Getting started",
+            "Free credits, no signup to start, no credit card"
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Tips for a lyric video people actually watch",
+      "intro": "A few habits separate a lyric video that holds attention from one viewers swipe past:",
+      "bullets": [
+        "Keep one or two lines on screen at a time — a full verse at once is hard to read on a phone.",
+        "Let the chorus look different from the verses so viewers feel the song's structure.",
+        "Match the font to the genre: softer serifs suit ballads, bold sans-serif reads better for rap, pop, and dance.",
+        "Sync transitions to the beat, not just to the lyric — the video feels more musical.",
+        "Keep instrumental sections alive with motion or a visualizer so the screen never goes empty.",
+        "Preview on a phone before publishing — if it reads on a small screen, it reads everywhere.",
+        "Reuse a consistent style across releases so your lyric videos feel like one artist world."
       ]
     },
     {
-      "heading": "Lyric video styles for every genre",
-      "body": [
-        "Different songs need different looks, and the generator reads mood, energy, and genre to match one. A soft acoustic ballad gets calm type and gentle motion; a rap hook gets bolder, tighter pacing; an EDM drop gets higher-energy movement that reacts to the beat.",
-        "Because the style is driven by your track rather than picked from a fixed gallery, the lyric video feels specific to the song. You can still fine-tune fonts, colors, and backgrounds, but you do not start from a blank canvas or a preset that was never meant for your music."
-      ]
+      "heading": "How an AI generator compares to other ways to make a lyric video",
+      "intro": "There are four common ways to make a lyric video. The generator wins on speed and on doing the lyric work for you.",
+      "table": {
+        "columns": [
+          "Method",
+          "Time",
+          "Skill needed",
+          "Lyrics typed for you"
+        ],
+        "rows": [
+          [
+            "AI lyric video generator",
+            "About 2 minutes",
+            "None",
+            "Yes, from your audio"
+          ],
+          [
+            "Canva or a template editor",
+            "1–2 hours",
+            "Basic design",
+            "No, manual input"
+          ],
+          [
+            "After Effects",
+            "4+ hours",
+            "Advanced motion",
+            "No, manual input"
+          ],
+          [
+            "Hiring a freelancer",
+            "2–7 days",
+            "None",
+            "Usually you provide them"
+          ]
+        ]
+      }
     },
     {
-      "heading": "What you can edit before exporting",
+      "heading": "The fastest first step for almost any song",
       "body": [
-        "Automatic does not mean locked. Every lyric line is editable: click to fix a misheard word, merge or split lines for readability, or nudge timing so a phrase lands exactly where you want it. You can also swap the visual style and adjust fonts, colors, and backgrounds to fit a release.",
-        "This review-and-refine step is the point — the generator does the heavy lifting, then hands you control over the details that make a lyric video feel finished rather than auto-generated."
-      ]
-    },
-    {
-      "heading": "Lyric video generator vs a manual editor",
-      "body": [
-        "In a general video editor, a lyric video means transcribing by ear, splitting lines, dragging text, syncing each cue, and re-rendering for every aspect ratio — hours of repetitive work before you know if it looks good. The generator compresses that into one upload and a quick review.",
-        "Even if you eventually polish a release in another tool, generating a draft first gives you a working reference for line breaks, pacing, and mood in minutes, at almost no cost — which is why it is the fastest first step for most songs."
-      ]
-    },
-    {
-      "heading": "From one song to every format",
-      "body": [
-        "A single project exports in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, and 1:1 for feed posts. You generate the lyric video once and get every format you need, instead of rebuilding the same idea for each platform.",
-        "That makes the generator practical for a real release: one upload becomes a full-length video, a vertical hook clip, and a square teaser, all sharing the same lyrics and visual direction."
+        "Because the generator turns the unknowns into something you can see — line breaks, timing, readability, and overall mood — it is the safest first pass even when you plan to polish the video elsewhere. You get a watchable draft in minutes, at almost no cost, and only invest in a heavier production if the song truly needs it.",
+        "It is also built for the realities of a release: one upload exports a full-length YouTube version, a vertical hook for short-form, and a square cut for feed posts, all sharing the same lyrics and visual direction. That makes it practical not just for a single video, but for keeping a whole release week supplied with on-brand content."
       ]
     }
   ]

@@ -44,17 +44,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。AI 直接从音频处理 — 你不用从零搭建卡拉 OK 时间轴。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并同步",
         "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。导出前可以点击任意歌词行修改词句。提示时间会让下一句歌词在演唱者需要前出现。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "像唱歌的人一样看预览 — 检查歌词提示是否准时出现、文字在任何屏幕上是否清晰、副歌是否自然。导出时选择 16:9 适配 YouTube 和电视，9:16 适配 TikTok，1:1 适配信息流。免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

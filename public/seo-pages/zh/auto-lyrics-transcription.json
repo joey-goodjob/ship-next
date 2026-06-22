@@ -45,17 +45,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴支持的链接。无需注册即可开始，也不需要手动输入歌词。AI 会听真实演唱，帮你完成转写。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并同步",
         "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。即使是 ad-lib、多层和声、快速段落，AI 也能处理。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "检查完整转写结果和节拍时间。你可以下载 TXT、LRC 或 SRT，用于字幕、简介、播放器歌词或视频剪辑 — 也可以直接预览同一份同步歌词生成的歌词视频。免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

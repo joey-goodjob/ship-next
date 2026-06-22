@@ -1,9 +1,9 @@
 import { getAllSeoPages } from "../src/lib/seo-pages";
 
 const expectedImages = [
-  "/seo-pages/ai-lyric-video-generator/how-to-1.png",
-  "/seo-pages/ai-lyric-video-generator/how-to-2.png",
-  "/seo-pages/ai-lyric-video-generator/how-to-3.png",
+  "/seo-pages/ai-lyric-video-generator/how-to-1.webp",
+  "/seo-pages/ai-lyric-video-generator/how-to-2.webp",
+  "/seo-pages/ai-lyric-video-generator/how-to-3.webp",
 ] as const;
 
 for (const { locale, slug, page } of getAllSeoPages()) {
