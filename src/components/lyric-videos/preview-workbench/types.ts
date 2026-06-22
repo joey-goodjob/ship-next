@@ -223,6 +223,7 @@ export type VisualGenerationResponse = {
   queuedImages?: LyricScene[];
   storyPrompt?: string;
   generatedStoryboard?: boolean;
+  alreadyRunning?: boolean;
 };
 
 export type RetryFailedBatchesResponse = {
@@ -267,6 +268,7 @@ export type EditorContextValue = {
   preparingAudio: boolean;
   creatingStory: boolean;
   castBusy: boolean;
+  visualGenerationBusy: boolean;
   generationLocked: boolean;
   generationLockReason: string;
   storyChangeSource: StoryChangeSource;

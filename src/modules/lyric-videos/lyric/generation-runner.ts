@@ -1140,6 +1140,7 @@ export async function executeGenerationRun(params: {
       sceneIds: scenes.map((scene: any) => scene.id),
       model: options.imageModel,
       clearExistingImages: true,
+      skipActiveGenerationGuard: true,
     });
     const videoPromptResult = await videoPromptPromise;
     const finalPromptGenerationOutput = {

@@ -10,6 +10,7 @@ type TimelineOverlayAction = "confirm" | "apply" | "cancel" | "edit" | "generate
 
 type TimelineActionOverlayInput = {
   generationLocked?: boolean;
+  visualGenerationBusy?: boolean;
   generationRun?: GenerationRun | null;
   generationSteps: GenerationStep[];
   latestExport?: LyricExport;
@@ -36,7 +37,19 @@ type TimelineActionOverlayModel = {
 };
 
 export function deriveTimelineActionOverlayModel(input: TimelineActionOverlayInput): TimelineActionOverlayModel {
-  const { generationLocked = false, generationRun = null, generationSteps, latestExport, loadError = "", project, runtimeState, saveStatus, scenes, storyConfirmation } = input;
+  const {
+    generationLocked = false,
+    visualGenerationBusy = false,
+    generationRun = null,
+    generationSteps,
+    latestExport,
+    loadError = "",
+    project,
+    runtimeState,
+    saveStatus,
+    scenes,
+    storyConfirmation,
+  } = input;
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const continuing = saveStatus === "saving";
   const exportReady = project?.renderStatus === "ready" || latestExport?.status === "success" || latestExport?.status === "ready";
@@ -74,7 +87,7 @@ export function deriveTimelineActionOverlayModel(input: TimelineActionOverlayInp
     };
   }
 
-  if (progress.isActive) {
+  if (progress.isActive || visualGenerationBusy) {
     return {
       action: "none",
       buttonLabel: "Generating...",
@@ -140,6 +153,7 @@ export function TimelineActionOverlay() {
     editStoryPrompt,
     generateStoryboardPrompts,
     generationLocked,
+    visualGenerationBusy,
     generationRun,
     generationSteps,
     latestExport,
@@ -155,6 +169,7 @@ export function TimelineActionOverlay() {
   } = useEditor();
   const model = deriveTimelineActionOverlayModel({
     generationLocked,
+    visualGenerationBusy,
     generationRun,
     generationSteps,
     latestExport,
