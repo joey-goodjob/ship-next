@@ -14,10 +14,12 @@
     "categories": "分类",
     "posts": "文章",
     "billing": "支付与积分",
+    "business": "业务",
     "payments": "支付",
     "subscriptions": "订阅",
     "credits": "积分",
-    "invite_codes": "邀请码"
+    "invite_codes": "邀请码",
+    "creations": "作品"
   },
   "stats": {
     "total_users": "总用户数",
@@ -247,6 +249,47 @@
     "tab_all": "全部",
     "tab_grant": "授予",
     "tab_consume": "消费"
+  },
+  "creations": {
+    "title": "作品生成",
+    "description": "查看歌词视频项目、用户媒体、生成状态、导出结果和失败原因。",
+    "refresh": "刷新",
+    "search_placeholder": "搜索标题、文件名、用户或邮箱",
+    "total": "共 {count} 个作品",
+    "loading": "正在加载作品...",
+    "empty": "暂无歌词视频作品",
+    "previous": "上一页",
+    "next": "下一页",
+    "unknown_user": "未知用户",
+    "untitled_audio": "未命名音频",
+    "direct_source": "直接访问",
+    "source_audio": "原始音频",
+    "processed_audio": "处理后音频",
+    "rendered_video": "导出视频",
+    "empty_media": "这个作品还没有可播放的媒体。",
+    "empty_steps": "暂无生成步骤记录。",
+    "empty_scenes": "暂无场景记录。",
+    "id": "ID",
+    "aspect": "规格",
+    "language": "语言",
+    "style": "风格",
+    "open_preview": "打开预览",
+    "badges": {
+      "render": "导出：{status}"
+    },
+    "sections": {
+      "media": "媒体",
+      "progress": "进度",
+      "steps": "生成步骤",
+      "workflow": "工作流",
+      "scenes": "场景"
+    },
+    "metrics": {
+      "scenes": "图片",
+      "exports": "导出",
+      "failed_images": "失败图片",
+      "elapsed": "耗时"
+    }
   },
   "invite_codes": {
     "title": "邀请码",
