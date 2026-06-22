@@ -1,4 +1,4 @@
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, notInArray, or } from 'drizzle-orm';
 import sharp from 'sharp';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
@@ -21,7 +21,7 @@ import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
 import { generateStoryboard } from './storyboard';
-import { GENERATION_STAGES } from './types';
+import { ACTIVE_RUN_STATUSES, GENERATION_STAGES } from './types';
 import { activeCastForStoryboard, cleanSceneCastIds, groupScenesByCastCombination } from './cast-library';
 
 /**
@@ -55,6 +55,7 @@ export const GRID_SCENE_IMAGE_BATCH_SIZE = GRID_SCENE_IMAGE_SIZE * GRID_SCENE_IM
 const GRID_IMAGE_QUEUE_CONCURRENCY = 4;
 const GRID_IMAGE_SYNC_READY_BATCH_LIMIT = 1;
 const GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS = 2;
+const VISUALS_ALREADY_RUNNING = 'VISUALS_ALREADY_RUNNING';
 
 type GridImagePanelScene = any & {
   finalPrompt?: string;
@@ -80,6 +81,75 @@ type GridImageBatchDescriptor = {
   castId?: string;
   castIds?: string[];
 };
+
+function isActiveGenerationStatus(status?: string | null) {
+  return ACTIVE_RUN_STATUSES.includes(status as (typeof ACTIVE_RUN_STATUSES)[number]);
+}
+
+export function hasActiveSceneImageGeneration(scenes: Array<{ status?: string | null; imageUrl?: string | null; providerTaskId?: string | null }>) {
+  return scenes.some((scene) => scene.status === 'processing' && !scene.imageUrl && Boolean(scene.providerTaskId));
+}
+
+export function hasActiveVisualGeneration(params: {
+  project?: { generationStatus?: string | null; pipelineStage?: string | null; scenesStatus?: string | null } | null;
+  scenes: Array<{ status?: string | null; imageUrl?: string | null; providerTaskId?: string | null }>;
+}) {
+  return (
+    isActiveGenerationStatus(params.project?.generationStatus) ||
+    params.project?.pipelineStage === 'storyboard_generating' ||
+    params.project?.pipelineStage === 'images_queueing' ||
+    params.project?.pipelineStage === 'images_processing' ||
+    hasActiveSceneImageGeneration(params.scenes)
+  );
+}
+
+function activeOrCurrentScenes(scenes: any[]) {
+  const active = scenes.filter((scene: any) => scene.status === 'processing' && !scene.imageUrl);
+  return active.length > 0 ? active : scenes;
+}
+
+async function claimImageQueueStart(params: {
+  userId: string;
+  projectId: string;
+  pipelineStage?: 'storyboard_generating' | 'images_queueing' | 'images_processing';
+  currentStage?: 'prompt_generation' | 'image_generation';
+  progressPercent?: number;
+}) {
+  const [claimed] = await db()
+    .update(lyricVideoProject)
+    .set({
+      scenesStatus: 'processing',
+      ...buildProjectGenerationSnapshot(
+        {
+          status: 'running',
+          currentStage: params.currentStage || 'image_generation',
+          progressPercent: params.progressPercent || 80,
+        },
+        { pipelineStage: params.pipelineStage || 'images_queueing', pipelineError: null }
+      ),
+    })
+    .where(
+      and(
+        eq(lyricVideoProject.id, params.projectId),
+        eq(lyricVideoProject.userId, params.userId),
+        or(isNull(lyricVideoProject.generationStatus), notInArray(lyricVideoProject.generationStatus, [...ACTIVE_RUN_STATUSES]))
+      )
+    )
+    .returning();
+
+  return claimed || null;
+}
+
+function alreadyRunningVisualsResponse(params: { details: any; storyPrompt: string }) {
+  return {
+    project: params.details.project,
+    scenes: params.details.scenes,
+    queuedImages: activeOrCurrentScenes(params.details.scenes),
+    storyPrompt: params.storyPrompt,
+    generatedStoryboard: false,
+    alreadyRunning: true,
+  };
+}
 
 async function runWithConcurrency<T, R>(
   items: T[],
@@ -439,6 +509,28 @@ async function createVisualsGenerationLedger(params: {
       sceneCount: params.details.scenes.length,
       storyPromptLength: params.storyPrompt.length,
     };
+    const [claimed] = await tx
+      .update(lyricVideoProject)
+      .set({
+        ...buildProjectGenerationSnapshot(
+          { status: 'running', currentStage: 'prompt_generation', progressPercent: 70 },
+          {
+            activeRunId: runId,
+            pipelineStage: 'storyboard_generating',
+            pipelineError: null,
+          }
+        ),
+      })
+      .where(
+        and(
+          eq(lyricVideoProject.id, params.projectId),
+          eq(lyricVideoProject.userId, params.userId),
+          or(isNull(lyricVideoProject.generationStatus), notInArray(lyricVideoProject.generationStatus, [...ACTIVE_RUN_STATUSES]))
+        )
+      )
+      .returning();
+    if (!claimed) throw new Error(VISUALS_ALREADY_RUNNING);
+
     const [run] = await tx
       .insert(lyricVideoGenerationRun)
       .values({
@@ -479,17 +571,6 @@ async function createVisualsGenerationLedger(params: {
       )
       .returning();
 
-    await tx
-      .update(lyricVideoProject)
-      .set({
-        ...buildProjectGenerationSnapshot(run, {
-          activeRunId: run.id,
-          pipelineStage: 'storyboard_generating',
-          pipelineError: null,
-        }),
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
-
     logLyricStage('visuals', 'ledger-created', {
       projectId: params.projectId,
       userId: params.userId,
@@ -512,8 +593,17 @@ async function ensureVisualsGenerationLedger(params: {
     projectId: params.projectId,
     runId: params.details.project.activeRunId,
   });
-  if (existing) return existing;
-  return createVisualsGenerationLedger(params);
+  if (existing && isActiveGenerationStatus(existing.run.status)) {
+    return { alreadyRunning: true as const, ledger: existing };
+  }
+  try {
+    return { alreadyRunning: false as const, ledger: await createVisualsGenerationLedger(params) };
+  } catch (error: any) {
+    if (error?.message === VISUALS_ALREADY_RUNNING) {
+      return { alreadyRunning: true as const, ledger: existing || null };
+    }
+    throw error;
+  }
 }
 
 function visualsStepOrThrow(steps: any[], stage: 'prompt_generation' | 'image_generation' | 'finalize_project') {
@@ -921,6 +1011,7 @@ export async function queueSceneImages(params: {
   model?: string;
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
+  skipActiveGenerationGuard?: boolean;
 }) {
   // 单张或少量 scene 图片排队入口。会创建 `ai_task`，然后把 providerTaskId、
   // imageTaskId、status=processing 写回对应 `lyric_video_scene`。
@@ -945,6 +1036,31 @@ export async function queueSceneImages(params: {
   const scenesMissingPrompts = scenes.filter((scene: any) => !String(scene.prompt || '').trim());
   if (scenesMissingPrompts.length > 0) {
     throw new Error('Generate storyboard prompts before creating scene images');
+  }
+  if (!params.skipActiveGenerationGuard && hasActiveVisualGeneration({ project: details.project, scenes: details.scenes })) {
+    logLyricStage('scene-images', 'queue-already-running', {
+      projectId: params.projectId,
+      userId: params.userId,
+      sceneIds: scenes.map((scene: any) => scene.id),
+      pipelineStage: details.project.pipelineStage,
+      generationStatus: details.project.generationStatus,
+    });
+    return activeOrCurrentScenes(scenes);
+  }
+  if (!params.skipActiveGenerationGuard) {
+    const claimed = await claimImageQueueStart({
+      userId: params.userId,
+      projectId: params.projectId,
+      pipelineStage: 'images_queueing',
+      currentStage: 'image_generation',
+      progressPercent: 80,
+    });
+    if (!claimed) {
+      const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      const refreshedScenes = refreshed?.scenes || details.scenes;
+      const selectedIds = new Set(scenes.map((scene: any) => scene.id));
+      return activeOrCurrentScenes(refreshedScenes.filter((scene: any) => selectedIds.has(scene.id)));
+    }
   }
 
   const configs = await getAllConfigs();
@@ -1129,6 +1245,7 @@ export async function queueSceneImagesGrid(params: {
   model?: string;
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
+  skipActiveGenerationGuard?: boolean;
 }) {
   // 主链路默认使用的批量图片入口：把最多 9 个 scene 合成一个 3x3 grid prompt，
   // 降低供应商调用次数。每个 scene 会记录同一个 providerTaskId 和自己的 panel 信息。
@@ -1147,6 +1264,31 @@ export async function queueSceneImagesGrid(params: {
   const scenesMissingPrompts = scenes.filter((scene: any) => !String(scene.prompt || '').trim());
   if (scenesMissingPrompts.length > 0) {
     throw new Error('Generate storyboard prompts before creating scene images');
+  }
+  if (!params.skipActiveGenerationGuard && hasActiveVisualGeneration({ project: details.project, scenes: details.scenes })) {
+    logLyricStage('scene-images-grid', 'queue-already-running', {
+      projectId: params.projectId,
+      userId: params.userId,
+      sceneIds: scenes.map((scene: any) => scene.id),
+      pipelineStage: details.project.pipelineStage,
+      generationStatus: details.project.generationStatus,
+    });
+    return activeOrCurrentScenes(scenes);
+  }
+  if (!params.skipActiveGenerationGuard) {
+    const claimed = await claimImageQueueStart({
+      userId: params.userId,
+      projectId: params.projectId,
+      pipelineStage: 'images_queueing',
+      currentStage: 'image_generation',
+      progressPercent: 80,
+    });
+    if (!claimed) {
+      const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+      const refreshedScenes = refreshed?.scenes || details.scenes;
+      const selectedIds = new Set(scenes.map((scene: any) => scene.id));
+      return activeOrCurrentScenes(refreshedScenes.filter((scene: any) => selectedIds.has(scene.id)));
+    }
   }
 
   const model = params.model || 'nano-banana-2';
@@ -1555,6 +1697,7 @@ export async function retryFailedSceneImageBatches(params: {
       sceneIds: batch.sceneIds,
       model: params.model,
       clearExistingImages: false,
+      skipActiveGenerationGuard: true,
     });
     queuedScenes.push(...queued);
     queuedBatches.push({
@@ -1631,6 +1774,28 @@ export async function generateVisualsFromStory(params: {
 
   const storyPrompt = (params.storyPrompt || details.project.storyPrompt || '').trim();
   if (!storyPrompt) throw new Error('Create a story before creating visuals');
+  if (hasActiveVisualGeneration({ project: details.project, scenes: details.scenes })) {
+    logLyricStage('visuals', 'already-running', {
+      projectId: params.projectId,
+      userId: params.userId,
+      pipelineStage: details.project.pipelineStage,
+      generationStatus: details.project.generationStatus,
+      activeRunId: details.project.activeRunId,
+    });
+    return alreadyRunningVisualsResponse({ details, storyPrompt });
+  }
+
+  const ledgerResult = await ensureVisualsGenerationLedger({
+    userId: params.userId,
+    projectId: params.projectId,
+    details,
+    storyPrompt,
+  });
+  if (ledgerResult.alreadyRunning || !ledgerResult.ledger) {
+    const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
+    return alreadyRunningVisualsResponse({ details: refreshed || details, storyPrompt });
+  }
+
   const directionDetail = await ensureProductionDirectionDetail({
     userId: params.userId,
     projectId: params.projectId,
@@ -1655,12 +1820,7 @@ export async function generateVisualsFromStory(params: {
     model: params.model,
   });
 
-  const ledger = await ensureVisualsGenerationLedger({
-    userId: params.userId,
-    projectId: params.projectId,
-    details,
-    storyPrompt,
-  });
+  const ledger = ledgerResult.ledger;
   let currentVisualsStage: 'prompt_generation' | 'image_generation' = 'prompt_generation';
 
   try {
@@ -1744,6 +1904,7 @@ export async function generateVisualsFromStory(params: {
             sceneIds: scenesToQueue.map((scene: any) => scene.id),
             model: params.model,
             clearExistingImages: Boolean(params.regenerateImages),
+            skipActiveGenerationGuard: true,
           })
         : [];
 
@@ -2252,6 +2413,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           projectId: params.projectId,
           sceneIds: scenes.map((scene: any) => scene.id),
           clearExistingImages: false,
+          skipActiveGenerationGuard: true,
         }));
         continue;
       }

@@ -130,11 +130,15 @@ export function EditorProvider({
   const [preparingAudio, setPreparingAudio] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
   const [castBusy, setCastBusy] = useState(false);
+  const [visualGenerationBusy, setVisualGenerationBusy] = useState(false);
   const [confirmedStoryPrompt, setConfirmedStoryPrompt] = useState<string | null>(null);
   const [storyChangeSource, setStoryChangeSource] = useState<StoryChangeSource>(null);
   const [storyReviewBaseline, setStoryReviewBaseline] = useState("");
   const saveTimerRef = useRef<number | null>(null);
   const imageSyncInFlightRef = useRef(false);
+  const visualGenerationInFlightRef = useRef(false);
+  const sceneImageQueueInFlightRef = useRef(false);
+  const retryImageBatchesInFlightRef = useRef(false);
   const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
   const autoStoryProjectRef = useRef<string | null>(null);
@@ -695,6 +699,10 @@ export function EditorProvider({
   }
 
   async function generateStoryboardPrompts() {
+    if (visualGenerationInFlightRef.current) {
+      toast.info("Scene generation is already running");
+      return;
+    }
     if (generationLocked) {
       showGenerationLockedToast();
       return;
@@ -708,6 +716,8 @@ export function EditorProvider({
       return;
     }
 
+    visualGenerationInFlightRef.current = true;
+    setVisualGenerationBusy(true);
     setSaveStatus("saving");
     try {
       if (lyricsDirty || wordsDirty) {
@@ -775,10 +785,17 @@ export function EditorProvider({
       setActiveTab("scenes");
       setSaveStatus("saved");
       await refresh();
-      toast.success("Scene generation started");
+      if (generated.alreadyRunning) {
+        toast.info("Scene generation is already running");
+      } else {
+        toast.success("Scene generation started");
+      }
     } catch (err: any) {
       setSaveStatus("failed");
       toast.error(err?.message || "Generate scenes failed");
+    } finally {
+      visualGenerationInFlightRef.current = false;
+      setVisualGenerationBusy(false);
     }
   }
 
@@ -935,6 +952,10 @@ export function EditorProvider({
   }
 
   async function queueSceneImages(sceneIds: string[]) {
+    if (sceneImageQueueInFlightRef.current) {
+      toast.info("Scene image generation is already running");
+      return [];
+    }
     if (generationLocked) {
       showGenerationLockedToast();
       return [];
@@ -942,6 +963,7 @@ export function EditorProvider({
     if (!project) return [];
     const selectedSceneIds = sceneIds.filter(Boolean);
     if (selectedSceneIds.length === 0) return [];
+    sceneImageQueueInFlightRef.current = true;
     setSaveStatus("saving");
     try {
       const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/images`, {
@@ -974,6 +996,8 @@ export function EditorProvider({
       setSaveStatus("failed");
       toast.error(err?.message || "Queue scene images failed");
       return [];
+    } finally {
+      sceneImageQueueInFlightRef.current = false;
     }
   }
 
@@ -995,11 +1019,16 @@ export function EditorProvider({
   }
 
   async function retryFailedImageBatches() {
+    if (retryImageBatchesInFlightRef.current) {
+      toast.info("Scene image generation is already running");
+      return;
+    }
     if (generationLocked) {
       showGenerationLockedToast();
       return;
     }
     if (!project) return;
+    retryImageBatchesInFlightRef.current = true;
     setSaveStatus("saving");
     try {
       const data = await requestJson<RetryFailedBatchesResponse>(`/api/lyric-videos/${project.id}/images/retry-failed-batches`, {
@@ -1027,6 +1056,8 @@ export function EditorProvider({
     } catch (err: any) {
       setSaveStatus("failed");
       toast.error(err?.message || "Retry failed image batches failed");
+    } finally {
+      retryImageBatchesInFlightRef.current = false;
     }
   }
 
@@ -1118,6 +1149,7 @@ export function EditorProvider({
       preparingAudio,
       creatingStory,
       castBusy,
+      visualGenerationBusy,
       generationLocked,
       generationLockReason,
       storyChangeSource,
@@ -1160,6 +1192,7 @@ export function EditorProvider({
       generationRun,
       generationSteps,
       generationLocked,
+      visualGenerationBusy,
       latestExport,
       lines,
       loadError,
