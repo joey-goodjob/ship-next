@@ -135,7 +135,15 @@ export type SeoRelatedToolItem = {
 
 export type SeoContentBlock = {
   heading: string;
-  body: string[];
+  variant?: "callout" | "stats" | "cards" | "default";
+  icon?: string;
+  intro?: string;
+  body?: string[];
+  bullets?: string[];
+  table?: {
+    columns: string[];
+    rows: string[][];
+  };
 };
 
 export const SEO_SECTION_TYPES = [
@@ -484,11 +492,22 @@ function validateRelatedToolsSection(page: SeoPageContent, where: string) {
 function validateContentSections(page: SeoPageContent, where: string) {
   assertArray(page.contentSections, `${where}.contentSections`);
   page.contentSections.forEach((block, index) => {
-    assertRecord(block, `${where}.contentSections[${index}]`);
-    assertNonEmptyString(block.heading, `${where}.contentSections[${index}].heading`);
-    assertStringArray(block.body, `${where}.contentSections[${index}].body`);
-    if (block.body.length === 0) {
-      throw new Error(`${where}.contentSections[${index}].body must include at least one paragraph`);
+    const at = `${where}.contentSections[${index}]`;
+    assertRecord(block, at);
+    assertNonEmptyString(block.heading, `${at}.heading`);
+    if (block.variant !== undefined) assertNonEmptyString(block.variant, `${at}.variant`);
+    if (block.icon !== undefined) assertNonEmptyString(block.icon, `${at}.icon`);
+    if (block.intro !== undefined) assertNonEmptyString(block.intro, `${at}.intro`);
+    if (block.body !== undefined) assertStringArray(block.body, `${at}.body`);
+    if (block.bullets !== undefined) assertStringArray(block.bullets, `${at}.bullets`);
+    if (block.table !== undefined) {
+      assertRecord(block.table, `${at}.table`);
+      assertStringArray(block.table.columns, `${at}.table.columns`);
+      assertArray(block.table.rows, `${at}.table.rows`);
+      block.table.rows.forEach((row, rowIndex) => assertStringArray(row, `${at}.table.rows[${rowIndex}]`));
+    }
+    if (!block.body && !block.bullets && !block.table) {
+      throw new Error(`${at} must include body, bullets, or a table`);
     }
   });
 }

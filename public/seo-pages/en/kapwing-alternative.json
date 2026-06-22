@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike Kapwing, you don't need to place text on a timeline — the AI handles everything from audio.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Unlike Kapwing, you don't need to place text on a timeline — the AI handles everything from audio.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -119,6 +119,162 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a Kapwing alternative for lyric videos?",
+      "intro": "A Kapwing alternative for lyric videos replaces a general editing timeline with a song-first workflow. Instead of manually typing lyric text, placing layers, and dragging timestamps, you upload audio, let AI transcribe and sync the lyrics, preview the result, and export MP4 versions for release platforms.",
+      "bullets": [
+        "Input is the song audio, not a stack of timeline assets.",
+        "It handles the lyric-specific work that a general editor leaves manual.",
+        "Output is a lyric video in widescreen, vertical, or square format.",
+        "Kapwing is still useful for broad video editing; this workflow is specialized for songs."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "Kapwing alternative for lyric videos specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Kapwing timeline vs song-first lyric workflow",
+      "intro": "Kapwing is broad and flexible. A lyric-video generator is narrower, but that narrowness removes the tasks that make lyric videos slow inside a general editor.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Starting point",
+            "Kapwing starts with a blank project; LyricVideoMaker starts with the song audio."
+          ],
+          [
+            "Lyrics",
+            "General editors often require typing or importing text; this workflow transcribes from vocals."
+          ],
+          [
+            "Timing",
+            "Timeline editing means manual cue placement; beat sync gives a timed draft immediately."
+          ],
+          [
+            "Visuals",
+            "General editors offer assets; the lyric tool generates scenes around song mood."
+          ],
+          [
+            "Best Kapwing use",
+            "Mixed footage, talking-head edits, memes, subtitles, and team editing."
+          ],
+          [
+            "Best LyricVideoMaker use",
+            "Song releases where readable, synced lyrics are the main deliverable."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices when switching from Kapwing for lyric videos",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Keep Kapwing for general edits and use the lyric tool only when the deliverable is a song asset.",
+        "Upload the same final audio you would have brought into the timeline.",
+        "Compare how much manual text placement remains after the first preview.",
+        "Check the hook timing before judging visual style.",
+        "Export all needed aspect ratios from one lyric project instead of rebuilding canvases manually.",
+        "Use Kapwing later only if you need extra footage edits after the lyric video is finished.",
+        "Do not choose based on editor breadth if the actual job is only a lyric video."
+      ]
+    },
+    {
+      "heading": "When specialization beats a general editor",
+      "body": [
+        "A Kapwing alternative for lyric videos helps you replace a general editor timeline with an audio-first lyric workflow without starting from a blank editing timeline. The current stable workflow starts with an audio file, then uses AI transcription, beat-aware lyric timing, storyboard planning, generated scene images, preview, line-by-line correction, and MP4 export so the song becomes a usable release asset faster.",
+        "For Kapwing alternative for lyric videos, the important choices happen before rendering. The table below turns typing lyrics, dragging timestamps, team editing, and release formats into practical decisions you can make while the AI handles transcription, timing, and scene generation.",
+        "Use these checks before you render a Kapwing alternative for lyric videos, especially when the video will be reused across several platforms.",
+        "Kapwing alternative for lyric videos works best when it respects the order of the music. Lyrics are not decoration added at the end; they are the structure the viewer follows. By transcribing first, aligning second, and designing third, the workflow keeps the words, the beat, and the generated imagery connected instead of letting a template make every song feel the same.",
+        "The practical benefit is control without timeline labor. You still decide whether the style feels right, whether a line break should change, and whether the video needs a vertical, square, or widescreen export. The repetitive parts are handled by AI, but the final judgment stays with the person releasing the song.",
+        "That balance is especially useful for manual editing time. It gives you a credible first version quickly, then leaves room for taste: cleaner typography, different scene energy, or a more restrained layout when the lyrics need quiet space.",
+        "A good Kapwing alternative for lyric videos also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For creators moving from general timelines, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge, and every exported format inherits the same lyrical backbone.",
+        "A good Kapwing alternative for lyric videos also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For creators moving from general timelines, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge, and every exported format inherits the same lyrical backbone.",
+        "A good Kapwing alternative for lyric videos also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed."
+      ]
+    },
+    {
+      "heading": "Kapwing alternative for lyric videos checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Kapwing Alternative FAQ",
     "items": [
@@ -174,12 +330,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/kapwing-alternative/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Skip the timeline. Upload your song and let AI do the rest.",
-    "description": "Try LyricVideoMaker with the same song you'd edit in Kapwing — AI handles lyrics and visuals, export free with no subscription needed.",
-    "button": "Try LyricVideoMaker Free",
-    "upsell": "Free · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -205,55 +355,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Kapwing is a general editor; this is a lyric video specialist",
-      "body": [
-        "Kapwing is a flexible, browser-based video editor that does a bit of everything — subtitles, social clips, memes, podcast cuts. LyricVideoMaker does one thing: turn a song into a synced lyric video. That focus is the whole difference. A specialist removes the lyric-video chores a general editor leaves to you.",
-        "So the choice is not 'which tool is better' in the abstract; it is whether your project is mainly a lyric video, in which case a purpose-built flow beats a general timeline."
-      ]
-    },
-    {
-      "heading": "When Kapwing is the better choice",
-      "body": [
-        "Kapwing is the right call for general editing: podcast clips, talking-head videos, memes, subtitled social posts, and mixed-media projects that combine many kinds of footage. If you need a versatile editor for lots of formats, that breadth is exactly the point.",
-        "It is genuinely good at those jobs, and nothing here suggests otherwise — the comparison is about specialization versus flexibility, not good versus bad."
-      ]
-    },
-    {
-      "heading": "When LyricVideoMaker wins",
-      "body": [
-        "When the job is a lyric video, the general-editor path means typing lyrics, splitting lines, dragging text, and timing every cue by hand. LyricVideoMaker does that automatically: upload the song, get transcribed and beat-synced lyrics with mood-driven visuals, then preview and export.",
-        "For songs specifically, that is faster, more consistent, and less error-prone than building each line on a timeline."
-      ]
-    },
-    {
-      "heading": "Switching from Kapwing for lyric videos",
-      "body": [
-        "You do not migrate anything. Upload the same song you would have edited in Kapwing and compare the finished lyric video in minutes. There are no layers to rebuild and no timeline to set up before you see a result.",
-        "Keep Kapwing for the projects it suits, and use LyricVideoMaker for the lyric videos — they solve different problems."
-      ]
-    },
-    {
-      "heading": "Why a specialist beats a timeline for lyric videos",
-      "body": [
-        "A blank timeline assumes you will assemble everything: text, timing, transitions, formats. For a four-minute song that is dozens of lines to place by hand. A specialist starts from the audio, so the structure is already pointed in the right direction before you review.",
-        "That is why the same lyric video that takes an evening in a general editor takes a few minutes here — the slow, repetitive parts are automated, not manual."
-      ]
-    },
-    {
-      "heading": "What you skip by not using a general editor",
-      "body": [
-        "Choosing the specialist means skipping the lyric-video grunt work: no transcribing by ear, no line-by-line text placement, no manual beat-matching, and no re-exporting separately for YouTube, TikTok, and feed posts.",
-        "You trade the flexibility of a general editor for speed and consistency on the one job — which is the right trade when that job is a lyric video."
-      ]
-    },
-    {
-      "heading": "A quick way to decide",
-      "body": [
-        "Ask one question: is this project mainly a lyric video, or a mix of editing tasks? If it is a lyric video, the specialist path gets you there faster with less manual work. If it is podcast clips, subtitled posts, or mixed footage, a general editor like Kapwing earns its place.",
-        "Many creators end up using both — a general editor for everyday content and LyricVideoMaker whenever a song needs a lyric video — because each is strongest at a different job."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Skip the timeline. Upload your song and let AI do the rest.",
+    "description": "Try LyricVideoMaker with the same song you'd edit in Kapwing — AI handles lyrics and visuals, export free with no subscription needed.",
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  }
 }

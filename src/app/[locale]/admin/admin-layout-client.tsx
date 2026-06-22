@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Users, Shield, KeyRound, DollarSign, CreditCard, Coins, FolderOpen, FileText, Settings, Home, Ticket } from "lucide-react";
+import { LayoutDashboard, Users, Shield, KeyRound, DollarSign, CreditCard, Coins, FolderOpen, FileText, Settings, Home, Ticket, Film } from "lucide-react";
 import { AppLayout } from "@/components/app-layout";
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -24,6 +24,7 @@ export function AdminLayoutClient({
     { href: "/admin/payments", label: t("nav.payments"), icon: DollarSign, group: t("nav.billing") },
     { href: "/admin/subscriptions", label: t("nav.subscriptions"), icon: CreditCard, group: t("nav.billing") },
     { href: "/admin/credits", label: t("nav.credits"), icon: Coins, group: t("nav.billing") },
+    { href: "/admin/creations", label: t("nav.creations"), icon: Film, group: t("nav.business") },
   ];
 
   const footerNavItems = [

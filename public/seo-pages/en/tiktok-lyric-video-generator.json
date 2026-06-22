@@ -28,7 +28,7 @@
   "hero": {
     "badge": "TikTok lyric video generator — vertical, AI-powered, free to export",
     "h1": "TikTok Lyric Video Generator — Vertical Lyrics That Stay Readable",
-    "subhead": "Upload your song or paste a link. AI transcribes the lyrics and syncs every line to the beat. Preview in a vertical 9:16 frame with TikTok safe zones, then export — free, no subscription needed. One render works for TikTok, Reels, and Shorts.",
+    "subhead": "Upload your song audio. AI transcribes the lyrics and syncs every line to the beat. Preview in a vertical 9:16 frame with TikTok safe zones, then export — free, no subscription needed. One render works for TikTok, Reels, and Shorts.",
     "primaryCta": "Make a TikTok Lyric Video",
     "secondaryCta": "See How It Works"
   },
@@ -43,7 +43,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -80,6 +80,161 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a TikTok lyric video generator?",
+      "intro": "A TikTok lyric video generator creates a vertical, phone-readable lyric video from your song audio. It is built for 9:16 viewing, quick hooks, and safe lyric placement, so the words do not fight TikTok captions, buttons, or tiny cropped text.",
+      "bullets": [
+        "Input is an audio file from your song; link importing is a future convenience, not the stable path.",
+        "It can transcribe vocals, sync lines to the beat, and build vertical AI scenes around the hook.",
+        "Output is a 9:16 MP4, with 16:9 and 1:1 versions available when you need them.",
+        "It differs from cropping a YouTube lyric video because layout, pacing, and safe zones are vertical-first."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "TikTok lyric video generator specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "TikTok lyric video safe-zone planning",
+      "intro": "A TikTok lyric video lives under interface elements: captions at the bottom, action buttons on the right, profile and audio metadata near the lower edge. The design should treat those areas as occupied before the video is rendered.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Right-side buttons",
+            "Keep key words away from the right edge so likes, comments, and shares do not cover the hook."
+          ],
+          [
+            "Bottom caption area",
+            "Place main lyric lines above the caption zone, especially when you plan a long post description."
+          ],
+          [
+            "First two seconds",
+            "Bring in either the title or the first memorable lyric immediately; silent visual intros are risky."
+          ],
+          [
+            "Loop behavior",
+            "Avoid a hard visual stop at the end of a short clip; a soft return encourages replay."
+          ],
+          [
+            "Text size",
+            "Use fewer words per line and larger type than a YouTube version would need."
+          ],
+          [
+            "Cross-posting",
+            "A 9:16 render can usually serve TikTok, Reels, and Shorts if the safe zone is conservative."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Tips for TikTok lyric videos that survive the scroll",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Choose the most quotable 15 to 30 seconds instead of uploading the full song by default.",
+        "Keep one lyric idea per screen; fast stacked lines turn into wallpaper on a phone.",
+        "Let the chorus or hook have a stronger visual treatment than the verse so the clip feels shareable.",
+        "Use high contrast between text and generated scene art; TikTok compression punishes subtle color differences.",
+        "Preview with interface overlays in mind, not in a clean desktop player.",
+        "Export a square or widescreen companion only after the vertical version reads well.",
+        "Write the caption after seeing the generated mood, because the visuals may reveal a better angle for the post."
+      ]
+    },
+    {
+      "heading": "Why TikTok lyric videos need their own layout logic",
+      "body": [
+        "A TikTok lyric video generator creates a vertical, phone-readable lyric video from your song audio. It is built for 9:16 viewing, quick hooks, and safe lyric placement, so the words do not fight TikTok captions, buttons, or tiny cropped text.",
+        "A TikTok lyric video lives under interface elements: captions at the bottom, action buttons on the right, profile and audio metadata near the lower edge. The design should treat those areas as occupied before the video is rendered.",
+        "Use these checks before you render a TikTok lyric video generator, especially when the video will be reused across several platforms.",
+        "The mistake most artists make is treating TikTok as a crop of the official lyric video. A widescreen design can look polished on YouTube and still fail on a phone because every line becomes too small, the hook arrives too late, and the app UI sits exactly where the words should be.",
+        "Starting vertical changes the creative decision. The generator can size lyrics for thumb-distance viewing, pace cuts around the hook, and leave quiet space for the UI. The result feels native to short-form instead of like a repurposed asset.",
+        "TikTok is a full-screen, sound-on, phone-first feed, and a horizontal lyric video shrunk into that space wastes most of the screen. A vertical 9:16 lyric video fills the frame, puts the words at eye level, and reads instantly with one thumb on the screen — which is exactly how people scroll.",
+        "A good TikTok lyric video generator also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For short-form release clips, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good TikTok lyric video generator also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For short-form release clips, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good TikTok lyric video generator also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image."
+      ]
+    },
+    {
+      "heading": "TikTok lyric video generator checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "TikTok Lyric Video Generator FAQ",
     "items": [
@@ -135,12 +290,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/tiktok-lyric-video-generator/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Your next viral sound deserves visuals to match.",
-    "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free, no subscription needed.",
-    "button": "Make My TikTok Lyric Video",
-    "upsell": "Free export · No subscription · One render for TikTok, Reels & Shorts"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -166,55 +315,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Why vertical lyric videos win on TikTok",
-      "body": [
-        "TikTok is a full-screen, sound-on, phone-first feed, and a horizontal lyric video shrunk into that space wastes most of the screen. A vertical 9:16 lyric video fills the frame, puts the words at eye level, and reads instantly with one thumb on the screen — which is exactly how people scroll.",
-        "The TikTok lyric video generator builds vertical from the start instead of cropping a widescreen video down. The lyrics are sized for a phone, the motion is tuned for short attention spans, and the hook lands fast enough to stop the scroll before someone swipes away."
-      ]
-    },
-    {
-      "heading": "TikTok safe zones, explained",
-      "body": [
-        "On TikTok, the right edge holds the like, comment, share, and profile buttons, and the bottom holds the caption and username. Anything you place there gets covered. The generator keeps your lyrics inside the safe zone automatically, so the words stay fully visible after the app's interface loads on top of your video.",
-        "That means no more exporting a clip, posting it, and discovering your best line is hidden behind the share button. What you preview is what your audience actually reads in the feed."
-      ]
-    },
-    {
-      "heading": "The best length for a TikTok lyric video",
-      "body": [
-        "Short wins on TikTok. A 15 to 30 second clip built around the catchiest line usually outperforms a full song, because it gets to the hook fast and loops cleanly. Pick the chorus or the one line people would repeat after a single listen, and set your start and end points around it.",
-        "The first two seconds matter most. The generator gets your first lyric on screen quickly so a scroller sees words moving with the music immediately — the signal that there is something to stay for."
-      ]
-    },
-    {
-      "heading": "One render for TikTok, Reels, and Shorts",
-      "body": [
-        "Vertical 9:16 is the shared format across TikTok, Instagram Reels, and YouTube Shorts, so a single export from the TikTok lyric video generator posts natively to all three. You do not re-edit or re-crop for each platform — one render, three feeds.",
-        "For a release, that turns one hook into a repeatable short-form routine: cut several lyric moments from the same song and post a fresh vertical clip across every platform without rebuilding anything."
-      ]
-    },
-    {
-      "heading": "Making lyrics readable on a phone screen",
-      "body": [
-        "Readability is the whole game in a feed. Lyrics squeezed down from a widescreen layout end up too small to catch at a glance, so the generator sizes type for a vertical phone screen and keeps one or two lines on screen at a time instead of a wall of text.",
-        "Combined with beat-synced timing, that keeps the words easy to follow even when someone is watching with the volume low or half-distracted — the normal state of a scrolling viewer."
-      ]
-    },
-    {
-      "heading": "How to add song lyrics to a TikTok video without typing",
-      "body": [
-        "Upload your track and the TikTok lyric video generator transcribes every line automatically, in 50+ languages, then syncs it to the beat inside a vertical frame. You never paste a lyrics document or drag text on a timeline — the words come from the audio itself.",
-        "From there you trim to the section you want, fix any line the AI misheard, confirm nothing sits under the TikTok buttons, and export. A scroll-stopping vertical lyric clip goes from upload to ready in a couple of minutes."
-      ]
-    },
-    {
-      "heading": "Make a lyric clip that loops",
-      "body": [
-        "The best short-form lyric clips feel endless — the end flows back into the start so viewers watch twice without noticing. Choosing a self-contained line or a clean phrase as your start and end points makes a clip loop naturally, which quietly boosts watch time.",
-        "Pick the most repeatable moment of the song, keep it tight at 15 to 30 seconds, and let the beat-synced lyrics carry it. A loop-friendly hook clip is often what turns one line into a sound people reuse."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Your next viral sound deserves visuals to match.",
+    "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free, no subscription needed.",
+    "button": "Make My TikTok Lyric Video",
+    "upsell": "Free export · No subscription · One render for TikTok, Reels & Shorts"
+  }
 }

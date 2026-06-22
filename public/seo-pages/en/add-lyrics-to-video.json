@@ -15,7 +15,7 @@
   },
   "seo": {
     "title": "Add Lyrics to Video Automatically — Free AI Tool",
-    "description": "Add lyrics to video with AI. Upload video or audio, auto-transcribe and sync lyrics to the beat, preview, and export with free credits included.",
+    "description": "Create a synced lyric video from your song audio with AI. Audio upload is supported today; direct lyric overlay on existing video is planned. Preview and export MP4.",
     "keywords": [
       "add lyrics to video",
       "add lyrics to video automatically",
@@ -34,7 +34,7 @@
   "hero": {
     "badge": "Add lyrics to video online with AI sync",
     "h1": "Add Lyrics to Video — Automatically",
-    "subhead": "Upload a video, add an audio file, or paste a supported link. AI transcribes lyrics from the audio automatically, syncs every line to the beat, overlays the words on your original footage, then lets you preview and export free — no subscription needed.",
+    "subhead": "Upload your song audio. AI transcribes the lyrics, syncs every line to the beat, and creates a new lyric video. Directly overlaying lyrics on existing footage is planned.",
     "primaryCta": "Add Lyrics Now — Free",
     "secondaryCta": "See How It Works"
   },
@@ -48,8 +48,8 @@
     "title": "How to Add Lyrics to Video Automatically",
     "steps": [
       {
-        "title": "Upload your video",
-        "description": "Start with your MP4, MOV, or WebM video, or add a separate MP3, WAV, FLAC, AAC, or OGG audio track. You can also paste a supported link when the song or performance is already online. No account needed to start, and no manual lyric typing required.",
+        "title": "Upload your song audio",
+        "description": "Start with an MP3, WAV, FLAC, AAC, OGG, or M4A audio file up to 100MB. Direct upload of finished footage for lyric overlay is planned, but the stable workflow today starts from audio.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -66,7 +66,7 @@
   },
   "whyChoose": {
     "title": "Why Add Lyrics to Video on LyricVideoMaker",
-    "description": "Adding lyrics to a finished video by hand means typing every line, dragging text across a timeline, and hoping the words do not cover the best part of the shot. LyricVideoMaker turns the video's audio into beat-synced lyric overlays while keeping your original footage intact.",
+    "description": "Building a lyric video by hand means typing every line, dragging text across a timeline, and checking every cue. LyricVideoMaker starts from your song audio, creates beat-synced lyrics, and renders a new lyric video without that manual timeline work.",
     "highlight": {
       "title": "Designed for videos that already exist",
       "description": "Use a music video, performance recording, wedding clip, travel montage, fan edit, or promo cut. LyricVideoMaker adds the lyric layer without flattening the video into a generic caption template."
@@ -86,6 +86,161 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What does it mean to add lyrics to video?",
+      "intro": "To add lyrics to video with LyricVideoMaker today means creating a new lyric-forward MP4 from your song audio, with direct upload-and-overlay for existing footage treated as a planned workflow. The stable path starts from audio, transcribes and syncs lyrics, generates scenes, lets you edit lines, and exports a finished video.",
+      "bullets": [
+        "Input today is audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A up to 100MB.",
+        "Directly uploading finished footage and placing lyrics over it is a planned overlay workflow, not the core stable path.",
+        "You can still create a publishable MP4 with synced lyrics, AI scenes, preview, and editable lines.",
+        "The distinction from subtitle tools is that the song drives lyric timing and visual design."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "add lyrics to video specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Current lyric-video flow vs planned overlay flow",
+      "intro": "People searching this phrase often already have footage. The honest split is simple: the current product reliably creates a new lyric video from audio, while direct lyric overlay on an existing video needs more video-specific controls.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Stable now",
+            "Upload audio, transcribe lyrics, sync lines, generate scenes, preview, and export MP4."
+          ],
+          [
+            "Planned overlay",
+            "Upload finished footage, extract or pair audio, then place lyrics over the existing video."
+          ],
+          [
+            "Needed for overlay",
+            "Face-safe positioning, original-video quality preservation, and drag placement."
+          ],
+          [
+            "Already useful",
+            "Create a standalone lyric video for the same song and use it beside the existing footage."
+          ],
+          [
+            "Best review step",
+            "Check whether lyrics stay readable before worrying about exact placement over footage."
+          ],
+          [
+            "Best expectation",
+            "Use the audio-first result today; treat direct video overlay as upcoming rather than guaranteed."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices when you want lyrics on video",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Decide whether you need a new lyric video or lyrics over existing footage; they are different workflows.",
+        "If using the current tool, upload the clean song audio rather than a compressed screen recording.",
+        "Keep lyric lines short enough that they would still work over future footage.",
+        "Choose styles that leave room around faces or key objects if you plan to reuse the design later.",
+        "Correct the transcript before exporting, because every visual version depends on the same text.",
+        "Use vertical-safe placement if the video may become a short-form post.",
+        "For existing footage, plan where lyrics should not go before the overlay feature arrives."
+      ]
+    },
+    {
+      "heading": "Why overlay expectations need to stay clear",
+      "body": [
+        "For add lyrics to video, the important choices happen before rendering. The table below turns audio extraction, face-safe placement, and future upload-video workflow into practical decisions you can make while the AI handles transcription, timing, and scene generation.",
+        "add lyrics to video works best when it respects the order of the music. Lyrics are not decoration added at the end; they are the structure the viewer follows. By transcribing first, aligning second, and designing third, the workflow keeps the words, the beat, and the generated imagery connected instead of letting a template make every song feel the same.",
+        "The practical benefit is control without timeline labor. You still decide whether the style feels right, whether a line break should change, and whether the video needs a vertical, square, or widescreen export. The repetitive parts are handled by AI, but the final judgment stays with the person releasing the song.",
+        "For direct lyric overlays on existing footage, expectations should stay clear: that workflow is planned, and it needs video upload, face-safe placement, and quality-preserving rendering. The reliable path today is to generate a new lyric video from the audio, then use the exported MP4 in your release stack.",
+        "Add Lyrics to Video takes a video you already have and lays synced words on top of it. Upload your footage, and the AI reads the audio to transcribe the lyrics — or the spoken captions — then times each line to match what is being sung or said, so the text appears exactly when it should.",
+        "It works whether the words are a song's lyrics or plain captions, because the timing comes from the audio itself rather than a manual timeline. You get a video with synced text baked in, ready to publish, without typing or dragging anything.",
+        "A good add lyrics to video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For creators with existing footage, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge, and every exported format inherits the same lyrical backbone.",
+        "A good add lyrics to video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For creators with existing footage, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge, and every exported format inherits the same lyrical backbone.",
+        "A good add lyrics to video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image."
+      ]
+    },
+    {
+      "heading": "add lyrics to video checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Add Lyrics to Video FAQ",
     "items": [
@@ -120,8 +275,8 @@
     ]
   },
   "toolkit": {
-    "title": "Add Lyrics to Video for Real Footage",
-    "description": "Use one AI workflow when your video is already shot and the missing piece is a clean, synced lyric layer."
+    "title": "Create synced lyric videos from audio",
+    "description": "Upload audio, let AI transcribe and sync the lyrics, then export a new lyric video. Existing-video lyric overlay is planned for a later workflow."
   },
   "useCases": [
     {
@@ -145,12 +300,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/add-lyrics-to-video/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Hours of manual lyric syncing, gone.",
-    "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free, no subscription needed.",
-    "button": "Add Lyrics to My Video — Free",
-    "upsell": "Free export · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -176,48 +325,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Add lyrics or captions to any video",
-      "body": [
-        "Add Lyrics to Video takes a video you already have and lays synced words on top of it. Upload your footage, and the AI reads the audio to transcribe the lyrics — or the spoken captions — then times each line to match what is being sung or said, so the text appears exactly when it should.",
-        "It works whether the words are a song's lyrics or plain captions, because the timing comes from the audio itself rather than a manual timeline. You get a video with synced text baked in, ready to publish, without typing or dragging anything."
-      ]
-    },
-    {
-      "heading": "Keep the text off faces and the action",
-      "body": [
-        "The point of adding lyrics to existing footage is to support the video, not cover it. You can position the lyric layer where it stays readable without hiding faces, dancers, products, captions, or the moment viewers came to see — so the words add to the scene instead of competing with it.",
-        "Preview the whole video with the text in place before you export, and move the lyric block until it sits cleanly in the frame on every platform you are publishing to."
-      ]
-    },
-    {
-      "heading": "Built for music videos, performances, and events",
-      "body": [
-        "Add lyrics to official music videos and visualizers so fans can follow the song, overlay them on live sets, covers, and studio sessions to keep the energy of the recording, or put them on first-dance edits and event recaps where the song carries the emotion.",
-        "It also fits travel montages, fan edits, and short social cuts — any footage where the missing piece is a clean, synced lyric or caption layer rather than a whole new video."
-      ]
-    },
-    {
-      "heading": "How automatic lyric placement works",
-      "body": [
-        "Upload a video or add a separate audio track, and the AI transcribes the words from the audio in 50+ languages, then syncs each line to the beat or speech. The lyric timing follows the actual recording, so hooks, repeated lines, and entrances feel natural on screen rather than mistimed.",
-        "Because the words come from the audio, you skip the slowest part of captioning a video by hand — no transcribing by ear, no dragging text cues one by one."
-      ]
-    },
-    {
-      "heading": "Fix one line without rebuilding the edit",
-      "body": [
-        "If the transcript needs a correction, click the line, adjust the words, and keep moving — the timing workflow continues without starting the video over. That makes it safe to use on footage you care about, because a single wrong word is a quick fix rather than a re-edit.",
-        "You stay in control of wording and placement throughout, while the AI handles the transcription and sync that would otherwise eat the most time."
-      ]
-    },
-    {
-      "heading": "From upload to a finished, captioned video",
-      "body": [
-        "The flow is short: upload your video or audio, let the AI transcribe and sync the words, position the lyric layer off the action, preview the result, and export in 16:9, 9:16, or 1:1. What used to be an evening of manual lyric syncing becomes a few minutes in the browser.",
-        "The original footage stays the focus, with a clean synced lyric or caption layer added on top — ready for channels, campaigns, releases, or client work."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Hours of manual lyric syncing, gone.",
+    "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free, no subscription needed.",
+    "button": "Add Lyrics to My Video — Free",
+    "upsell": "Free export · No subscription · No credit card"
+  }
 }

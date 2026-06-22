@@ -30,7 +30,7 @@
   "hero": {
     "badge": "Song to lyric video — upload once, AI does the rest",
     "h1": "Song to Lyric Video — Upload Once, AI Does the Rest",
-    "subhead": "Upload your song or paste a link. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free, no subscription needed.",
     "primaryCta": "Turn My Song into a Video",
     "secondaryCta": "See How It Works"
   },
@@ -45,7 +45,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, or FLAC — or paste a link. No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -82,6 +82,162 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a song to lyric video workflow?",
+      "intro": "A song to lyric video workflow starts with the whole track and turns it into a lyric-centered MP4. The song supplies the words, rhythm, structure, and emotional arc; AI turns those signals into editable lyrics, beat timing, scene direction, preview, and platform-ready exports.",
+      "bullets": [
+        "Input is a finished song or demo audio file, up to 100MB.",
+        "It maps verses, hooks, bridges, and instrumental gaps into a readable lyric-video structure.",
+        "Output can be a full 16:9 video, a vertical hook clip, or a square feed version.",
+        "It differs from a template editor because the song structure drives the video instead of a fixed layout."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "song to lyric video specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "How song sections become video sections",
+      "intro": "A full song is not one long block of text. Treating each musical section differently helps the lyric video feel arranged instead of dumped onto the screen.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Intro",
+            "Use a title card, visualizer, or quiet scene if no vocal has entered yet."
+          ],
+          [
+            "Verse",
+            "Keep type clean and line changes steady so listeners can follow the story."
+          ],
+          [
+            "Pre-chorus",
+            "Increase motion slightly to prepare the viewer for the hook."
+          ],
+          [
+            "Chorus",
+            "Make the hook bigger, brighter, or more rhythmic than the verse."
+          ],
+          [
+            "Bridge",
+            "Shift color or composition so the emotional turn is visible."
+          ],
+          [
+            "Outro",
+            "Let the final lyric breathe, then leave enough space for artist or release info."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for turning a song into a lyric video",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Listen once before editing; note where the hook actually begins rather than assuming it starts at the chorus label.",
+        "Keep instrumental sections alive with subtle motion instead of forcing fake lyric content.",
+        "Use repeated visual treatment for repeated hooks so the structure feels intentional.",
+        "Correct names, slang, and ad-libs before judging the generated scene art.",
+        "Export the full YouTube version first, then cut vertical hooks from the strongest sections.",
+        "Do not over-style the verse; save the strongest motion for the song moments that earn it.",
+        "Use the same palette across all aspect ratios so the campaign feels connected."
+      ]
+    },
+    {
+      "heading": "Why the song should lead the edit",
+      "body": [
+        "A song to lyric video helps you turn a finished song into a lyric-centered video without starting from a blank editing timeline. The current stable workflow starts with an audio file, then uses AI transcription, beat-aware lyric timing, storyboard planning, generated scene images, preview, line-by-line correction, and MP4 export so the song becomes a usable release asset faster.",
+        "For song to lyric video, the important choices happen before rendering. The table below turns verses, hooks, bridges, and instrumental gaps into practical decisions you can make while the AI handles transcription, timing, and scene generation.",
+        "Use these checks before you render a song to lyric video, especially when the video will be reused across several platforms.",
+        "song to lyric video works best when it respects the order of the music. Lyrics are not decoration added at the end; they are the structure the viewer follows. By transcribing first, aligning second, and designing third, the workflow keeps the words, the beat, and the generated imagery connected instead of letting a template make every song feel the same.",
+        "The practical benefit is control without timeline labor. You still decide whether the style feels right, whether a line break should change, and whether the video needs a vertical, square, or widescreen export. The repetitive parts are handled by AI, but the final judgment stays with the person releasing the song.",
+        "That balance is especially useful for YouTube release prep. It gives you a credible first version quickly, then leaves room for taste: cleaner typography, different scene energy, or a more restrained layout when the lyrics need quiet space.",
+        "A good song to lyric video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For artists preparing a full release, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good song to lyric video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For artists preparing a full release, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good song to lyric video also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed."
+      ]
+    },
+    {
+      "heading": "song to lyric video checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Song to Lyric Video FAQ",
     "items": [
@@ -137,12 +293,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/song-to-lyric-video/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Your song already has everything it needs.",
-    "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free, no subscription needed.",
-    "button": "Turn My Song into a Video",
-    "upsell": "Free · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -168,48 +318,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "From a finished song to a shareable video",
-      "body": [
-        "If you already have a song, the missing piece is usually the video — and that is exactly the gap this fills. Upload the track and the AI transcribes the lyrics, times every line to the beat, and builds mood-driven visuals around them, so a finished song becomes a finished, shareable lyric video without a separate editing project.",
-        "The whole flow is song-first: you think 'I have this track, I want a video for it,' and the tool follows that path instead of making you assemble scenes, type captions, and guess at timing in a general editor."
-      ]
-    },
-    {
-      "heading": "Full song or a short clip — your call",
-      "body": [
-        "The same upload works two ways. Use the full track to produce a complete lyric video for a YouTube release or a music channel, with room for an intro, verses, choruses, and breathing space during instrumental sections.",
-        "Or pick a single section — the hook, the chorus, the most quotable line — and export a short vertical clip for TikTok, Reels, and Shorts. One song, one upload, and you can produce both the long release version and the short social cuts from it."
-      ]
-    },
-    {
-      "heading": "Making a song lyric video for YouTube",
-      "body": [
-        "For YouTube, a song lyric video gives an audio upload far more reason to be watched than a static cover image. Export a full-length 16:9 video with readable pacing, clean space for a title moment, and lyrics that keep viewers following along to the end.",
-        "Because the timing comes from the song itself, the lyrics stay locked to the music across the whole track — so even a five-minute song reads as a structured video rather than a scrolling wall of text."
-      ]
-    },
-    {
-      "heading": "What the AI reads in your song",
-      "body": [
-        "Turning a song into a video is a series of decisions, and the AI makes them from the audio. It reads the lyrics for the words, the beat and tempo for line timing and transition pacing, and the mood and energy for visual style and color.",
-        "Song structure shapes the rest: intros, verses, choruses, bridges, and instrumental breaks each get appropriate treatment, so the finished video feels built from your track rather than dropped onto a generic preset."
-      ]
-    },
-    {
-      "heading": "Turning one song into release-week assets",
-      "body": [
-        "A single track can carry a whole release week. From one upload you can produce a full YouTube lyric video, a chorus highlight for TikTok, a square cut for feed posts, and a short teaser to tease the drop — all sharing the same lyric timing and visual direction.",
-        "That consistency makes a release feel like one campaign instead of a pile of unrelated clips, and it means you are not starting a new project every time you need fresh content for a different platform."
-      ]
-    },
-    {
-      "heading": "Why start from the song, not a template",
-      "body": [
-        "Starting from a template makes you bend your song to fit someone else's layout. Starting from the song flips it: the audio drives the lyrics, the timing, and the visual direction, so the video is shaped by your track instead of forced into a preset.",
-        "That is why a song-first flow tends to feel more finished — the intro space, the chorus emphasis, and the pacing all follow the music, not a generic frame the song happens to land in."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Your song already has everything it needs.",
+    "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free, no subscription needed.",
+    "button": "Turn My Song into a Video",
+    "upsell": "Free · No subscription · No credit card"
+  }
 }

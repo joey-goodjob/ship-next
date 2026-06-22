@@ -16,7 +16,7 @@
   },
   "seo": {
     "title": "Audio to Lyric Video — AI Converter, Upload MP3 & Get Video",
-    "description": "Audio to lyric video converter: upload MP3, WAV, FLAC, AAC, or OGG and AI transcribes and syncs the lyrics. Preview, then export an MP4 lyric video.",
+    "description": "Audio to lyric video converter: upload MP3, WAV, FLAC, AAC, OGG, or M4A and AI transcribes and syncs the lyrics. Preview, then export an MP4 lyric video.",
     "keywords": [
       "audio to lyric video",
       "audio to lyric video ai",
@@ -31,7 +31,7 @@
   "hero": {
     "badge": "Audio to lyric video AI converter",
     "h1": "Audio to Lyric Video Converter — Upload Audio, Get a Synced Video",
-    "subhead": "Any audio file in, a synced lyric video out. Upload MP3, WAV, FLAC, AAC, or OGG — or paste a link — and AI auto-transcribes the lyrics, syncs every line to the beat, lets you preview the full video, and exports free with no subscription needed.",
+    "subhead": "Any audio file in, a synced lyric video out. Upload MP3, WAV, FLAC, AAC, OGG, or M4A (up to 100MB), and AI auto-transcribes the lyrics, syncs every line to the beat, lets you preview the full video, and exports free with no subscription needed.",
     "primaryCta": "Convert Audio to Video — Free",
     "secondaryCta": "See How It Works"
   },
@@ -86,7 +86,7 @@
     "steps": [
       {
         "title": "Upload your audio",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The converter works directly from your audio file, whether it is a polished master or a rough demo, with tracks up to 15 minutes supported.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. The converter works directly from your audio file, whether it is a polished master or a rough demo, with files up to 100MB supported.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -123,6 +123,162 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is an audio to lyric video converter?",
+      "intro": "An audio to lyric video converter takes a supported audio file and creates a synced lyric MP4 from it. The conversion is not just format changing: AI listens to the vocal, transcribes lyrics, places each line in time, generates visual scenes, and renders a video in the aspect ratio you choose.",
+      "bullets": [
+        "Input is audio only: MP3, WAV, FLAC, AAC, OGG, or M4A up to 100MB.",
+        "It converts vocals into editable lyric lines and beat-synced timing.",
+        "Output is an MP4 with the original music preserved.",
+        "It differs from a file converter because the creative layer, text timing, and video layout are generated too."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "audio to lyric video converter specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Audio formats and when to use them",
+      "intro": "The converter accepts common audio formats, but the source you choose can affect transcription confidence, upload size, and how easy it is to archive your project later.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "WAV",
+            "Best when you have a final master and want maximum vocal clarity."
+          ],
+          [
+            "FLAC",
+            "Good for high-quality archives without the larger size of WAV."
+          ],
+          [
+            "MP3",
+            "Fastest for demos, references, and everyday uploads when the bitrate is clean."
+          ],
+          [
+            "M4A/AAC",
+            "Common from phones and music apps; works well when the vocal is not buried."
+          ],
+          [
+            "OGG",
+            "Useful for open-source workflows or exports from certain audio tools."
+          ],
+          [
+            "Rough demo",
+            "Acceptable for drafts, but expect more lyric cleanup if the vocal is low or noisy."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for converting audio to a lyric video",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Use the final mix if possible; changing the audio later can shift lyric timing.",
+        "Avoid clipping and heavy noise reduction, because both can make words harder to transcribe.",
+        "Name the file clearly before upload so exported variants are easy to trace.",
+        "Check repeated choruses carefully; repeated words can be correct but still split awkwardly.",
+        "Preview the vertical version separately, since audio timing stays the same but line wrapping changes.",
+        "If the song has multiple languages, review those lines before rendering all aspect ratios.",
+        "Keep the original audio file with the project so future edits start from the same source."
+      ]
+    },
+    {
+      "heading": "Why audio-first conversion is more reliable",
+      "body": [
+        "A audio to lyric video converter helps you convert an audio file into a synced lyric MP4 without starting from a blank editing timeline. The current stable workflow starts with an audio file, then uses AI transcription, beat-aware lyric timing, storyboard planning, generated scene images, preview, line-by-line correction, and MP4 export so the song becomes a usable release asset faster.",
+        "For audio to lyric video converter, the important choices happen before rendering. The table below turns file formats, bitrate, line timing, and final aspect ratio into practical decisions you can make while the AI handles transcription, timing, and scene generation.",
+        "Use these checks before you render a audio to lyric video converter, especially when the video will be reused across several platforms.",
+        "audio to lyric video converter works best when it respects the order of the music. Lyrics are not decoration added at the end; they are the structure the viewer follows. By transcribing first, aligning second, and designing third, the workflow keeps the words, the beat, and the generated imagery connected instead of letting a template make every song feel the same.",
+        "The practical benefit is control without timeline labor. You still decide whether the style feels right, whether a line break should change, and whether the video needs a vertical, square, or widescreen export. The repetitive parts are handled by AI, but the final judgment stays with the person releasing the song.",
+        "That balance is especially useful for format and quality planning. It gives you a credible first version quickly, then leaves room for taste: cleaner typography, different scene energy, or a more restrained layout when the lyrics need quiet space.",
+        "A good audio to lyric video converter also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For producers and artists converting files, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good audio to lyric video converter also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed.",
+        "For producers and artists converting files, the real win is not only speed. It is having one source project that can become a full video, a short vertical clip, and a square feed asset without retyping lyrics or rebuilding timing. Consistency across those exports makes a release feel planned.",
+        "The safest publishing pattern is to make the lyric video while the song is still fresh in your ear. You will hear awkward line breaks faster, recognize misheard words sooner, and make better choices about where the visual energy should rise or stay quiet.",
+        "The useful boundary is that AI should remove repetitive labor, not remove taste. Let it transcribe, sync, and propose scenes; then use the preview to decide whether the song needs more space, more contrast, a calmer verse, or a stronger hook treatment.",
+        "That is also why the audio-first constraint is helpful. Starting with a clean song file keeps the workflow focused on vocals, beat, and structure before any visual decoration appears. Once those foundations are correct, the design choices become much easier to judge.",
+        "A good audio to lyric video converter also protects the listener's attention. The viewer should never have to choose between reading the line and watching the scene; the scene exists to make the lyric feel more alive. That is why contrast, line length, timing, and motion restraint matter as much as the first generated image.",
+        "The review habit is simple: watch once for words, once for rhythm, and once for platform fit. The first pass catches transcription mistakes, the second catches lines that arrive early or late, and the third catches text that works on desktop but fails on a phone or inside a social feed."
+      ]
+    },
+    {
+      "heading": "audio to lyric video converter checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Audio to Lyric Video FAQ",
     "items": [
@@ -132,7 +288,7 @@
       },
       {
         "question": "What input and output formats does the converter support?",
-        "answer": "You can upload MP3, WAV, FLAC, AAC, or OGG audio, or paste a link instead of uploading a file. The finished lyric video exports as MP4 for YouTube, TikTok, Reels, Shorts, and square feed posts."
+        "answer": "You can upload MP3, WAV, FLAC, AAC, OGG, or M4A audio files up to 100MB. The finished lyric video exports as MP4 for YouTube, TikTok, Reels, Shorts, and square feed posts."
       },
       {
         "question": "Do I need to type the lyrics myself?",
@@ -178,12 +334,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-batch.png"
     }
   ],
-  "bottomCta": {
-    "title": "You already have the audio. That is all you need.",
-    "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
-    "button": "Convert My Audio",
-    "upsell": "MP3, WAV, FLAC, AAC, OGG · MP4 out · Free, no subscription"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -209,41 +359,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Supported audio formats and specs",
-      "body": [
-        "The converter accepts MP3, WAV, FLAC, AAC, OGG, and M4A files up to 100MB, which covers finished masters, lossless bounces, and compressed exports alike. For the cleanest transcription, upload audio at 128kbps or higher with a clear lead vocal.",
-        "The finished lyric video exports as an MP4 with your original audio intact, in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. One audio upload can feed every output shape."
-      ]
-    },
-    {
-      "heading": "From a master, a bounce, or a rough demo",
-      "body": [
-        "You do not need a polished, mastered file to start. A finished MP3 master, a WAV bounce from your session, or a rough demo all work — the converter treats whatever you upload as the source of truth and builds the lyric timing and visuals around the actual recording.",
-        "That makes it useful early in a release cycle: you can turn a demo into a shareable lyric video to test a hook or get feedback before the final mix exists."
-      ]
-    },
-    {
-      "heading": "MP3 to a YouTube or TikTok lyric video",
-      "body": [
-        "The most common path is an MP3 single into a finished lyric video. Upload the full track for a 16:9 YouTube release, or pick the hook and export a vertical 9:16 clip for TikTok, Reels, and Shorts — both from the same file.",
-        "Because the conversion keeps your audio central, the lyric timing and visual pacing follow the song itself, not a generic subtitle timer bolted onto a clip."
-      ]
-    },
-    {
-      "heading": "What 'converter' really means here",
-      "body": [
-        "Audio-to-lyric-video usually implies juggling three tools: a transcription app for the words, a subtitle editor for timing, and a video editor for the visuals. This converter collapses that into one upload-to-video flow built specifically for songs.",
-        "You get a deterministic, clear process — known input formats, automatic transcription and sync, a preview, and a defined export — instead of moving files between apps and rebuilding the song in a timeline."
-      ]
-    },
-    {
-      "heading": "Audio in, MP4 out — what stays and what is added",
-      "body": [
-        "Your uploaded track stays at the center of the result: the converter keeps the original audio and builds synced lyrics and mood-driven visuals on top of it. Nothing about the music is replaced — the video is assembled around the recording you provided.",
-        "You review the transcribed lines, fix anything the AI misheard, confirm the timing and look, and export. The output is a shareable MP4 lyric video made from the audio you already have."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "You already have the audio. That is all you need.",
+    "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
+    "button": "Convert My Audio",
+    "upsell": "MP3, WAV, FLAC, AAC, OGG · MP4 out · Free, no subscription"
+  }
 }
