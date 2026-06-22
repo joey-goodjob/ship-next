@@ -9,12 +9,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "Automatic Lyrics Transcription — AI Song-to-Text Tool",
-    "description": "Transcribe lyrics from songs or supported video links with AI. Get beat-synced TXT, LRC, or SRT exports in 50+ languages.",
+    "description": "Automatic lyrics transcription with AI: get beat-synced lyrics from any song or video link, then export TXT, LRC, or SRT in 50+ languages. Free to start.",
     "keywords": [
       "automatic lyrics transcription",
       "video to lyrics",
@@ -42,15 +43,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a supported link. No account needed to start, and no manual lyric typing required. The AI listens to the vocal performance and does the transcription for you."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a supported link. No account needed to start, and no manual lyric typing required. The AI listens to the vocal performance and does the transcription for you.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. It handles ad-libs, layered vocals, hooks, and fast sections that are hard to catch by ear."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. It handles ad-libs, layered vocals, hooks, and fast sections that are hard to catch by ear.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Review the full transcript with beat-synced timing. Download TXT, LRC, or SRT for captions, descriptions, streaming lyrics, or subtitles — or click through to preview the same synced lyrics as a lyric video. Free to export, no subscription required."
+        "description": "Review the full transcript with beat-synced timing. Download TXT, LRC, or SRT for captions, descriptions, streaming lyrics, or subtitles — or click through to preview the same synced lyrics as a lyric video. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -133,24 +137,54 @@
   "useCases": [
     {
       "title": "Video to lyrics",
-      "description": "Paste a supported video link and turn the vocal track into editable lyrics for captions, descriptions, or reuse."
+      "description": "Paste a supported video link and turn the vocal track into editable lyrics for captions, descriptions, or reuse.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
       "title": "YouTube lyric extraction",
-      "description": "Get lyrics from a YouTube video when the song is already online and you need a quick text or subtitle version."
+      "description": "Get lyrics from a YouTube video when the song is already online and you need a quick text or subtitle version.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-2.png"
     },
     {
       "title": "Song lyric sheets",
-      "description": "Export TXT for press kits, collaborators, translators, labels, and publishing notes."
+      "description": "Export TXT for press kits, collaborators, translators, labels, and publishing notes.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-3.png"
     },
     {
       "title": "Synced captions",
-      "description": "Export LRC or SRT when you need timed lyrics for music players, YouTube captions, or video editors."
+      "description": "Export LRC or SRT when you need timed lyrics for music players, YouTube captions, or video editors.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "The lyrics are already in the song. Let AI write them down.",
     "description": "Upload your track, get beat-synced lyrics in seconds, and export or continue into a lyric video — free, no subscription needed.",
-    "button": "Transcribe My Song"
+    "button": "Transcribe My Song",
+    "upsell": "Need visuals too? Turn the synced transcript into a lyric video in one click."
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "audio-to-lyric-video",
+        "label": "Audio to Lyric Video Converter",
+        "description": "Convert MP3 or WAV into a lyric video."
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "Song to Lyric Video",
+        "description": "One song in, a finished lyric video out."
+      },
+      {
+        "slug": "karaoke-video-maker",
+        "label": "Karaoke Video Maker",
+        "description": "Sing-along lyric videos with cue timing."
+      }
+    ]
   }
 }

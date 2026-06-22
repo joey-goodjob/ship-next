@@ -9,6 +9,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -24,9 +25,9 @@
   },
   "hero": {
     "badge": "Capify 替代方案 — AI 歌词视频，免费",
-    "h1": "Capify 替代方案",
+    "h1": "Capify 替代方案 —— 免费 AI 歌词视频工具",
     "subhead": "上传歌曲或粘贴链接，AI 自动转写歌词、逐行同步节拍，并生成匹配歌曲情绪的视觉画面。预览完整歌词视频后导出 — 免费，无需订阅。",
-    "primaryCta": "免费试用",
+    "primaryCta": "免费做同款视频",
     "secondaryCta": "查看制作流程"
   },
   "trust": [
@@ -80,15 +81,18 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。"
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。AI 还会读取歌曲情绪，生成匹配的视觉画面。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。AI 还会读取歌曲情绪，生成匹配的视觉画面。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。"
+        "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -119,7 +123,7 @@
     "items": [
       {
         "question": "LyricVideoMaker 作为 Capify 替代方案免费吗？",
-        "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
+        "answer": "免费。作为 Capify 替代方案，LyricVideoMaker 免费可用 —— 注册领免费额度即可导出，无需订阅或信用卡。"
       },
       {
         "question": "LyricVideoMaker 和 Capify 有什么不同？",
@@ -127,7 +131,7 @@
       },
       {
         "question": "需要像 Capify 一样手动输入歌词吗？",
-        "answer": "不需要。上传音频后 AI 会自动转写每一行歌词，支持 50 多种语言。你可以点击任意行进行编辑。"
+        "answer": "不需要 —— 不像手动打字的流程，AI 会从你的音频转写每一行歌词，支持 50+ 语言，你只需检查和修改。"
       },
       {
         "question": "可以同时导出 TikTok 和 YouTube 格式吗？",
@@ -135,7 +139,11 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以 — 导出的视频归你所有，包括用于变现频道和付费发行。请确保你拥有上传音乐的版权。"
+        "answer": "可以。导出的视频归你所有，可商用变现 —— 和你在 Capify 的预期一样。只需确保你拥有上传音乐的版权。"
+      },
+      {
+        "question": "从 Capify 切换过来麻烦吗？",
+        "answer": "没什么要迁移的。把你在 Capify 用过的那首歌上传，几分钟就能得到成品歌词视频 —— 不用搬项目文件，不用重新设置。"
       }
     ]
   },
@@ -146,24 +154,54 @@
   "useCases": [
     {
       "title": "YouTube 完整歌词视频",
-      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面。"
+      "description": "将整首歌导出为 16:9 歌词视频，带 AI 生成画面。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/capify-alternative/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频。"
+      "description": "把副歌或 hook 剪成 9:16 竖屏歌词视频。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/capify-alternative/use-case-2.png"
     },
     {
       "title": "发歌周内容",
-      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。"
+      "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/capify-alternative/use-case-3.png"
     },
     {
       "title": "歌词频道批量上传",
-      "description": "需要频繁上传歌词视频时，使用可重复的上传到导出流程。"
+      "description": "需要频繁上传歌词视频时，使用可重复的上传到导出流程。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/capify-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "同一首歌，不同结果。免费试试。",
     "description": "上传你在 Capify 里用过的那首歌，AI 搞定歌词和画面 — 免费导出，无需订阅。",
-    "button": "免费试用 LyricVideoMaker"
+    "button": "免费试用 LyricVideoMaker",
+    "upsell": "免费 · 无需订阅 · 无需信用卡"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "免费歌词视频制作工具",
+        "description": "免费制作并导出歌词视频。"
+      },
+      {
+        "slug": "tiktok-lyric-video-generator",
+        "label": "TikTok 歌词视频生成器",
+        "description": "竖屏 9:16 的 TikTok 歌词片段。"
+      },
+      {
+        "slug": "ai-music-video-generator",
+        "label": "AI 音乐视频生成器",
+        "description": "用歌词生成 AI 画面场景。"
+      }
+    ]
   }
 }

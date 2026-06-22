@@ -9,12 +9,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "音频转歌词视频 — AI 转换器，上传 MP3 自动生成",
-    "description": "在线把任意音频转成歌词视频。上传 MP3、WAV、FLAC、AAC 或 OGG，AI 自动转写歌词、同步节拍、预览并免费导出，无需订阅。",
+    "description": "音频转歌词视频转换器：上传 MP3、WAV、FLAC、AAC 或 OGG，AI 自动转写并同步歌词，预览后免费导出 MP4，无需订阅。",
     "keywords": [
       "音频转歌词视频",
       "音频生成歌词视频",
@@ -82,15 +83,18 @@
     "steps": [
       {
         "title": "上传音频",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。无论是母带还是粗混 demo，工具都能直接从音频处理，支持最长 15 分钟的音频。"
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或直接粘贴链接。无需注册即可开始，也不需要手动输入歌词。无论是母带还是粗混 demo，工具都能直接从音频处理，支持最长 15 分钟的音频。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI 转写并同步",
-        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。歌词跟随歌曲的节奏和断句走，而不是套用通用字幕计时器。"
+        "description": "AI 自动从音频转写歌词，并逐行同步到节拍 — 支持 50 多种语言。点击任意歌词行即可编辑。歌词跟随歌曲的节奏和断句走，而不是套用通用字幕计时器。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。确认每行歌词落点准确、文字清晰可读，然后导出 MP4：16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费路径支持 1080p 导出，需要更高分辨率时可使用 Pro。"
+        "description": "发布前先看完整预览。确认每行歌词落点准确、文字清晰可读，然后导出 MP4：16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费路径支持 1080p 导出，需要更高分辨率时可使用 Pro。",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -121,7 +125,7 @@
     "items": [
       {
         "question": "音频转歌词视频免费吗？",
-        "answer": "免费。注册即获得免费额度，直接导出歌词视频 — 无需订阅，无需绑定信用卡。"
+        "answer": "免费。把音频转成歌词视频是免费的 —— 注册领免费额度即可导出，无需订阅、无需信用卡。"
       },
       {
         "question": "支持哪些音频和视频格式？",
@@ -129,7 +133,7 @@
       },
       {
         "question": "需要自己输入歌词吗？",
-        "answer": "不需要。上传音频后 AI 会自动转写每一行歌词，支持 50 多种语言。你可以点击任意行进行编辑。"
+        "answer": "不需要。上传音频文件，AI 自动转写每一行歌词，支持 50+ 语言。导出前可点击任意行改字。"
       },
       {
         "question": "可以把 MP3 转成 TikTok 歌词视频吗？",
@@ -141,7 +145,7 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以 — 导出的视频归你所有，包括用于变现频道和付费发行。请确保你拥有上传音乐的版权。"
+        "answer": "可以。你转换出的每个 MP4 都归你所有，可商用、可变现。只需确保你拥有上传音频的版权。"
       }
     ]
   },
@@ -152,24 +156,54 @@
   "useCases": [
     {
       "title": "MP3 单曲转 YouTube 歌词视频",
-      "description": "将母带音频转成完整 16:9 MP4 歌词视频，直接发布到频道。"
+      "description": "将母带音频转成完整 16:9 MP4 歌词视频，直接发布到频道。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-youtube.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
-      "description": "把副歌或 hook 转成 9:16 竖屏歌词视频，适合短视频传播。"
+      "description": "把副歌或 hook 转成 9:16 竖屏歌词视频，适合短视频传播。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-tiktok.png"
     },
     {
       "title": "未发布 demo",
-      "description": "把 demo 音频转成歌词视频预览，分享给合作者或在社交媒体预热。"
+      "description": "把 demo 音频转成歌词视频预览，分享给合作者或在社交媒体预热。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-demo.png"
     },
     {
       "title": "歌词频道批量上传",
-      "description": "需要频繁上传歌词视频时，使用可重复的音频转视频流程。"
+      "description": "需要频繁上传歌词视频时，使用可重复的音频转视频流程。",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-batch.png"
     }
   ],
   "bottomCta": {
     "title": "你已经有音频了，这就够了。",
     "description": "上传音频文件，让 AI 搞定歌词和画面，免费导出成品歌词视频，无需订阅。",
-    "button": "转换我的音频"
+    "button": "转换我的音频",
+    "upsell": "MP3、WAV、FLAC、AAC、OGG · 导出 MP4 · 免费，无需订阅"
+  },
+  "relatedTools": {
+    "title": "更多歌词视频工具",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI 歌词视频生成器",
+        "description": "把任意歌曲变成同步歌词视频。"
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "歌曲转歌词视频",
+        "description": "一首歌上传，产出成品歌词视频。"
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "自动歌词转写",
+        "description": "导出带时间轴的 TXT、LRC、SRT 歌词。"
+      },
+      {
+        "slug": "add-lyrics-to-video",
+        "label": "给视频加歌词",
+        "description": "在你的视频上叠加同步歌词。"
+      }
+    ]
   }
 }

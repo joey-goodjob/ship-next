@@ -37,7 +37,6 @@ export async function Footer() {
       title: t("footer.resources"),
       links: [
         { label: t("footer.dashboard"), href: "/#create" },
-        { label: t("footer.settings"), href: "/settings" },
       ],
     },
     {

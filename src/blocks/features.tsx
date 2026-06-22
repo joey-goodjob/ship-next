@@ -97,9 +97,7 @@ export async function Features() {
                     <img src={imageSrc} alt={card.title} className="h-full w-full object-cover" loading="lazy" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
-                      <span className="rounded-full border border-brand-line bg-brand-panel/70 px-4 py-1.5 text-xs font-medium text-brand-muted">
-                        Image placeholder
-                      </span>
+                      <Icon className="size-20 text-brand-accent/70 drop-shadow lg:size-24" aria-hidden={true} />
                     </div>
                   )}
                 </div>

@@ -59,12 +59,20 @@ README.md
 # local visual research artifacts
 /docs/design-references/**/*.png
 /docs/research/beatviz.ai/
+/docs/research/freebeat/
 /docs/research/sorax.io/
+/docs/seo/picture/
+/docs/seo/prompt/
+/tmp/imagegen/
 /scripts/test-dark-theme-only.ts
 /scripts/test-hero-brand-colors.ts
 /scripts/test-hero-overlay-header.ts
 /scripts/upload-beatviz-videos-to-r2.ts
 /scripts/upload-beatviz-yt5-with-curl.ts
+
+# generated public media; upload to R2 instead of committing to git
+/public/imgs/seo/
+/public/external/freebeat-seedance/
 
 # binary docs
 *.xlsx

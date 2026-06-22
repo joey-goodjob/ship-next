@@ -9,6 +9,7 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
@@ -24,9 +25,9 @@
   },
   "hero": {
     "badge": "Kapwing alternative — AI lyric video maker, free",
-    "h1": "Kapwing Alternative for Lyric Videos",
+    "h1": "Kapwing Alternative for Lyric Videos — No Timeline, Just Your Song",
     "subhead": "Kapwing is a general video editor — making lyric videos in it means typing lyrics, dragging text, and timing every line by hand. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, preview, and export — free, no subscription needed.",
-    "primaryCta": "Try It Free",
+    "primaryCta": "Make a Lyric Video Free",
     "secondaryCta": "See How It Works"
   },
   "trust": [
@@ -80,15 +81,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike Kapwing, you don't need to place text on a timeline — the AI handles everything from audio."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike Kapwing, you don't need to place text on a timeline — the AI handles everything from audio.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. No more dragging text layers or guessing timestamps like you would in Kapwing."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. No more dragging text layers or guessing timestamps like you would in Kapwing.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -119,7 +123,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a Kapwing alternative?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required, no credit card needed."
+        "answer": "Yes. As a Kapwing alternative, LyricVideoMaker is free — start with free credits and export your lyric video, no subscription or card required."
       },
       {
         "question": "How is LyricVideoMaker different from Kapwing for lyric videos?",
@@ -127,7 +131,7 @@
       },
       {
         "question": "Do I need to type lyrics like in Kapwing?",
-        "answer": "No. Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. You can click any line to edit if needed."
+        "answer": "No. Instead of typing lyrics onto a timeline like in Kapwing, AI transcribes them from your audio in 50+ languages. Edit any line if needed."
       },
       {
         "question": "When should I still use Kapwing?",
@@ -135,7 +139,11 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Make sure you have rights to the music you upload."
+        "answer": "Yes. Your exports are yours for monetized channels and paid releases, no different from Kapwing. Just make sure you have the rights to the music you upload."
+      },
+      {
+        "question": "How hard is it to switch from Kapwing?",
+        "answer": "There's nothing to migrate. Upload the same song you used in Kapwing and you'll have a finished lyric video in a couple of minutes — no project files to move, no setup."
       }
     ]
   },
@@ -146,24 +154,54 @@
   "useCases": [
     {
       "title": "YouTube full-length lyric video",
-      "description": "Export the entire track as a 16:9 lyric video with AI-generated visuals — no timeline work needed."
+      "description": "Export the entire track as a 16:9 lyric video with AI-generated visuals — no timeline work needed.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/kapwing-alternative/use-case-1.png"
     },
     {
       "title": "TikTok and Reels clips",
-      "description": "Cut the hook or chorus into a 9:16 vertical lyric video — faster than building it in Kapwing's editor."
+      "description": "Cut the hook or chorus into a 9:16 vertical lyric video — faster than building it in Kapwing's editor.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/kapwing-alternative/use-case-2.png"
     },
     {
       "title": "Release week content",
-      "description": "Generate multiple lyric clips from one single — no need to rebuild each one in a general editor."
+      "description": "Generate multiple lyric clips from one single — no need to rebuild each one in a general editor.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/kapwing-alternative/use-case-3.png"
     },
     {
       "title": "Artists without editing skills",
-      "description": "Make a lyric video without learning Kapwing's timeline or text tools. Upload a song, get a video."
+      "description": "Make a lyric video without learning Kapwing's timeline or text tools. Upload a song, get a video.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/kapwing-alternative/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Skip the timeline. Upload your song and let AI do the rest.",
     "description": "Try LyricVideoMaker with the same song you'd edit in Kapwing — AI handles lyrics and visuals, export free with no subscription needed.",
-    "button": "Try LyricVideoMaker Free"
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      },
+      {
+        "slug": "song-to-lyric-video",
+        "label": "Song to Lyric Video",
+        "description": "One song in, a finished lyric video out."
+      },
+      {
+        "slug": "add-lyrics-to-video",
+        "label": "Add Lyrics to Video",
+        "description": "Overlay synced lyrics on your footage."
+      }
+    ]
   }
 }

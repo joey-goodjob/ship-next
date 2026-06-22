@@ -8,12 +8,13 @@
       "whyChoose",
       "faq",
       "toolkit",
+      "relatedTools",
       "bottomCta"
     ]
   },
   "seo": {
     "title": "Karaoke Video Maker — AI Sing-Along Lyric Videos, Free",
-    "description": "Create sing-along karaoke lyric videos from a song. AI transcribes lyrics, syncs lines to the beat, previews, and exports online.",
+    "description": "Karaoke video maker that turns any song into a sing-along lyric video. AI transcribes and beat-syncs the lyrics, you preview, then export. Free to start.",
     "keywords": [
       "karaoke video maker",
       "karaoke video creator",
@@ -21,7 +22,8 @@
       "how to create karaoke video",
       "how to create karaoke video with lyrics",
       "karaoke video ai",
-      "make karaoke video with lyrics"
+      "make karaoke video with lyrics",
+      "karaoke video maker ai"
     ]
   },
   "hero": {
@@ -42,15 +44,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The AI works directly from your audio — you don't need to build a karaoke timing map from scratch."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The AI works directly from your audio — you don't need to build a karaoke timing map from scratch.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
       },
       {
         "title": "AI transcribes and syncs",
-        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit the words before export. The cue timing is designed so the next lyric appears before the singer needs it."
+        "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit the words before export. The cue timing is designed so the next lyric appears before the singer needs it.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
       },
       {
         "title": "Preview and export",
-        "description": "Watch the karaoke video like a singer would — check that lyric cues arrive on time, text is readable on any screen, and choruses feel natural. Export in 16:9 for YouTube or TV screens, 9:16 for TikTok, or 1:1 for feed posts. Free to export, no subscription required."
+        "description": "Watch the karaoke video like a singer would — check that lyric cues arrive on time, text is readable on any screen, and choruses feel natural. Export in 16:9 for YouTube or TV screens, 9:16 for TikTok, or 1:1 for feed posts. Free to export, no subscription required.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
       }
     ]
   },
@@ -85,7 +90,7 @@
       },
       {
         "question": "How to make a karaoke video without typing lyrics?",
-        "answer": "Upload your audio and the AI transcribes every lyric line automatically, in 50+ languages. Click any line to edit — no manual typing needed."
+        "answer": "No. Upload the song and AI transcribes every lyric line automatically in 50+ languages, then times the cues for sing-along. Edit any line before export."
       },
       {
         "question": "Is this the same as vocal removal?",
@@ -97,7 +102,7 @@
       },
       {
         "question": "Can I use exported karaoke videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and events. Make sure you have rights to the music you upload."
+        "answer": "Yes. The karaoke videos you export are yours for monetized channels, events, and venues. Just make sure you have the rights to the songs you upload."
       },
       {
         "question": "What formats can I export karaoke videos in?",
@@ -112,24 +117,54 @@
   "useCases": [
     {
       "title": "Vocal practice and rehearsal",
-      "description": "Practice timing, phrasing, and lyrics with line-by-line cues built from your song."
+      "description": "Practice timing, phrasing, and lyrics with line-by-line cues built from your song.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/karaoke-video-maker/use-case-1.png"
     },
     {
       "title": "Karaoke nights and events",
-      "description": "Create readable sing-along videos for parties, events, or casual karaoke nights."
+      "description": "Create readable sing-along videos for parties, events, or casual karaoke nights.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/karaoke-video-maker/use-case-2.png"
     },
     {
       "title": "YouTube karaoke channels",
-      "description": "Produce consistent karaoke-style lyric videos with a repeatable upload-to-export flow."
+      "description": "Produce consistent karaoke-style lyric videos with a repeatable upload-to-export flow.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/karaoke-video-maker/use-case-3.png"
     },
     {
       "title": "Cover performances",
-      "description": "Help listeners follow along with covers, acoustic sessions, or live performances."
+      "description": "Help listeners follow along with covers, acoustic sessions, or live performances.",
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/karaoke-video-maker/use-case-4.png"
     }
   ],
   "bottomCta": {
     "title": "Every song deserves a sing-along.",
     "description": "Upload your track, let AI handle the lyrics and timing, and export a karaoke-style lyric video — free, no subscription needed.",
-    "button": "Make My Karaoke Video"
+    "button": "Make My Karaoke Video",
+    "upsell": "Free export · No subscription · No credit card"
+  },
+  "relatedTools": {
+    "title": "Related Lyric Video Tools",
+    "items": [
+      {
+        "slug": "lyric-video-generator",
+        "label": "AI Lyric Video Generator",
+        "description": "Turn any song into a synced lyric video."
+      },
+      {
+        "slug": "lyric-video-templates",
+        "label": "Lyric Video Templates",
+        "description": "AI visual styles matched to your song."
+      },
+      {
+        "slug": "auto-lyrics-transcription",
+        "label": "Automatic Lyrics Transcription",
+        "description": "Get beat-synced TXT, LRC, or SRT lyrics."
+      },
+      {
+        "slug": "free-lyric-video-maker",
+        "label": "Free Lyric Video Maker",
+        "description": "Make and export lyric videos free."
+      }
+    ]
   }
 }
