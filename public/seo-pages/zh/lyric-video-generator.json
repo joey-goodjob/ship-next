@@ -145,22 +145,22 @@
     {
       "title": "独立音乐人发歌",
       "description": "不用设计师、剪辑师或 MV 预算，直接为单曲生成歌词视频。",
-      "image": "/imgs/seo/lyric-video-generator/use-case-1.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-generator/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
       "description": "从副歌或 hook 生成竖屏歌词视频，适合短视频传播。",
-      "image": "/imgs/seo/lyric-video-generator/use-case-2.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-generator/use-case-2.png"
     },
     {
       "title": "YouTube 歌词视频",
       "description": "生成完整 16:9 歌词视频，比静态封面更有观看价值。",
-      "image": "/imgs/seo/lyric-video-generator/use-case-3.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-generator/use-case-3.png"
     },
     {
       "title": "发歌周内容",
       "description": "从一首单曲生成多个歌词片段 — 发歌周每天都有新内容。",
-      "image": "/imgs/seo/lyric-video-generator/use-case-4.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-generator/use-case-4.png"
     }
   ],
   "bottomCta": {

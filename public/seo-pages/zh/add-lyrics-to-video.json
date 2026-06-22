@@ -122,22 +122,22 @@
     {
       "title": "音乐 MV",
       "description": "给正式 MV、表演剪辑或视觉视频加上歌词，让观众跟得上歌词，同时保留原本画面。",
-      "image": "/imgs/seo/add-lyrics-to-video/use-case-1.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/add-lyrics-to-video/use-case-1.png"
     },
     {
       "title": "现场演出视频",
       "description": "给 live set、cover、录音室 session 或排练片段叠加歌词，让现场能量和歌词内容同时被看见。",
-      "image": "/imgs/seo/add-lyrics-to-video/use-case-2.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/add-lyrics-to-video/use-case-2.png"
     },
     {
       "title": "婚礼和活动视频",
       "description": "给 first dance、活动高光或纪念视频加上歌词，当歌曲本身就是画面情绪的一部分。",
-      "image": "/imgs/seo/add-lyrics-to-video/use-case-3.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/add-lyrics-to-video/use-case-3.png"
     },
     {
       "title": "旅行蒙太奇和粉丝剪辑",
       "description": "给旅行素材、配乐剪辑和社媒短片加上同步歌词，不用手动重建时间轴。",
-      "image": "/imgs/seo/add-lyrics-to-video/use-case-4.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/add-lyrics-to-video/use-case-4.png"
     }
   ],
   "bottomCta": {

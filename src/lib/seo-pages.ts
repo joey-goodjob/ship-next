@@ -552,9 +552,18 @@ function assertNonEmptyString(value: unknown, label: string): asserts value is s
 
 function assertPublicImagePath(value: unknown, label: string): asserts value is string {
   assertNonEmptyString(value, label);
-  if (!value.startsWith("/") || value.includes("..") || value.includes("://")) {
-    throw new Error(`${label} must be a public absolute image path`);
+  if (value.startsWith("/") && !value.includes("..") && !value.includes("://")) {
+    return;
   }
+
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:" || url.protocol === "http:") return;
+  } catch {
+    // Fall through to the shared validation error.
+  }
+
+  throw new Error(`${label} must be a public image path or an http(s) image URL`);
 }
 
 function isValidSeoSlug(slug: string) {

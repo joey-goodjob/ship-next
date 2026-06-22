@@ -157,22 +157,22 @@
     {
       "title": "MP3 单曲转 YouTube 歌词视频",
       "description": "将母带音频转成完整 16:9 MP4 歌词视频，直接发布到频道。",
-      "image": "/imgs/seo/audio-to-lyric-video/use-case-youtube.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-youtube.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
       "description": "把副歌或 hook 转成 9:16 竖屏歌词视频，适合短视频传播。",
-      "image": "/imgs/seo/audio-to-lyric-video/use-case-tiktok.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-tiktok.png"
     },
     {
       "title": "未发布 demo",
       "description": "把 demo 音频转成歌词视频预览，分享给合作者或在社交媒体预热。",
-      "image": "/imgs/seo/audio-to-lyric-video/use-case-demo.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-demo.png"
     },
     {
       "title": "歌词频道批量上传",
       "description": "需要频繁上传歌词视频时，使用可重复的音频转视频流程。",
-      "image": "/imgs/seo/audio-to-lyric-video/use-case-batch.png"
+      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/audio-to-lyric-video/use-case-batch.png"
     }
   ],
   "bottomCta": {
