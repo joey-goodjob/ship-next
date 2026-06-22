@@ -42,15 +42,15 @@ export function SiteFooter({
         {columns && columns.length > 0 && (
           <div
             className={cn(
-              "grid gap-x-8 gap-y-10 sm:gap-x-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]",
+              "grid gap-x-8 gap-y-10 sm:gap-x-12",
               columns.length <= 3
-                ? "grid-cols-1 sm:grid-cols-2"
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_repeat(3,minmax(0,1fr))]"
                 : columns.length === 4
-                  ? "grid-cols-2 sm:grid-cols-4"
-                  : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
+                  ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1.25fr_repeat(4,minmax(0,1fr))]"
+                  : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-[1.15fr_repeat(5,minmax(0,1fr))]"
             )}
           >
-            <div className="space-y-6">
+            <div className="col-span-full space-y-6 lg:col-span-1">
               <BrandLogo variant="footer" showName />
               <p className="text-base font-semibold leading-6">Follow us on</p>
               <div className="flex gap-2">
@@ -84,14 +84,14 @@ export function SiteFooter({
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
+                          className="text-base leading-6 text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </a>
                       ) : (
                         <Link
                           href={link.href}
-                          className="text-base text-brand-ink transition-colors hover:text-brand-accent"
+                          className="text-base leading-6 text-brand-ink transition-colors hover:text-brand-accent"
                         >
                           {link.label}
                         </Link>
