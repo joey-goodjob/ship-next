@@ -15,7 +15,7 @@ import {
   updateBySubscriptionNo,
 } from '@/modules/subscriptions/service';
 import { calculateCreditExpirationTime } from '@/modules/credits/service';
-import { getAllConfigs } from '@/modules/config/service';
+import { clearConfigCache, getAllConfigs } from '@/modules/config/service';
 
 // --- Order types ---
 
@@ -31,8 +31,8 @@ enum OrderStatus {
 let manager: PaymentManager | null = null;
 let managerConfigHash = '';
 
-async function getPaymentManager(): Promise<PaymentManager> {
-  const configs = await getAllConfigs();
+async function getPaymentManager(options: { forceRefresh?: boolean } = {}): Promise<PaymentManager> {
+  const configs = await getAllConfigs({ forceRefresh: options.forceRefresh });
   const c = (key: string) => configs[key] || '';
 
   // Rebuild manager if provider configs changed
@@ -107,6 +107,19 @@ async function getPaymentManager(): Promise<PaymentManager> {
   return manager;
 }
 
+function resetPaymentManager() {
+  manager = null;
+  managerConfigHash = '';
+}
+
+function isProviderConfigError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || '');
+  return (
+    message.includes('Payment provider') ||
+    message.includes('No payment provider configured')
+  );
+}
+
 // --- Checkout ---
 
 export async function createCheckout(params: {
@@ -129,21 +142,39 @@ export async function createCheckout(params: {
     credits,
     creditsValidDays,
   } = params;
-  const pm = await getPaymentManager();
   const orderNo = getUniSeq('ORD');
 
   const finalSuccessUrl = paymentOrder.successUrl || `${envConfigs.app_url}/settings/billing?success=1`;
   const callbackSuccessUrl = `${envConfigs.app_url}/api/payment/callback?order_no=${orderNo}&redirect=${encodeURIComponent(finalSuccessUrl)}`;
 
-  const session = await pm.createPayment({
-    order: {
-      ...paymentOrder,
-      orderNo,
-      successUrl: callbackSuccessUrl,
-      cancelUrl: paymentOrder.cancelUrl || `${envConfigs.app_url}/settings/billing?canceled=1`,
-    },
-    provider,
-  });
+  const orderForProvider = {
+    ...paymentOrder,
+    orderNo,
+    successUrl: callbackSuccessUrl,
+    cancelUrl: paymentOrder.cancelUrl || `${envConfigs.app_url}/settings/billing?canceled=1`,
+  };
+
+  let session: CheckoutSession;
+  try {
+    const pm = await getPaymentManager();
+    session = await pm.createPayment({
+      order: orderForProvider,
+      provider,
+    });
+  } catch (error) {
+    if (!isProviderConfigError(error)) {
+      throw error;
+    }
+
+    clearConfigCache();
+    resetPaymentManager();
+
+    const refreshedPm = await getPaymentManager({ forceRefresh: true });
+    session = await refreshedPm.createPayment({
+      order: orderForProvider,
+      provider,
+    });
+  }
 
   await db().insert(order).values({
     id: getUuid(),

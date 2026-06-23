@@ -2,7 +2,7 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, Gift, Info, Mic2, Sparkles, Star, WandSparkles, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/core/i18n/navigation";
 import {
   Accordion,
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 type BillingCycle = "monthly" | "annual";
 type PlanKey = "free" | "creator" | "pro" | "ultra";
 type FeatureState = "included" | "unavailable";
+type CheckoutPlanKey = Exclude<PlanKey, "free">;
 
 type FeatureCopy = {
   key: string;
@@ -47,6 +48,22 @@ type PlanVisual = {
   icon: ReactNode;
   iconClassName: string;
   rotateClassName: string;
+};
+
+export type PricingCheckoutPayload = {
+  product_name: string;
+  plan_name: string;
+  price: number;
+  currency: "usd";
+  type: "subscription";
+  description: string;
+  plan: {
+    name: string;
+    interval: "month" | "year";
+    intervalCount: 1;
+  };
+  credits: number;
+  payment_provider: "stripe";
 };
 
 const PLANS: Array<{
@@ -158,6 +175,13 @@ const PLANS: Array<{
 const DEFAULT_PACK_INDEX = 2;
 const DEFAULT_DURATION_MINUTES = 3;
 
+const PLAN_MONTHLY_CREDITS: Record<PlanKey, number> = {
+  free: 150,
+  creator: 2_000,
+  pro: 6_000,
+  ultra: 10_000,
+};
+
 const PLAN_VISUALS: Record<PlanKey, PlanVisual> = {
   free: {
     icon: <Gift className="size-6" />,
@@ -180,6 +204,66 @@ const PLAN_VISUALS: Record<PlanKey, PlanVisual> = {
     rotateClassName: "md:rotate-[0.9deg]",
   },
 };
+
+function findPricingPlan(planKey: PlanKey) {
+  return PLANS.find((plan) => plan.key === planKey);
+}
+
+export function getPlanCheckoutPriceInCents(
+  planKey: PlanKey,
+  billingCycle: BillingCycle
+) {
+  const plan = findPricingPlan(planKey);
+  if (!plan || plan.monthlyPrice <= 0) return null;
+
+  const amount =
+    billingCycle === "annual"
+      ? plan.annualBilledPrice
+      : plan.monthlyPrice;
+
+  return typeof amount === "number" ? amount * 100 : null;
+}
+
+export function getPlanCheckoutCredits(
+  planKey: PlanKey,
+  billingCycle: BillingCycle
+) {
+  const monthlyCredits = PLAN_MONTHLY_CREDITS[planKey] || 0;
+  return billingCycle === "annual" ? monthlyCredits * 12 : monthlyCredits;
+}
+
+export function buildPricingCheckoutPayload({
+  planKey,
+  billingCycle,
+  planName,
+}: {
+  planKey: PlanKey;
+  billingCycle: BillingCycle;
+  planName: string;
+}): PricingCheckoutPayload | null {
+  if (planKey === "free") return null;
+
+  const price = getPlanCheckoutPriceInCents(planKey, billingCycle);
+  if (!price) return null;
+
+  const interval = billingCycle === "annual" ? "year" : "month";
+
+  return {
+    product_name: planName,
+    plan_name: planName,
+    price,
+    currency: "usd",
+    type: "subscription",
+    description: `${planName} ${billingCycle} plan`,
+    plan: {
+      name: planName,
+      interval,
+      intervalCount: 1,
+    },
+    credits: getPlanCheckoutCredits(planKey, billingCycle),
+    payment_provider: "stripe",
+  };
+}
 
 function formatPrice(plan: (typeof PLANS)[number], billingCycle: BillingCycle) {
   if (plan.monthlyPrice === 0) return "$0";
@@ -208,8 +292,61 @@ function PlanCard({
   features: FeatureCopy[];
 }) {
   const t = useTranslations("landing");
+  const commonT = useTranslations("common");
+  const locale = useLocale();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const showAnnualPrice = billingCycle === "annual" && Boolean(plan.annualBilledPrice);
   const visual = PLAN_VISUALS[plan.key];
+  const planName = t(`pricing_plans.${plan.key}.name`);
+  const isPaidPlan = plan.key !== "free";
+  const checkoutButtonText = isCheckingOut
+    ? commonT("pricing.processing")
+    : t(`pricing_plans.${plan.key}.cta`);
+  const signInPath =
+    locale === "en"
+      ? "/sign-in?redirect=/pricing"
+      : `/${locale}/sign-in?redirect=/${locale}/pricing`;
+
+  async function handleCheckout() {
+    if (!isPaidPlan) return;
+
+    const payload = buildPricingCheckoutPayload({
+      planKey: plan.key as CheckoutPlanKey,
+      billingCycle,
+      planName,
+    });
+
+    if (!payload) return;
+
+    setIsCheckingOut(true);
+    setCheckoutError(null);
+
+    try {
+      const res = await fetch("/api/payment/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (data.code === 0 && data.data?.checkout_url) {
+        window.location.href = data.data.checkout_url;
+        return;
+      }
+
+      if (data.message === "Unauthorized") {
+        window.location.href = signInPath;
+        return;
+      }
+
+      setCheckoutError(data.message || "Checkout failed");
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Checkout failed");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  }
 
   return (
     <div
@@ -241,7 +378,7 @@ function PlanCard({
           {visual.icon}
         </div>
         <h3 className="text-2xl font-black leading-tight tracking-[-0.012em] text-white">
-          {t(`pricing_plans.${plan.key}.name`)}
+          {planName}
         </h3>
         <p className="mt-2 text-sm font-semibold leading-6 text-white/58">
           {t(`pricing_plans.${plan.key}.note`)}
@@ -288,18 +425,39 @@ function PlanCard({
         <Info className="size-4 shrink-0 text-white/45" />
       </div>
 
-      <Link
-        href="/create"
-        className={cn(
-          "mt-5 flex min-h-12 items-center justify-center rounded-[10px] border-2 px-4 text-center text-sm font-black transition-[transform,box-shadow,background-color,color] duration-200 ease-out",
-          "shadow-[4px_4px_0_0_rgba(0,0,0,0.82)] active:scale-[0.97] motion-reduce:transition-none",
-          plan.featured
-            ? "border-[#08090a] bg-brand-accent text-brand-accent-ink [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-brand-accent-hover [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
-            : "border-white/78 bg-[#111215] text-white [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-[#111215] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
-        )}
-      >
-        {t(`pricing_plans.${plan.key}.cta`)}
-      </Link>
+      {isPaidPlan ? (
+        <button
+          type="button"
+          disabled={isCheckingOut}
+          className={cn(
+            "mt-5 flex min-h-12 items-center justify-center rounded-[10px] border-2 px-4 text-center text-sm font-black transition-[transform,box-shadow,background-color,color] duration-200 ease-out",
+            "shadow-[4px_4px_0_0_rgba(0,0,0,0.82)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none",
+            plan.featured
+              ? "border-[#08090a] bg-brand-accent text-brand-accent-ink [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-brand-accent-hover [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
+              : "border-white/78 bg-[#111215] text-white [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-[#111215] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
+          )}
+          onClick={handleCheckout}
+        >
+          {checkoutButtonText}
+        </button>
+      ) : (
+        <Link
+          href="/create"
+          className={cn(
+            "mt-5 flex min-h-12 items-center justify-center rounded-[10px] border-2 px-4 text-center text-sm font-black transition-[transform,box-shadow,background-color,color] duration-200 ease-out",
+            "border-white/78 bg-[#111215] text-white shadow-[4px_4px_0_0_rgba(0,0,0,0.82)] active:scale-[0.97] motion-reduce:transition-none",
+            "[@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-[#111215] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
+          )}
+        >
+          {checkoutButtonText}
+        </Link>
+      )}
+
+      {checkoutError ? (
+        <p className="mt-3 text-xs font-bold leading-5 text-rose-300">
+          {checkoutError}
+        </p>
+      ) : null}
 
       <div className="mt-6 border-t-2 border-white/14 pt-5">
         <p className="mb-4 text-xs font-black uppercase tracking-[0.12em] text-white/42">

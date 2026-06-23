@@ -48,7 +48,9 @@ const zhLandingText = fs.readFileSync(
 
 assert(pricingBlock.includes("pricing_studio"), "pricing.tsx must render the Studio service block.");
 assert(pricingBlock.includes("pricing_credit_info"), "pricing.tsx must render localized credit info groups.");
-assert(pricingBlock.includes('href="/create"'), "pricing CTA links must point to /create in v1.");
+assert(pricingBlock.includes('href="/create"'), "free and credit-pack CTAs must still point to /create.");
+assert(pricingBlock.includes('"/api/payment/checkout"'), "paid pricing CTAs must create a checkout session.");
+assert(pricingBlock.includes("buildPricingCheckoutPayload"), "paid pricing CTAs must use the shared checkout payload helper.");
 assert(pricingBlock.includes('annualMonthlyPrice: "32.5"'), "Creator annual monthly price must match the reference.");
 assert(pricingBlock.includes("annualBilledPrice: 990"), "Pro annual billed price must match the reference.");
 assert(pricingBlock.includes("formatDollarAmount"), "Annual billed amounts must be formatted with thousands separators.");

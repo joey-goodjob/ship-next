@@ -13,9 +13,9 @@ const CACHE_TTL = 3600_000; // 1 hour
 /**
  * Get all configs from database.
  */
-export async function getDbConfigs(): Promise<ConfigMap> {
+export async function getDbConfigs(options: { forceRefresh?: boolean } = {}): Promise<ConfigMap> {
   const now = Date.now();
-  if (cachedConfigs && now - cacheTime < CACHE_TTL) {
+  if (!options.forceRefresh && cachedConfigs && now - cacheTime < CACHE_TTL) {
     return cachedConfigs;
   }
 
@@ -43,9 +43,14 @@ export async function getDbConfigs(): Promise<ConfigMap> {
 /**
  * Get all configs merged: env + database (database overrides env).
  */
-export async function getAllConfigs(): Promise<ConfigMap> {
-  const dbConfigs = await getDbConfigs();
+export async function getAllConfigs(options: { forceRefresh?: boolean } = {}): Promise<ConfigMap> {
+  const dbConfigs = await getDbConfigs(options);
   return { ...envConfigs, ...dbConfigs };
+}
+
+export function clearConfigCache() {
+  cachedConfigs = null;
+  cacheTime = 0;
 }
 
 /**
