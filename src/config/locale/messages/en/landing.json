@@ -334,16 +334,12 @@
         {
           "name": "Character Model",
           "description": "Generate consistent character or scene images for your lyric video.",
-          "cost": [
-            "3 credits per image with Pro and Ultra plans",
-            "5 credits per image with Creator and Free plans"
-          ],
-          "discount": "40% off for Pro and Ultra plans"
+          "cost": "5 credits per image"
         },
         {
           "name": "Character Plus Model",
           "description": "Premium image generation for sharper detail and stronger prompt following.",
-          "cost": "20 credits per image",
+          "cost": "5 credits per image",
           "badge": "Premium"
         },
         {
@@ -354,7 +350,7 @@
         {
           "name": "Remix Plus Model",
           "description": "Higher fidelity image editing for detailed visual revisions.",
-          "cost": "20 credits per image",
+          "cost": "5 credits per image",
           "badge": "Premium"
         }
       ]

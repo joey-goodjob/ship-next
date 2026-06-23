@@ -7,6 +7,7 @@ import { logLyricStageError } from '@/lib/lyric-video-log';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { createKieProvider } from './llm';
+import { LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS } from './costs';
 import { parseJsonField, safeJson } from './json';
 import { ACTIVE_CAST_ROLES, castRoleForStorage, ensureUniqueActiveCastName, removeCastIdFromSceneCastIds } from './cast-library';
 import { getProjectDetails } from './project';
@@ -20,8 +21,6 @@ import { getProjectDetails } from './project';
  */
 
 const DEFAULT_CHARACTER_IMAGE_MODEL = 'nano-banana-2';
-const CHARACTER_IMAGE_COST_CREDITS = 5;
-
 function sameCastRoleCondition(role: string) {
   if (role === 'primary') return or(eq(lyricVideoCastMember.role, 'primary'), eq(lyricVideoCastMember.role, 'main'));
   if (role === 'secondary') {
@@ -328,7 +327,7 @@ export async function queueCastImage(params: {
     provider: 'kie',
     model,
     prompt,
-    costCredits: CHARACTER_IMAGE_COST_CREDITS,
+    costCredits: LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS,
     options,
   });
 

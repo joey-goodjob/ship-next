@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Info, Sparkles, X } from "lucide-react";
+import { type ReactNode, useMemo, useState } from "react";
+import { Check, Gift, Info, Mic2, Sparkles, Star, WandSparkles, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/core/i18n/navigation";
 import {
@@ -41,6 +41,12 @@ type CreditInfoGroup = {
 type PricingFaq = {
   question: string;
   answer: string;
+};
+
+type PlanVisual = {
+  icon: ReactNode;
+  iconClassName: string;
+  rotateClassName: string;
 };
 
 const PLANS: Array<{
@@ -152,6 +158,29 @@ const PLANS: Array<{
 const DEFAULT_PACK_INDEX = 2;
 const DEFAULT_DURATION_MINUTES = 3;
 
+const PLAN_VISUALS: Record<PlanKey, PlanVisual> = {
+  free: {
+    icon: <Gift className="size-6" />,
+    iconClassName: "text-emerald-300",
+    rotateClassName: "md:-rotate-[0.8deg]",
+  },
+  creator: {
+    icon: <Mic2 className="size-6" />,
+    iconClassName: "text-amber-300",
+    rotateClassName: "md:rotate-[0.7deg]",
+  },
+  pro: {
+    icon: <Star className="size-6" />,
+    iconClassName: "text-brand-accent",
+    rotateClassName: "md:-rotate-[0.35deg]",
+  },
+  ultra: {
+    icon: <WandSparkles className="size-6" />,
+    iconClassName: "text-sky-300",
+    rotateClassName: "md:rotate-[0.9deg]",
+  },
+};
+
 function formatPrice(plan: (typeof PLANS)[number], billingCycle: BillingCycle) {
   if (plan.monthlyPrice === 0) return "$0";
   if (billingCycle === "annual" && plan.annualMonthlyPrice) {
@@ -165,8 +194,8 @@ function formatDollarAmount(amount: number) {
 }
 
 function statusIcon(status: FeatureState) {
-  if (status === "included") return <Check className="size-4 text-emerald-500" />;
-  return <X className="size-4 text-rose-300" />;
+  if (status === "included") return <Check className="size-3.5" />;
+  return <X className="size-3.5" />;
 }
 
 function PlanCard({
@@ -180,42 +209,56 @@ function PlanCard({
 }) {
   const t = useTranslations("landing");
   const showAnnualPrice = billingCycle === "annual" && Boolean(plan.annualBilledPrice);
+  const visual = PLAN_VISUALS[plan.key];
 
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col rounded-lg border bg-brand-panel p-5 shadow-sm",
+        "group relative flex h-full min-h-[640px] flex-col rounded-[14px] border-2 bg-[#18191d] p-5 text-white shadow-[8px_8px_0_0_rgba(0,0,0,0.72)] transition-[transform,box-shadow] duration-200 ease-out",
+        "border-white/75",
+        "[@media(hover:hover)]:hover:-translate-y-1 [@media(hover:hover)]:hover:shadow-[12px_12px_0_0_rgba(0,0,0,0.78)]",
+        "active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:transform-none",
+        visual.rotateClassName,
         plan.featured
-          ? "border-brand-accent shadow-[0_0_0_3px_var(--brand-accent-shadow)]"
-          : "border-brand-line"
+          ? "bg-[#1f1f22] shadow-[8px_8px_0_0_rgba(0,0,0,0.8),0_0_0_3px_rgba(245,190,32,0.2)]"
+          : ""
       )}
     >
       {plan.featured ? (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-brand-accent px-4 py-1 text-xs font-black uppercase text-brand-ink">
+        <div className="absolute -right-3 -top-4 z-10 rotate-[10deg] whitespace-nowrap rounded-full border-2 border-[#08090a] bg-brand-accent px-4 py-1 text-xs font-black uppercase text-brand-accent-ink shadow-[3px_3px_0_0_rgba(0,0,0,0.85)]">
           {t("pricing_labels.most_popular")}
         </div>
       ) : null}
 
-      <div className="flex min-h-20 flex-col">
-        <h3 className="text-lg font-black text-brand-ink">
+      <div className="flex min-h-[132px] flex-col">
+        <div
+          className={cn(
+            "mb-5 flex size-12 items-center justify-center rounded-full border-2 border-white/80 bg-[#111215] shadow-[2px_2px_0_0_rgba(0,0,0,0.72)]",
+            visual.iconClassName
+          )}
+          aria-hidden="true"
+        >
+          {visual.icon}
+        </div>
+        <h3 className="text-2xl font-black leading-tight tracking-[-0.012em] text-white">
           {t(`pricing_plans.${plan.key}.name`)}
         </h3>
-        <p className="mt-2 text-sm font-semibold leading-6 text-brand-muted">
+        <p className="mt-2 text-sm font-semibold leading-6 text-white/58">
           {t(`pricing_plans.${plan.key}.note`)}
         </p>
       </div>
 
       <div className="mt-6">
         {showAnnualPrice ? (
-          <div className="mb-1 text-sm font-black text-brand-muted line-through">
+          <div className="mb-1 text-sm font-black text-white/45 line-through">
             ${plan.monthlyPrice}
           </div>
         ) : null}
         <div className="flex items-end gap-2">
-          <span className="text-5xl font-black text-brand-ink">
+          <span className="font-mono text-5xl font-black leading-none tracking-[-0.022em] text-white tabular-nums">
             {formatPrice(plan, billingCycle)}
           </span>
-          <span className="mb-2 text-sm font-black text-brand-muted">
+          <span className="mb-1.5 text-sm font-black text-white/58">
             / {t("pricing_labels.month")}
           </span>
         </div>
@@ -223,42 +266,43 @@ function PlanCard({
 
       {showAnnualPrice ? (
         <div className="mt-2 space-y-1">
-          <p className="text-sm font-semibold text-brand-muted">
+          <p className="text-sm font-semibold text-white/58">
             {t("pricing_labels.billed_annually", {
               amount: formatDollarAmount(plan.annualBilledPrice ?? 0),
             })}
           </p>
-          <p className="text-sm font-bold text-emerald-600">
+          <p className="text-sm font-black text-emerald-300">
             {t("pricing_labels.annual_savings", {
               amount: formatDollarAmount(plan.annualSavings ?? 0),
             })}
           </p>
         </div>
       ) : (
-        <p className="mt-2 text-sm font-semibold text-brand-muted">
+        <p className="mt-2 text-sm font-semibold text-white/58">
           {t(`pricing_plans.${plan.key}.billing_note`)}
         </p>
       )}
 
-      <div className="mt-6 flex items-center gap-2 rounded-md bg-brand-soft px-3 py-3 text-sm font-black text-brand-ink">
-        {t(`pricing_plans.${plan.key}.credits`)}
-        <Info className="size-4 text-brand-muted" />
+      <div className="mt-6 flex min-h-12 items-center gap-2 rounded-[10px] border-2 border-white/18 bg-white/[0.05] px-3 py-3 text-sm font-black text-white">
+        <span>{t(`pricing_plans.${plan.key}.credits`)}</span>
+        <Info className="size-4 shrink-0 text-white/45" />
       </div>
 
       <Link
         href="/create"
         className={cn(
-          "mt-5 flex h-11 items-center justify-center rounded-md border text-sm font-black transition-colors",
+          "mt-5 flex min-h-12 items-center justify-center rounded-[10px] border-2 px-4 text-center text-sm font-black transition-[transform,box-shadow,background-color,color] duration-200 ease-out",
+          "shadow-[4px_4px_0_0_rgba(0,0,0,0.82)] active:scale-[0.97] motion-reduce:transition-none",
           plan.featured
-            ? "border-brand-accent bg-brand-accent text-brand-ink hover:bg-brand-accent/90"
-            : "border-brand-ink bg-brand-panel text-brand-ink hover:bg-brand-soft"
+            ? "border-[#08090a] bg-brand-accent text-brand-accent-ink [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-brand-accent-hover [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
+            : "border-white/78 bg-[#111215] text-white [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-[#111215] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.86)]"
         )}
       >
         {t(`pricing_plans.${plan.key}.cta`)}
       </Link>
 
-      <div className="mt-6 border-t border-brand-line pt-5">
-        <p className="mb-4 text-xs font-black uppercase text-brand-muted">
+      <div className="mt-6 border-t-2 border-white/14 pt-5">
+        <p className="mb-4 text-xs font-black uppercase tracking-[0.12em] text-white/42">
           {t("pricing_labels.features")}
         </p>
         <ul className="space-y-3">
@@ -269,10 +313,19 @@ function PlanCard({
                 key={feature.key}
                 className={cn(
                   "flex items-start gap-2 text-sm font-semibold leading-5",
-                  state === "included" ? "text-brand-ink" : "text-brand-muted"
+                  state === "included" ? "text-white" : "text-white/36"
                 )}
               >
-                <span className="mt-0.5 shrink-0">{statusIcon(state)}</span>
+                <span
+                  className={cn(
+                    "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border",
+                    state === "included"
+                      ? "border-white/72 text-emerald-300"
+                      : "border-white/18 text-rose-300/70"
+                  )}
+                >
+                  {statusIcon(state)}
+                </span>
                 <span>
                   {feature.label}
                 </span>
@@ -295,24 +348,24 @@ function BillingToggle({
   const t = useTranslations("landing");
 
   return (
-    <div className="mx-auto mt-8 flex w-full max-w-md flex-wrap items-center justify-center gap-2 rounded-lg bg-brand-soft p-1.5 text-sm font-black text-brand-muted sm:w-auto sm:max-w-none">
+    <div className="mx-auto mt-8 inline-flex max-w-full items-center justify-center gap-1 rounded-lg border border-brand-line bg-[#242529] p-1 text-sm font-black text-brand-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
       {(["monthly", "annual"] as const).map((cycle) => (
         <button
           key={cycle}
           type="button"
           aria-pressed={billingCycle === cycle}
           className={cn(
-            "h-10 rounded-md px-5 transition-colors",
+            "h-9 whitespace-nowrap rounded-md px-4 transition-colors",
             billingCycle === cycle
-              ? "bg-brand-panel text-brand-ink shadow-sm"
-              : "hover:text-brand-ink"
+              ? "bg-[#18191d] text-white shadow-sm"
+              : "text-brand-muted hover:text-white"
           )}
           onClick={() => onChange(cycle)}
         >
           {t(`pricing_labels.${cycle}`)}
         </button>
       ))}
-      <span className="rounded-full border border-emerald-400 px-3 py-2 text-xs uppercase text-emerald-600">
+      <span className="whitespace-nowrap rounded-full border border-emerald-400/80 px-3 py-1.5 text-xs uppercase text-emerald-400">
         {t("pricing_labels.save_two_months")}
       </span>
     </div>
@@ -656,17 +709,36 @@ export function Pricing({ title }: { title?: string } = {}) {
 
   return (
     <main className="bg-brand-panel text-brand-ink">
-      <section id="pricing" className="px-5 pb-16 pt-10 sm:pb-24">
+      <section
+        id="pricing"
+        className="relative overflow-hidden bg-[#0b0c0f] px-5 pb-16 pt-10 text-white sm:pb-24"
+      >
+        <div
+          className="pointer-events-none absolute left-7 top-28 hidden rotate-[-12deg] text-4xl text-brand-accent drop-shadow-[3px_3px_0_rgba(0,0,0,0.8)] md:block"
+          aria-hidden="true"
+        >
+          *
+        </div>
+        <div
+          className="pointer-events-none absolute right-9 top-24 hidden rotate-[12deg] text-4xl text-brand-accent drop-shadow-[3px_3px_0_rgba(0,0,0,0.8)] md:block"
+          aria-hidden="true"
+        >
+          ++
+        </div>
+        <div
+          className="pointer-events-none absolute left-1/2 top-40 h-3 w-48 -translate-x-1/2 rotate-[-1deg] rounded-full bg-brand-accent/20 blur-sm"
+          aria-hidden="true"
+        />
         <div className="mx-auto max-w-[1280px]">
           <div className="text-center">
-            <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-brand-line bg-brand-soft px-4 py-2 text-xs font-black uppercase text-brand-muted">
+            <div className="mx-auto mb-5 inline-flex rotate-[-1deg] items-center gap-2 rounded-full border-2 border-white/18 bg-white/[0.05] px-4 py-2 text-xs font-black uppercase text-white/62 shadow-[3px_3px_0_0_rgba(0,0,0,0.55)]">
               <Sparkles className="size-4 text-brand-accent" />
               {t("pricing.eyebrow")}
             </div>
-            <h1 className="text-5xl font-black leading-tight text-brand-ink sm:text-[58px]">
+            <h1 className="mx-auto max-w-4xl text-balance text-5xl font-black leading-tight tracking-[-0.022em] text-white sm:text-[64px]">
               {title ?? t("pricing.title")}
             </h1>
-            <p className="mx-auto mt-4 max-w-3xl text-lg font-semibold leading-8 text-brand-muted sm:text-2xl">
+            <p className="mx-auto mt-4 max-w-3xl text-pretty text-lg font-semibold leading-8 text-white/58 sm:text-2xl">
               {t("pricing.description")}
             </p>
             <BillingToggle
@@ -675,7 +747,7 @@ export function Pricing({ title }: { title?: string } = {}) {
             />
           </div>
 
-          <div className="mt-16 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((plan) => (
               <PlanCard
                 key={plan.key}
@@ -686,11 +758,13 @@ export function Pricing({ title }: { title?: string } = {}) {
             ))}
           </div>
 
-          <CreditPacks packs={creditPacks} />
-          <StudioService />
-          <CreditsCalculator />
-          <CreditInfo groups={creditInfoGroups} />
-          <EnterpriseSection />
+          <div className="text-brand-ink">
+            <CreditPacks packs={creditPacks} />
+            <StudioService />
+            <CreditsCalculator />
+            <CreditInfo groups={creditInfoGroups} />
+            <EnterpriseSection />
+          </div>
         </div>
       </section>
 

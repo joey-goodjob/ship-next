@@ -9,7 +9,7 @@ export async function CTA() {
     <section className="relative isolate overflow-hidden bg-black px-5 py-[76px] text-white sm:px-8 lg:py-[108px]">
       <div
         className="absolute inset-0 bg-cover bg-[60%_center] sm:bg-center"
-        style={{ backgroundImage: "url('/imgs/beatviz-m-cta.jpg')" }}
+        style={{ backgroundImage: "url('/imgs/beatviz-m-cta.webp')" }}
         aria-hidden={true}
       />
       <div className="absolute inset-0 bg-linear-to-r from-black/74 via-black/28 to-black/10" aria-hidden={true} />
@@ -18,7 +18,7 @@ export async function CTA() {
       <div className="relative z-10 mx-auto flex min-h-[390px] max-w-[1200px] items-center">
         <div className="max-w-[620px]">
           <img
-            src="/imgs/beatviz-featured-on-taaft.png"
+            src="/imgs/beatviz-featured-on-taaft.webp"
             alt="Featured on There's An AI For That"
             className="mb-8 hidden h-auto w-[230px] border border-white/70 bg-white/74 px-2 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:block lg:w-[300px]"
           />

@@ -330,16 +330,12 @@
         {
           "name": "Character Model",
           "description": "为歌词视频生成稳定角色或场景图片。",
-          "cost": [
-            "Pro 和 Ultra 每张图片 3 积分",
-            "Creator 和 Free 每张图片 5 积分"
-          ],
-          "discount": "Pro 和 Ultra 享 40% 折扣"
+          "cost": "每张图片 5 积分"
         },
         {
           "name": "Character Plus Model",
           "description": "更高质量的图片生成，细节更锐利，提示词跟随更强。",
-          "cost": "每张图片 20 积分",
+          "cost": "每张图片 5 积分",
           "badge": "Premium"
         },
         {
@@ -350,7 +346,7 @@
         {
           "name": "Remix Plus Model",
           "description": "更高保真的图片编辑，适合复杂视觉修订。",
-          "cost": "每张图片 20 积分",
+          "cost": "每张图片 5 积分",
           "badge": "Premium"
         }
       ]
