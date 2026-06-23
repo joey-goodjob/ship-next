@@ -133,18 +133,31 @@ export function SiteHeader({
               />
             </div>
           ) : (
-            <Link
-              href="/#create"
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-10 rounded-full px-5 text-sm font-bold shadow-sm transition-[background-color,transform,border-color] active:scale-[0.98]",
-                isHeroOverlay
-                  ? "border-white/15 bg-white/8 text-white [@media(hover:hover)]:hover:border-brand-accent/45 [@media(hover:hover)]:hover:bg-white/14 [@media(hover:hover)]:hover:text-brand-accent"
-                  : "border-brand-line bg-brand-panel text-brand-muted [@media(hover:hover)]:hover:border-brand-accent/40 [@media(hover:hover)]:hover:bg-brand-accent-soft [@media(hover:hover)]:hover:text-brand-accent-hover",
-              )}
-            >
-              {t("nav.get_started")}
-            </Link>
+            <>
+              <Link
+                href="/sign-in"
+                className={cn(
+                  "text-sm font-bold transition-colors",
+                  isHeroOverlay
+                    ? "text-slate-300/85 [@media(hover:hover)]:hover:text-brand-accent"
+                    : "text-brand-muted [@media(hover:hover)]:hover:text-brand-accent-hover",
+                )}
+              >
+                {t("nav.sign_in")}
+              </Link>
+              <Link
+                href="/#create"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-10 rounded-full px-5 text-sm font-bold shadow-sm transition-[background-color,transform,border-color] active:scale-[0.98]",
+                  isHeroOverlay
+                    ? "border-white/15 bg-white/8 text-white [@media(hover:hover)]:hover:border-brand-accent/45 [@media(hover:hover)]:hover:bg-white/14 [@media(hover:hover)]:hover:text-brand-accent"
+                    : "border-brand-line bg-brand-panel text-brand-muted [@media(hover:hover)]:hover:border-brand-accent/40 [@media(hover:hover)]:hover:bg-brand-accent-soft [@media(hover:hover)]:hover:text-brand-accent-hover",
+                )}
+              >
+                {t("nav.get_started")}
+              </Link>
+            </>
           )}
         </div>
 
@@ -199,19 +212,34 @@ export function SiteHeader({
                 />
               </div>
             ) : (
-              <Link
-                href="/#create"
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "gap-1.5 rounded-full",
-                  isHeroOverlay
-                    ? "border-white/15 bg-white/8 text-white"
-                    : "border-brand-line text-brand-muted",
-                )}
-                onClick={() => setMobileOpen(false)}
-              >
-                {t("nav.get_started")}
-              </Link>
+              <>
+                <Link
+                  href="/sign-in"
+                  className={cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "rounded-full font-bold",
+                    isHeroOverlay
+                      ? "text-slate-200 hover:bg-white/10 hover:text-brand-accent"
+                      : "text-brand-muted hover:bg-brand-accent-soft hover:text-brand-accent-hover",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("nav.sign_in")}
+                </Link>
+                <Link
+                  href="/#create"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "gap-1.5 rounded-full",
+                    isHeroOverlay
+                      ? "border-white/15 bg-white/8 text-white"
+                      : "border-brand-line text-brand-muted",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("nav.get_started")}
+                </Link>
+              </>
             )}
           </div>
         </div>
