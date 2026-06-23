@@ -5,6 +5,7 @@ import { getUuid } from '@/lib/hash';
 import { db } from '@/core/db';
 import { envConfigs } from '@/config';
 import { getAllConfigs } from '@/modules/config/service';
+import { grantForNewUser } from '@/modules/credits/service';
 import { ResendProvider } from '@/core/email/resend';
 import { VerifyEmail } from '@/core/email/templates/verify-email';
 import * as schema from '@/config/db/schema';
@@ -187,6 +188,22 @@ export function getAuth(configs?: Record<string, string>) {
       database: { generateId: () => getUuid() },
     },
     databaseHooks: {
+      user: {
+        create: {
+          after: async (user) => {
+            try {
+              const all = await getAllConfigs();
+              await grantForNewUser({
+                userId: user.id,
+                userEmail: user.email,
+                configs: all,
+              });
+            } catch (error) {
+              console.error('[auth] grantForNewUser failed:', error);
+            }
+          },
+        },
+      },
       verification: {
         create: {
           before: async (verification) => ({

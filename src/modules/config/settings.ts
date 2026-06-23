@@ -95,9 +95,9 @@ export function getSettings(): Setting[] {
     { name: 'initial_role_name', title: 'Default role name', type: 'text', placeholder: 'viewer', group: 'user_role', tab: 'general' },
 
     // ─── General / Credits ───────────────────────────────────────────
-    { name: 'initial_credits_enabled', title: 'Grant credits on signup', type: 'switch', group: 'credit', tab: 'general' },
-    { name: 'initial_credits_amount', title: 'Credits amount', type: 'number', placeholder: '100', group: 'credit', tab: 'general' },
-    { name: 'initial_credits_valid_days', title: 'Valid days', type: 'number', placeholder: '365', group: 'credit', tab: 'general' },
+    { name: 'initial_credits_enabled', title: 'Grant credits on signup', type: 'switch', group: 'credit', tab: 'general', defaultValue: 'true' },
+    { name: 'initial_credits_amount', title: 'Credits amount', type: 'number', placeholder: '150', group: 'credit', tab: 'general', defaultValue: '150' },
+    { name: 'initial_credits_valid_days', title: 'Valid days', type: 'number', placeholder: '0', group: 'credit', tab: 'general', defaultValue: '0' },
     { name: 'initial_credits_description', title: 'Description', type: 'text', placeholder: 'Welcome bonus', group: 'credit', tab: 'general' },
 
     // ─── Auth / Email ────────────────────────────────────────────────

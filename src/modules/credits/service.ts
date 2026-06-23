@@ -25,6 +25,22 @@ export enum CreditTransactionScene {
 }
 
 type NewCredit = typeof credit.$inferInsert;
+const DEFAULT_INITIAL_CREDITS = 150;
+const DEFAULT_INITIAL_CREDITS_DESCRIPTION = 'Initial credits';
+
+export function resolveInitialCreditsGrant(configs: Record<string, string>) {
+  const enabled = configs.initial_credits_enabled !== 'false';
+  const credits = parseInt(configs.initial_credits_amount || String(DEFAULT_INITIAL_CREDITS), 10) || 0;
+  const validDays = parseInt(configs.initial_credits_valid_days || '0', 10) || 0;
+  const description = configs.initial_credits_description || DEFAULT_INITIAL_CREDITS_DESCRIPTION;
+
+  return {
+    enabled: enabled && credits > 0,
+    credits: enabled ? credits : 0,
+    validDays,
+    description,
+  };
+}
 
 // --- Expiration ---
 
@@ -260,21 +276,16 @@ export async function grantForNewUser(params: {
 }) {
   const { userId, userEmail, configs } = params;
 
-  if (configs.initial_credits_enabled !== 'true') return;
+  const initialGrant = resolveInitialCreditsGrant(configs);
+  if (!initialGrant.enabled) return;
 
-  const credits = parseInt(configs.initial_credits_amount) || 0;
-  if (credits <= 0) return;
-
-  const validDays = parseInt(configs.initial_credits_valid_days) || 0;
-  const description = configs.initial_credits_description || 'Initial credits';
-
-  const expiresAt = calculateCreditExpirationTime({ creditsValidDays: validDays });
+  const expiresAt = calculateCreditExpirationTime({ creditsValidDays: initialGrant.validDays });
 
   return grant({
     userId,
     userEmail,
-    credits,
-    description,
+    credits: initialGrant.credits,
+    description: initialGrant.description,
     scene: CreditTransactionScene.GIFT,
     expiresAt,
   });
