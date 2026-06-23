@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { AlertTriangle, CheckCircle2, Clapperboard, Clipboard, Clock3, Images, Radio, UserRound, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
@@ -300,6 +301,7 @@ async function copyText(text: string) {
 }
 
 export function DiagnosticsPanel() {
+  const t = useTranslations("dashboard.workbench");
   const { cast, generationRun, generationSteps, lines, project, projectId, runtimeState, scenes, words } = useEditor();
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const imageDiagnostics = useMemo(() => buildImageDiagnostics(scenes), [scenes]);
@@ -332,9 +334,9 @@ export function DiagnosticsPanel() {
   async function copyDiagnostics() {
     try {
       await copyText(JSON.stringify(report, null, 2));
-      toast.success("诊断信息已复制");
+      toast.success(t("diagnostics_copied"));
     } catch {
-      toast.error("复制失败");
+      toast.error(t("copy_failed"));
     }
   }
 

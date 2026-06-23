@@ -372,6 +372,8 @@
       "wavespeed": { "title": "WaveSpeed", "description": "WaveSpeed GPT Image 2 API" },
       "gemini": { "title": "Gemini", "description": "Google Gemini API" },
       "fal": { "title": "Fal", "description": "Fal AI API" },
+      "google_analytics": { "title": "Google Analytics", "description": "Google Analytics settings" },
+      "clarity": { "title": "Clarity", "description": "Microsoft Clarity settings" },
       "plausible": { "title": "Plausible", "description": "Plausible analytics settings" }
     },
     "fields": {
@@ -454,6 +456,8 @@
       "lyric_video_image_provider": "Lyric Video Image Provider",
       "gemini_api_key": "API Key",
       "fal_api_key": "API Key",
+      "google_analytics_id": "Google Analytics ID",
+      "clarity_id": "Clarity ID",
       "plausible_domain": "Plausible Domain",
       "plausible_src": "Plausible Script Src"
     },

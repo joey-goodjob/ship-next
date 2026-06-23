@@ -4,34 +4,10 @@ import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
+import { buildAnalyticsConfig } from "@/lib/analytics-config";
 import { buildPublicMetadata } from "@/lib/site-metadata";
 import { getAllConfigs } from "@/modules/config/service";
 import "./globals.css";
-
-type PlausibleConfig = {
-  domain: string;
-  src: string;
-};
-
-function getPlausibleConfig(configs: Record<string, string>): PlausibleConfig | null {
-  const domain = configs.plausible_domain?.trim();
-  const src = configs.plausible_src?.trim();
-
-  if (!domain || !src) {
-    return null;
-  }
-
-  try {
-    const url = new URL(src);
-    if (url.protocol !== "https:" && url.protocol !== "http:") {
-      return null;
-    }
-
-    return { domain, src: url.toString() };
-  } catch {
-    return null;
-  }
-}
 
 export const metadata: Metadata = {
   ...buildPublicMetadata({
@@ -65,12 +41,49 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const configs = await getAllConfigs();
-  const plausibleConfig = getPlausibleConfig(configs);
+  const analyticsConfig = buildAnalyticsConfig(configs);
 
   return (
     <html lang={locale} className="dark" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {plausibleConfig && (
+        {analyticsConfig.googleAnalyticsId && (
+          <>
+            <Script
+              id="google-analytics-loader"
+              src={`https://www.googletagmanager.com/gtag/js?id=${analyticsConfig.googleAnalyticsId}`}
+              strategy="afterInteractive"
+              async
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${analyticsConfig.googleAnalyticsId}');
+                `,
+              }}
+            />
+          </>
+        )}
+        {analyticsConfig.clarityId && (
+          <Script
+            id="clarity-script"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                })(window, document, "clarity", "script", "${analyticsConfig.clarityId}");
+              `,
+            }}
+          />
+        )}
+        {analyticsConfig.plausible && (
           <>
             <Script
               id="plausible-queue"
@@ -82,8 +95,8 @@ export default async function RootLayout({
             />
             <Script
               id="plausible-script"
-              data-domain={plausibleConfig.domain}
-              src={plausibleConfig.src}
+              data-domain={analyticsConfig.plausible.domain}
+              src={analyticsConfig.plausible.src}
               strategy="afterInteractive"
               defer
               async

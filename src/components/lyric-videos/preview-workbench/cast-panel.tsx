@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Check, Edit3, Loader2, Plus, Save, Sparkles, Trash2, UserRound, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
@@ -45,6 +46,7 @@ function nextAvailableRole(cast: LyricCastMember[]): ActiveCastRole | null {
 }
 
 export function CastPanel() {
+  const t = useTranslations("dashboard.workbench");
   const {
     cast,
     castBusy,
@@ -88,7 +90,7 @@ export function CastPanel() {
       return;
     }
     if (activeLimitReached) {
-      toast.error("This version supports up to four active characters.");
+      toast.error(t("max_four_characters"));
       return;
     }
     setEditingId(null);
@@ -114,7 +116,7 @@ export function CastPanel() {
       return;
     }
     if (roleForMember(member) !== "inactive" && activeCastCount <= 1) {
-      toast.error("Each project needs at least one active character.");
+      toast.error(t("need_one_character"));
       return;
     }
     setPendingDeleteId((current) => (current === member.id ? null : member.id));
@@ -129,7 +131,7 @@ export function CastPanel() {
     const name = draftName.trim();
     const description = draftDescription.trim();
     if (!name || !description) {
-      toast.error("Name and description are required");
+      toast.error(t("name_desc_required"));
       return null;
     }
     return { name, description };
@@ -150,7 +152,7 @@ export function CastPanel() {
 
     const role = nextAvailableRole(cast);
     if (!role) {
-      toast.error("This version supports up to four active characters.");
+      toast.error(t("max_four_characters"));
       return null;
     }
     return createCastMember({
@@ -348,7 +350,7 @@ export function CastPanel() {
           type="button"
           onClick={openAddCharacter}
           disabled={directionLocked}
-          title={directionLocked ? directionLockReason : activeLimitReached ? "This version supports up to four active characters." : undefined}
+          title={directionLocked ? directionLockReason : activeLimitReached ? t("max_four_characters") : undefined}
           className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[14px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="h-[16px] w-[16px]" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CalendarClock, Film, Music2, Plus, Search, Sparkles } from "lucide-react";
 import { Link } from "@/core/i18n/navigation";
@@ -57,6 +57,20 @@ function formatDate(value?: string | Date) {
   }).format(date);
 }
 
+const POLL_INTERVAL_MS = 8000;
+
+const ACTIVE_STATUSES = new Set(["processing", "generating", "queued", "rendering"]);
+
+function isProjectActive(project: LyricVideoProject) {
+  return [
+    project.status,
+    project.pipelineStage,
+    project.lyricsStatus,
+    project.scenesStatus,
+    project.renderStatus,
+  ].some((value) => value && ACTIVE_STATUSES.has(String(value).toLowerCase()));
+}
+
 function statusTone(status: string) {
   if (status === "ready" || status === "success") return "border-emerald-200 bg-emerald-50 text-emerald-700";
   if (status === "processing" || status === "generating") return "border-amber-200 bg-amber-50 text-amber-700";
@@ -79,22 +93,40 @@ export default function LyricVideosPage() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
 
-  async function loadProjects() {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await readApi<LyricVideoProject[]>("/api/lyric-videos");
-      setProjects(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err?.message || t("failed"));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const loadProjects = useCallback(
+    async ({ silent }: { silent?: boolean } = {}) => {
+      if (!silent) setLoading(true);
+      setError("");
+      try {
+        const data = await readApi<LyricVideoProject[]>("/api/lyric-videos");
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        if (!silent) setError(err?.message || t("failed"));
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [loadProjects]);
+
+  // Auto-refresh while any project is still being processed, so users see
+  // pipeline progress (lyrics → scenes → render) without manually refreshing.
+  const hasActiveProjects = useMemo(
+    () => projects.some((project) => isProjectActive(project)),
+    [projects],
+  );
+
+  useEffect(() => {
+    if (!hasActiveProjects) return;
+    const timer = window.setInterval(() => {
+      loadProjects({ silent: true });
+    }, POLL_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [hasActiveProjects, loadProjects]);
 
   const filteredProjects = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -139,7 +171,7 @@ export default function LyricVideosPage() {
         </div>
         <button
           type="button"
-          onClick={loadProjects}
+          onClick={() => loadProjects()}
           className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-semibold text-foreground transition hover:bg-accent"
         >
           {t("refresh")}

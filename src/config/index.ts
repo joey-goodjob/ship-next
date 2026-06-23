@@ -98,6 +98,8 @@ export const envConfigs: Record<string, string> = {
   ffmpeg_path: process.env.FFMPEG_PATH ?? '/Users/joey/project/7_ffmpeg/bin/ffmpeg',
 
   // Analytics
+  google_analytics_id: process.env.GOOGLE_ANALYTICS_ID ?? '',
+  clarity_id: process.env.CLARITY_ID ?? '',
   plausible_domain: process.env.PLAUSIBLE_DOMAIN ?? '',
   plausible_src: process.env.PLAUSIBLE_SCRIPT_SRC ?? '',
 

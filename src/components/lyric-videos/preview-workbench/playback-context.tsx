@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { LyricLine, LyricScene, LyricVideoProject, LyricWord } from "./types";
 import { clamp, msToSeconds, secondsToMs } from "./utils";
@@ -76,6 +77,7 @@ export function PlaybackProvider({
   totalDuration: number;
   words: LyricWord[];
 }) {
+  const t = useTranslations("dashboard.workbench");
   const [currentTime, setCurrentTimeState] = useState(0);
   const [audioReadyState, setAudioReadyState] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -385,7 +387,7 @@ export function PlaybackProvider({
     if (!audioAvailable || !audio) {
       setIsAudioLoading(false);
       setIsPlaying(false);
-      toast.error("No audio available for this project");
+      toast.error(t("no_audio"));
       return;
     }
 

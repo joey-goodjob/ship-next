@@ -139,9 +139,9 @@ export default function DashboardCreatePage() {
           }
           onGenerate={handleGenerate}
           creditCost={10}
-          generateLabel={homeUploadedAudio ? "Start creating" : t("start")}
-          workingLabel={stage === "uploading" ? "Uploading audio..." : t("working")}
-          successLabel="Direction ready"
+          generateLabel={homeUploadedAudio ? t("start_creating") : t("start")}
+          workingLabel={stage === "uploading" ? t("uploading") : t("working")}
+          successLabel={t("direction_ready")}
         />
 
         {error ? (

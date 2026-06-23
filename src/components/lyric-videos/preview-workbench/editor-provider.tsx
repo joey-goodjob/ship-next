@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
@@ -109,6 +110,7 @@ export function EditorProvider({
   debugGenerationLocked?: boolean;
   projectId: string;
 }) {
+  const t = useTranslations("dashboard.workbench");
   const [project, setProject] = useState<LyricVideoProject | null>(null);
   const [runtimeState, setRuntimeState] = useState<RuntimeState | null>(null);
   const [generationRun, setGenerationRun] = useState<GenerationRun | null>(null);
@@ -349,13 +351,13 @@ export function EditorProvider({
         setActiveTab("customize");
         await refresh();
         setSaveStatus("saved");
-        toast.success("Direction generation started. Review it when the editor unlocks.");
+        toast.success(t("direction_started"));
       })
       .catch(async (err: any) => {
         console.error("[lyric-video] guided generation flow failed from preview", err);
         setSaveStatus("failed");
         await refresh();
-        toast.error(err?.message || "Generate direction failed");
+        toast.error(err?.message || t("direction_failed"));
       })
       .finally(() => {
         setPreparingAudio(false);
@@ -386,10 +388,10 @@ export function EditorProvider({
           return incomingProject ? mergeIncomingProject(incomingProject) : previous;
         });
         setSaveStatus("saved");
-        toast.success("Story created");
+        toast.success(t("story_created"));
       })
       .catch((err: any) => {
-        toast.error(err?.message || "Generate story failed");
+        toast.error(err?.message || t("story_failed"));
       })
       .finally(() => {
         setCreatingStory(false);
@@ -486,7 +488,7 @@ export function EditorProvider({
         await flushProjectPatch();
       } catch (err: any) {
         setSaveStatus("failed");
-        toast.error(err?.message || "Save failed");
+        toast.error(err?.message || t("save_failed"));
       }
     }, 600);
   }
@@ -494,7 +496,7 @@ export function EditorProvider({
   function confirmStoryPrompt() {
     const storyPrompt = project?.storyPrompt || "";
     if (!storyPrompt.trim()) {
-      toast.info("Add a story before confirming.");
+      toast.info(t("add_story_first"));
       return;
     }
     setConfirmedStoryPrompt(storyPrompt);
@@ -627,7 +629,7 @@ export function EditorProvider({
       setActiveTab("customize");
       await refresh();
       setSaveStatus("saved");
-      toast.success("Direction generation started. Review it when the editor unlocks.");
+      toast.success(t("direction_started"));
     } catch (err: any) {
       console.error("[lyric-video] upload/transcribe flow failed", err);
       setSaveStatus("failed");
@@ -645,18 +647,18 @@ export function EditorProvider({
     }
     if (creatingStory) return;
     if (!project) {
-      toast.error("Project unavailable");
+      toast.error(t("project_unavailable"));
       return;
     }
     if (lines.length === 0) {
-      toast.error("Generate lyrics before creating a story");
+      toast.error(t("lyrics_before_story"));
       return;
     }
     const scenesCreated =
       !["empty", "lyrics_draft"].includes(project.scenesStatus || "empty") ||
       scenes.some((scene) => scene.status !== "lyrics_draft" && String(scene.prompt || "").trim());
     if (scenesCreated) {
-      toast.info("Language and Story are locked after scenes have been created.");
+      toast.info(t("story_locked"));
       return;
     }
 
@@ -689,10 +691,10 @@ export function EditorProvider({
         setStoryReviewBaseline(nextStoryPrompt);
       }
       setSaveStatus("saved");
-      toast.success("Story created");
+      toast.success(t("story_created"));
     } catch (err: any) {
       setSaveStatus("failed");
-      toast.error(err?.message || "Generate story failed");
+      toast.error(err?.message || t("story_failed"));
     } finally {
       setCreatingStory(false);
     }
@@ -700,7 +702,7 @@ export function EditorProvider({
 
   async function generateStoryboardPrompts() {
     if (visualGenerationInFlightRef.current) {
-      toast.info("Scene generation is already running");
+      toast.info(t("scenes_running"));
       return;
     }
     if (generationLocked) {
@@ -708,11 +710,11 @@ export function EditorProvider({
       return;
     }
     if (!project) {
-      toast.error("Project unavailable");
+      toast.error(t("project_unavailable"));
       return;
     }
     if (lines.length === 0) {
-      toast.error("Generate lyrics before creating scenes");
+      toast.error(t("lyrics_before_scenes"));
       return;
     }
 
@@ -786,13 +788,13 @@ export function EditorProvider({
       setSaveStatus("saved");
       await refresh();
       if (generated.alreadyRunning) {
-        toast.info("Scene generation is already running");
+        toast.info(t("scenes_running"));
       } else {
-        toast.success("Scene generation started");
+        toast.success(t("scenes_started"));
       }
     } catch (err: any) {
       setSaveStatus("failed");
-      toast.error(err?.message || "Generate scenes failed");
+      toast.error(err?.message || t("scenes_failed"));
     } finally {
       visualGenerationInFlightRef.current = false;
       setVisualGenerationBusy(false);
@@ -815,7 +817,7 @@ export function EditorProvider({
       });
       setCast((previous) => [...previous.filter((item) => item.id !== created.id), created]);
       setSaveStatus("saved");
-      toast.success("Character created");
+      toast.success(t("character_created"));
       return created;
     } catch (err: any) {
       setSaveStatus("failed");
@@ -862,7 +864,7 @@ export function EditorProvider({
       const activeCount = cast.filter((member) => member.status === "active" && String(member.role || "").toLowerCase() !== "inactive").length;
       const deletingActive = cast.some((member) => member.id === castId && member.status === "active" && String(member.role || "").toLowerCase() !== "inactive");
       if (deletingActive && activeCount <= 1) {
-        toast.error("Each project needs at least one active character.");
+        toast.error(t("need_one_character"));
         return false;
       }
       setCast((previous) => previous.filter((item) => item.id !== castId));
@@ -875,7 +877,7 @@ export function EditorProvider({
       setSaveStatus("saving");
       await requestJson<void>(`/api/lyric-videos/${project.id}/cast/${castId}`, { method: "DELETE" });
       setSaveStatus("saved");
-      toast.success("Character deleted");
+      toast.success(t("character_deleted"));
       return true;
     } catch (err: any) {
       setCast(previousCast);
@@ -902,7 +904,7 @@ export function EditorProvider({
       });
       setCast((previous) => previous.map((item) => (item.id === updated.id ? updated : item)));
       setSaveStatus("saved");
-      toast.success("Character image queued");
+      toast.success(t("character_image_queued"));
       return updated;
     } catch (err: any) {
       setSaveStatus("failed");
@@ -953,7 +955,7 @@ export function EditorProvider({
 
   async function queueSceneImages(sceneIds: string[]) {
     if (sceneImageQueueInFlightRef.current) {
-      toast.info("Scene image generation is already running");
+      toast.info(t("scene_images_running"));
       return [];
     }
     if (generationLocked) {
@@ -1020,7 +1022,7 @@ export function EditorProvider({
 
   async function retryFailedImageBatches() {
     if (retryImageBatchesInFlightRef.current) {
-      toast.info("Scene image generation is already running");
+      toast.info(t("scene_images_running"));
       return;
     }
     if (generationLocked) {
@@ -1081,7 +1083,7 @@ export function EditorProvider({
       setWordsDirty(false);
       setSaveStatus("saved");
       await refresh();
-      toast.success("Lyrics saved");
+      toast.success(t("lyrics_saved"));
       return true;
     } catch (err: any) {
       setSaveStatus("failed");

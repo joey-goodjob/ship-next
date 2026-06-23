@@ -77,6 +77,8 @@ export function getSettingGroups(): SettingGroup[] {
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
 
     // Analytics
+    { name: 'google_analytics', title: 'Google Analytics', description: 'Google Analytics settings', tab: 'analytics' },
+    { name: 'clarity', title: 'Clarity', description: 'Microsoft Clarity settings', tab: 'analytics' },
     { name: 'plausible', title: 'Plausible', description: 'Plausible analytics settings', tab: 'analytics' },
   ];
 }
@@ -234,6 +236,12 @@ export function getSettings(): Setting[] {
 
     // ─── AI / Fal ────────────────────────────────────────────────────
     { name: 'fal_api_key', title: 'API Key', type: 'password', placeholder: 'xxx', group: 'fal', tab: 'ai' },
+
+    // ─── Analytics / Google Analytics ────────────────────────────────
+    { name: 'google_analytics_id', title: 'Google Analytics ID', type: 'text', placeholder: 'G-XXXXXXXXXX', group: 'google_analytics', tab: 'analytics' },
+
+    // ─── Analytics / Clarity ─────────────────────────────────────────
+    { name: 'clarity_id', title: 'Clarity ID', type: 'text', placeholder: 'xxxxxxxxxx', group: 'clarity', tab: 'analytics' },
 
     // ─── Analytics / Plausible ───────────────────────────────────────
     { name: 'plausible_domain', title: 'Plausible Domain', type: 'text', placeholder: 'lyricvideomaker.app', group: 'plausible', tab: 'analytics' },
