@@ -68,7 +68,7 @@ export async function Features() {
           </div>
 
           <div className="mt-16 text-center lg:mt-20">
-            <Link href="/#create" className="inline-flex h-11 items-center justify-center gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover">
+            <Link href="/#create" className="inline-flex h-11 items-center justify-center gap-3 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-accent-ink hover:bg-brand-accent-hover">
               <Upload className="size-5" />
               {t("hero.cta")}
             </Link>

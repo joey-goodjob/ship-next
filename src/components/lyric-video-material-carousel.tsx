@@ -88,7 +88,7 @@ export function LyricVideoMaterialCarousel() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-label={activeLabel}
         >
           <source src={activeMaterial.video} type="video/mp4" />
@@ -121,12 +121,17 @@ export function LyricVideoMaterialCarousel() {
             key={material.video}
             type="button"
             aria-label={`Show material ${index + 1}`}
+            aria-current={index === activeIndex ? "true" : undefined}
             onClick={() => setActiveIndex(index)}
-            className={cn(
-              "h-2.5 rounded-full transition-[background-color,width] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
-              index === activeIndex ? "w-8 bg-brand-accent" : "w-2.5 bg-brand-line [@media(hover:hover)]:hover:bg-brand-subtle",
-            )}
-          />
+            className="flex h-6 w-8 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+          >
+            <span
+              className={cn(
+                "h-2.5 rounded-full transition-[background-color,width]",
+                index === activeIndex ? "w-6 bg-brand-accent" : "w-2.5 bg-brand-line [@media(hover:hover)]:hover:bg-brand-subtle",
+              )}
+            />
+          </button>
         ))}
       </div>
     </aside>
