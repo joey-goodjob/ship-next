@@ -17,11 +17,12 @@ const CARD_ICONS = {
   export: Clapperboard,
 } as const;
 
-// Swap these for real screenshots later — keep the order aligned with feature_cards.
+const HOME_FEATURE_IMAGE_BASE = "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/home";
+
 const CARD_IMAGES: Record<FeatureCard["icon"], string | undefined> = {
-  lyrics: undefined,
-  video: undefined,
-  export: undefined,
+  lyrics: `${HOME_FEATURE_IMAGE_BASE}/feature-lyrics.webp`,
+  video: `${HOME_FEATURE_IMAGE_BASE}/feature-video.webp`,
+  export: `${HOME_FEATURE_IMAGE_BASE}/feature-export.webp`,
 };
 
 export async function Features() {
