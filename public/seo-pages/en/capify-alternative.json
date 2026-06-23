@@ -27,7 +27,7 @@
   "hero": {
     "badge": "Capify alternative — AI lyric video maker, free",
     "h1": "Capify Alternative — AI Lyric Video Maker, Free to Try",
-    "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates mood-driven visuals. Preview the full lyric video, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates mood-driven visuals. Preview the full lyric video, then export — free, no subscription needed.",
     "primaryCta": "Make the Same Video Free",
     "secondaryCta": "See How It Works"
   },
@@ -48,7 +48,7 @@
       {
         "label": "Starting flow",
         "values": [
-          "Upload audio or paste a link, then AI builds the lyric video flow",
+          "Upload audio, then AI builds the lyric video flow",
           "A lyric video workflow you may already be evaluating or using"
         ]
       },
@@ -82,18 +82,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Try LyricVideoMaker with the same song you used in Capify and compare the results.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Try LyricVideoMaker with the same song you used in Capify and compare the results.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI transcribes and syncs",
         "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. AI also reads the song's mood to generate matching visuals.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "Preview and export",
         "description": "Watch the full lyric video before publishing. Compare the preview quality, lyric accuracy, and visual feel against Capify. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },
@@ -119,6 +119,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a Capify alternative?",
+      "intro": "A Capify alternative for lyric videos should be judged on the same song, not on a feature checklist alone. LyricVideoMaker is a song-first AI workflow: upload audio, get lyrics transcribed and synced, review the lines, generate mood-driven scenes, and export multiple MP4 formats.",
+      "bullets": [
+        "Input is your audio file; no project import is required.",
+        "It can create editable lyrics, beat timing, AI scene art, preview, and MP4 export.",
+        "Output supports 16:9, 9:16, and 1:1 from the same lyric project.",
+        "The useful comparison is result quality: lyric accuracy, timing, readability, and style fit."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "Capify alternative specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Capify vs LyricVideoMaker: what to compare",
+      "intro": "Because Capify is a closer AI lyric-video competitor, the fairest test is practical. Run the same song and compare the work left after the first render.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "First useful preview",
+            "How quickly can you see the whole song with readable lyrics?"
+          ],
+          [
+            "Transcript cleanup",
+            "How many words, names, or repeated hooks need correction?"
+          ],
+          [
+            "Beat sync",
+            "Do lines land with the vocal and musical phrasing?"
+          ],
+          [
+            "Visual fit",
+            "Do generated scenes feel tied to the song rather than a generic mood?"
+          ],
+          [
+            "Control after AI",
+            "Can you edit lines and timing without rebuilding the video?"
+          ],
+          [
+            "Export coverage",
+            "Can one project produce widescreen, vertical, and square assets?"
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices when comparing Capify alternatives",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Use the same audio file in both tools, preferably the final mix.",
+        "Ignore marketing claims until you compare lyric accuracy on your own song.",
+        "Check the first chorus for timing; hook drift is the easiest flaw to notice.",
+        "Look at readability on a phone, not only in a desktop preview.",
+        "Count the minutes spent fixing the project after AI generation.",
+        "Compare export variants, because release week rarely needs only one format.",
+        "Pick the workflow that leaves you with fewer manual timeline decisions."
+      ]
+    },
+    {
+      "heading": "When a direct AI alternative is worth testing",
+      "intro": "A Capify alternative lets you compare a song-first AI lyric workflow against another AI tool without starting from a blank timeline. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Compare workflows, not feature lists",
+          "description": "The real test of an alternative is whether audio-in transcription, beat-aware timing, and scene generation produce a video that sounds like your song — not which tool has the longer feature list."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "Capify alternative checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Capify Alternative FAQ",
     "items": [
@@ -174,12 +340,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/capify-alternative/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Same song, different result. Try it free.",
-    "description": "Upload the same track you used in Capify. AI handles the lyrics and visuals — export free, no subscription.",
-    "button": "Try LyricVideoMaker Free",
-    "upsell": "Free · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -205,48 +365,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Capify and LyricVideoMaker: same goal, different approach",
-      "body": [
-        "Capify and LyricVideoMaker are after the same outcome — turning a song into a lyric video without a manual editing project. Both lean on AI, so the real question is not whether they automate the work, but how good the result is on your actual track: lyric accuracy, beat timing, readable layout, and visuals that fit the song.",
-        "That makes this an unusually direct comparison. Run the same song through both, then judge the transcript, the sync, and the look side by side instead of comparing feature lists on paper."
-      ]
-    },
-    {
-      "heading": "When Capify might be the better fit",
-      "body": [
-        "If you already have a Capify workflow you are happy with, your team is trained on it, and it produces results you like for your genre, there is little reason to switch for its own sake. Sticking with a tool your process is built around has real value.",
-        "The fair way to frame it: Capify is a capable option, and the goal here is not to claim it is bad — it is to give you a free, like-for-like result to compare against so the decision is based on output, not marketing."
-      ]
-    },
-    {
-      "heading": "When LyricVideoMaker wins",
-      "body": [
-        "LyricVideoMaker focuses on the parts that decide whether a lyric video actually works: transcription you can trust and correct, beat-accurate timing, mood-driven visuals generated from the song, and clean multi-format export — all from one upload, free to start.",
-        "If your current result feels generic, the lyrics drift off the beat, or the words get lost behind the visuals, those are exactly the areas this tool is built to get right."
-      ]
-    },
-    {
-      "heading": "Switching from Capify takes one upload",
-      "body": [
-        "There is nothing to migrate. Upload the same song you used in Capify and you will have a finished lyric video to compare in a couple of minutes — no project files to move, no setup, no learning curve before you can judge the result.",
-        "Because the free plan exports real videos, you can A/B the two without committing money or time up front."
-      ]
-    },
-    {
-      "heading": "The honest test: same song, side by side",
-      "body": [
-        "The most reliable comparison is practical, not theoretical. Use the exact track you already tested in Capify, generate it here, and inspect four things: are the lyrics correct, do lines land on the beat, is the text readable across verse and chorus, and do the visuals feel specific to the song?",
-        "Whichever tool makes the words easiest to follow on the moments that matter is the right one for that track."
-      ]
-    },
-    {
-      "heading": "What to look for in an AI lyric video maker",
-      "body": [
-        "Beyond the first impression, weigh the things that matter over many videos: editability when the AI mishears a word, consistency of timing on fast sections, export formats for every platform, and pricing that fits how often you publish.",
-        "A good AI lyric video maker should remove the chores — typing, timing, formatting — while leaving you in control of wording and look. That balance, more than any single feature, is what to compare."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Same song, different result. Try it free.",
+    "description": "Upload the same track you used in Capify. AI handles the lyrics and visuals — export free, no subscription.",
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  }
 }

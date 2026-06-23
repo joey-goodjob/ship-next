@@ -180,17 +180,17 @@
       {
         "title": "上传歌曲",
         "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或粘贴链接。无需注册即可开始，也不需要手动输入歌词。这样你可以先快速看到第一版，再决定是否还需要 Canva、After Effects 或外包。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI 转写并同步",
         "description": "AI 自动从音频转写歌词，并逐行同步到节拍，支持 50 多种语言。点击任意歌词行即可编辑文字或时间。系统还会读取歌曲情绪，生成与曲目更匹配的视觉画面。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "预览并导出",
         "description": "发布前先看完整歌词视频。16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。可以免费导出，无需订阅。",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },

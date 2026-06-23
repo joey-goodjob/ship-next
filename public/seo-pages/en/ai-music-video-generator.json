@@ -29,7 +29,7 @@
   "hero": {
     "badge": "AI music video generator — from lyrics to visuals",
     "h1": "AI Music Video Generator from Lyrics — Turn a Song Into Visuals",
-    "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free, no subscription needed.",
     "primaryCta": "Make a Free Music Video",
     "secondaryCta": "See How It Works"
   },
@@ -84,18 +84,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Your song's lyrics become the creative source for everything that follows.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Your song's lyrics become the creative source for everything that follows.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI transcribes and generates visuals",
         "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Then it reads the song's mood, themes, and emotional arc to generate matching visual scenes. Click any lyric line to edit.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "Preview and export",
         "description": "Watch the full AI music video before publishing. Confirm the visuals match your song's energy, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },
@@ -121,6 +121,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is an AI music video generator from lyrics?",
+      "intro": "An AI music video generator from lyrics uses the song to plan visual scenes instead of treating lyrics only as on-screen text. LyricVideoMaker starts from audio, transcribes and syncs the lyrics, reads the mood and story, generates scene images, and lets you preview how visual storytelling and lyric readability work together.",
+      "bullets": [
+        "Input is a song audio file, with lyrics transcribed automatically from the vocal.",
+        "It can build scene-by-scene visual ideas from mood, imagery, structure, and energy.",
+        "Output is an MP4, with aspect ratios for YouTube and short-form platforms.",
+        "It differs from a standard lyric video because scenes can become the visual lead, while lyrics may remain readable or secondary."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "AI music video generator from lyrics specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Lyric video vs AI music video",
+      "intro": "The most important decision is whether the words or the scenes should be the main visual. Both can use AI, but they solve different release needs.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Lyric video",
+            "Words are the primary visual; scenes support readability and rhythm."
+          ],
+          [
+            "AI music video",
+            "Scenes are the primary visual; lyrics may guide the story or appear selectively."
+          ],
+          [
+            "Best for lyric channels",
+            "Lyric video, because fans came to read and sing along."
+          ],
+          [
+            "Best for storytelling",
+            "AI music video, because imagery can carry characters, symbols, and mood."
+          ],
+          [
+            "Main risk",
+            "Lyric videos fail when text is hard to read; music videos fail when scenes feel random."
+          ],
+          [
+            "Best hybrid",
+            "Use lyric-video clarity for hooks and AI music-video scenes for instrumental or narrative sections."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for AI music videos from lyrics",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Decide whether the lyric or the scene is the hero before generating visuals.",
+        "Use repeated symbols from the lyrics to keep scenes connected.",
+        "Choose atmosphere-driven styles when exact character continuity is not essential.",
+        "Review every generated scene before final render; one wrong scene can break the story.",
+        "Keep lyrics readable during hooks if fans are expected to sing along.",
+        "Use 16:9 for official visualizers and 9:16 for story-focused short clips.",
+        "Treat the first preview as a storyboard, then regenerate only the scenes that miss the song."
+      ]
+    },
+    {
+      "heading": "Where AI visuals help, and where lyrics need discipline",
+      "intro": "An AI music video generator turns a song into scene-driven visuals while keeping lyrics readable. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Mood travels better than exact characters",
+          "description": "Scene generation can build a strong world around a song, but keeping a character identical across every shot is harder than holding mood, palette, and symbols steady — so review scenes in preview."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "AI music video generator from lyrics checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "AI Music Video Generator FAQ",
     "items": [
@@ -180,12 +346,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/ai-music-video-generator/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Your lyrics already tell a story. Let AI show it.",
-    "description": "Upload your song, let AI generate visuals from the lyrics, and export your music video — free, no subscription needed.",
-    "button": "Make My Music Video",
-    "upsell": "Free export · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -211,41 +371,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Lyric video vs AI music video — which do you want",
-      "body": [
-        "Both start from the same song, but they aim at different viewers. A lyric video makes the words the centerpiece so fans can read and sing along. An AI music video puts generated scenes in the lead, telling the song's story through imagery while the lyrics play a supporting role.",
-        "The AI music video generator can do both: lyrics inspire scene-by-scene visuals, and you can keep the words on screen over those visuals when they matter. So the question is simply how much you want the imagery to carry versus the text."
-      ]
-    },
-    {
-      "heading": "How AI turns your lyrics into scenes",
-      "body": [
-        "Upload your song and the AI transcribes the lyrics, then reads their meaning, mood, and emotional arc to drive scene generation. Instead of you writing a video prompt, the words themselves become the creative brief — each section of the song suggests its own imagery, pacing, and color.",
-        "The generator builds a storyboard from the lyrics and song structure, then creates matching scenes. You review the result and can regenerate any scene you want to adjust, so the final video reflects the track rather than a generic template."
-      ]
-    },
-    {
-      "heading": "Keeping style and characters consistent",
-      "body": [
-        "Generative video is strongest at consistent style and mood, and that is what to expect across scenes — a coherent look and feel rather than identical, frame-perfect characters. When a project uses a main character, the AI carries that character's description across scenes to keep them recognizable.",
-        "Setting expectations here matters: aim for a consistent world and aesthetic, and use per-scene regeneration to nudge any moment that drifts. That is how you get a music video that hangs together visually."
-      ]
-    },
-    {
-      "heading": "When you have a song but no footage",
-      "body": [
-        "Not every release comes with a shoot budget. If you have a finished track but no filmed footage, the AI music video generator turns the lyrics into visuals so the song still gets a video worth watching — no camera, crew, or location required.",
-        "It is a practical option for independent artists, producers, and labels who want more than a static cover for an audio upload but cannot justify a full production for every track."
-      ]
-    },
-    {
-      "heading": "Lyrics on screen or pure visuals — your choice",
-      "body": [
-        "You are not locked into one style. Keep the lyrics visible over the AI scenes for a video fans can follow word for word, or let the imagery lead with minimal text for a more cinematic feel. The same project supports both, so you can match the format to the song and the platform.",
-        "Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts — one upload, every format."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Your lyrics already tell a story. Let AI show it.",
+    "description": "Upload your song, let AI generate visuals from the lyrics, and export your music video — free, no subscription needed.",
+    "button": "Make My Music Video",
+    "upsell": "Free export · No subscription · No credit card"
+  }
 }

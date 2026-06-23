@@ -82,18 +82,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI transcribes and syncs",
         "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. AI generates visuals that match the song's mood while keeping lyrics readable.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "Preview and export",
         "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },
@@ -119,6 +119,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a Neural Frames alternative?",
+      "intro": "A Neural Frames alternative for lyric videos keeps AI visuals in service of readable, synced lyrics. Neural Frames is oriented toward generative music visuals; LyricVideoMaker starts with the vocal, transcribes the words, syncs them to the beat, generates supportive scene art, and exports lyric-first MP4s.",
+      "bullets": [
+        "Input is song audio, with lyrics transcribed automatically.",
+        "It keeps lyric readability and timing as the main quality bar.",
+        "Output supports 16:9, 9:16, and 1:1 lyric-video exports.",
+        "The difference is not AI versus no AI; it is visual spectacle versus lyrics fans can read."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "Neural Frames alternative specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "AI visuals vs lyric readability",
+      "intro": "Both tools can be part of an AI music workflow. The key is deciding whether the viewer should mainly watch generated imagery or read the words.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Visual priority",
+            "Neural-style workflows emphasize evolving imagery; lyric-video workflows keep words central."
+          ],
+          [
+            "Timing priority",
+            "A lyric tool must align lines to vocals and beat, not only react to audio energy."
+          ],
+          [
+            "Scene density",
+            "Busy scenes can be beautiful but must leave contrast and space for text."
+          ],
+          [
+            "Character continuity",
+            "Exact continuity is hard in generated scenes; mood consistency is safer for lyric videos."
+          ],
+          [
+            "Best Neural Frames use",
+            "Abstract or cinematic AI music visuals where lyrics are not the main layer."
+          ],
+          [
+            "Best LyricVideoMaker use",
+            "Readable lyric videos with generated scenes behind the words."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for Neural Frames alternatives",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Decide whether fans need to read every word; if yes, lyric readability wins over visual density.",
+        "Use atmospheric scene prompts when character continuity is not essential.",
+        "Keep contrast behind lyrics high enough for phone screens.",
+        "Let instrumental sections carry the most ambitious AI visuals.",
+        "Review generated scenes for meaning, not only beauty.",
+        "Export a lyric-first version before experimenting with more cinematic cuts.",
+        "Use Neural-style visuals when spectacle is the goal and LyricVideoMaker when lyrics must stay central."
+      ]
+    },
+    {
+      "heading": "When generated visuals should support the words",
+      "intro": "A Neural Frames alternative keeps lyrics readable while using AI-generated visuals. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Spectacle shouldn't bury the lyric",
+          "description": "Pure AI video generators chase visual spectacle. In a lyric video the words come first — generated scenes should raise the emotion, not compete with the text for attention."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "Neural Frames alternative checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Neural Frames Alternative FAQ",
     "items": [
@@ -174,12 +340,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/neural-frames-alternative/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "AI visuals that don't bury the lyrics.",
-    "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
-    "button": "Try LyricVideoMaker Free",
-    "upsell": "Free · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -205,55 +365,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "Neural Frames makes AI visuals; this makes readable lyric videos",
-      "body": [
-        "Neural Frames is a generative tool for AI music visuals — striking, motion-driven art created from your sound. LyricVideoMaker is built for lyric videos, where the non-negotiable is that the words stay readable and synced. Both can produce AI-powered music visuals; the difference is whether the lyrics are the product.",
-        "So the decision comes down to what your video is for: pure visual spectacle, or a video fans can read and sing along to."
-      ]
-    },
-    {
-      "heading": "When Neural Frames is the better choice",
-      "body": [
-        "If your goal is generative music visuals — abstract, evolving AI art driven by the track, with no need for on-screen words — Neural Frames is built for exactly that, and it is impressive at it.",
-        "When the visuals themselves are the main asset and readable lyrics are not the point, that is the right tool, and nothing here argues otherwise."
-      ]
-    },
-    {
-      "heading": "When LyricVideoMaker wins",
-      "body": [
-        "When fans need to read and sing the words, lyrics cannot get lost behind the visuals. LyricVideoMaker transcribes the lyrics, syncs them to the beat, and keeps them clearly on screen while AI-generated visuals play in support — so the line someone came for is always legible.",
-        "If readability and accurate timing matter as much as the look, that is the gap this fills."
-      ]
-    },
-    {
-      "heading": "Switching from Neural Frames",
-      "body": [
-        "There is nothing to migrate. Upload the same song and you will get a lyric video where the words stay front and center, with mood-driven visuals behind them — ready to compare in minutes.",
-        "Use Neural Frames when the visuals are the whole point, and switch here when the lyrics have to remain readable."
-      ]
-    },
-    {
-      "heading": "Visuals and readable lyrics, not one or the other",
-      "body": [
-        "The usual trade-off is pretty visuals or readable words. LyricVideoMaker is designed so you do not have to choose: the visuals respond to the song's mood and energy, but they are shaped around the lyric layer rather than competing with it.",
-        "That keeps a video useful for fans who want to follow along, without giving up a look that feels generated for the track."
-      ]
-    },
-    {
-      "heading": "Choose based on what your fans need",
-      "body": [
-        "The simplest way to decide is to picture the viewer. If they will watch for the art and the motion, a generative visual tool fits. If they will watch to learn the words, sing along, or follow the story of the song, readable lyrics have to win.",
-        "For lyric-led channels and releases, keeping the words clear is the whole job — which is the case LyricVideoMaker is built for."
-      ]
-    },
-    {
-      "heading": "Built for lyric-first channels",
-      "body": [
-        "Lyric channels, sing-along accounts, and artists who release words-on-screen videos have a specific need: every line has to be legible and on time, video after video. A repeatable, lyric-first workflow matters more there than one-off visual spectacle.",
-        "LyricVideoMaker is built around that consistency — transcribe, sync, keep the words readable, export — so a channel can publish visual songs without ever losing the core text layer that its audience shows up for."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "AI visuals that don't bury the lyrics.",
+    "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  }
 }

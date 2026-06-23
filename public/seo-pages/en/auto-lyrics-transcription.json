@@ -29,14 +29,14 @@
   "hero": {
     "badge": "Automatic lyrics transcription from any song or video",
     "h1": "Automatic Lyrics Transcription — AI Song-to-Text Tool",
-    "subhead": "Get accurate, timestamped lyrics from any song or supported video link. Upload audio or paste a link, AI transcribes lyrics automatically, syncs every line to the beat, then lets you preview and export as TXT, LRC, or SRT — free, no subscription needed.",
+    "subhead": "Get accurate, timestamped lyrics from any uploaded song audio. Upload audio, AI transcribes lyrics automatically, syncs every line to the beat, then lets you preview and export as TXT, LRC, or SRT — free, no subscription needed.",
     "primaryCta": "Transcribe My Song — Free",
     "secondaryCta": "See How It Works"
   },
   "trust": [
     "AI auto-transcribes lyrics",
     "TXT, LRC, and SRT export",
-    "Paste supported video links",
+    "Audio-first lyric extraction",
     "Export free, no subscription or credit card"
   ],
   "howItWorks": {
@@ -44,18 +44,18 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a supported link. No account needed to start, and no manual lyric typing required. The AI listens to the vocal performance and does the transcription for you.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.png"
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A audio file (up to 100MB). No account needed to start, and no manual lyric typing required. The AI listens to the vocal performance and does the transcription for you.",
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
         "title": "AI transcribes and syncs",
         "description": "AI transcribes lyrics from the audio automatically and syncs every line to the beat — in 50+ languages. Click any line to edit. It handles ad-libs, layered vocals, hooks, and fast sections that are hard to catch by ear.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-2.webp"
       },
       {
         "title": "Preview and export",
         "description": "Review the full transcript with beat-synced timing. Download TXT, LRC, or SRT for captions, descriptions, streaming lyrics, or subtitles — or click through to preview the same synced lyrics as a lyric video. Free to export, no subscription required.",
-        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.png"
+        "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
   },
@@ -93,8 +93,8 @@
         "description": "Get readable lyric lines shaped for songs, not a generic speech transcript. Hooks, repeated choruses, ad-libs, and fast sections stay easy to review."
       },
       {
-        "title": "Use audio or supported video links",
-        "description": "Upload a song file for audio-to-lyrics, or paste a supported video link when you need a video to lyrics workflow."
+        "title": "Use uploaded audio files",
+        "description": "Upload a song file for audio-to-lyrics. Link-based video extraction is planned, but the stable workflow today starts with audio upload."
       },
       {
         "title": "One click from transcript to video",
@@ -102,6 +102,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is automatic lyrics transcription?",
+      "intro": "Automatic lyrics transcription extracts editable song lyrics from an audio file and adds timing so the text can become captions, LRC, SRT, or a lyric video. The stable path starts from uploaded audio, detects the language, transcribes vocals, and gives you line-level control before you reuse the result.",
+      "bullets": [
+        "Input is a supported audio file rather than a video URL.",
+        "It can detect 50+ languages and produce editable lyric lines.",
+        "Output can feed a lyric video workflow and, where available, text or timed lyric formats.",
+        "It differs from speech transcription because music timing, repeated hooks, ad-libs, and sung phrasing matter."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "automatic lyrics transcription specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "TXT, LRC, and SRT: which lyric format fits?",
+      "intro": "Transcribed lyrics become more useful when the output format matches the next job. Plain text, timed lyric files, and subtitle files solve different problems.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "TXT",
+            "Best for descriptions, publishing notes, lyric sheets, and quick proofreading."
+          ],
+          [
+            "LRC",
+            "Best for music-player style synced lyrics where line timestamps matter."
+          ],
+          [
+            "SRT",
+            "Best for subtitle workflows in video editors and caption review."
+          ],
+          [
+            "Lyric video draft",
+            "Best when the timing is already good enough to preview with visuals."
+          ],
+          [
+            "Manual cleanup",
+            "Best for artist names, stylized spelling, mixed-language hooks, and background vocals."
+          ],
+          [
+            "Archive copy",
+            "Keep a clean text copy even if the final video uses styled line breaks."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Tips for cleaner automatic lyrics transcription",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Upload the version with the clearest lead vocal, not necessarily the loudest master.",
+        "Scan proper nouns first; AI often needs help with names, places, and invented words.",
+        "Mark repeated hooks consistently so later video timing stays predictable.",
+        "Do not remove breaths or ad-libs automatically; they may be part of the performance.",
+        "Use line breaks to match how the phrase is sung, not how it would appear in a poem.",
+        "Review bilingual sections manually even when language detection is correct.",
+        "Turn the synced transcript into a lyric video while the timing is fresh in your mind."
+      ]
+    },
+    {
+      "heading": "Why song transcription is not ordinary speech-to-text",
+      "intro": "Automatic lyrics transcription extracts editable lyrics and timing from song audio. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Songs aren't speech-to-text",
+          "description": "Music has held notes, overlaps, and rhythm that ordinary dictation mishandles. Song transcription detects the language, cleans lines, and produces timestamps you can reuse — or export as TXT, LRC, or SRT."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "automatic lyrics transcription checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Automatic Lyrics Transcription FAQ",
     "items": [
@@ -118,8 +284,8 @@
         "answer": "50+ languages. The AI detects the language of the vocals automatically."
       },
       {
-        "question": "Can I get lyrics from a YouTube video?",
-        "answer": "For supported links, paste a YouTube link to get lyrics from a YouTube video. The AI transcribes the vocals into editable lyrics, then you can export TXT, LRC, or SRT, or continue into a lyric video."
+        "question": "Can I get lyrics from an online video link?",
+        "answer": "Link-based extraction is planned. Today, upload the audio file from the song; AI transcribes the vocals into editable lyrics, then you can continue into a lyric video workflow."
       },
       {
         "question": "Can I use exported lyrics or videos commercially?",
@@ -138,7 +304,7 @@
   "useCases": [
     {
       "title": "Video to lyrics",
-      "description": "Paste a supported video link and turn the vocal track into editable lyrics for captions, descriptions, or reuse.",
+      "description": "Upload a song audio file and turn the vocal track into editable lyrics for captions, descriptions, or reuse.",
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
@@ -157,12 +323,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "The lyrics are already in the song. Let AI write them down.",
-    "description": "Upload your track, get beat-synced lyrics in seconds, and export or continue into a lyric video — free, no subscription needed.",
-    "button": "Transcribe My Song",
-    "upsell": "Need visuals too? Turn the synced transcript into a lyric video in one click."
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -188,55 +348,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "How accurate is AI lyrics transcription?",
-      "body": [
-        "The AI handles clear vocals well across most genres, including fast sections, layered harmonies, and ad-libs that are hard to catch by ear. It is built for review, not blind trust: every line comes back with its timing so you can scan the whole transcript and fix anything before you use it.",
-        "Accuracy depends on the mix. A clean lead vocal transcribes more reliably than a heavily distorted or buried one, which is why the result page lets you click any line and correct a word in seconds rather than starting over."
-      ]
-    },
-    {
-      "heading": "TXT, LRC, or SRT: which export to choose",
-      "body": [
-        "TXT gives you clean lyrics line by line — best for descriptions, lyric sheets, posts, and quick edits where timing does not matter. LRC carries timestamps for music players, karaoke-style displays, and streaming workflows that show synced lyrics.",
-        "SRT is subtitle-ready, so it drops straight into video editors, YouTube captions, Reels, and Shorts, or translation workflows. Because all three come from the same synced transcript, you can export whichever fits the next step — or several at once."
-      ]
-    },
-    {
-      "heading": "From a transcript to a finished lyric video",
-      "body": [
-        "Automatic lyrics transcription is also the cheapest on-ramp to a full lyric video. When the transcript finishes, the lines are already timed, so turning them into a visual lyric video costs almost nothing extra — no re-uploading the song or rebuilding the timing.",
-        "From the result page you can keep going with Preview as Lyric Video and let the AI add beat-matched motion and mood-driven visuals on top of the lyrics you just reviewed. The transcript you needed becomes a video you can publish."
-      ]
-    },
-    {
-      "heading": "Transcribing finished songs, demos, and tricky vocals",
-      "body": [
-        "The tool works on polished masters, rough demos, and everything in between. Upload an MP3, WAV, FLAC, AAC, OGG, or M4A and it reads the vocal performance directly, so you do not have to prep or clean the file first.",
-        "It is built for song-shaped material rather than a generic speech transcript: repeated choruses, hooks, and fast verses stay readable and grouped the way a song actually flows, instead of being flattened into one long block of text."
-      ]
-    },
-    {
-      "heading": "Getting lyrics from a video link",
-      "body": [
-        "When a song is already online, paste a supported video link and the AI transcribes the vocals into editable, timestamped lyrics — useful when you need a quick text or subtitle version of a track you do not have as a file.",
-        "From there the workflow is the same: review the lines, fix anything off, then export TXT, LRC, or SRT, or continue into a full lyric video. Just make sure you have the rights to the track you are transcribing."
-      ]
-    },
-    {
-      "heading": "Why song-first beats a generic speech tool",
-      "body": [
-        "General transcription tools are tuned for speech — meetings, podcasts, interviews — and tend to mistime music, miss sung phrasing, and dump everything into paragraphs. Automatic lyrics transcription is tuned for songs, so timing follows the beat and the output reads like lyrics.",
-        "That difference shows up everywhere downstream: tighter caption timing, cleaner LRC for players, and a transcript that is genuinely ready to become a lyric video instead of one you have to reformat by hand."
-      ]
-    },
-    {
-      "heading": "Where transcribed lyrics get used",
-      "body": [
-        "Once you have an accurate, timestamped transcript, it feeds a surprising number of jobs. Artists use TXT for press kits, distributor lyric fields, and publishing notes; video teams use SRT for YouTube captions and editor subtitles; and music apps use LRC to show synced lyrics during playback.",
-        "Having one reviewed transcript means you are not re-typing the same words for each destination. Export the format the next step needs, or carry the timing straight into a lyric video — the transcription is the reusable source everything else is built from."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "The lyrics are already in the song. Let AI write them down.",
+    "description": "Upload your track, get beat-synced lyrics in seconds, and export or continue into a lyric video — free, no subscription needed.",
+    "button": "Transcribe My Song",
+    "upsell": "Need visuals too? Turn the synced transcript into a lyric video in one click."
+  }
 }
