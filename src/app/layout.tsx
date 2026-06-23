@@ -3,19 +3,20 @@ import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
+import { buildPublicMetadata } from "@/lib/site-metadata";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: envConfigs.app_name,
-  description: envConfigs.app_description,
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
-      index: false,
-      follow: false,
+  ...buildPublicMetadata({
+    title: envConfigs.app_name,
+    description: envConfigs.app_description,
+    path: "/",
+    alternates: {
+      en: "/",
+      zh: "/zh",
+      xDefaultPath: "/",
     },
-  },
+  }),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

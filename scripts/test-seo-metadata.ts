@@ -30,6 +30,32 @@ assert(
   !rootLayout.includes('rel="alternate"') && !rootLayout.includes("rel=\"alternate\""),
   "Root layout must not hardcode homepage alternate links.",
 );
+assert(
+  !rootLayout.includes("index: false") && !rootLayout.includes("follow: false"),
+  "Root layout must not globally noindex public pages.",
+);
+assert(
+  rootLayout.includes("buildPublicMetadata"),
+  "Root layout must use shared public metadata defaults.",
+);
+
+const config = read("src/config/index.ts");
+assert(config.includes("https://lyricvideomaker.app"), "Production app URL default must stay on the live domain.");
+
+const siteMetadata = read("src/lib/site-metadata.ts");
+assert(siteMetadata.includes("/og-image.png"), "Shared metadata must define the default OG image.");
+assert(siteMetadata.includes('"x-default"'), "Shared metadata must include x-default alternates.");
+assert(siteMetadata.includes("metadataBase"), "Shared metadata must set metadataBase.");
+assert(siteMetadata.includes("openGraph"), "Shared metadata must set Open Graph data.");
+assert(siteMetadata.includes("twitter"), "Shared metadata must set Twitter metadata.");
+assert(siteMetadata.includes("robots"), "Shared metadata must set public robots metadata.");
+assert(siteMetadata.includes("summary_large_image"), "Shared metadata must define a large Twitter card.");
+
+const robotsRoute = read("src/app/robots.ts");
+assert(!robotsRoute.includes("disallow: '/'"), "robots.ts must not disallow the entire site.");
+assert(robotsRoute.includes("sitemap"), "robots.ts must expose the sitemap URL.");
+assert(robotsRoute.includes("host"), "robots.ts must expose the host URL.");
+assert(robotsRoute.includes("/admin"), "robots.ts must disallow private app/admin surfaces.");
 
 const seoRoute = read("src/app/[locale]/[slug]/page.tsx");
 assert(
@@ -40,6 +66,9 @@ assert(
   !seoRoute.includes("`/${slug}/`") && !seoRoute.includes("`/zh/${slug}/`"),
   "SEO page hreflang URLs must match the actual non-trailing-slash routes.",
 );
+assert(seoRoute.includes("buildPublicMetadata"), "SEO page metadata must use the shared public metadata helper.");
+assert(seoRoute.includes("how-to-make-a-lyric-video"), "How-to SEO page must receive article Open Graph type.");
+assert(seoRoute.includes('"article"'), "How-to SEO page must use article Open Graph type.");
 
 for (const filePath of [
   "src/app/[locale]/(auth)/layout.tsx",
@@ -56,9 +85,17 @@ for (const filePath of [
 }
 
 const pricingPage = read("src/app/[locale]/pricing/page.tsx");
-assert(pricingPage.includes("metadataBase"), "Pricing metadata must set metadataBase.");
+assert(pricingPage.includes("buildPublicMetadata"), "Pricing metadata must use the shared helper.");
 assert(pricingPage.includes("alternates"), "Pricing metadata must set canonical and language alternates.");
-assert(pricingPage.includes("openGraph"), "Pricing metadata must set Open Graph data.");
+
+const homePage = read("src/app/[locale]/page.tsx");
+assert(homePage.includes("buildPublicMetadata"), "Homepage metadata must use the shared helper.");
+assert(homePage.includes("xDefaultPath"), "Homepage metadata must set x-default to the English homepage.");
+
+const sitemapRoute = read("src/app/sitemap.ts");
+assert(sitemapRoute.includes("alternates"), "Sitemap entries must include alternates.");
+assert(sitemapRoute.includes("languages"), "Sitemap alternates must include localized languages.");
+assert(sitemapRoute.includes('"x-default"'), "Sitemap alternates must include x-default.");
 
 const enLanding = readJson<{ pricing: { seoTitle: string; seoDescription: string } }>(
   "src/config/locale/messages/en/landing.json",
@@ -81,11 +118,17 @@ for (const route of ["privacy-policy", "terms-of-service"]) {
   const source = read(`src/app/[locale]/(pages)/${route}/page.tsx`);
   assert(source.includes("generateMetadata"), `${route} must export localized metadata.`);
   assert(source.includes("alternates"), `${route} must set canonical and language alternates.`);
+  assert(source.includes("buildPublicMetadata"), `${route} must use the shared metadata helper.`);
   assert(source.includes("zh:"), `${route} must include Chinese localized copy.`);
 }
 
+assert(
+  fs.existsSync(path.join(process.cwd(), "public", "og-image.png")),
+  "Default OG image must exist at public/og-image.png.",
+);
+
 for (const filePath of [
-  "public/seo-pages/en/ai-lyric-video-generator.json",
+  "public/seo-pages/en/lyric-video-generator.json",
   "public/seo-pages/en/ai-music-video-generator.json",
   "public/seo-pages/en/audio-to-lyric-video.json",
   "public/seo-pages/en/lyric-video-templates.json",

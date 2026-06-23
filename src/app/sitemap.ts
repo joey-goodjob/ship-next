@@ -1,34 +1,54 @@
 import type { MetadataRoute } from "next";
-import { envConfigs } from "@/config";
-import { getAllSeoPages } from "@/lib/seo-pages";
+import { getSeoPageSlugs } from "@/lib/seo-pages";
+import { getSiteBaseUrl } from "@/lib/site-metadata";
 
-const PUBLIC_PATHS = [
-  { path: "/", priority: 1 },
-  { path: "/zh", priority: 1 },
-  { path: "/pricing", priority: 0.8 },
-  { path: "/zh/pricing", priority: 0.8 },
-  { path: "/privacy-policy", priority: 0.3 },
-  { path: "/zh/privacy-policy", priority: 0.3 },
-  { path: "/terms-of-service", priority: 0.3 },
-  { path: "/zh/terms-of-service", priority: 0.3 },
+const PUBLIC_ROUTE_GROUPS = [
+  { paths: { en: "/", zh: "/zh" }, priority: 1 },
+  { paths: { en: "/pricing", zh: "/zh/pricing" }, priority: 0.8 },
+  { paths: { en: "/privacy-policy", zh: "/zh/privacy-policy" }, priority: 0.3 },
+  { paths: { en: "/terms-of-service", zh: "/zh/terms-of-service" }, priority: 0.3 },
 ] as const;
 
-function baseUrl() {
-  return (envConfigs.app_url || "http://localhost:3000").replace(/\/$/, "");
+type LocalizedRouteGroup = {
+  paths: {
+    en: string;
+    zh: string;
+  };
+  priority: number;
+};
+
+function buildLanguageUrls(base: string, paths: LocalizedRouteGroup["paths"]) {
+  return {
+    en: `${base}${paths.en}`,
+    zh: `${base}${paths.zh}`,
+    "x-default": `${base}${paths.en}`,
+  };
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const base = baseUrl();
-  const seoPaths = getAllSeoPages().map(({ locale, slug }) => ({
-    path: locale === "en" ? `/${slug}` : `/${locale}/${slug}`,
+  const base = getSiteBaseUrl();
+  const seoRouteGroups = getSeoPageSlugs("en").map((slug) => ({
+    paths: {
+      en: `/${slug}`,
+      zh: `/zh/${slug}`,
+    },
     priority: 0.9,
   }));
+  const routeGroups: LocalizedRouteGroup[] = [
+    ...PUBLIC_ROUTE_GROUPS,
+    ...seoRouteGroups,
+  ];
 
-  return [...PUBLIC_PATHS, ...seoPaths].map(({ path, priority }) => ({
-    url: `${base}${path}`,
-    lastModified: now,
-    changeFrequency: "weekly",
-    priority,
-  }));
+  return routeGroups.flatMap(({ paths, priority }) =>
+    (["en", "zh"] as const).map((locale) => ({
+      url: `${base}${paths[locale]}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority,
+      alternates: {
+        languages: buildLanguageUrls(base, paths),
+      },
+    })),
+  );
 }

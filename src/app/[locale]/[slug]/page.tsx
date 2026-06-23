@@ -4,12 +4,15 @@ import { setRequestLocale } from "next-intl/server";
 import { Footer } from "@/blocks/footer";
 import { Header } from "@/blocks/header";
 import { SeoToolPage } from "@/components/seo-tool-page";
-import { envConfigs } from "@/config";
 import {
   getSeoPage,
   getSeoPageStaticParams,
   type SeoPageContent,
 } from "@/lib/seo-pages";
+import {
+  absoluteSiteUrl,
+  buildPublicMetadata,
+} from "@/lib/site-metadata";
 
 type PageParams = {
   params: Promise<{ locale: string; slug: string }>;
@@ -17,17 +20,13 @@ type PageParams = {
 
 export const dynamicParams = false;
 
-function baseUrl() {
-  return (envConfigs.app_url || "http://localhost:3000").replace(/\/$/, "");
-}
-
 function localizedPath(locale: string, slug: string) {
   const path = `/${slug}`;
   return locale === "en" ? path : `/${locale}${path}`;
 }
 
 function buildJsonLd(page: SeoPageContent, locale: string, slug: string) {
-  const url = `${baseUrl()}${localizedPath(locale, slug)}`;
+  const url = absoluteSiteUrl(localizedPath(locale, slug));
   const hasHeroTool = page.layout.sections.includes("heroTool");
   const hasFaq = page.layout.sections.includes("faq");
 
@@ -76,26 +75,20 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   if (!page) notFound();
 
   const path = localizedPath(locale, slug);
+  const openGraphType = slug === "how-to-make-a-lyric-video" ? "article" : "website";
 
-  return {
-    metadataBase: new URL(baseUrl()),
+  return buildPublicMetadata({
     title: page.seo.title,
     description: page.seo.description,
     keywords: page.seo.keywords,
+    path,
     alternates: {
-      canonical: path,
-      languages: {
-        en: `/${slug}`,
-        zh: `/zh/${slug}`,
-      },
+      en: `/${slug}`,
+      zh: `/zh/${slug}`,
+      xDefaultPath: `/${slug}`,
     },
-    openGraph: {
-      title: page.seo.title,
-      description: page.seo.description,
-      url: `${baseUrl()}${path}`,
-      type: "website",
-    },
-  };
+    openGraphType,
+  });
 }
 
 export default async function SeoToolRoutePage({ params }: PageParams) {

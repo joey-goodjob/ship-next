@@ -12,17 +12,18 @@ import { FAQ } from "@/blocks/faq";
 import { CTA } from "@/blocks/cta";
 import { Footer } from "@/blocks/footer";
 import { envConfigs } from "@/config";
+import {
+  absoluteSiteUrl,
+  buildPublicMetadata,
+  getSiteBaseUrl,
+} from "@/lib/site-metadata";
 
 type PageParams = {
   params: Promise<{ locale: string }>;
 };
 
-function baseUrl() {
-  return (envConfigs.app_url || "http://localhost:3000").replace(/\/$/, "");
-}
-
 function localizedPath(locale: string) {
-  return locale === "zh" ? "/zh/" : "/";
+  return locale === "zh" ? "/zh" : "/";
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
@@ -32,32 +33,18 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const title = t("title");
   const description = t("description");
   const keywords = t.raw("keywords") as string[];
-  const url = `${baseUrl()}${path}`;
 
-  return {
-    metadataBase: new URL(baseUrl()),
+  return buildPublicMetadata({
     title,
     description,
     keywords,
+    path,
     alternates: {
-      canonical: path,
-      languages: {
-        en: "/",
-        zh: "/zh/",
-      },
+      en: "/",
+      zh: "/zh",
+      xDefaultPath: "/",
     },
-    openGraph: {
-      title,
-      description,
-      url,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-  };
+  });
 }
 
 /**
@@ -70,19 +57,20 @@ export default async function HomePage({ params }: PageParams) {
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "landing.seo" });
-  const url = `${baseUrl()}${localizedPath(locale)}`;
+  const siteUrl = getSiteBaseUrl();
+  const url = absoluteSiteUrl(localizedPath(locale));
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: envConfigs.app_name,
-      url: baseUrl(),
+      url: siteUrl,
     },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: envConfigs.app_name,
-      url: baseUrl(),
+      url: siteUrl,
     },
     {
       "@context": "https://schema.org",

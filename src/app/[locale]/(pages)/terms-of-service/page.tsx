@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { envConfigs } from "@/config";
+import { buildPublicMetadata } from "@/lib/site-metadata";
 
 type PageParams = {
   params: Promise<{ locale: string }>;
@@ -139,10 +139,6 @@ const content = {
   },
 } as const;
 
-function baseUrl() {
-  return (envConfigs.app_url || "http://localhost:3000").replace(/\/$/, "");
-}
-
 function normalizeLocale(locale: string): keyof typeof content {
   return locale === "zh" ? "zh" : "en";
 }
@@ -157,24 +153,16 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   const path = localizedPath(locale);
   const title = `${page.title} | LyricVideoMaker`;
 
-  return {
-    metadataBase: new URL(baseUrl()),
+  return buildPublicMetadata({
     title,
     description: page.description,
+    path,
     alternates: {
-      canonical: path,
-      languages: {
-        en: "/terms-of-service",
-        zh: "/zh/terms-of-service",
-      },
+      en: "/terms-of-service",
+      zh: "/zh/terms-of-service",
+      xDefaultPath: "/terms-of-service",
     },
-    openGraph: {
-      title,
-      description: page.description,
-      url: `${baseUrl()}${path}`,
-      type: "website",
-    },
-  };
+  });
 }
 
 export default async function TermsOfServicePage({ params }: PageParams) {

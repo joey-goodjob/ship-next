@@ -3,15 +3,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Header } from "@/blocks/header";
 import { Footer } from "@/blocks/footer";
 import { Pricing } from "@/blocks/pricing";
-import { envConfigs } from "@/config";
+import { buildPublicMetadata } from "@/lib/site-metadata";
 
 type PageParams = {
   params: Promise<{ locale: string }>;
 };
-
-function baseUrl() {
-  return (envConfigs.app_url || "http://localhost:3000").replace(/\/$/, "");
-}
 
 function localizedPath(locale: string) {
   return locale === "en" ? "/pricing" : `/${locale}/pricing`;
@@ -26,24 +22,16 @@ export async function generateMetadata({
   const title = t("seoTitle");
   const description = t("seoDescription");
 
-  return {
-    metadataBase: new URL(baseUrl()),
+  return buildPublicMetadata({
     title,
     description,
+    path,
     alternates: {
-      canonical: path,
-      languages: {
-        en: "/pricing",
-        zh: "/zh/pricing",
-      },
+      en: "/pricing",
+      zh: "/zh/pricing",
+      xDefaultPath: "/pricing",
     },
-    openGraph: {
-      title,
-      description,
-      url: `${baseUrl()}${path}`,
-      type: "website",
-    },
-  };
+  });
 }
 
 export default async function PricingPage({
