@@ -15,5 +15,11 @@ export async function Header({
     { href: "/#faq", label: t("nav.help") },
   ];
 
-  return <SiteHeader navLinks={navLinks} variant={variant} />;
+  return (
+    <SiteHeader
+      navLinks={navLinks}
+      discordLink={{ href: "https://discord.gg/2YmWtNx3z7", label: "Discord" }}
+      variant={variant}
+    />
+  );
 }

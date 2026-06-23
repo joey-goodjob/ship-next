@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { DiscordIcon } from "@/components/discord-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { LocaleSelector } from "@/components/locale-selector";
 import { SiteUserMenu } from "@/components/site-user-menu";
@@ -21,9 +22,11 @@ export type SiteHeaderVariant = "default" | "heroOverlay";
 
 export function SiteHeader({
   navLinks,
+  discordLink,
   variant = "default",
 }: {
   navLinks?: NavLink[];
+  discordLink?: Pick<NavLink, "href" | "label">;
   variant?: SiteHeaderVariant;
 }) {
   const t = useTranslations("common");
@@ -119,7 +122,18 @@ export function SiteHeader({
         </nav>
 
         {/* Desktop actions */}
-        <div className="hidden items-center justify-end gap-5 md:flex">
+        <div className="hidden items-center justify-end gap-3 md:flex lg:gap-5">
+          {discordLink ? (
+            <a
+              href={discordLink.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden h-10 items-center gap-2 rounded-full bg-[#5865f2] px-4 text-sm font-extrabold text-white shadow-[0_10px_24px_color-mix(in_oklch,#5865f2_32%,transparent)] transition-colors [@media(hover:hover)]:hover:bg-[#4752c4] active:scale-95 lg:inline-flex"
+            >
+              <DiscordIcon className="size-4" />
+              {discordLink.label}
+            </a>
+          ) : null}
           <span className={cn("h-8 w-px", isHeroOverlay ? "bg-white/12" : "bg-brand-line")} aria-hidden={true} />
           <LocaleSelector
             className={isHeroOverlay ? "text-slate-300/85 hover:bg-white/10 hover:text-white" : undefined}
@@ -199,6 +213,18 @@ export function SiteHeader({
             )}
           </nav>
           <div className={cn("mt-3 flex items-center gap-2 border-t pt-3", isHeroOverlay ? "border-white/10" : "border-brand-line")}>
+            {discordLink ? (
+              <a
+                href={discordLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-[#5865f2] px-4 text-sm font-extrabold text-white shadow-[0_10px_24px_color-mix(in_oklch,#5865f2_24%,transparent)] transition-colors [@media(hover:hover)]:hover:bg-[#4752c4] active:scale-95"
+                onClick={() => setMobileOpen(false)}
+              >
+                <DiscordIcon className="size-4" />
+                {discordLink.label}
+              </a>
+            ) : null}
             <LocaleSelector
               className={isHeroOverlay ? "text-slate-200 hover:bg-white/10 hover:text-white" : undefined}
             />
