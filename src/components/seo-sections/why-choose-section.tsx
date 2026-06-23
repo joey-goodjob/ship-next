@@ -4,8 +4,17 @@ import { SamplePreview } from "./sample-preview";
 import { SectionHeading } from "./section-heading";
 
 const FEATURE_ICONS = [Music2, Mic2, Film, Sparkles] as const;
+const SEO_IMAGE_VERSION = "20260622";
 
-export function WhyChooseSection({ content }: { content: NonNullable<SeoPageContent["whyChoose"]> }) {
+export function WhyChooseSection({
+  content,
+  previewImage,
+}: {
+  content: NonNullable<SeoPageContent["whyChoose"]>;
+  previewImage?: string;
+}) {
+  const imageSrc = previewImage ? `${previewImage}?v=${SEO_IMAGE_VERSION}` : null;
+
   return (
     <section className="bg-brand-soft px-5 py-[70px] lg:py-[120px]">
       <div className="mx-auto max-w-[1180px]">
@@ -20,7 +29,18 @@ export function WhyChooseSection({ content }: { content: NonNullable<SeoPageCont
               {content.highlight.description}
             </p>
           </div>
-          <SamplePreview />
+          {imageSrc ? (
+            <div className="relative aspect-video overflow-hidden rounded-md border border-brand-line bg-brand-stage-gradient shadow-[0_22px_70px_var(--brand-elevation-shadow-soft)]">
+              <img
+                src={imageSrc}
+                alt={content.highlight.title}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <SamplePreview />
+          )}
         </div>
 
         <div className="mt-6 grid gap-5 md:grid-cols-3">

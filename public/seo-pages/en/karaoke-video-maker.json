@@ -30,7 +30,7 @@
   "hero": {
     "badge": "Karaoke video maker — AI-powered, free to export",
     "h1": "Karaoke Video Maker — Create Sing-Along Lyric Videos",
-    "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics and syncs every line to the beat so viewers can sing along. Preview the karaoke-style lyric video, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics and syncs every line to the beat so viewers can sing along. Preview the karaoke-style lyric video, then export — free, no subscription needed.",
     "primaryCta": "Make a Free Karaoke Video",
     "secondaryCta": "See How It Works"
   },
@@ -45,7 +45,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The AI works directly from your audio — you don't need to build a karaoke timing map from scratch.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. The AI works directly from your audio — you don't need to build a karaoke timing map from scratch.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -82,6 +82,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a karaoke video maker?",
+      "intro": "A karaoke video maker turns a song audio file into a sing-along lyric video with clear timing and highlighted phrasing. The current stable path keeps the original audio and focuses on readable, beat-synced lyrics; true vocal removal is a separate planned or optional direction that should be judged by preview quality.",
+      "bullets": [
+        "Input is an uploaded audio file in MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB.",
+        "It creates sing-along lyric videos with editable lyrics and musical timing.",
+        "Output is an MP4 in 16:9, 9:16, or 1:1 for parties, practice, channels, and social clips.",
+        "It differs from true karaoke backing-track creation because lead-vocal removal is not the stable core feature today."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "karaoke video maker specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Sing-along mode vs true karaoke mode",
+      "intro": "Karaoke requests mix two different needs. One wants highlighted lyrics over the original song; the other wants the lead vocal removed. Separating them keeps the result honest.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Sing-along lyric video",
+            "Stable today: keep the original track and highlight lyrics for viewers to follow."
+          ],
+          [
+            "True karaoke backing track",
+            "Planned or optional: reduce or remove lead vocals, with quality depending on the recording."
+          ],
+          [
+            "Best for parties",
+            "Sing-along mode is enough when everyone wants the original artist as a guide."
+          ],
+          [
+            "Best for performers",
+            "True karaoke matters when the singer needs space to replace the lead vocal."
+          ],
+          [
+            "Review risk",
+            "Lead-vocal removal can leave traces on layered, live, or heavily processed songs."
+          ],
+          [
+            "Visual priority",
+            "In both modes, lyric readability and timing matter more than busy backgrounds."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for karaoke-style lyric videos",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Keep the original vocal for practice versions; it helps singers learn phrasing.",
+        "Use larger type than a normal lyric video because groups often watch from farther away.",
+        "Add visual breathing room before the first lyric so singers know when to enter.",
+        "Review fast passages for timing drift; karaoke feels wrong when words arrive late.",
+        "Use high-contrast highlighting rather than subtle color changes.",
+        "Export widescreen for TV playback and vertical only when the clip is meant for social.",
+        "Treat lead-vocal removal as preview-dependent rather than assuming every song will separate cleanly."
+      ]
+    },
+    {
+      "heading": "The difference between sing-along and true karaoke",
+      "intro": "A karaoke video maker builds sing-along lyric videos with a highlighted timeline instead of starting from a blank timeline. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "Tell sing-along and true karaoke apart",
+          "description": "Sing-along keeps the original vocal for practice and parties; true karaoke removes the lead, and results vary by recording — so treat vocal removal as optional and always check the preview first."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        }
+      ]
+    },
+    {
+      "heading": "karaoke video maker checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Karaoke Video Maker FAQ",
     "items": [
@@ -137,12 +303,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/karaoke-video-maker/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Every song deserves a sing-along.",
-    "description": "Upload your track, let AI handle the lyrics and timing, and export a karaoke-style lyric video — free, no subscription needed.",
-    "button": "Make My Karaoke Video",
-    "upsell": "Free export · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -168,55 +328,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "What makes a good karaoke video",
-      "body": [
-        "A good karaoke video lives or dies on timing. The next line has to appear before the singer needs it, the current line has to stay readable at a glance, and the highlight has to track the beat so people know exactly where they are in the song. The karaoke video maker handles all three automatically from your uploaded audio.",
-        "Because the lyrics are transcribed and beat-synced rather than dropped onto a rough timer, cues land early enough to follow and the text stays large and legible — the difference between a video people can actually sing to and one they give up on after the first chorus."
-      ]
-    },
-    {
-      "heading": "Sing-along mode and true karaoke",
-      "body": [
-        "The karaoke video maker supports two ways to perform. Sing-along mode keeps the original track and overlays beat-synced, highlighted lyrics so a room can join in instantly. True karaoke mode removes the lead vocal so the singer carries the melody, with the lyric cues guiding them line by line.",
-        "Both modes start from the same upload and the same synced lyrics, so you can produce a sing-along version for casual nights and a vocal-removed version for serious practice or a karaoke channel without rebuilding the project."
-      ]
-    },
-    {
-      "heading": "Karaoke videos for parties, channels, and practice",
-      "body": [
-        "For parties and events, a karaoke video maker turns any song into instant entertainment — no special hardware, just a screen and the synced lyrics. For YouTube karaoke channels, a repeatable upload-to-export flow keeps a back catalog looking consistent track after track.",
-        "For singers and students, karaoke videos are a practice tool: the cue timing trains phrasing and breath control, and being able to fix any lyric line means the words on screen are the words actually being sung."
-      ]
-    },
-    {
-      "heading": "Readable on phones, TVs, and projectors",
-      "body": [
-        "Karaoke gets watched on everything from a phone propped on a table to a living-room TV to a projector at a venue. The karaoke video maker sizes and places the lyrics so they stay readable across all of them, and the beat-synced highlight keeps a whole group locked to the same line.",
-        "Export in 16:9 for TVs and YouTube, 9:16 for mobile karaoke and short-form clips, or 1:1 for feed posts — one upload covers the screen wherever the singing happens."
-      ]
-    },
-    {
-      "heading": "How to make a karaoke video without typing lyrics",
-      "body": [
-        "Upload your song and the karaoke video maker transcribes every line automatically, in 50+ languages, then syncs the cues to the beat. You never start from a blank timeline or a lyrics document — the hardest part of making a karaoke video is already done before you touch anything.",
-        "From there you review the lines, adjust any word, choose a highlight style, preview how it sings, and export. What used to take an evening of manual timing in a video editor now takes a few minutes in the browser."
-      ]
-    },
-    {
-      "heading": "Karaoke video maker vs vocal-removal apps",
-      "body": [
-        "A vocal-removal app only strips the lead vocal — you are left with a backing track and no words on screen. A karaoke video maker does the part that actually matters for singing: it transcribes the lyrics, times the cues to the beat, highlights each line as it comes, and renders a video you can play anywhere.",
-        "With true karaoke mode you get both at once — the lead vocal removed and synced, highlighted lyrics on screen — so there is no stitching a muted track together with a separate lyrics file. One upload becomes a complete, performable karaoke video."
-      ]
-    },
-    {
-      "heading": "From upload to a finished karaoke video",
-      "body": [
-        "The full path is short. Upload your song, let the AI transcribe and beat-sync the lyrics, choose sing-along or true karaoke, pick a highlight style, and preview how it performs on screen. When the cues land where you want them, export for the screen you will play it on.",
-        "Everything runs in the browser, so there is no software to learn and no project files to manage. Because the lyrics are editable at every step, the words on screen always match the words being sung — which is exactly what separates a karaoke video people enjoy from one that throws them off."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Every song deserves a sing-along.",
+    "description": "Upload your track, let AI handle the lyrics and timing, and export a karaoke-style lyric video — free, no subscription needed.",
+    "button": "Make My Karaoke Video",
+    "upsell": "Free export · No subscription · No credit card"
+  }
 }

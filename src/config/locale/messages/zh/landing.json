@@ -139,49 +139,316 @@
   ],
   "pricing": {
     "title": "价格",
-    "description": "选择最适合你的方案",
+    "eyebrow": "免费积分、创作者套餐和项目积分包",
+    "description": "先免费开始，估算一首歌大概需要多少积分，再选择月度套餐或单次积分包来完成导出。",
     "seoTitle": "歌词视频制作价格 — 免费积分、创作者与 Pro 方案",
     "seoDescription": "查看 LyricVideoMaker 价格、免费积分、创作者订阅和加购积分包，为 YouTube、TikTok、Reels 制作 AI 歌词视频。"
+  },
+  "pricing_labels": {
+    "monthly": "月付",
+    "annual": "年付",
+    "month": "月",
+    "year": "年",
+    "save_two_months": "省 2 个月",
+    "billed_annually": "每年收取 {amount}",
+    "annual_savings": "每年节省 {amount}",
+    "features": "功能",
+    "most_popular": "最受欢迎",
+    "credits_unit": "积分",
+    "credit_info": "积分说明"
   },
   "pricing_plans": {
     "free": {
       "name": "免费版",
-      "note": "无需信用卡",
+      "note": "用注册赠送积分体验完整流程。",
+      "billing_note": "无需信用卡",
+      "credits": "150 个一次性积分",
       "cta": "获取免费版"
     },
     "creator": {
       "name": "创作者",
-      "note": "按月计费",
+      "note": "适合持续发布作品的音乐人。",
+      "billing_note": "按月计费",
+      "credits": "每月 2,000 积分",
       "cta": "获取创作者版"
     },
     "pro": {
       "name": "Pro",
-      "note": "按月计费",
+      "note": "适合高频创作者和小团队。",
+      "billing_note": "按月计费",
+      "credits": "每月 6,000 积分",
       "cta": "获取 Pro"
     },
     "ultra": {
       "name": "Ultra",
-      "note": "按月计费",
+      "note": "适合厂牌、剪辑团队和发行活动。",
+      "billing_note": "按月计费",
+      "credits": "每月 10,000 积分",
       "cta": "获取 Ultra"
     }
   },
+  "pricing_features": [
+    {
+      "key": "resolution",
+      "label": "1080p, 24 FPS"
+    },
+    {
+      "key": "transcription",
+      "label": "AI 歌词转写"
+    },
+    {
+      "key": "trimmer",
+      "label": "音频裁剪"
+    },
+    {
+      "key": "watermark",
+      "label": "无水印导出"
+    },
+    {
+      "key": "commercial",
+      "label": "商业使用权"
+    },
+    {
+      "key": "unlimited_exports",
+      "label": "不限次数导出"
+    },
+    {
+      "key": "premium_models",
+      "label": "高级 AI 模型"
+    },
+    {
+      "key": "upload_images",
+      "label": "上传自有图片"
+    },
+    {
+      "key": "ai_image_edit",
+      "label": "AI 图片编辑"
+    },
+    {
+      "key": "lip_sync",
+      "label": "Lip Sync 对口型"
+    },
+    {
+      "key": "reduced_credits",
+      "label": "更低积分消耗"
+    },
+    {
+      "key": "premiere",
+      "label": "Adobe Premiere 导出"
+    },
+    {
+      "key": "resolve",
+      "label": "DaVinci Resolve 导出"
+    },
+    {
+      "key": "final_cut",
+      "label": "Final Cut Pro 导出"
+    }
+  ],
   "credits_pack": {
     "title": "随时加购积分",
     "description": "适合完成单个项目。长期创作时订阅方案更划算。",
-    "included": "包含导出和商业使用权"
+    "expiry": "单次购买积分适合项目制使用，购买后 1 年内有效。",
+    "number_label": "积分数量",
+    "included": "付费积分包含无水印导出和商业使用权。",
+    "creator_features": "单次积分包解锁 Creator 级别导出能力。",
+    "plan_features": "如果你同时拥有 Pro 或 Ultra，单次积分会沿用当前套餐的功能权限。",
+    "purchase_title": "单次购买",
+    "purchase_description": "即时可用，无需订阅。",
+    "purchase_cta": "继续使用 {credits} 积分",
+    "applied": "注册和结账流程开启后，积分会自动添加到你的账号。"
+  },
+  "pricing_credit_packs": [
+    {
+      "credits": "500",
+      "price": "$15"
+    },
+    {
+      "credits": "1,000",
+      "price": "$25"
+    },
+    {
+      "credits": "2,500",
+      "price": "$50"
+    },
+    {
+      "credits": "5,000",
+      "price": "$90"
+    },
+    {
+      "credits": "10,000",
+      "price": "$170"
+    },
+    {
+      "credits": "20,000",
+      "price": "$330"
+    },
+    {
+      "credits": "50,000",
+      "price": "$800"
+    }
+  ],
+  "pricing_studio": {
+    "eyebrow": "Studio",
+    "title": "想让我们帮你做完整视频？",
+    "description": "LyricVideoMaker Studio 可以协助完成概念、导演、剪辑和交付，适合想要成片而不是自己操作工具的音乐人。起价 $499。",
+    "cta": "开始一个项目"
+  },
+  "pricing_calculator": {
+    "title": "我需要多少积分？",
+    "length_label": "1. 设置歌曲长度",
+    "length_aria": "设置歌曲分钟数",
+    "length_help": "设置你的歌曲时长。当前支持最长 20 分钟的歌词视频规划。",
+    "backdrop_label": "2. 选择背景类型",
+    "static": "静态",
+    "animated": "动态",
+    "backdrop_help": "静态歌词视频更省积分。动态视觉会消耗更多积分。",
+    "resolution_label": "3. 选择分辨率",
+    "1080p": "1080p",
+    "4k": "4K",
+    "resolution_help": "1080p 适合社媒发布。4K 属于高级能力路线。",
+    "estimate_label": "预估需要积分：",
+    "estimate_note": "最终消耗会根据实际使用的模型和功能变化。"
   },
   "calculator": {
     "title": "我需要多少积分？"
   },
+  "pricing_credit_info": [
+    {
+      "title": "上传歌曲与歌词转写",
+      "items": [
+        {
+          "name": "Director Model",
+          "description": "根据音频完成歌词转写、时间同步和分镜方向。",
+          "cost": "每秒音频 1 积分"
+        }
+      ]
+    },
+    {
+      "title": "生成图片",
+      "items": [
+        {
+          "name": "Character Model",
+          "description": "为歌词视频生成稳定角色或场景图片。",
+          "cost": "每张图片 5 积分"
+        },
+        {
+          "name": "Character Plus Model",
+          "description": "更高质量的图片生成，细节更锐利，提示词跟随更强。",
+          "cost": "每张图片 5 积分",
+          "badge": "Premium"
+        },
+        {
+          "name": "Remix Model",
+          "description": "用文字描述修改方向，重混已有图片。",
+          "cost": "每张图片 5 积分"
+        },
+        {
+          "name": "Remix Plus Model",
+          "description": "更高保真的图片编辑，适合复杂视觉修订。",
+          "cost": "每张图片 5 积分",
+          "badge": "Premium"
+        }
+      ]
+    },
+    {
+      "title": "图片转视频",
+      "items": [
+        {
+          "name": "Reel Model",
+          "description": "适合简单场景、镜头移动和基础歌词视频动效。",
+          "cost": "每秒 5 积分"
+        },
+        {
+          "name": "Studio Model",
+          "description": "面向更复杂场景和更精致的视频生成。",
+          "cost": "每秒 20 积分",
+          "badge": "Premium"
+        },
+        {
+          "name": "Lip Sync Model",
+          "description": "让近景角色按照歌词时间对口型演唱。",
+          "cost": "每秒视频 15 积分",
+          "badge": "Premium"
+        }
+      ]
+    },
+    {
+      "title": "升格到 4K",
+      "items": [
+        {
+          "name": "Image 4K Model",
+          "description": "用 AI 提升图片清晰度，让歌词视频画面更锐利。",
+          "cost": "每张图片 10 积分",
+          "badge": "Premium"
+        },
+        {
+          "name": "Video 4K Model",
+          "description": "提升导出视频清晰度，适合大屏和高质量上传。",
+          "cost": "每秒视频 10 积分",
+          "badge": "Premium"
+        }
+      ]
+    }
+  ],
   "enterprise": {
-    "pitch": "用惊艳的歌词视频扩大你的作品影响力"
+    "pitch": "用惊艳的歌词视频扩大你的作品影响力",
+    "name": "企业版",
+    "title": "获取报价",
+    "cta": "联系销售",
+    "features": [
+      "包含 Ultra 的全部能力",
+      "自定义积分额度",
+      "API 接入规划",
+      "专业视频编辑工作流支持"
+    ],
+    "note": "第一版会先把销售咨询引导到项目创建流程。"
   },
   "pricing_faq": {
     "title": "常见问题",
-    "description": "有任何问题都可以联系我们。"
+    "description": "关于免费积分、单次积分包、订阅和导出权限，这里先讲清楚。",
+    "items": [
+      {
+        "question": "有免费试用吗？",
+        "answer": "有。注册免费账号后会获得赠送积分，可以用来生成、预览和体验歌词视频流程，再决定是否购买。"
+      },
+      {
+        "question": "不订阅也可以只生成一个视频吗？",
+        "answer": "可以。价格页保留单次积分包，适合只做一首歌或一个短项目的用户。第一版购买按钮会先进入创建流程。"
+      },
+      {
+        "question": "年付方案怎么计算？",
+        "answer": "年付价格按 10 个月月费展示，相当于省 2 个月。积分额度仍按月展示。"
+      },
+      {
+        "question": "可以额外购买积分吗？",
+        "answer": "可以。如果积分用完，可以选择单次积分包，不一定要立刻升级订阅。"
+      },
+      {
+        "question": "没用完的积分会滚到下个月吗？",
+        "answer": "当前公开文案会把订阅积分写成月度积分，把单次积分写成 1 年有效。最终滚存规则以后要和结账页条款保持一致。"
+      },
+      {
+        "question": "单次积分包包含所有功能吗？",
+        "answer": "单次积分包解锁 Creator 级别导出能力。Pro 和 Ultra 的高级路线能力仍取决于套餐权限和实际上线状态。"
+      },
+      {
+        "question": "可以取消订阅吗？",
+        "answer": "可以。正式支付开启后，订阅管理会放在账号设置里。"
+      },
+      {
+        "question": "支持退款吗？",
+        "answer": "AI 生成会在处理过程中消耗成本，所以退款规则应以后续结账时展示的条款为准。"
+      },
+      {
+        "question": "有折扣码或活动吗？",
+        "answer": "可以通过官方活动提供折扣。第一版价格页先聚焦标准套餐和积分包。"
+      }
+    ]
   },
   "pricing_cta": {
-    "copy": "你的歌已经完成了。让大家看见它，感受到它。还有疑问吗？"
+    "copy": "你的歌已经准备好了。把它变成能被观看、分享和记住的歌词视频。",
+    "cta": "开始创作"
   },
   "how_it_works": {
     "title": "AI 歌词视频制作工具如何工作",

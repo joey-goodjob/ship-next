@@ -143,49 +143,316 @@
   ],
   "pricing": {
     "title": "Pricing",
-    "description": "Choose the best plan for you",
+    "eyebrow": "Free credits, creator plans, and project packs",
+    "description": "Start free, estimate the credits for your song, then choose a monthly plan or a one-time credit pack when you are ready to export.",
     "seoTitle": "Lyric Video Maker Pricing — Free Credits, Creator & Pro Plans",
     "seoDescription": "Compare LyricVideoMaker plans, free credits, monthly creator tiers, and credit packs for making AI lyric videos for YouTube, TikTok, and Reels."
+  },
+  "pricing_labels": {
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "month": "month",
+    "year": "year",
+    "save_two_months": "Save 2 months",
+    "billed_annually": "Billed {amount} annually",
+    "annual_savings": "You save {amount} per year",
+    "features": "Features",
+    "most_popular": "Most Popular",
+    "credits_unit": "credits",
+    "credit_info": "Credit Info"
   },
   "pricing_plans": {
     "free": {
       "name": "Free",
-      "note": "No credit card required",
+      "note": "Try the workflow with signup credits.",
+      "billing_note": "No credit card required",
+      "credits": "150 credits one time",
       "cta": "Get Free"
     },
     "creator": {
       "name": "Creator",
-      "note": "Billed monthly",
+      "note": "For musicians finishing regular releases.",
+      "billing_note": "Billed monthly",
+      "credits": "2,000 credits per month",
       "cta": "Get Creator"
     },
     "pro": {
       "name": "Pro",
-      "note": "Billed monthly",
+      "note": "Best for high output creators and teams.",
+      "billing_note": "Billed monthly",
+      "credits": "6,000 credits per month",
       "cta": "Get Pro"
     },
     "ultra": {
       "name": "Ultra",
-      "note": "Billed monthly",
+      "note": "For labels, editors, and launch campaigns.",
+      "billing_note": "Billed monthly",
+      "credits": "10,000 credits per month",
       "cta": "Get Ultra"
     }
   },
+  "pricing_features": [
+    {
+      "key": "resolution",
+      "label": "1080p, 24 FPS"
+    },
+    {
+      "key": "transcription",
+      "label": "AI lyric transcription"
+    },
+    {
+      "key": "trimmer",
+      "label": "Audio trimmer"
+    },
+    {
+      "key": "watermark",
+      "label": "Watermark-free exports"
+    },
+    {
+      "key": "commercial",
+      "label": "Commercial use"
+    },
+    {
+      "key": "unlimited_exports",
+      "label": "Unlimited exports"
+    },
+    {
+      "key": "premium_models",
+      "label": "Premium AI models"
+    },
+    {
+      "key": "upload_images",
+      "label": "Upload your own images"
+    },
+    {
+      "key": "ai_image_edit",
+      "label": "Edit images with AI"
+    },
+    {
+      "key": "lip_sync",
+      "label": "Lip Sync"
+    },
+    {
+      "key": "reduced_credits",
+      "label": "Reduced-credit actions"
+    },
+    {
+      "key": "premiere",
+      "label": "Adobe Premiere export"
+    },
+    {
+      "key": "resolve",
+      "label": "DaVinci Resolve export"
+    },
+    {
+      "key": "final_cut",
+      "label": "Final Cut Pro export"
+    }
+  ],
   "credits_pack": {
     "title": "Add Credits Anytime",
     "description": "Best for finishing a single project. Plans are more cost-effective for ongoing creation.",
-    "included": "Exports and commercial use included"
+    "expiry": "One-time credits are intended for project work and are valid for 1 year after purchase.",
+    "number_label": "Number of credits",
+    "included": "Watermark-free exports and commercial use included for paid credits.",
+    "creator_features": "One-time credits unlock Creator-level export features.",
+    "plan_features": "If you also have Pro or Ultra active, your one-time credits follow that plan's feature access.",
+    "purchase_title": "One-time purchase",
+    "purchase_description": "Instant access. No subscription required.",
+    "purchase_cta": "Continue with {credits} credits",
+    "applied": "Credits are applied to your account after signup and checkout are ready."
+  },
+  "pricing_credit_packs": [
+    {
+      "credits": "500",
+      "price": "$15"
+    },
+    {
+      "credits": "1,000",
+      "price": "$25"
+    },
+    {
+      "credits": "2,500",
+      "price": "$50"
+    },
+    {
+      "credits": "5,000",
+      "price": "$90"
+    },
+    {
+      "credits": "10,000",
+      "price": "$170"
+    },
+    {
+      "credits": "20,000",
+      "price": "$330"
+    },
+    {
+      "credits": "50,000",
+      "price": "$800"
+    }
+  ],
+  "pricing_studio": {
+    "eyebrow": "Studio",
+    "title": "Want us to do it for you?",
+    "description": "LyricVideoMaker Studio can help with concept, direction, editing, and delivery for artists who want a finished video instead of a tool workflow. Starting at $499.",
+    "cta": "Start a project"
+  },
+  "pricing_calculator": {
+    "title": "How many credits do I need?",
+    "length_label": "1. Set your song length",
+    "length_aria": "Set song length in minutes",
+    "length_help": "Set your song duration. We support lyric video planning up to 20 minutes.",
+    "backdrop_label": "2. Choose backdrop type",
+    "static": "Static",
+    "animated": "Animated",
+    "backdrop_help": "Static lyric videos use fewer credits. Animated visuals use more credits.",
+    "resolution_label": "3. Choose resolution",
+    "1080p": "1080p",
+    "4k": "4K",
+    "resolution_help": "1080p works well for social media. 4K is marked as a premium roadmap path.",
+    "estimate_label": "Estimated credits needed:",
+    "estimate_note": "Final cost may vary based on the models and features used."
   },
   "calculator": {
     "title": "How many credits do I need?"
   },
+  "pricing_credit_info": [
+    {
+      "title": "Upload a Song and Lyric Transcription",
+      "items": [
+        {
+          "name": "Director Model",
+          "description": "Song-to-lyrics transcription, timing, and storyboard direction from your audio.",
+          "cost": "1 credit per second of audio"
+        }
+      ]
+    },
+    {
+      "title": "Generate Image",
+      "items": [
+        {
+          "name": "Character Model",
+          "description": "Generate consistent character or scene images for your lyric video.",
+          "cost": "5 credits per image"
+        },
+        {
+          "name": "Character Plus Model",
+          "description": "Premium image generation for sharper detail and stronger prompt following.",
+          "cost": "5 credits per image",
+          "badge": "Premium"
+        },
+        {
+          "name": "Remix Model",
+          "description": "Transform an existing image by describing the change you want.",
+          "cost": "5 credits per image"
+        },
+        {
+          "name": "Remix Plus Model",
+          "description": "Higher fidelity image editing for detailed visual revisions.",
+          "cost": "5 credits per image",
+          "badge": "Premium"
+        }
+      ]
+    },
+    {
+      "title": "Convert Image to Video",
+      "items": [
+        {
+          "name": "Reel Model",
+          "description": "Good for simple scenes, camera moves, and basic lyric-video motion.",
+          "cost": "5 credits per second"
+        },
+        {
+          "name": "Studio Model",
+          "description": "Designed for more complex scenes and polished video generation.",
+          "cost": "20 credits per second",
+          "badge": "Premium"
+        },
+        {
+          "name": "Lip Sync Model",
+          "description": "Make a close-up character sing along with the lyric timing.",
+          "cost": "15 credits per second of video",
+          "badge": "Premium"
+        }
+      ]
+    },
+    {
+      "title": "Upscale to 4K",
+      "items": [
+        {
+          "name": "Image 4K Model",
+          "description": "Upscale images with AI for sharper lyric video artwork.",
+          "cost": "10 credits per image",
+          "badge": "Premium"
+        },
+        {
+          "name": "Video 4K Model",
+          "description": "Upscale exported video for large screens and high quality uploads.",
+          "cost": "10 credits per second of video",
+          "badge": "Premium"
+        }
+      ]
+    }
+  ],
   "enterprise": {
-    "pitch": "Scale your roster's reach with stunning lyric videos"
+    "pitch": "Scale your roster's reach with stunning lyric videos",
+    "name": "Enterprise",
+    "title": "Get a quote",
+    "cta": "Contact Sales",
+    "features": [
+      "Everything in Ultra",
+      "Custom credit amounts",
+      "API access planning",
+      "Access to a professional video editor workflow"
+    ],
+    "note": "First version routes sales conversations through the project creation flow."
   },
   "pricing_faq": {
     "title": "Frequently Asked Questions",
-    "description": "Feel free to contact us for any questions or doubts."
+    "description": "Clear answers about free credits, one-time packs, subscriptions, and export access.",
+    "items": [
+      {
+        "question": "Is there a free trial?",
+        "answer": "Yes. Create a free account to receive signup credits. You can use them to generate, preview, and test the lyric video workflow before choosing a paid plan."
+      },
+      {
+        "question": "Can I generate one video without a subscription?",
+        "answer": "Yes. The pricing page supports one-time credit packs for people who only need a single song or a short project. In this first version, purchase buttons route to the create flow."
+      },
+      {
+        "question": "How do annual plans work?",
+        "answer": "Annual pricing is shown as 10 months of the monthly price, so you get 2 months free. Credits are still presented as a monthly allowance."
+      },
+      {
+        "question": "Can I purchase additional credits?",
+        "answer": "Yes. If you run out of credits, you can choose a one-time credit pack instead of changing your subscription."
+      },
+      {
+        "question": "Will unused credits roll over?",
+        "answer": "The public pricing copy presents subscription credits as monthly credits and one-time credits as valid for 1 year. Final rollover rules should match the checkout terms when payments are enabled."
+      },
+      {
+        "question": "Do one-time credits include all features?",
+        "answer": "One-time credits unlock Creator-level export features. Pro and Ultra roadmap features remain tied to plan access and availability."
+      },
+      {
+        "question": "Can I cancel my subscription?",
+        "answer": "Yes. Subscription controls will live in account settings once live checkout is enabled."
+      },
+      {
+        "question": "Do you offer refunds?",
+        "answer": "AI generation costs are consumed during processing, so refund rules should follow the terms shown at checkout."
+      },
+      {
+        "question": "Do you offer discounts or promo codes?",
+        "answer": "Discounts can be offered through official campaigns. This first version keeps the pricing page focused on the standard plans and credit packs."
+      }
+    ]
   },
   "pricing_cta": {
-    "copy": "You've finished your song. Let people see it. Let people feel it. Do you have any doubts?"
+    "copy": "Your song is ready. Turn it into a lyric video people can watch, share, and remember.",
+    "cta": "Start creating"
   },
   "how_it_works": {
     "title": "How the AI Lyric Video Maker Works",

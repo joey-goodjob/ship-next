@@ -14,6 +14,8 @@ import { TrustStripSection } from "@/components/seo-sections/trust-strip-section
 import { WhyChooseSection } from "@/components/seo-sections/why-choose-section";
 import type { SeoPageContent, SeoSectionType } from "@/lib/seo-pages";
 
+const SEO_IMAGE_PUBLIC_DOMAIN = "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev";
+
 const SECTION_RENDERERS: Record<SeoSectionType, (page: SeoPageContent) => ReactNode> = {
   heroTool: (page) => <HeroToolSection hero={requireSectionData(page.hero, "heroTool", "hero")} />,
   trust: (page) => <TrustStripSection items={requireSectionData(page.trust, "trust", "trust")} />,
@@ -37,7 +39,10 @@ const SECTION_RENDERERS: Record<SeoSectionType, (page: SeoPageContent) => ReactN
     />
   ),
   whyChoose: (page) => (
-    <WhyChooseSection content={requireSectionData(page.whyChoose, "whyChoose", "whyChoose")} />
+    <WhyChooseSection
+      content={requireSectionData(page.whyChoose, "whyChoose", "whyChoose")}
+      previewImage={`${SEO_IMAGE_PUBLIC_DOMAIN}/imgs/seo/${page.slug}/why-choose-preview.webp`}
+    />
   ),
   faq: (page) => <FaqSection content={requireSectionData(page.faq, "faq", "faq")} />,
   toolkit: (page) => (

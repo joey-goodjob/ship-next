@@ -30,7 +30,7 @@
   "hero": {
     "badge": "Lyric video templates — AI-generated, matched to your song",
     "h1": "Lyric Video Templates — Visual Styles Matched to Your Song",
-    "subhead": "Upload your song or paste a link. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visual styles driven by the song's mood — not generic templates. Preview the result, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visual styles driven by the song's mood — not generic templates. Preview the result, then export — free, no subscription needed.",
     "primaryCta": "Try Templates with My Song — Free",
     "secondaryCta": "See How It Works"
   },
@@ -81,7 +81,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. The AI reads your song's mood to match the right visual style — you don't browse a generic template gallery.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. The AI reads your song's mood to match the right visual style — you don't browse a generic template gallery.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -118,6 +118,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What are lyric video templates?",
+      "intro": "Lyric video templates are reusable visual directions for turning song audio into a styled lyric video. In LyricVideoMaker, the template is not just a static layout: AI still transcribes lyrics, syncs timing, generates or selects scene art, and adapts the design to widescreen, vertical, or square export.",
+      "bullets": [
+        "Input is the song audio; the template shapes the look after lyrics and timing are understood.",
+        "Templates can guide fonts, motion, color, scene mood, and platform framing.",
+        "Output is a finished MP4, not a design file you still need to animate by hand.",
+        "The difference from a generic template pack is that the song controls pacing and line breaks."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "lyric video templates specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "Template families by song mood",
+      "intro": "A good template choice starts with the song, not the preview thumbnail. Match energy, lyric density, and platform before picking visual decoration.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Clean / minimal",
+            "Best for acoustic, indie, worship, and lyric-heavy songs where words need space."
+          ],
+          [
+            "Neon / pulse",
+            "Best for pop, EDM, phonk, and hooks that need energetic motion."
+          ],
+          [
+            "Night / urban",
+            "Best for hip-hop, trap, dark pop, and high-contrast vertical clips."
+          ],
+          [
+            "Paper / handwritten",
+            "Best for ballads, demos, singer-songwriter tracks, and intimate releases."
+          ],
+          [
+            "Cinematic / atmospheric",
+            "Best for emotional singles, long intros, and songs with visual storytelling."
+          ],
+          [
+            "Retro / tape",
+            "Best for synthwave, nostalgic pop, or campaigns with a deliberate vintage identity."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices for choosing lyric video templates",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Pick for the song mood first and the trend second; mismatched templates age quickly.",
+        "Check whether the template still reads in 9:16 before committing to it.",
+        "Use minimal templates for dense verses and more animated templates for spacious hooks.",
+        "Avoid changing fonts between every section; consistency builds recognition.",
+        "Keep a small set of repeatable templates for one artist project.",
+        "Preview with your real lyrics, not sample text, because line length changes everything.",
+        "Use template style as a starting point, then let AI scene generation add song-specific detail."
+      ]
+    },
+    {
+      "heading": "Why templates should adapt to the song",
+      "intro": "Lyric video templates help you pick a visual style that adapts to the song. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "A template should bend to the song",
+          "description": "Font scale, background mood, and motion level should follow the track's genre and energy — a good template adapts to the song instead of forcing every track into the same look."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "lyric video templates checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "Lyric Video Templates FAQ",
     "items": [
@@ -144,6 +310,10 @@
       {
         "question": "What formats can I export in?",
         "answer": "Each template exports in 16:9 for YouTube, 9:16 for TikTok and Reels, or 1:1 for feed posts — all from one upload."
+      },
+      {
+        "question": "Can I use my own lyric video background image?",
+        "answer": "Each template generates AI scene visuals matched to your song's mood, so you don't need to supply a lyric video background image yourself — but you can set the style direction and regenerate scenes until the look fits."
       }
     ]
   },
@@ -173,12 +343,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-templates/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Your song sets the mood. AI matches the visuals.",
-    "description": "Upload your track, let AI handle the lyrics and visual style, and export a finished lyric video — free, no subscription needed.",
-    "button": "Try Templates with My Song",
-    "upsell": "Free export · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -204,55 +368,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "How AI matches a style to your song",
-      "body": [
-        "Instead of dropping you into a gallery of generic backgrounds, the templates start from your track. The AI reads the song's mood, energy, and genre, then generates a visual style that fits — so a ballad and a rap hook get genuinely different looks without you comparing dozens of presets.",
-        "You upload the audio, the AI transcribes and times the lyrics, and the matched style is applied to your real words. You preview the result and adjust, rather than guessing which fixed template might suit your music."
-      ]
-    },
-    {
-      "heading": "Lyric video styles by genre",
-      "body": [
-        "Acoustic and singer-songwriter tracks tend to suit clean type, generous spacing, and gentle motion. Pop and dance benefit from bolder type and beat-reactive movement. Hip-hop and trap read well with tighter, high-contrast layouts, while cinematic and ambient songs fit slower, mood-led visuals.",
-        "Because the direction is generated from your song rather than chosen at random, every template feels like it belongs to the track — and you can still steer it if you want a different vibe."
-      ]
-    },
-    {
-      "heading": "Vertical, square, and widescreen layouts",
-      "body": [
-        "The same song can drive layouts built for each destination: a wide 16:9 presentation with room for full-song pacing on YouTube, a vertical 9:16 composition with large, phone-safe lyrics for TikTok, Reels, and Shorts, and a balanced 1:1 cut for feed posts.",
-        "Each layout keeps the lyrics readable in its own frame, so you are not cropping a widescreen design into a vertical space and hoping the words still fit."
-      ]
-    },
-    {
-      "heading": "Fonts, colors, and backgrounds you control",
-      "body": [
-        "Matched does not mean locked. Every template lets you adjust fonts, color palettes, and backgrounds so the lyric video fits your release art and brand — no design tools required. Change a palette to match a single cover, or pick a font that suits the genre.",
-        "The AI gives you a strong starting point shaped by the song; the controls let you make it unmistakably yours before exporting."
-      ]
-    },
-    {
-      "heading": "Why mood-matched beats a fixed gallery",
-      "body": [
-        "A fixed template gallery makes you do the matching: scroll, guess, apply, and hope a look meant for someone else's song suits yours. Mood-matched styling flips that — the track's energy and genre shape the layout direction before you spend time comparing options.",
-        "The result is less busywork and a more cohesive video, because the style was generated for your song instead of borrowed from a generic preset."
-      ]
-    },
-    {
-      "heading": "Consistent styling across a release",
-      "body": [
-        "Use the same visual direction across a full lyric video, a hook clip, and a feed post so a release reads as one campaign rather than a pile of mismatched videos. The matched style carries across formats from a single upload.",
-        "That consistency is what makes an artist's lyric videos feel like part of the same world — recognizable type, color, and motion from track to track."
-      ]
-    },
-    {
-      "heading": "Try a template with your own song",
-      "body": [
-        "The fastest way to judge a style is to see it on your actual track, not a demo. Upload your song, let the AI transcribe and time the lyrics, and preview the matched template with your real words and timing — then adjust fonts, colors, or the look until it fits the release.",
-        "Because you are previewing the finished result rather than browsing thumbnails, you can tell in seconds whether a style suits the song instead of committing to a template and hoping it works."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Your song sets the mood. AI matches the visuals.",
+    "description": "Upload your track, let AI handle the lyrics and visual style, and export a finished lyric video — free, no subscription needed.",
+    "button": "Try Templates with My Song",
+    "upsell": "Free export · No subscription · No credit card"
+  }
 }

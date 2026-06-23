@@ -17,6 +17,7 @@ import {
   type LyricVideoImageProviderSelection,
 } from './image-provider';
 import { ensureProductionDirectionDetail } from './direction-detail';
+import { LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS } from './costs';
 import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
@@ -1117,7 +1118,7 @@ export async function queueSceneImages(params: {
       provider: providerSelection.providerName,
       model: actualModel,
       prompt,
-      costCredits: 5,
+      costCredits: LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS,
       options: {
         projectId: params.projectId,
         sceneId: scene.id,
@@ -1384,7 +1385,7 @@ export async function queueSceneImagesGrid(params: {
         provider: descriptor.providerName,
         model: descriptor.model,
         prompt: gridPrompt.compiledPrompt,
-        costCredits: descriptor.scenes.length * 5,
+        costCredits: descriptor.scenes.length * LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS,
         options: {
           projectId: params.projectId,
           provider: descriptor.providerName,

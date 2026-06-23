@@ -39,9 +39,9 @@ export function HowItWorksSection({
                 </span>
               </div>
               <div className="px-1 pb-2">
-                <p className="text-base font-semibold leading-6 text-brand-ink lg:text-xl lg:leading-7">
+                <h3 className="text-base font-semibold leading-6 text-brand-ink lg:text-xl lg:leading-7">
                   Step {index + 1}: {step.title}
-                </p>
+                </h3>
                 <p className="mt-3 text-sm font-normal leading-5 text-brand-muted lg:text-base lg:leading-6">
                   {step.description}
                 </p>

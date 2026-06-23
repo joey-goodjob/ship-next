@@ -112,7 +112,7 @@
     "items": [
       {
         "question": "Is this AI lyric video generator free?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required and no credit card needed. This is a free lyric video generator AI tool you can use end to end."
+        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required and no credit card needed. This is a free AI lyric video generator you can use end to end, and one of the best AI lyric video generator options if you want to create lyric video projects from audio without manual timing."
       },
       {
         "question": "What's the difference between this and a subtitle generator?",
@@ -206,7 +206,9 @@
         "What it does: transcribes the lyrics, aligns each line to the beat, and generates mood-driven visuals.",
         "Output: a finished MP4 lyric video in 16:9, 9:16, or 1:1.",
         "Not a subtitle generator: a subtitle tool only pins plain text to the bottom of an existing clip."
-      ]
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
     },
     {
       "heading": "What the generator does automatically vs what you control",
@@ -305,7 +307,8 @@
             "Free credits, no signup to start, no credit card"
           ]
         ]
-      }
+      },
+      "variant": "stats"
     },
     {
       "heading": "Tips for a lyric video people actually watch",

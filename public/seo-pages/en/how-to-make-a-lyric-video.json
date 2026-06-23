@@ -242,6 +242,10 @@
       {
         "question": "Can I use exported lyric videos commercially?",
         "answer": "Yes. Your exports are yours to use for releases, social posts, channels, and campaigns. Make sure you have the rights to the music and lyrics you upload."
+      },
+      {
+        "question": "How to make a lyric video for a song you did not write?",
+        "answer": "The workflow is the same for any track: upload the song, let AI transcribe and beat-sync the lyrics, choose a visual style, preview, and export. You only need the audio file, not the songwriting credits."
       }
     ]
   },

@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file — or paste a link. No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -119,6 +119,172 @@
       }
     ]
   },
+  "contentSections": [
+    {
+      "heading": "What is a VEED alternative for lyric videos?",
+      "intro": "A VEED alternative for lyric videos is a song-first generator for creators who do not want to build a lyric video inside a broad online editor. Upload the audio, let AI transcribe and sync lyrics, review the text, generate mood-matched scenes, and export MP4 versions for the platforms that matter.",
+      "bullets": [
+        "Input is a supported audio file up to 100MB.",
+        "It focuses on sung lyrics and beat timing rather than general caption editing.",
+        "Output includes widescreen, vertical, and square lyric-video formats.",
+        "VEED remains useful for general social editing; this workflow is narrower and faster for songs."
+      ],
+      "variant": "callout",
+      "icon": "sparkles"
+    },
+    {
+      "heading": "VEED alternative for lyric videos specs at a glance",
+      "table": {
+        "columns": [
+          "Spec",
+          "Value"
+        ],
+        "rows": [
+          [
+            "Accepted input",
+            "Audio upload only: MP3, WAV, FLAC, AAC, OGG, or M4A, up to 100MB per file."
+          ],
+          [
+            "Lyrics",
+            "AI transcribes vocals automatically in 50+ languages, then lets you edit every line before export."
+          ],
+          [
+            "Sync",
+            "Beat-aware line timing keeps lyrics readable and musical instead of simply dropping captions on a fixed grid."
+          ],
+          [
+            "Visuals",
+            "Storyboard planning and AI scene-image generation create backgrounds around the mood of the song."
+          ],
+          [
+            "Exports",
+            "MP4 with original audio in 16:9, 9:16, or 1:1 for YouTube, Shorts, TikTok, Reels, and feeds."
+          ],
+          [
+            "Start",
+            "Free credits are available at the start, so you can preview the workflow before spending more time on a release."
+          ]
+        ]
+      },
+      "variant": "stats"
+    },
+    {
+      "heading": "VEED caption workflow vs lyric-video workflow",
+      "intro": "VEED is strong for online editing and captions. Lyric videos need music-specific timing, repeated-hook handling, and visuals that support sung words.",
+      "table": {
+        "columns": [
+          "Decision point",
+          "Practical guidance"
+        ],
+        "rows": [
+          [
+            "Primary job",
+            "VEED handles many video tasks; LyricVideoMaker focuses on songs."
+          ],
+          [
+            "Caption logic",
+            "Speech captions follow spoken timing; lyric timing follows melody, phrasing, and beat."
+          ],
+          [
+            "Repeated hooks",
+            "Lyric workflows must keep repeated sections consistent across the song."
+          ],
+          [
+            "Visual layer",
+            "Generated scenes can respond to mood instead of relying only on stock assets."
+          ],
+          [
+            "Best VEED use",
+            "Talking-head clips, subtitles, screen recordings, and general social edits."
+          ],
+          [
+            "Best LyricVideoMaker use",
+            "Music releases where synced lyrics are the core visual."
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "Best practices when choosing a VEED alternative",
+      "intro": "Use these checks before you render, especially when the same project needs more than one platform format.",
+      "bullets": [
+        "Choose by project type: spoken video belongs in an editor, songs benefit from lyric automation.",
+        "Test transcription on the chorus and any fast verse before judging the whole tool.",
+        "Check line breaks, because lyric readability depends on phrasing more than sentence grammar.",
+        "Use the same style across vertical and widescreen exports to keep campaign assets connected.",
+        "Keep dense verses visually calm and let hooks carry more motion.",
+        "Use VEED after export only if you need broader social-editing additions.",
+        "Compare total manual work, not the size of the editing toolbar."
+      ]
+    },
+    {
+      "heading": "Why caption tools are not the same as lyric tools",
+      "intro": "A VEED alternative for lyric videos uses an audio-first lyric generator instead of a broad caption editor. The choices that matter happen before you render — here are the principles worth keeping.",
+      "variant": "cards",
+      "cards": [
+        {
+          "title": "Captions follow speech, lyrics follow the beat",
+          "description": "Caption tools time text to spoken words. Lyric videos need timing that respects the music's beat and gives singers the line before they need it — a different problem entirely."
+        },
+        {
+          "title": "Lyrics are structure, not decoration",
+          "description": "The words are the structure the viewer follows, not a caption added last. Always transcribe first, align to the beat second, and design the scene third."
+        },
+        {
+          "title": "AI does the heavy lifting, you keep the taste",
+          "description": "AI handles transcription, timing, and scene generation. Whether the style fits, a line break should change, or you need a vertical, square, or widescreen export stays your call."
+        },
+        {
+          "title": "The scene serves the lyric",
+          "description": "Viewers should never choose between reading the line and watching the scene. Keep contrast strong, lines short, and motion restrained so the visuals support the words."
+        },
+        {
+          "title": "Review in three passes",
+          "description": "Watch once for words to catch transcription errors, once for rhythm to catch lines that arrive early or late, and once for platform fit so it still reads in a phone feed."
+        },
+        {
+          "title": "One source, every format",
+          "description": "A single project becomes a 16:9 full version, a 9:16 vertical, and a 1:1 square without retyping lyrics or rebuilding timing — which is what makes a release feel planned."
+        },
+        {
+          "title": "Build it while the song is fresh",
+          "description": "Make the lyric video while the song is still in your ear: you will hear awkward line breaks faster, catch misheard words sooner, and judge where the energy should rise or stay quiet."
+        }
+      ]
+    },
+    {
+      "heading": "VEED alternative for lyric videos checklist before export",
+      "intro": "A quick pre-export review catches most quality problems while they are still cheap to fix.",
+      "table": {
+        "columns": [
+          "Check",
+          "What to verify"
+        ],
+        "rows": [
+          [
+            "Audio readiness",
+            "Accepted formats are MP3, WAV, FLAC, AAC, OGG, and M4A; keep the file under 100MB."
+          ],
+          [
+            "Language review",
+            "The system auto-detects 50+ languages, but bilingual hooks and names deserve a manual pass."
+          ],
+          [
+            "Timing review",
+            "Beat sync gives a strong baseline; nudge any line that lands early or late against the vocal."
+          ],
+          [
+            "Scene review",
+            "Generated images should match the mood without making text hard to read."
+          ],
+          [
+            "Export review",
+            "Check 16:9, 9:16, and 1:1 separately because readable text size changes by format."
+          ]
+        ]
+      }
+    }
+  ],
   "faq": {
     "title": "VEED Alternative FAQ",
     "items": [
@@ -174,12 +340,6 @@
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/veed-alternative/use-case-4.png"
     }
   ],
-  "bottomCta": {
-    "title": "Skip the timeline. Start from the song.",
-    "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
-    "button": "Try LyricVideoMaker Free",
-    "upsell": "Free · No subscription · No credit card"
-  },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
     "items": [
@@ -205,55 +365,10 @@
       }
     ]
   },
-  "contentSections": [
-    {
-      "heading": "VEED is a timeline editor; LyricVideoMaker starts from the song",
-      "body": [
-        "VEED is a capable online editor built around a timeline — great for subtitles, talking-head videos, and general social content. LyricVideoMaker is built around a song: you upload audio and the project starts from the track itself, with lyrics, timing, and visuals generated for you.",
-        "The difference is the shape of the workflow. VEED gives you editing tools; LyricVideoMaker turns the song into the project, so there is no blank timeline to assemble for a lyric video."
-      ]
-    },
-    {
-      "heading": "When VEED is the better choice",
-      "body": [
-        "VEED shines for talking-head edits, subtitling spoken-word videos, podcast and interview clips, and mixed general social content. If your work is mostly people speaking to camera or varied footage that needs flexible editing, that is VEED's home turf.",
-        "It is a strong general tool, and this comparison is about fit, not quality — for those jobs, VEED is the sensible pick."
-      ]
-    },
-    {
-      "heading": "When LyricVideoMaker wins",
-      "body": [
-        "For a song-first lyric video, building it on a timeline means preparing lyrics, placing text, syncing timestamps, and rendering each format yourself. LyricVideoMaker removes all of that: upload the track, get auto-transcribed, beat-synced lyrics with generated visuals, then preview and export.",
-        "When the deliverable is a lyric video rather than a general edit, the song-first path is simply faster."
-      ]
-    },
-    {
-      "heading": "Switching from VEED",
-      "body": [
-        "Nothing to move. Upload the same song you would have brought into VEED and you will have a finished lyric video to compare within a couple of minutes — no timeline setup, no manual text layers, no re-learning a tool.",
-        "Use VEED where its editing depth helps, and start from the song here when the project is a lyric video."
-      ]
-    },
-    {
-      "heading": "Song-first vs timeline-first, in practice",
-      "body": [
-        "Timeline-first means you decide everything: where each line goes, how it is timed, how transitions feel, which export to produce. Song-first means the audio drives those decisions, and you review them. For a lyric video, most of those decisions are repetitive, which is why automating them saves the most time.",
-        "You still control wording, style, and placement — you just are not assembling the song section by section from scratch."
-      ]
-    },
-    {
-      "heading": "Subtitles and lyric videos are different jobs",
-      "body": [
-        "A subtitle workflow pins timed text to the bottom of an existing clip, which is exactly what VEED is good at. A lyric video makes the words the centerpiece — animated, styled, and synced as the main visual. They serve different goals, so the right tool depends on which you actually need.",
-        "If you want readable, music-led lyrics as the focus of the video, that is what LyricVideoMaker is built to produce."
-      ]
-    },
-    {
-      "heading": "If you only need one tool",
-      "body": [
-        "Not everyone wants two subscriptions. If most of your work is general editing with the occasional lyric video, VEED can cover both, with the lyric video taking more manual effort. If most of your work is lyric videos with the occasional edit, the reverse is true and a specialist serves you better day to day.",
-        "Map it to your actual output: pick the tool that fits the work you do most often, and treat the other type of project as the exception."
-      ]
-    }
-  ]
+  "bottomCta": {
+    "title": "Skip the timeline. Start from the song.",
+    "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
+    "button": "Try LyricVideoMaker Free",
+    "upsell": "Free · No subscription · No credit card"
+  }
 }

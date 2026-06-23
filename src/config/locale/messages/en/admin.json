@@ -14,10 +14,12 @@
     "categories": "Categories",
     "posts": "Posts",
     "billing": "Payments & Credits",
+    "business": "Business",
     "payments": "Payments",
     "subscriptions": "Subscriptions",
     "credits": "Credits",
-    "invite_codes": "Invite Codes"
+    "invite_codes": "Invite Codes",
+    "creations": "Creations"
   },
   "stats": {
     "total_users": "Total Users",
@@ -247,6 +249,47 @@
     "tab_all": "All",
     "tab_grant": "Grant",
     "tab_consume": "Consume"
+  },
+  "creations": {
+    "title": "Creations",
+    "description": "Inspect lyric-video projects, user media, generation status, exports, and failures.",
+    "refresh": "Refresh",
+    "search_placeholder": "Search title, file, user, or email",
+    "total": "{count} creations",
+    "loading": "Loading creations...",
+    "empty": "No lyric-video creations yet",
+    "previous": "Previous",
+    "next": "Next",
+    "unknown_user": "Unknown user",
+    "untitled_audio": "Untitled audio",
+    "direct_source": "Direct",
+    "source_audio": "Original audio",
+    "processed_audio": "Processed audio",
+    "rendered_video": "Rendered video",
+    "empty_media": "No playable media recorded for this creation.",
+    "empty_steps": "No generation steps recorded.",
+    "empty_scenes": "No scenes recorded.",
+    "id": "ID",
+    "aspect": "Format",
+    "language": "Language",
+    "style": "Style",
+    "open_preview": "Open preview",
+    "badges": {
+      "render": "render: {status}"
+    },
+    "sections": {
+      "media": "Media",
+      "progress": "Progress",
+      "steps": "Generation steps",
+      "workflow": "Workflow",
+      "scenes": "Scenes"
+    },
+    "metrics": {
+      "scenes": "Images",
+      "exports": "Exports",
+      "failed_images": "Failed images",
+      "elapsed": "Elapsed"
+    }
   },
   "invite_codes": {
     "title": "Invite Codes",
