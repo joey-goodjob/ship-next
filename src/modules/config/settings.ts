@@ -37,6 +37,7 @@ export function getSettingTabs(): SettingTab[] {
     { name: 'email', title: 'Email' },
     { name: 'storage', title: 'Storage' },
     { name: 'ai', title: 'AI' },
+    { name: 'analytics', title: 'Analytics' },
   ];
 }
 
@@ -74,6 +75,9 @@ export function getSettingGroups(): SettingGroup[] {
     { name: 'groq', title: 'Groq / Whisper', description: 'Groq speech-to-text transcription API', tab: 'ai' },
     { name: 'gemini', title: 'Gemini', description: 'Google Gemini API', tab: 'ai' },
     { name: 'fal', title: 'Fal', description: 'Fal AI API', tab: 'ai' },
+
+    // Analytics
+    { name: 'plausible', title: 'Plausible', description: 'Plausible analytics settings', tab: 'analytics' },
   ];
 }
 
@@ -230,5 +234,9 @@ export function getSettings(): Setting[] {
 
     // ─── AI / Fal ────────────────────────────────────────────────────
     { name: 'fal_api_key', title: 'API Key', type: 'password', placeholder: 'xxx', group: 'fal', tab: 'ai' },
+
+    // ─── Analytics / Plausible ───────────────────────────────────────
+    { name: 'plausible_domain', title: 'Plausible Domain', type: 'text', placeholder: 'lyricvideomaker.app', group: 'plausible', tab: 'analytics' },
+    { name: 'plausible_src', title: 'Plausible Script Src', type: 'text', placeholder: 'https://plausible.example.com/js/script.js', group: 'plausible', tab: 'analytics' },
   ];
 }

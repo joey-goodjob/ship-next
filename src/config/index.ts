@@ -97,6 +97,10 @@ export const envConfigs: Record<string, string> = {
   elevenlabs_stt_model: process.env.ELEVENLABS_STT_MODEL ?? 'scribe_v2',
   ffmpeg_path: process.env.FFMPEG_PATH ?? '/Users/joey/project/7_ffmpeg/bin/ffmpeg',
 
+  // Analytics
+  plausible_domain: process.env.PLAUSIBLE_DOMAIN ?? '',
+  plausible_src: process.env.PLAUSIBLE_SCRIPT_SRC ?? '',
+
   // Locale
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
 };

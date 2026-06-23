@@ -347,7 +347,8 @@
       "payment": "支付",
       "email": "邮件",
       "storage": "存储",
-      "ai": "AI"
+      "ai": "AI",
+      "analytics": "Analytics"
     },
     "groups": {
       "appinfo": { "title": "应用信息", "description": "基本应用设置" },
@@ -370,7 +371,8 @@
       "kie": { "title": "Kie / Kling", "description": "Kie AI 图片、视频和 Gemini Chat API" },
       "wavespeed": { "title": "WaveSpeed", "description": "WaveSpeed GPT Image 2 API" },
       "gemini": { "title": "Gemini", "description": "Google Gemini API" },
-      "fal": { "title": "Fal", "description": "Fal AI API" }
+      "fal": { "title": "Fal", "description": "Fal AI API" },
+      "plausible": { "title": "Plausible", "description": "Plausible 统计设置" }
     },
     "fields": {
       "app_name": "应用名称",
@@ -451,7 +453,9 @@
       "wavespeed_image_quality": "图片质量",
       "lyric_video_image_provider": "歌词视频图片供应商",
       "gemini_api_key": "API 密钥",
-      "fal_api_key": "API 密钥"
+      "fal_api_key": "API 密钥",
+      "plausible_domain": "Plausible 域名",
+      "plausible_src": "Plausible 脚本地址"
     },
     "placeholders": {
       "creem_test_amount": "留空使用实际金额，填 1 则支付 $0.01",

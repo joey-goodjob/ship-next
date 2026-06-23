@@ -347,7 +347,8 @@
       "payment": "Payment",
       "email": "Email",
       "storage": "Storage",
-      "ai": "AI"
+      "ai": "AI",
+      "analytics": "Analytics"
     },
     "groups": {
       "appinfo": { "title": "App Info", "description": "Basic application settings" },
@@ -370,7 +371,8 @@
       "kie": { "title": "Kie / Kling", "description": "Kie AI image, video, and Gemini chat API" },
       "wavespeed": { "title": "WaveSpeed", "description": "WaveSpeed GPT Image 2 API" },
       "gemini": { "title": "Gemini", "description": "Google Gemini API" },
-      "fal": { "title": "Fal", "description": "Fal AI API" }
+      "fal": { "title": "Fal", "description": "Fal AI API" },
+      "plausible": { "title": "Plausible", "description": "Plausible analytics settings" }
     },
     "fields": {
       "app_name": "App Name",
@@ -451,7 +453,9 @@
       "wavespeed_image_quality": "Image Quality",
       "lyric_video_image_provider": "Lyric Video Image Provider",
       "gemini_api_key": "API Key",
-      "fal_api_key": "API Key"
+      "fal_api_key": "API Key",
+      "plausible_domain": "Plausible Domain",
+      "plausible_src": "Plausible Script Src"
     },
     "placeholders": {
       "creem_test_amount": "Leave empty to use real amount, 1 = $0.01",
