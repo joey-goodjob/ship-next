@@ -92,5 +92,12 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "theme_system": "System"
+  },
+  "planCard": {
+    "title": "Current Plan",
+    "free": "Free",
+    "creditsRemaining": "Credits Remaining",
+    "outputKept": "Output kept for {days} days",
+    "buyCredits": "Buy Credits"
   }
 }

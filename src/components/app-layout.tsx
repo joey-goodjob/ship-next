@@ -5,6 +5,7 @@ import { useSession } from "@/core/auth/client";
 import { Link, usePathname, useRouter } from "@/core/i18n/navigation";
 import { AppSidebar, type NavItem } from "@/components/app-sidebar";
 import { UserMenu } from "@/components/user-menu";
+import { PlanCard } from "@/components/plan-card";
 import {
   SidebarInset,
   SidebarProvider,
@@ -126,12 +127,15 @@ export function AppLayout({
         navItems={navItems}
         footerNavItems={footerNavItems}
         footer={
-          <UserMenu
-            name={session.user.name || "User"}
-            email={session.user.email}
-            image={session.user.image}
-            profileHref={profileHref}
-          />
+          <>
+            <PlanCard />
+            <UserMenu
+              name={session.user.name || "User"}
+              email={session.user.email}
+              image={session.user.image}
+              profileHref={profileHref}
+            />
+          </>
         }
       />
       <SidebarInset className="min-h-[calc(100svh-4rem)]">

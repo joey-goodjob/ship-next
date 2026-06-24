@@ -92,5 +92,12 @@
     "theme_light": "浅色模式",
     "theme_dark": "深色模式",
     "theme_system": "跟随系统"
+  },
+  "planCard": {
+    "title": "当前套餐",
+    "free": "免费版",
+    "creditsRemaining": "剩余额度",
+    "outputKept": "输出保留 {days} 天",
+    "buyCredits": "购买额度"
   }
 }
