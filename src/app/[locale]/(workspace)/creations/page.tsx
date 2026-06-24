@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock, Film, Music2, Plus, Search, Sparkles } from "lucide-react";
+import { CalendarClock, Film, Loader2, Music2, Plus, Search, Sparkles, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +101,8 @@ export default function LyricVideosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const [deletingProject, setDeletingProject] = useState<LyricVideoProject | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   const loadProjects = useCallback(
     async ({ silent }: { silent?: boolean } = {}) => {
@@ -137,6 +148,21 @@ export default function LyricVideosPage() {
         .some((value) => String(value).toLowerCase().includes(needle));
     });
   }, [projects, query]);
+
+  async function deleteProject() {
+    if (!deletingProject) return;
+    setDeletingProjectId(deletingProject.id);
+    try {
+      await readApi<void>(`/api/lyric-videos/${deletingProject.id}`, { method: "DELETE" });
+      setProjects((current) => current.filter((project) => project.id !== deletingProject.id));
+      toast.success(t("delete_success"));
+      setDeletingProject(null);
+    } catch (err: any) {
+      toast.error(err?.message || t("delete_failed"));
+    } finally {
+      setDeletingProjectId(null);
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-10 pt-2 sm:px-6 lg:px-8">
@@ -199,12 +225,16 @@ export default function LyricVideosPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredProjects.map((project) => (
-            <Link
+            <div
               key={project.id}
-              href={`/creations/${project.id}/preview`}
-              className="group flex min-h-52 flex-col justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
+              className="group relative flex min-h-52 flex-col justify-between rounded-lg border border-border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
             >
-              <div>
+              <Link
+                href={`/creations/${project.id}/preview`}
+                aria-label={t("open_project", { title: project.title })}
+                className="absolute inset-0 z-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-background"
+              />
+              <div className="pointer-events-none relative z-10">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-700">
@@ -217,9 +247,19 @@ export default function LyricVideosPage() {
                       </p>
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-[#F5A623]">
-                    {project.aspectRatio}
-                  </span>
+                  <div className="relative z-10 flex shrink-0 items-center gap-2">
+                    <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-[#F5A623]">
+                      {project.aspectRatio}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setDeletingProject(project)}
+                      aria-label={t("delete_project", { title: project.title })}
+                      className="pointer-events-auto inline-flex size-8 items-center justify-center rounded-md border border-transparent text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -229,17 +269,52 @@ export default function LyricVideosPage() {
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+              <div className="pointer-events-none relative z-10 mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-3.5" />
                   {formatDate(project.updatedAt || project.createdAt)}
                 </span>
                 <span className="font-mono">{formatDuration(project.audioDurationMs)}</span>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
+
+      <Dialog
+        open={Boolean(deletingProject)}
+        onOpenChange={(open) => {
+          if (!open && !deletingProjectId) setDeletingProject(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("delete_title")}</DialogTitle>
+            <DialogDescription>
+              {t("delete_description", { title: deletingProject?.title || t("draft_audio") })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={() => setDeletingProject(null)}
+              disabled={Boolean(deletingProjectId)}
+              className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-semibold text-foreground transition hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+            >
+              {t("delete_cancel")}
+            </button>
+            <button
+              type="button"
+              onClick={deleteProject}
+              disabled={Boolean(deletingProjectId)}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 disabled:pointer-events-none disabled:opacity-50"
+            >
+              {deletingProjectId ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+              {deletingProjectId ? t("deleting") : t("delete_confirm")}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
