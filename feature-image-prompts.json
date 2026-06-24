@@ -1,0 +1,21 @@
+{
+  "style": "cinematic lifestyle photography, soft natural window light, warm earthy muted tones, shallow depth of field, calm atmospheric mood, minimal clean composition with negative space, film-like color grading, high detail, 3:2 landscape. No text, no captions, no logos, no neon colors, no oversaturation.",
+  "negative_prompt": "text, words, watermark, logo, neon, glowing UI, oversaturated, cartoon, 3d render, distorted hands, cluttered",
+  "images": [
+    {
+      "id": "lyrics",
+      "card": "AI Lyric Sync",
+      "prompt": "A songwriter's hands writing lyrics in an open notebook on a wooden table, an acoustic guitar resting softly out of focus in the background, a cup of coffee and warm morning light streaming through a window, quiet and intimate creative mood. Cinematic lifestyle photography, soft natural window light, warm earthy muted tones, shallow depth of field, calm atmospheric mood, minimal clean composition with negative space, film-like color grading, high detail, 3:2 landscape. No text, no captions, no logos, no neon colors, no oversaturation."
+    },
+    {
+      "id": "video",
+      "card": "The AI Lyric Video Maker",
+      "prompt": "A music creator in a cozy home studio at dusk, soft glow from a laptop screen lighting their face, warm cinematic ambience, blurred colorful light bokeh in the background suggesting visual storytelling, moody and inspiring atmosphere. Cinematic lifestyle photography, soft natural window light, warm earthy muted tones, shallow depth of field, calm atmospheric mood, minimal clean composition with negative space, film-like color grading, high detail, 3:2 landscape. No text, no captions, no logos, no neon colors, no oversaturation."
+    },
+    {
+      "id": "export",
+      "card": "Download & Share",
+      "prompt": "A close-up of a vinyl record spinning on a turntable in warm golden afternoon light, soft dust particles floating in the air, a relaxed celebratory feeling of a finished song, minimalist and atmospheric. Cinematic lifestyle photography, soft natural window light, warm earthy muted tones, shallow depth of field, calm atmospheric mood, minimal clean composition with negative space, film-like color grading, high detail, 3:2 landscape. No text, no captions, no logos, no neon colors, no oversaturation."
+    }
+  ]
+}
