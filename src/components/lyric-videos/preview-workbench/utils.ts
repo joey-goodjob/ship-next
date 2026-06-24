@@ -39,6 +39,30 @@ export function normalizePreviewConfig(config?: LyricVideoProject["previewConfig
   };
 }
 
+export function resolvePreviewCaptionText(params: {
+  activeChunkText?: string | null;
+  currentLine?: Pick<LyricLine, "text" | "startMs" | "endMs">;
+  currentTimeMs: number;
+  hasLyrics: boolean;
+  fallbackTitle?: string | null;
+}) {
+  const activeChunkText = params.activeChunkText?.trim();
+  if (activeChunkText) return activeChunkText;
+
+  const lineText = params.currentLine?.text?.trim();
+  if (
+    lineText &&
+    params.currentLine &&
+    params.currentTimeMs >= params.currentLine.startMs &&
+    params.currentTimeMs < params.currentLine.endMs
+  ) {
+    return lineText;
+  }
+
+  if (params.hasLyrics) return "";
+  return params.fallbackTitle?.trim() || "Lyric preview";
+}
+
 export function msToSeconds(ms?: number | null) {
   return Math.max(0, (ms || 0) / 1000);
 }

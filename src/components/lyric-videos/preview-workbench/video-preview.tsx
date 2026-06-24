@@ -8,7 +8,7 @@ import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
 import { LatestExport } from "./latest-export";
 import { usePlayback } from "./playback-context";
-import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, secondsToMs } from "./utils";
+import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, resolvePreviewCaptionText, secondsToMs } from "./utils";
 
 export function VideoPreview() {
   const {
@@ -40,9 +40,14 @@ export function VideoPreview() {
       rangeStartMs: currentScene?.startMs,
       rangeEndMs: currentScene?.endMs,
     });
-    if (activeChunk?.text) return activeChunk.text;
-    return currentLine?.text || project?.title || "Lyric preview";
-  }, [currentLine?.text, currentScene?.endMs, currentScene?.startMs, currentTime, project?.title, words]);
+    return resolvePreviewCaptionText({
+      activeChunkText: activeChunk?.text,
+      currentLine,
+      currentTimeMs: currentMs,
+      hasLyrics,
+      fallbackTitle: project?.title,
+    });
+  }, [currentLine, currentScene?.endMs, currentScene?.startMs, currentTime, hasLyrics, project?.title, words]);
 
   return (
     <section
@@ -75,7 +80,7 @@ export function VideoPreview() {
         ) : hasImage ? (
           <>
             <img src={currentScene?.imageUrl || ""} alt="" className="absolute inset-0 h-full w-full object-cover" />
-            {previewConfig.captionsEnabled ? (
+            {previewConfig.captionsEnabled && captionText ? (
               <div className="absolute inset-x-[32px] bottom-[8%] flex justify-center">
                 <p
                   className="max-w-[78%] rounded-[5px] bg-black/35 px-[12px] py-[7px] text-center font-[800] leading-[1.18] text-white"
