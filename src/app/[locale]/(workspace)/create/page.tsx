@@ -138,8 +138,6 @@ export default function DashboardCreatePage() {
             />
           }
           onGenerate={handleGenerate}
-          creditCost={10}
-          generateLabel={homeUploadedAudio ? t("start_creating") : t("start")}
           workingLabel={stage === "uploading" ? t("uploading") : t("working")}
           successLabel={t("direction_ready")}
         />

@@ -3,10 +3,12 @@ import { db } from '@/core/db';
 import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
+import { AITaskStatus, createTask, updateTask } from '@/modules/ai-tasks/service';
 import { getAllConfigs } from '@/modules/config/service';
 import { prepareAudioClipForTranscription } from './audio';
 import { analyzeAudioWithMediaWorker } from './audio-analysis-jobs';
 import { asrSnapshot, asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines, refineAsrSegmentsWithWords, transcribeWithElevenLabs } from './asr';
+import { calculatePreviewGenerationCostCredits, resolvePreviewGenerationDurationMs } from './costs';
 import { buildFailureSnapshot, createLyricVideoError } from './diagnostics';
 import { parseJsonField, requestHash, safeJson } from './json';
 import {
@@ -87,6 +89,144 @@ function debugStopOutput(stage: GenerationStage, output: unknown, debug: Generat
   return { value: output, debugStopped: true, stopAfter: stage };
 }
 
+type PreviewGenerationBillingSnapshot = {
+  billingMode: 'preview_generation';
+  billingTaskId: string;
+  costCredits: number;
+  durationMs: number;
+  includedImageGeneration: true;
+};
+
+function mergeInputSnapshotBilling(inputSnapshot: unknown, billing: PreviewGenerationBillingSnapshot) {
+  const base = inputSnapshot && typeof inputSnapshot === 'object' && !Array.isArray(inputSnapshot)
+    ? inputSnapshot as Record<string, unknown>
+    : {};
+  return {
+    ...base,
+    billing,
+  };
+}
+
+function parseInputSnapshot(value: unknown) {
+  if (!value) return {};
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, any> : {};
+    } catch {
+      return {};
+    }
+  }
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {};
+}
+
+function previewGenerationBillingFromSnapshot(value: unknown): PreviewGenerationBillingSnapshot | null {
+  const snapshot = parseInputSnapshot(value);
+  const billing = snapshot.billing && typeof snapshot.billing === 'object' ? snapshot.billing as Record<string, unknown> : null;
+  if (!billing || billing.billingMode !== 'preview_generation' || typeof billing.billingTaskId !== 'string') return null;
+  return {
+    billingMode: 'preview_generation',
+    billingTaskId: billing.billingTaskId,
+    costCredits: Number(billing.costCredits || 0),
+    durationMs: Number(billing.durationMs || 0),
+    includedImageGeneration: true,
+  };
+}
+
+async function createPreviewGenerationBillingTask(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  project: any;
+}) {
+  const durationMs = resolvePreviewGenerationDurationMs({
+    audioDurationMs: params.project.audioDurationMs,
+    trimStartMs: params.project.trimStartMs,
+    trimEndMs: params.project.trimEndMs,
+  });
+  const costCredits = calculatePreviewGenerationCostCredits({
+    audioDurationMs: params.project.audioDurationMs,
+    trimStartMs: params.project.trimStartMs,
+    trimEndMs: params.project.trimEndMs,
+  });
+  const task = await createTask({
+    userId: params.userId,
+    mediaType: 'lyric_video_preview',
+    provider: 'internal',
+    model: 'preview-generation-v1',
+    prompt: params.project.title || params.project.audioUrl || params.projectId,
+    costCredits,
+    options: {
+      projectId: params.projectId,
+      runId: params.runId,
+      stage: 'preview_generation',
+      billingMode: 'preview_generation',
+      includedImageGeneration: true,
+      durationMs,
+      costCredits,
+    },
+  });
+  return {
+    billingMode: 'preview_generation' as const,
+    billingTaskId: task.id,
+    costCredits,
+    durationMs,
+    includedImageGeneration: true as const,
+  };
+}
+
+async function refundPreviewGenerationBillingTask(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  inputSnapshot?: unknown;
+  error?: any;
+}) {
+  const billing = previewGenerationBillingFromSnapshot(params.inputSnapshot);
+  if (!billing?.billingTaskId) return;
+  try {
+    await updateTask({
+      taskId: billing.billingTaskId,
+      status: AITaskStatus.FAILED,
+      taskResult: {
+        error: params.error?.message || 'Preview generation failed',
+        projectId: params.projectId,
+        runId: params.runId,
+      },
+    });
+  } catch (error: any) {
+    logLyricStageError('generation-run', 'preview-billing-refund-fail', error, {
+      projectId: params.projectId,
+      userId: params.userId,
+      runId: params.runId,
+      billingTaskId: billing.billingTaskId,
+    });
+  }
+}
+
+async function markPreviewGenerationBillingTaskSucceeded(params: {
+  userId: string;
+  projectId: string;
+  runId: string;
+  inputSnapshot?: unknown;
+  output?: unknown;
+}) {
+  const billing = previewGenerationBillingFromSnapshot(params.inputSnapshot);
+  if (!billing?.billingTaskId) return;
+  await updateTask({
+    taskId: billing.billingTaskId,
+    status: AITaskStatus.SUCCESS,
+    taskResult: {
+      projectId: params.projectId,
+      runId: params.runId,
+      billingMode: billing.billingMode,
+      costCredits: billing.costCredits,
+      durationMs: billing.durationMs,
+      output: params.output,
+    },
+  });
+}
+
 export async function createGenerationRunRecord(params: {
   userId: string;
   projectId: string;
@@ -96,72 +236,95 @@ export async function createGenerationRunRecord(params: {
 }) {
   // 创建一次生成运行记录。run 表记录整体进度，step 表记录每个阶段的输入、
   // 输出和错误，project.activeRunId 用来让前端轮询当前正在跑的任务。
-  return db().transaction(async (tx: any) => {
-    const now = new Date();
-    const [run] = await tx
-      .insert(lyricVideoGenerationRun)
-      .values({
-        id: getUuid(),
-        projectId: params.projectId,
-        userId: params.userId,
-        status: 'queued',
-        currentStage: GENERATION_STAGES[0],
-        progressPercent: 0,
-        totalSteps: GENERATION_STAGES.length,
-        completedSteps: 0,
-        failedSteps: 0,
-        idempotencyKey: params.idempotencyKey,
-        requestHash: requestHash(params.inputSnapshot),
-        inputSnapshot: safeJson(params.inputSnapshot),
-        startedAt: now,
-      })
-      .returning();
-
-    const steps = await tx
-      .insert(lyricVideoGenerationStep)
-      .values(
-        GENERATION_STAGES.map((stage, index) => ({
-          id: getUuid(),
-          runId: run.id,
+  const runId = getUuid();
+  const billing = await createPreviewGenerationBillingTask({
+    userId: params.userId,
+    projectId: params.projectId,
+    runId,
+    project: params.project,
+  });
+  const inputSnapshot = mergeInputSnapshotBilling(params.inputSnapshot, billing);
+  try {
+    return await db().transaction(async (tx: any) => {
+      const now = new Date();
+      const [run] = await tx
+        .insert(lyricVideoGenerationRun)
+        .values({
+          id: runId,
           projectId: params.projectId,
           userId: params.userId,
-          stage,
-          status: index === 0 ? 'queued' : 'pending',
-          sort: index,
+          status: 'queued',
+          currentStage: GENERATION_STAGES[0],
           progressPercent: 0,
-          maxAttempts: 3,
-          inputJson: index === 0 ? safeJson(params.inputSnapshot) : undefined,
-        }))
-      )
-      .returning();
+          totalSteps: GENERATION_STAGES.length,
+          completedSteps: 0,
+          failedSteps: 0,
+          idempotencyKey: params.idempotencyKey,
+          requestHash: requestHash(inputSnapshot),
+          inputSnapshot: safeJson(inputSnapshot),
+          startedAt: now,
+        })
+        .returning();
 
-    await tx
-      .update(lyricVideoProject)
-      .set({
-        ...buildProjectGenerationSnapshot(run, {
-          activeRunId: run.id,
-          pipelineStage: 'generation_queued',
-          pipelineError: null,
-        }),
-      })
-      .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+      const steps = await tx
+        .insert(lyricVideoGenerationStep)
+        .values(
+          GENERATION_STAGES.map((stage, index) => ({
+            id: getUuid(),
+            runId: run.id,
+            projectId: params.projectId,
+            userId: params.userId,
+            stage,
+            status: index === 0 ? 'queued' : 'pending',
+            sort: index,
+            progressPercent: 0,
+            maxAttempts: 3,
+            inputJson: index === 0 ? safeJson(inputSnapshot) : undefined,
+          }))
+        )
+        .returning();
 
-    logLyricStage('generation-run', 'db-created', {
-      projectId: params.projectId,
-      userId: params.userId,
-      runId: run.id,
-      stepCount: steps.length,
-      steps: steps.map((step: any) => ({
-        id: step.id,
-        stage: step.stage,
-        status: step.status,
-      })),
-      pipelineStage: 'generation_queued',
-      generationStatus: 'queued',
+      await tx
+        .update(lyricVideoProject)
+        .set({
+          ...buildProjectGenerationSnapshot(run, {
+            activeRunId: run.id,
+            pipelineStage: 'generation_queued',
+            pipelineError: null,
+          }),
+        })
+        .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
+
+      logLyricStage('generation-run', 'db-created', {
+        projectId: params.projectId,
+        userId: params.userId,
+        runId: run.id,
+        billingTaskId: billing.billingTaskId,
+        billingMode: billing.billingMode,
+        costCredits: billing.costCredits,
+        durationMs: billing.durationMs,
+        stepCount: steps.length,
+        steps: steps.map((step: any) => ({
+          id: step.id,
+          stage: step.stage,
+          status: step.status,
+        })),
+        pipelineStage: 'generation_queued',
+        generationStatus: 'queued',
+      });
+
+      return { run, steps, billing, inputSnapshot };
     });
-
-    return { run, steps };
-  });
+  } catch (error) {
+    await refundPreviewGenerationBillingTask({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId,
+      inputSnapshot,
+      error,
+    });
+    throw error;
+  }
 }
 
 export function findGenerationStep(steps: any[], stage: GenerationStage) {
@@ -318,6 +481,11 @@ export async function failGenerationRun(params: {
   input?: unknown;
 }) {
   const message = params.error?.message || 'Generation failed';
+  const [runBeforeFailure] = await db()
+    .select()
+    .from(lyricVideoGenerationRun)
+    .where(and(eq(lyricVideoGenerationRun.id, params.runId), eq(lyricVideoGenerationRun.userId, params.userId)))
+    .limit(1);
   const failureSnapshot = buildFailureSnapshot({
     stage: params.step?.stage,
     step: params.step,
@@ -372,6 +540,13 @@ export async function failGenerationRun(params: {
   }
 
   await Promise.all(updates);
+  await refundPreviewGenerationBillingTask({
+    userId: params.userId,
+    projectId: params.projectId,
+    runId: params.runId,
+    inputSnapshot: runBeforeFailure?.inputSnapshot,
+    error: params.error,
+  });
   logLyricStageError('generation-run', 'failed', params.error, {
     projectId: params.projectId,
     userId: params.userId,
@@ -640,6 +815,7 @@ export async function executeGenerationRun(params: {
   const startedAt = Date.now();
   const options = generationOptions(params.input);
   const debug = generationDebugOptions(params.input);
+  const previewBilling = previewGenerationBillingFromSnapshot(params.run.inputSnapshot || params.inputSnapshot);
   let currentStep: any = undefined;
   let currentStepInput: unknown = undefined;
 
@@ -1141,6 +1317,9 @@ export async function executeGenerationRun(params: {
       model: options.imageModel,
       clearExistingImages: true,
       skipActiveGenerationGuard: true,
+      billingMode: 'included_in_generation',
+      runId: params.run.id,
+      billingTaskId: previewBilling?.billingTaskId,
     });
     const videoPromptResult = await videoPromptPromise;
     const finalPromptGenerationOutput = {
@@ -1222,6 +1401,16 @@ export async function executeGenerationRun(params: {
         pipelineStage: 'images_processing',
       },
     };
+    await markPreviewGenerationBillingTaskSucceeded({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.run.id,
+      inputSnapshot: params.run.inputSnapshot || params.inputSnapshot,
+      output: {
+        queuedSceneCount: queuedImages.length,
+        providerTaskIds: imageProviderTaskIds,
+      },
+    });
     await markGenerationStepWaitingProvider({
       userId: params.userId,
       projectId: params.projectId,
@@ -1343,10 +1532,10 @@ export async function startGenerationRun(params: {
     steps: created.steps,
     project,
     input: params.input,
-    inputSnapshot,
+    inputSnapshot: created.inputSnapshot,
   });
 
-  return { ...result, reused: false };
+  return { ...result, reused: false, billing: created.billing };
 }
 
 export async function startGenerationRunQueued(params: {
@@ -1435,8 +1624,9 @@ export async function startGenerationRunQueued(params: {
       steps: created.steps,
       project,
       input: params.input,
-      inputSnapshot,
+      inputSnapshot: created.inputSnapshot,
     },
+    billing: created.billing,
   };
 }
 

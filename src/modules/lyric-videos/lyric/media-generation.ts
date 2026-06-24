@@ -58,6 +58,26 @@ const GRID_IMAGE_SYNC_READY_BATCH_LIMIT = 1;
 const GRID_IMAGE_AUTO_RETRY_MAX_ATTEMPTS = 2;
 const VISUALS_ALREADY_RUNNING = 'VISUALS_ALREADY_RUNNING';
 
+export type LyricVideoImageBillingMode = 'included_in_generation' | 'extra_regeneration' | 'system_retry';
+
+function imageTaskCostCredits(params: { billingMode?: LyricVideoImageBillingMode; sceneCount: number }) {
+  const { billingMode, sceneCount } = params;
+  if (billingMode === 'included_in_generation' || billingMode === 'system_retry') return 0;
+  return sceneCount * LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS;
+}
+
+function imageBillingOptions(params: {
+  billingMode?: LyricVideoImageBillingMode;
+  runId?: string;
+  billingTaskId?: string;
+}) {
+  return {
+    billingMode: params.billingMode || 'extra_regeneration',
+    runId: params.runId,
+    billingTaskId: params.billingTaskId,
+  };
+}
+
 type GridImagePanelScene = any & {
   finalPrompt?: string;
   boundCast?: any;
@@ -1013,6 +1033,9 @@ export async function queueSceneImages(params: {
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
   skipActiveGenerationGuard?: boolean;
+  billingMode?: LyricVideoImageBillingMode;
+  runId?: string;
+  billingTaskId?: string;
 }) {
   // 单张或少量 scene 图片排队入口。会创建 `ai_task`，然后把 providerTaskId、
   // imageTaskId、status=processing 写回对应 `lyric_video_scene`。
@@ -1069,6 +1092,11 @@ export async function queueSceneImages(params: {
   const characterImageModel = configs.kie_character_image_model || 'nano-banana-2';
   const configuredProvider = configuredLyricVideoImageProviderName(configs);
   const queued = [];
+  const billing = imageBillingOptions({
+    billingMode: params.billingMode,
+    runId: params.runId,
+    billingTaskId: params.billingTaskId,
+  });
   logLyricStage('scene-images', 'queue-start', {
     projectId: params.projectId,
     userId: params.userId,
@@ -1077,6 +1105,7 @@ export async function queueSceneImages(params: {
     sceneCount: scenes.length,
     sceneIds: scenes.map((scene: any) => scene.id),
     clearExistingImages: params.clearExistingImages,
+    billingMode: billing.billingMode,
   });
   for (const scene of scenes) {
     const activeCast = activeCastForStoryboard(details.cast);
@@ -1118,10 +1147,11 @@ export async function queueSceneImages(params: {
       provider: providerSelection.providerName,
       model: actualModel,
       prompt,
-      costCredits: LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS,
+      costCredits: imageTaskCostCredits({ billingMode: billing.billingMode, sceneCount: 1 }),
       options: {
         projectId: params.projectId,
         sceneId: scene.id,
+        ...billing,
         provider: providerSelection.providerName,
         fallbackReason: providerSelection.fallbackReason,
         ...normalizedImageOptions,
@@ -1163,6 +1193,7 @@ export async function queueSceneImages(params: {
             provider: providerSelection.providerName,
             fallbackReason: providerSelection.fallbackReason,
             model: actualModel,
+            ...billing,
             castId: boundCast?.id,
             referenceImageUrl,
             referenceImageUrls,
@@ -1247,6 +1278,9 @@ export async function queueSceneImagesGrid(params: {
   onlyMissing?: boolean;
   clearExistingImages?: boolean;
   skipActiveGenerationGuard?: boolean;
+  billingMode?: LyricVideoImageBillingMode;
+  runId?: string;
+  billingTaskId?: string;
 }) {
   // 主链路默认使用的批量图片入口：把最多 9 个 scene 合成一个 3x3 grid prompt，
   // 降低供应商调用次数。每个 scene 会记录同一个 providerTaskId 和自己的 panel 信息。
@@ -1300,6 +1334,11 @@ export async function queueSceneImagesGrid(params: {
   const queued: any[] = [];
   const queuedBatchRecords: any[] = [];
   const cast = Array.isArray(details.cast) ? details.cast : [];
+  const billing = imageBillingOptions({
+    billingMode: params.billingMode,
+    runId: params.runId,
+    billingTaskId: params.billingTaskId,
+  });
 
   logLyricStage('scene-images-grid', 'queue-start', {
     projectId: params.projectId,
@@ -1311,6 +1350,7 @@ export async function queueSceneImagesGrid(params: {
     sceneCount: scenes.length,
     sceneIds: scenes.map((scene: any) => scene.id),
     queueConcurrency: GRID_IMAGE_QUEUE_CONCURRENCY,
+    billingMode: billing.billingMode,
   });
 
   const descriptors: GridImageBatchDescriptor[] = [];
@@ -1385,9 +1425,10 @@ export async function queueSceneImagesGrid(params: {
         provider: descriptor.providerName,
         model: descriptor.model,
         prompt: gridPrompt.compiledPrompt,
-        costCredits: descriptor.scenes.length * LYRIC_VIDEO_IMAGE_SUCCESS_COST_CREDITS,
+        costCredits: imageTaskCostCredits({ billingMode: billing.billingMode, sceneCount: descriptor.scenes.length }),
         options: {
           projectId: params.projectId,
+          ...billing,
           provider: descriptor.providerName,
           fallbackReason: descriptor.fallbackReason,
           mode: GRID_SCENE_IMAGE_MODE,
@@ -1406,6 +1447,7 @@ export async function queueSceneImagesGrid(params: {
         userId: params.userId,
         batchIndex,
         taskId: task.id,
+        billingMode: billing.billingMode,
         sceneCount: descriptor.scenes.length,
         sceneIds: descriptor.scenes.map((scene: any) => scene.id),
         provider: descriptor.providerName,
@@ -1456,6 +1498,11 @@ export async function queueSceneImagesGrid(params: {
           providerTaskId: result.taskId,
           imageTaskId: task.id,
         };
+        const gridBilling = {
+          billingMode: billing.billingMode,
+          runId: billing.runId,
+          billingTaskId: billing.billingTaskId,
+        };
         const castIds = scene.castIdsForGeneration || [];
         const [updated] = await db()
           .update(lyricVideoScene)
@@ -1475,6 +1522,7 @@ export async function queueSceneImagesGrid(params: {
               provider: descriptor.providerName,
               fallbackReason: descriptor.fallbackReason,
               model: descriptor.model,
+              ...gridBilling,
               castId: castIds[0],
               castIds,
               referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
@@ -1494,6 +1542,7 @@ export async function queueSceneImagesGrid(params: {
         batchIndex,
         providerTaskId: result.taskId,
         provider: descriptor.providerName,
+        billingMode: billing.billingMode,
         sceneCount: descriptor.scenes.length,
         sceneIds: descriptor.scenes.map((scene: any) => scene.id),
         promptLength: gridPrompt.compiledPrompt.length,
@@ -1528,6 +1577,11 @@ export async function queueSceneImagesGrid(params: {
           providerTaskId: null,
           imageTaskId: task?.id || null,
         };
+        const gridBilling = {
+          billingMode: billing.billingMode,
+          runId: billing.runId,
+          billingTaskId: billing.billingTaskId,
+        };
         const castIds = scene.castIdsForGeneration || [];
         const [updated] = await db()
           .update(lyricVideoScene)
@@ -1547,6 +1601,7 @@ export async function queueSceneImagesGrid(params: {
               provider: descriptor.providerName,
               fallbackReason: descriptor.fallbackReason,
               model: descriptor.model,
+              ...gridBilling,
               castId: castIds[0],
               castIds,
               referenceImageUrl: scene.referenceImageUrl || descriptor.referenceImageUrl,
@@ -1672,6 +1727,7 @@ export async function retryFailedSceneImageBatches(params: {
   projectId: string;
   batchKeys?: string[];
   model?: string;
+  billingMode?: LyricVideoImageBillingMode;
 }) {
   const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
   if (!details) throw new Error('Project not found');
@@ -1699,6 +1755,8 @@ export async function retryFailedSceneImageBatches(params: {
       model: params.model,
       clearExistingImages: false,
       skipActiveGenerationGuard: true,
+      billingMode: params.billingMode || 'extra_regeneration',
+      runId: details.project.activeRunId || undefined,
     });
     queuedScenes.push(...queued);
     queuedBatches.push({
@@ -1897,6 +1955,14 @@ export async function generateVisualsFromStory(params: {
       input: imageInput,
     });
 
+    const includedImageBilling = {
+      billingMode: 'included_in_generation' as const,
+      runId: ledger.run.id,
+    };
+    const extraImageBilling = {
+      billingMode: 'extra_regeneration' as const,
+      runId: ledger.run.id,
+    };
     const queuedImages =
       scenesToQueue.length > 0
         ? await queueSceneImagesGrid({
@@ -1906,6 +1972,7 @@ export async function generateVisualsFromStory(params: {
             model: params.model,
             clearExistingImages: Boolean(params.regenerateImages),
             skipActiveGenerationGuard: true,
+            ...(params.regenerateImages ? extraImageBilling : includedImageBilling),
           })
         : [];
 
@@ -2283,6 +2350,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
         userId: params.userId,
         projectId: params.projectId,
         batchKeys: autoRetryableFailedBatches.map((batch) => batch.batchKey),
+        billingMode: 'system_retry',
       });
       return retry.queuedScenes;
     }
@@ -2415,6 +2483,8 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
           sceneIds: scenes.map((scene: any) => scene.id),
           clearExistingImages: false,
           skipActiveGenerationGuard: true,
+          billingMode: 'system_retry',
+          runId: details.project.activeRunId || undefined,
         }));
         continue;
       }

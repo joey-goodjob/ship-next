@@ -26,6 +26,7 @@ export async function POST(
       projectId: id,
       sceneId,
       model: body.model,
+      billingMode: 'extra_regeneration',
     });
     const data = await service.queueSceneImages({
       userId,

@@ -32,6 +32,7 @@ export async function POST(
       projectId: id,
       batchKeys: Array.isArray(body.batchKeys) ? body.batchKeys.filter(Boolean).map(String) : undefined,
       model: body.model,
+      billingMode: 'extra_regeneration',
     });
     logLyricStage('scene-images-grid', 'route-retry-failed-batches-success', {
       durationMs: Date.now() - startedAt,

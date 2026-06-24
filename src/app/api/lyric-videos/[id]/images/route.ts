@@ -31,16 +31,18 @@ export async function POST(
     const data = body.sceneId
       ? await service.queueSceneImages({
           userId,
-          projectId: id,
-          sceneId: body.sceneId,
-          model: body.model,
-        })
+        projectId: id,
+        sceneId: body.sceneId,
+        model: body.model,
+        billingMode: 'extra_regeneration',
+      })
       : await service.queueSceneImagesGrid({
           userId,
           projectId: id,
           sceneIds: Array.isArray(body.sceneIds) ? body.sceneIds : undefined,
           model: body.model,
           clearExistingImages: Boolean(body.clearExistingImages),
+          billingMode: 'extra_regeneration',
         });
     logLyricStage('scene-images', 'route-queue-success', {
       durationMs: Date.now() - startedAt,

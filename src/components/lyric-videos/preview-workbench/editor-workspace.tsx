@@ -122,8 +122,6 @@ export function EditorWorkspace() {
           <AudioUploadTrim
             showBack={false}
             onGenerate={handleUploadAndTranscribe}
-            creditCost={10}
-            generateLabel="Generate direction (10 credits)"
             workingLabel={preparingAudio ? "Preparing lyrics and story direction..." : "Uploading audio..."}
             successLabel="Direction ready"
           />

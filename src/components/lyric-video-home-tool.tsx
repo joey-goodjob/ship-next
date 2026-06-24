@@ -167,7 +167,6 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
             autoGenerateOnReady
             completionState="idle"
             onGenerate={handleGenerate}
-            creditCost={10}
             generateLabel="Upload song"
             workingLabel={displayStage === "idle" ? "Preparing your song..." : stageLabel(displayStage)}
             successLabel="Song uploaded"

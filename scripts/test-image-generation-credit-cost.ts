@@ -30,12 +30,24 @@ assert(
   "Scene image generation must use the shared image success credit cost."
 );
 assert(
-  mediaGenerationSource.includes(`costCredits: ${imageCostConstant}`),
-  "Single scene image tasks must charge 5 credits."
+  mediaGenerationSource.includes("billingMode?: LyricVideoImageBillingMode"),
+  "Scene image queue APIs must accept an explicit billing mode."
 );
 assert(
-  mediaGenerationSource.includes(`descriptor.scenes.length * ${imageCostConstant}`),
-  "Grid scene image tasks must charge 5 credits per successful generated image."
+  mediaGenerationSource.includes("billingMode: 'included_in_generation'"),
+  "Main preview generation must mark first-pass scene images as included in generation."
+);
+assert(
+  mediaGenerationSource.includes("billingMode: 'system_retry'"),
+  "System retries for failed first-pass images must not charge additional credits."
+);
+assert(
+  mediaGenerationSource.includes("imageTaskCostCredits("),
+  "Scene image generation must centralize billing mode to credit cost mapping."
+);
+assert(
+  mediaGenerationSource.includes(`return sceneCount * ${imageCostConstant}`),
+  "Extra scene image regenerations must continue charging 5 credits per scene."
 );
 
 const castSource = read("src/modules/lyric-videos/lyric/cast.ts");
