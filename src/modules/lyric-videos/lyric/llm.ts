@@ -567,9 +567,38 @@ export function mergeSongAnalysisParts(params: {
   });
 }
 
-export function buildPreviewStoryPrompt(preprocess: LyricVideoLlmPreprocessResult) {
-  return `你是一位音乐视觉化导演。根据以下歌曲数据，快速生成用户进入 preview 时需要审核的 MV 故事方向。
+/**
+ * 把用户在 UI 选择的画面风格（预设 artStyle + 可选的自定义 customStyle）
+ * 拼成一段“最高优先级”的风格指令，注入到歌曲分析 / 故事草案 prompt 里。
+ * 这是保证用户选的 Style 真正影响生成结果的关键。
+ */
+export function buildUserStyleDirective(
+  project?: { artStyle?: string | null; customStyle?: string | null } | null,
+): string {
+  if (!project) return '';
+  const base = String(project.artStyle || '').trim();
+  const custom = String(project.customStyle || '').trim();
+  const parts = [base, custom].filter(Boolean);
+  return parts.join(', ');
+}
 
+function styleDirectiveBlock(styleDirective?: string): string {
+  const directive = String(styleDirective || '').trim();
+  if (!directive) return '';
+  return `
+
+## 用户指定的画面风格（最高优先级，必须严格遵守）
+${directive}
+- visual_style 字段必须以上述风格为基础来描述，只能在该风格内细化（镜头、光线、色彩、材质），不得改成其它画风。
+- 整支 MV 的所有画面都必须统一在这个风格之下。`;
+}
+
+export function buildPreviewStoryPrompt(
+  preprocess: LyricVideoLlmPreprocessResult,
+  styleDirective?: string,
+) {
+  return `你是一位音乐视觉化导演。根据以下歌曲数据，快速生成用户进入 preview 时需要审核的 MV 故事方向。
+${styleDirectiveBlock(styleDirective)}
 ## 歌曲数据
 ${JSON.stringify(preprocessForPreviewStory(preprocess))}
 
@@ -689,9 +718,10 @@ ${castBlock}
 export async function generatePreviewStoryWithKie(params: {
   preprocess: LyricVideoLlmPreprocessResult;
   model?: string;
+  styleDirective?: string;
 }) {
   const result = await callKieCodexResponses({
-    text: buildPreviewStoryPrompt(params.preprocess),
+    text: buildPreviewStoryPrompt(params.preprocess, params.styleDirective),
     model: params.model,
     reasoningEffort: 'medium',
   });
@@ -751,9 +781,12 @@ export async function generateProductionDirectionWithKie(params: {
   };
 }
 
-export function buildSongAnalysisPrompt(preprocess: LyricVideoLlmPreprocessResult) {
+export function buildSongAnalysisPrompt(
+  preprocess: LyricVideoLlmPreprocessResult,
+  styleDirective?: string,
+) {
   return `你是一位音乐视觉化导演。根据以下歌曲数据，分析这首歌并输出创意方向。
-
+${styleDirectiveBlock(styleDirective)}
 ## 歌曲数据
 ${JSON.stringify(preprocess)}
 
@@ -861,6 +894,7 @@ export async function analyzeSongWithKieForDebug(params: {
   preprocess: LyricVideoLlmPreprocessResult;
   provider?: DebugSongAnalysisProvider;
   model?: string;
+  styleDirective?: string;
 }) {
   const provider = params.provider || 'kie_codex';
   if (!['kie_claude', 'kie_codex', 'kie_gemini'].includes(provider)) {
@@ -876,7 +910,7 @@ export async function analyzeSongWithKieForDebug(params: {
     });
   }
 
-  const prompt = buildSongAnalysisPrompt(params.preprocess);
+  const prompt = buildSongAnalysisPrompt(params.preprocess, params.styleDirective);
   const warnings: string[] = [];
   let result: Awaited<ReturnType<typeof callKieCodexResponses>> | Awaited<ReturnType<typeof callKieGeminiChat>> | Awaited<ReturnType<typeof callKieClaudeMessages>> | undefined;
   let songAnalysis: LyricVideoSongAnalysisResult | undefined;
@@ -1109,6 +1143,7 @@ export function buildStoryboardScenesPrompt(params: {
 }) {
   const styleText = [
     params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
+    params.project?.customStyle ? `Custom style notes: ${params.project.customStyle}` : '',
     params.project?.palette ? `Palette: ${params.project.palette}` : '',
     params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
   ]
@@ -1171,6 +1206,7 @@ export function buildDebugStoryboardScenesPrompt(params: {
 }) {
   const styleText = [
     params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
+    params.project?.customStyle ? `Custom style notes: ${params.project.customStyle}` : '',
     params.project?.palette ? `Palette: ${params.project.palette}` : '',
     params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
   ]

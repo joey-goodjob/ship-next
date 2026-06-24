@@ -14,6 +14,7 @@ import { parseJsonField, requestHash, safeJson } from './json';
 import {
   assertUsableSongAnalysis,
   analyzeSongWithKieForDebug,
+  buildUserStyleDirective,
   formatStoryActsText,
   generatePreviewStoryWithKie,
   generateStoryboardScenesWithKieClaude,
@@ -1038,6 +1039,7 @@ export async function executeGenerationRun(params: {
       const previewStoryResult = await generatePreviewStoryWithKie({
         preprocess,
         model: options.songAnalysisModel,
+        styleDirective: buildUserStyleDirective(detailsAfterLyrics.project),
       });
       const previewSongAnalysis = mergeSongAnalysisParts({
         previewStoryDraft: previewStoryResult.previewStoryDraft,
@@ -1125,6 +1127,7 @@ export async function executeGenerationRun(params: {
       preprocess,
       provider: 'kie_codex',
       model: options.songAnalysisModel,
+      styleDirective: buildUserStyleDirective(detailsAfterLyrics.project),
     });
     assertUsableSongAnalysis(songAnalysisResult.songAnalysis);
     const storyActsText = formatStoryActsText(songAnalysisResult.songAnalysis);

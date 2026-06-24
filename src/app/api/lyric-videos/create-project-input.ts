@@ -17,6 +17,7 @@ export type LyricVideoCreateProjectInput = {
   storyPrompt?: string;
   palette?: string;
   artStyle?: string;
+  customStyle?: string;
   aspectRatio?: string;
   resolution?: string;
 };
@@ -40,6 +41,7 @@ const CREATE_PROJECT_INPUT_KEYS = [
   'storyPrompt',
   'palette',
   'artStyle',
+  'customStyle',
   'aspectRatio',
   'resolution',
 ] as const satisfies readonly (keyof LyricVideoCreateProjectInput)[];

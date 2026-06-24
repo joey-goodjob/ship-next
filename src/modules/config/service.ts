@@ -5,10 +5,26 @@ import { envConfigs } from '@/config';
 
 type ConfigMap = Record<string, string>;
 
+const CONFIG_TABLE_ONLY_KEYS = new Set([
+  'elevenlabs_api_key',
+]);
+
 // In-memory cache
 let cachedConfigs: ConfigMap | null = null;
 let cacheTime = 0;
 const CACHE_TTL = 3600_000; // 1 hour
+
+export function mergeConfigs(envConfigs: ConfigMap, dbConfigs: ConfigMap): ConfigMap {
+  const merged = { ...envConfigs, ...dbConfigs };
+
+  for (const key of CONFIG_TABLE_ONLY_KEYS) {
+    if (!dbConfigs[key]) {
+      delete merged[key];
+    }
+  }
+
+  return merged;
+}
 
 /**
  * Get all configs from database.
@@ -45,7 +61,7 @@ export async function getDbConfigs(options: { forceRefresh?: boolean } = {}): Pr
  */
 export async function getAllConfigs(options: { forceRefresh?: boolean } = {}): Promise<ConfigMap> {
   const dbConfigs = await getDbConfigs(options);
-  return { ...envConfigs, ...dbConfigs };
+  return mergeConfigs(envConfigs, dbConfigs);
 }
 
 export function clearConfigCache() {

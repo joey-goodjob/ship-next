@@ -39,6 +39,7 @@ export type LyricVideoProject = {
   storyPrompt: string;
   palette: string;
   artStyle: string;
+  customStyle: string;
   aspectRatio: string;
   resolution: string;
   lyricsStatus: string;

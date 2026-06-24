@@ -54,6 +54,7 @@ export async function createProject(params: {
   storyPrompt?: string;
   palette?: string;
   artStyle?: string;
+  customStyle?: string;
   aspectRatio?: string;
   resolution?: string;
 }) {
@@ -78,7 +79,8 @@ export async function createProject(params: {
     language: params.language || 'auto',
     storyPrompt: params.storyPrompt || '',
     palette: params.palette || 'cinematic',
-    artStyle: params.artStyle || 'cinematic illustration',
+    artStyle: params.artStyle || 'realistic',
+    customStyle: params.customStyle || '',
     aspectRatio: params.aspectRatio || '16:9',
     resolution: params.resolution || '1080p',
     lyricsStatus: 'empty',
@@ -284,6 +286,7 @@ export async function updateProject(params: {
     storyPrompt: string;
     palette: string;
     artStyle: string;
+    customStyle: string;
     aspectRatio: string;
     resolution: string;
     previewConfig: unknown;

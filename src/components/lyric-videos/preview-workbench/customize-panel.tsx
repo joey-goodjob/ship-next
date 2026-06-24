@@ -277,6 +277,20 @@ export function CustomizePanel() {
             );
           })}
         </div>
+        <div className="mt-[10px]">
+          <input
+            type="text"
+            value={project.customStyle ?? ""}
+            onChange={(event) => updateProjectField("customStyle", event.target.value)}
+            disabled={storyLocked}
+            title={storyLocked ? storyLockReason : undefined}
+            placeholder="(Optional) Customize the style with a short description"
+            className="h-[40px] w-full rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[11px] text-[12px] font-[600] text-[var(--editor-text)] placeholder:text-[var(--editor-subtle)] outline-none transition-colors focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:opacity-55"
+          />
+          <p className="mt-[6px] text-[11px] text-[var(--editor-subtle)]">
+            Create a unique style for your video! E.g.: &lsquo;dark fantasy&rsquo; or &lsquo;cyberpunk&rsquo;
+          </p>
+        </div>
       </FieldBlock>
 
       <FieldBlock icon={Monitor} label="Format" locked={storyLocked} lockReason={storyLockReason} surface="card">

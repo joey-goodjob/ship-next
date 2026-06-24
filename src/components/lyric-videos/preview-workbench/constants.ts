@@ -1,5 +1,5 @@
 export const STYLE_OPTIONS = [
-  { value: "cinematic illustration", label: "Cinematic illustration", icon: "film" },
+  { value: "realistic", label: "Realistic", icon: "film" },
   { value: "realistic 3D render", label: "Realistic 3D render", icon: "box" },
   { value: "anime", label: "Anime", icon: "smile" },
   { value: "cartoon", label: "Cartoon", icon: "clapperboard" },

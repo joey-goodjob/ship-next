@@ -349,9 +349,12 @@ export function CastPanel() {
         <button
           type="button"
           onClick={openAddCharacter}
-          disabled={directionLocked}
+          aria-disabled={directionLocked || activeLimitReached}
           title={directionLocked ? directionLockReason : activeLimitReached ? t("max_four_characters") : undefined}
-          className="inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[14px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)] disabled:cursor-not-allowed disabled:opacity-50"
+          className={cn(
+            "inline-flex h-[38px] items-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[14px] text-[13px] font-[800] text-[var(--editor-text)]",
+            directionLocked || activeLimitReached ? "cursor-not-allowed opacity-50" : "hover:bg-[var(--editor-bg)]",
+          )}
         >
           <Plus className="h-[16px] w-[16px]" />
           Add Character
