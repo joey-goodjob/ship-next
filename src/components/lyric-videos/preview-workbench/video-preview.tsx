@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { RefreshCcw, Wand2 } from "lucide-react";
 import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
-import { cn } from "@/lib/utils";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
 import { LatestExport } from "./latest-export";
@@ -103,7 +102,7 @@ export function VideoPreview() {
             title={directionReady ? "Direction ready" : currentScene ? "Scene image pending" : hasLyrics ? "Scene timing pending" : "No scene image yet"}
             description={
               directionReady
-                ? "Review the Story panel, then click Confirm & Generate Scenes to create Prompt2 scenes and queue images."
+                ? "Review the Story panel, then click Confirm & Generate Scenes to prepare scenes and queue visuals."
                 : currentScene
                 ? currentScene.status === "failed"
                   ? currentScene.error || "Image generation failed."
@@ -160,27 +159,8 @@ function GenerationProgressBanner({
       <div className="mt-[10px] h-[6px] overflow-hidden rounded-full bg-[var(--editor-panel-strong)]">
         <div className="h-full rounded-full bg-[var(--editor-accent)]" style={{ width: `${clamp(progress.progressPercent || 0, 5, 100)}%` }} />
       </div>
-      <div className="mt-[8px] flex flex-wrap gap-[6px]">
-        <StatusPill label="Prompt1" value={progress.songAnalysisStatus} />
-        <StatusPill label="Prompt2" value={progress.promptStatus} />
-        <StatusPill label="Images" value={progress.imageStatus} />
-        {progress.failed > 0 ? <StatusPill label="Failed" value={`${progress.failed}`} tone="danger" /> : null}
-      </div>
       {progress.error ? <p className="mt-[8px] line-clamp-2 text-[12px] font-[700] text-[var(--editor-danger)]">{progress.error}</p> : null}
     </div>
-  );
-}
-
-function StatusPill({ label, tone, value }: { label: string; tone?: "danger"; value: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] items-center rounded-[5px] border px-[7px] text-[10px] font-[900] uppercase",
-        tone === "danger" ? "border-[var(--editor-danger)] bg-[var(--editor-danger-soft)] text-[var(--editor-danger)]" : "border-[var(--editor-line)] bg-[var(--editor-panel-soft)] text-[var(--editor-muted)]",
-      )}
-    >
-      {label}: {value}
-    </span>
   );
 }
 

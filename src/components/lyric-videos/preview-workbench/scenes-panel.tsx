@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { PanelEmpty } from "./panel-empty";
 import { usePlayback } from "./playback-context";
-import { deriveGenerationProgress, formatDurationMs, formatMs, msToSeconds } from "./utils";
+import { formatDurationMs, formatMs, msToSeconds } from "./utils";
 import type { LyricCastMember } from "./types";
 
 type PromptField = "image" | "video";
@@ -38,39 +38,15 @@ function activeSceneCast(cast: LyricCastMember[]) {
 }
 
 export function ScenesPanel() {
-  const { cast, generationLocked, generationLockReason, generationRun, generationSteps, project, retryFailedImageBatches, runtimeState, scenes, updateSceneCastIds } = useEditor();
+  const { cast, generationLocked, generationLockReason, scenes, updateSceneCastIds } = useEditor();
   const { currentScene, setCurrentTime } = usePlayback();
   const [batchGenerationOpen, setBatchGenerationOpen] = useState(false);
-  const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const promptReadyCount = scenes.filter((scene) => String(scene.prompt || "").trim()).length;
   const activeCast = activeSceneCast(cast);
 
   return (
     <div className="scenes-panel flex flex-col">
       <div className="mb-[16px] flex flex-col gap-[10px] border-b border-[var(--editor-line)] pb-[16px]">
-        <div className="rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-[12px] py-[10px]">
-          <div className="flex flex-wrap items-center justify-between gap-[8px]">
-            <div className="min-w-0">
-              <p className="text-[13px] font-[900] text-[var(--editor-text)]">{progress.primary}</p>
-              <p className="mt-[3px] text-[12px] font-[650] text-[var(--editor-muted)]">
-                Prompt1 {progress.songAnalysisStatus} · Prompt2 {progress.promptStatus} · {progress.imageText}
-              </p>
-            </div>
-            {progress.retryable ? (
-              <button
-                type="button"
-                onClick={retryFailedImageBatches}
-                disabled={generationLocked}
-                title={generationLocked ? generationLockReason : undefined}
-                className="inline-flex h-[32px] shrink-0 items-center gap-[7px] rounded-[6px] bg-[var(--editor-accent)] px-[10px] text-[12px] font-[900] text-[var(--editor-accent-ink)] hover:bg-[var(--editor-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <RefreshCcw className="h-[13px] w-[13px]" />
-                Retry {progress.failedBatches} failed batch{progress.failedBatches === 1 ? "" : "es"}
-              </button>
-            ) : null}
-          </div>
-          {progress.error ? <p className="mt-[7px] line-clamp-2 text-[12px] font-[700] text-[var(--editor-danger)]">{progress.error}</p> : null}
-        </div>
         <div className="flex flex-wrap items-center justify-center gap-[8px]">
         <button
           type="button"

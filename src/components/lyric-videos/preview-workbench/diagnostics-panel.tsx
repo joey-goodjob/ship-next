@@ -11,8 +11,8 @@ import { deriveGenerationProgress, failedImageBatchCount, sceneBatchKey, sceneGr
 
 const generationStages = [
   { stage: "asr_words", label: "识别歌词" },
-  { stage: "song_analysis", label: "分析歌曲 / Prompt1" },
-  { stage: "prompt_generation", label: "生成分镜 / Prompt2" },
+  { stage: "song_analysis", label: "分析歌曲" },
+  { stage: "prompt_generation", label: "生成分镜" },
   { stage: "image_generation", label: "生成图片" },
   { stage: "finalize_project", label: "完成项目" },
 ] as const;
@@ -375,7 +375,7 @@ export function DiagnosticsPanel() {
           <div className="mb-[10px] rounded-[6px] border border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] px-[11px] py-[10px] text-[var(--editor-text)]">
             <p className="text-[13px] font-[900]">方向审核暂停</p>
             <p className="mt-[3px] text-[12px] font-[700] leading-[18px]">
-              Prompt1 已完成。点击轨道蒙版上的 Confirm & Generate Scenes 后，Prompt2、图片生成和完成项目会继续写入这里。
+              歌曲分析已完成。点击轨道蒙版上的 Confirm & Generate Scenes 后，场景准备、图片生成和完成项目会继续写入这里。
             </p>
           </div>
         ) : null}
