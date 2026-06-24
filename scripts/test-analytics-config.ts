@@ -30,4 +30,14 @@ assert.deepEqual(partialConfig, {
   plausible: null,
 });
 
+const urlDomainConfig = buildAnalyticsConfig({
+  plausible_domain: " https://lyricvideomaker.app/ ",
+  plausible_src: "https://plausible.example.com/js/script.js",
+});
+
+assert.deepEqual(urlDomainConfig.plausible, {
+  domain: "lyricvideomaker.app",
+  src: "https://plausible.example.com/js/script.js",
+});
+
 console.log("analytics config tests passed");

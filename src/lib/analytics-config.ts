@@ -20,8 +20,23 @@ function cleanTrackingId(value: string | undefined): string | null {
   return id;
 }
 
+function cleanPlausibleDomain(value: string | undefined): string | null {
+  const raw = value?.trim();
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const url = new URL(raw);
+    return url.hostname || null;
+  } catch {
+    const domain = raw.replace(/^https?:\/\//i, "").split("/")[0]?.trim();
+    return domain || null;
+  }
+}
+
 function cleanPlausibleConfig(configs: AnalyticsConfigMap): AnalyticsConfig["plausible"] {
-  const domain = configs.plausible_domain?.trim();
+  const domain = cleanPlausibleDomain(configs.plausible_domain);
   const src = configs.plausible_src?.trim();
 
   if (!domain || !src) {
