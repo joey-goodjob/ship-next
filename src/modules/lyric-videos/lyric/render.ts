@@ -183,7 +183,11 @@ Style: Default,${style.fontFamily || 'Inter'},${Number(style.fontSize) || 56},${
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${events}
-`;
+  `;
+}
+
+export function calculateStaticVideoExportCostCredits(_params: { audioDurationMs?: number | null }) {
+  return 0;
 }
 
 export async function queueExport(params: {
@@ -201,7 +205,7 @@ export async function queueExport(params: {
   if (!details.project.audioUrl) throw new Error('Upload audio before export');
   if (!details.scenes.some((scene: any) => scene.imageUrl)) throw new Error('Generate at least one scene image before export');
 
-  const costCredits = Math.max(20, Math.ceil((details.project.audioDurationMs || 60000) / 1000 / 10) * 5);
+  const costCredits = calculateStaticVideoExportCostCredits({ audioDurationMs: details.project.audioDurationMs });
   const watermark = normalizeExportWatermark(params.watermark);
   const exportSettings = buildExportSettings({ settings: params.settings, watermark });
   const task = await createTask({

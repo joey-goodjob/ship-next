@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { buildExportSettings, buildWatermarkDrawtextFilter } from "../src/modules/lyric-videos/lyric/render";
+import {
+  buildExportSettings,
+  buildWatermarkDrawtextFilter,
+  calculateStaticVideoExportCostCredits,
+} from "../src/modules/lyric-videos/lyric/render";
 
 const freeFilter = buildWatermarkDrawtextFilter({
   watermark: { enabled: true, text: "Lyrics:Video'ai%" },
@@ -53,5 +57,16 @@ assert.deepEqual(
   "export settings should record the server-side watermark decision",
 );
 assert.equal(storedSettings.captionsEnabled, false, "export settings should preserve client export settings");
+
+assert.equal(
+  calculateStaticVideoExportCostCredits({ audioDurationMs: 60_000 }),
+  0,
+  "static MP4 export should not consume credits after assets are generated",
+);
+assert.equal(
+  calculateStaticVideoExportCostCredits({ audioDurationMs: 0 }),
+  0,
+  "short static MP4 export should not have a minimum credit charge",
+);
 
 console.log("lyric video export watermark checks passed");
