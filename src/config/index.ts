@@ -1,9 +1,29 @@
+const PRODUCTION_APP_URL = 'https://lyricvideomaker.app';
+const LOCAL_APP_URL = 'http://localhost:3000';
+
 const DEFAULT_APP_URL =
   process.env.NODE_ENV === 'production'
-    ? 'https://lyricvideomaker.app'
-    : 'http://localhost:3000';
+    ? PRODUCTION_APP_URL
+    : LOCAL_APP_URL;
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
+function isLocalAppUrl(url: string) {
+  try {
+    const { hostname } = new URL(url);
+    return ['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname);
+  } catch {
+    return false;
+  }
+}
+
+function resolveAppUrl() {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (process.env.NODE_ENV === 'production' && (!configuredUrl || isLocalAppUrl(configuredUrl))) {
+    return PRODUCTION_APP_URL;
+  }
+  return configuredUrl || DEFAULT_APP_URL;
+}
+
+const appUrl = resolveAppUrl();
 
 export const envConfigs: Record<string, string> = {
   // App
