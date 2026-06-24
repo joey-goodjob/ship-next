@@ -65,17 +65,25 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
   }, [authOpen, session?.user]);
 
   async function uploadAndContinue(pending: PendingUpload) {
-    const uploaded = await uploadOnly(pending.file);
-    writeHomeUploadedAudio({
-      ...uploaded,
-      filename: uploaded.filename || pending.file.name,
-      size: uploaded.size || pending.file.size,
-      contentType: uploaded.contentType || pending.file.type || "audio/mpeg",
-      durationSeconds: pending.options.durationSeconds,
-    });
-    pendingUploadRef.current = null;
     setIsRedirecting(true);
-    router.push("/create?source=home-upload");
+    try {
+      const uploaded = await uploadOnly(pending.file);
+      writeHomeUploadedAudio({
+        ...uploaded,
+        filename: uploaded.filename || pending.file.name,
+        size: uploaded.size || pending.file.size,
+        contentType: uploaded.contentType || pending.file.type || "audio/mpeg",
+        durationSeconds: pending.options.durationSeconds,
+      });
+    } catch (err: any) {
+      // Upload failed: still send the user to the creator instead of leaving
+      // them stuck on the home page. The song isn't carried over, so they'll
+      // re-pick the file there.
+      toast.error(err?.message || "Upload failed, opening the creator anyway");
+    } finally {
+      pendingUploadRef.current = null;
+      router.push("/create?source=home-upload");
+    }
   }
 
   async function handleGenerate(

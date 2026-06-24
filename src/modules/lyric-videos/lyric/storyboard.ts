@@ -1355,6 +1355,7 @@ export async function generateStoryboard(params: {
   projectId: string;
   storyPrompt?: string;
   songAnalysis?: LyricVideoSongAnalysisResult;
+  billingMode?: 'included_in_generation';
 }) {
   // 正式生成分镜：读取项目详情 -> 调 llm.ts 的 generateStoryboardWithKieClaude
   // -> replaceScenes 重写 `lyric_video_scene`。
@@ -1369,8 +1370,8 @@ export async function generateStoryboard(params: {
     provider: configs.kie_api_key ? 'kie_codex' : 'heuristic',
     model: configs.kie_api_key ? configs.kie_codex_model || DEFAULT_STORYBOARD_MODEL : 'local-storyboard',
     prompt: params.storyPrompt || details.project.storyPrompt || details.project.title,
-    costCredits: configs.kie_api_key ? 15 : 0,
-    options: { projectId: params.projectId, stage: 'storyboard' },
+    costCredits: params.billingMode === 'included_in_generation' ? 0 : configs.kie_api_key ? 15 : 0,
+    options: { projectId: params.projectId, stage: 'storyboard', billingMode: params.billingMode },
   });
 
   try {

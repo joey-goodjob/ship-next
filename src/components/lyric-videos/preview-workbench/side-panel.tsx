@@ -14,14 +14,23 @@ import { ScenesPanel } from "./scenes-panel";
 import type { GenerationRun, GenerationStep, LyricScene, LyricVideoProject, PanelTab, RuntimeState } from "./types";
 import { deriveGenerationProgress } from "./utils";
 
-const PANEL_TABS: Array<{ id: PanelTab; label: string; icon: ComponentType<{ className?: string }> }> = [
+const SHOW_DIAGNOSTICS_TAB = process.env.NODE_ENV === "development";
+
+const DIAGNOSTICS_TAB: { id: PanelTab; label: string; icon: ComponentType<{ className?: string }> } = {
+  id: "diagnostics",
+  label: "诊断",
+  icon: Activity,
+};
+
+const BASE_PANEL_TABS: Array<{ id: PanelTab; label: string; icon: ComponentType<{ className?: string }> }> = [
   { id: "customize", label: "Customize", icon: Settings },
   { id: "lyrics", label: "Lyrics", icon: FileText },
   { id: "font", label: "Font", icon: Type },
   { id: "cast", label: "Cast", icon: Users },
   { id: "scenes", label: "Scenes", icon: Clapperboard },
-  { id: "diagnostics", label: "诊断", icon: Activity },
 ];
+
+const PANEL_TABS = SHOW_DIAGNOSTICS_TAB ? [...BASE_PANEL_TABS, DIAGNOSTICS_TAB] : BASE_PANEL_TABS;
 
 type VisiblePanelTabsInput = {
   generationRun?: GenerationRun | null;
@@ -44,7 +53,8 @@ export function deriveVisiblePanelTabs(input: VisiblePanelTabsInput) {
   const storyReviewMode = storyReady && !progress.isActive && !progress.error && !scenesReady && !exportReady;
 
   if (!storyReviewMode) return PANEL_TABS;
-  return PANEL_TABS.filter((tab) => tab.id === "customize" || tab.id === "cast" || tab.id === "diagnostics");
+  const storyReviewTabIds: PanelTab[] = SHOW_DIAGNOSTICS_TAB ? ["customize", "cast", "diagnostics"] : ["customize", "cast"];
+  return PANEL_TABS.filter((tab) => storyReviewTabIds.includes(tab.id));
 }
 
 export function SidePanel({ width }: { width: number }) {
@@ -89,7 +99,7 @@ export function SidePanel({ width }: { width: number }) {
         {effectiveActiveTab === "font" ? <FontPanel /> : null}
         {effectiveActiveTab === "cast" ? <CastPanel /> : null}
         {effectiveActiveTab === "scenes" ? <ScenesPanel /> : null}
-        {effectiveActiveTab === "diagnostics" ? <DiagnosticsPanel /> : null}
+        {SHOW_DIAGNOSTICS_TAB && effectiveActiveTab === "diagnostics" ? <DiagnosticsPanel /> : null}
       </div>
     </aside>
   );

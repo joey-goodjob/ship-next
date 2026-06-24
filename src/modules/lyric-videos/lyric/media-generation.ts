@@ -2,7 +2,7 @@ import { and, eq, isNotNull, isNull, notInArray, or } from 'drizzle-orm';
 import sharp from 'sharp';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
-import { lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
+import { aiTask, lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getUuid } from '@/lib/hash';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
@@ -1024,6 +1024,62 @@ async function finalizeActiveImageGenerationRun(params: {
   });
 }
 
+function parseTaskOptions(value: unknown) {
+  if (!value) return {};
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, any> : {};
+    } catch {
+      return {};
+    }
+  }
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {};
+}
+
+async function markIncludedPreviewGenerationBillingSucceeded(params: {
+  userId: string;
+  projectId: string;
+  runId?: string | null;
+  output: unknown;
+}) {
+  const pendingTasks = await db()
+    .select()
+    .from(aiTask)
+    .where(
+      and(
+        eq(aiTask.userId, params.userId),
+        eq(aiTask.mediaType, 'lyric_video_preview'),
+        eq(aiTask.provider, 'internal'),
+        eq(aiTask.status, AITaskStatus.PENDING)
+      )
+    );
+
+  const billingTask = pendingTasks.find((task: any) => {
+    const options = parseTaskOptions(task.options);
+    return options.projectId === params.projectId && options.includedImageGeneration === true;
+  });
+  if (!billingTask) return;
+
+  await updateTask({
+    taskId: billingTask.id,
+    status: AITaskStatus.SUCCESS,
+    taskResult: {
+      projectId: params.projectId,
+      runId: params.runId || null,
+      billingMode: 'preview_generation',
+      output: params.output,
+    },
+  });
+
+  logLyricStage('scene-images', 'preview-billing-success', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId || null,
+    billingTaskId: billingTask.id,
+  });
+}
+
 export async function queueSceneImages(params: {
   userId: string;
   projectId: string;
@@ -1909,6 +1965,7 @@ export async function generateVisualsFromStory(params: {
         projectId: params.projectId,
         storyPrompt,
         songAnalysis: directionDetail.songAnalysis,
+        billingMode: 'included_in_generation',
       });
     } else if (params.storyPrompt && params.storyPrompt.trim() !== details.project.storyPrompt) {
       await db()
@@ -2241,6 +2298,12 @@ async function updateSceneImageProjectStatus(params: {
       project: params.project,
       status: 'success',
       outputSnapshot,
+    });
+    await markIncludedPreviewGenerationBillingSucceeded({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.project?.activeRunId,
+      output: outputSnapshot,
     });
     await db()
       .update(lyricVideoProject)

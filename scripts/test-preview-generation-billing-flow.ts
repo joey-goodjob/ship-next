@@ -14,6 +14,8 @@ function assert(condition: unknown, message: string) {
 }
 
 const generationRunner = read("src/modules/lyric-videos/lyric/generation-runner.ts");
+const mediaGeneration = read("src/modules/lyric-videos/lyric/media-generation.ts");
+const storyboard = read("src/modules/lyric-videos/lyric/storyboard.ts");
 const createPage = read("src/app/[locale]/(workspace)/create/page.tsx");
 const editorWorkspace = read("src/components/lyric-videos/preview-workbench/editor-workspace.tsx");
 const homeTool = read("src/components/lyric-video-home-tool.tsx");
@@ -38,6 +40,21 @@ assert(
 assert(
   generationRunner.includes("markPreviewGenerationBillingTaskSucceeded("),
   "Generation runs must mark preview billing successful after included image generation is queued.",
+);
+assert(
+  storyboard.includes("billingMode?: 'included_in_generation'") &&
+    storyboard.includes("params.billingMode === 'included_in_generation'"),
+  "Storyboard prompt generation must support included-in-generation billing without extra text credits.",
+);
+assert(
+  mediaGeneration.includes("billingMode: 'included_in_generation'") &&
+    mediaGeneration.includes("generateStoryboard({") &&
+    mediaGeneration.includes("billingMode: 'included_in_generation'"),
+  "Visual generation must pass included-in-generation billing to storyboard prompt generation.",
+);
+assert(
+  mediaGeneration.includes("markIncludedPreviewGenerationBillingSucceeded("),
+  "Image sync must mark the included preview-generation billing task successful after all included images finish.",
 );
 assert(
   !createPage.includes("creditCost={10}"),
