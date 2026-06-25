@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
+import { applySelectedSceneImageCandidate } from "./scene-image-candidates";
 import type {
   CreateCastMemberInput,
   EditorContextValue,
@@ -16,6 +17,7 @@ import type {
   LyricExport,
   LyricLine,
   LyricScene,
+  LyricSceneImageCandidate,
   LyricScenePatch,
   LyricVideoProject,
   LyricWord,
@@ -1066,15 +1068,20 @@ export function EditorProvider({
     }
   }
 
-  async function selectSceneImageCandidate(sceneId: string, candidateId: string) {
+  async function selectSceneImageCandidate(sceneId: string, candidate: LyricSceneImageCandidate) {
     if (generationLocked) {
       showGenerationLockedToast();
       return null;
     }
     if (!project) return null;
+    let previousScenes: LyricScene[] | null = null;
+    setScenes((previous) => {
+      previousScenes = previous;
+      return previous.map((scene) => (scene.id === sceneId ? applySelectedSceneImageCandidate(scene, candidate) : scene));
+    });
     setSaveStatus("saving");
     try {
-      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/image-candidates/${candidateId}/select`, {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/image-candidates/${candidate.id}/select`, {
         method: "POST",
       });
       setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
@@ -1082,6 +1089,7 @@ export function EditorProvider({
       toast.success("Scene image selected");
       return updated;
     } catch (err: any) {
+      if (previousScenes) setScenes(previousScenes);
       setSaveStatus("failed");
       toast.error(err?.message || "Select scene image failed");
       return null;

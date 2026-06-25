@@ -1,17 +1,30 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type RefCallback, type UIEvent } from "react";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, RefreshCcw, Users, Wand2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Coins, Expand, ImageIcon, Loader2, MoreVertical, RefreshCcw, Users, Wand2, X } from "lucide-react";
 import { insertCastMention, parseCastMentionIds, parseCastMentionIdsFromPrompts, removeCastMention } from "@/lib/lyric-video-cast-mentions";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { PanelEmpty } from "./panel-empty";
 import { usePlayback } from "./playback-context";
-import { getVisibleSceneImageCandidates, SCENE_IMAGE_CANDIDATE_WINDOW_SIZE, sortSceneImageCandidates } from "./scene-image-candidates";
+import {
+  getSceneImageCandidateDisplayList,
+  getSceneImageCandidateViewerIndex,
+  getVisibleSceneImageCandidates,
+  moveSceneImageCandidateViewerIndex,
+  SCENE_IMAGE_CANDIDATE_WINDOW_SIZE,
+  sortSceneImageCandidates,
+} from "./scene-image-candidates";
 import { formatDurationMs, formatMs, msToSeconds } from "./utils";
 import type { LyricCastMember, LyricScene, LyricSceneImageCandidate } from "./types";
 
 type PromptField = "image" | "video";
+
+type SceneImageViewerState = {
+  sceneLabel: string;
+  candidates: LyricSceneImageCandidate[];
+  index: number;
+};
 
 function sceneCastRoleRank(role?: string | null) {
   const normalized = String(role || "").toLowerCase();
@@ -218,6 +231,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
   const [sceneCastIdDrafts, setSceneCastIdDrafts] = useState<Record<string, string[]>>({});
   const [candidateOffsets, setCandidateOffsets] = useState<Record<string, number>>({});
+  const [imageViewer, setImageViewer] = useState<SceneImageViewerState | null>(null);
   const [mentionMenu, setMentionMenu] = useState<{ sceneId: string; field: PromptField; query: string; cursor: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
@@ -239,8 +253,38 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     );
     setMentionMenu(null);
     setCandidateOffsets({});
+    setImageViewer(null);
     setSubmitting(false);
   }, [activeCast, open, scenes]);
+
+  useEffect(() => {
+    if (!imageViewer) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setImageViewer(null);
+      } else if (event.key === "ArrowLeft") {
+        setImageViewer((previous) =>
+          previous
+            ? {
+                ...previous,
+                index: moveSceneImageCandidateViewerIndex(previous.candidates, previous.index, -1),
+              }
+            : previous,
+        );
+      } else if (event.key === "ArrowRight") {
+        setImageViewer((previous) =>
+          previous
+            ? {
+                ...previous,
+                index: moveSceneImageCandidateViewerIndex(previous.candidates, previous.index, 1),
+              }
+            : previous,
+        );
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [imageViewer]);
 
   if (!open) return null;
 
@@ -417,6 +461,26 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     });
   }
 
+  function openSceneImageViewer(sceneLabel: string, candidates: LyricSceneImageCandidate[], imageUrl?: string | null) {
+    if (candidates.length === 0) return;
+    setImageViewer({
+      sceneLabel,
+      candidates,
+      index: getSceneImageCandidateViewerIndex(candidates, imageUrl),
+    });
+  }
+
+  function moveImageViewer(direction: -1 | 1) {
+    setImageViewer((previous) =>
+      previous
+        ? {
+            ...previous,
+            index: moveSceneImageCandidateViewerIndex(previous.candidates, previous.index, direction),
+          }
+        : previous,
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[10000] flex flex-col bg-[var(--editor-panel)] text-[var(--editor-text)]">
       <header className="flex h-[84px] shrink-0 items-start justify-between border-b border-[var(--editor-line)] px-[22px] py-[18px]">
@@ -454,12 +518,13 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
               const checked = selectedIds.has(scene.id);
               const durationMs = Math.max(0, (scene.endMs || scene.startMs) - scene.startMs);
               const title = scene.text?.trim() || "Instrumental";
+              const imageCandidateDisplayList = getSceneImageCandidateDisplayList(scene);
               return (
-	                <section
-                key={scene.id}
-                data-batch-scene-row
-                className="border-b border-[var(--editor-line)] py-[18px]"
-              >
+                <section
+                  key={scene.id}
+                  data-batch-scene-row
+                  className="border-b border-[var(--editor-line)] py-[18px]"
+                >
                 <div className="flex gap-[14px]">
                   <div className="shrink-0 pt-[2px]">
                     <input
@@ -559,9 +624,20 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                             ) : null}
                           </div>
                           <div className="min-w-0">
-                            <div className="min-h-[174px] w-full overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
+                            <div className="relative min-h-[174px] w-full overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
                               {scene.imageUrl ? (
-                                <img src={scene.imageUrl} alt="" className="h-full min-h-[174px] w-full object-cover" />
+                                <>
+                                  <img src={scene.imageUrl} alt="" className="h-full min-h-[174px] w-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => openSceneImageViewer(`Scene ${index + 1}`, imageCandidateDisplayList, scene.imageUrl)}
+                                    aria-label={`Open scene ${index + 1} image viewer`}
+                                    title="Open image viewer"
+                                    className="absolute bottom-[8px] right-[8px] flex h-[30px] w-[30px] items-center justify-center rounded-[999px] border border-white/10 bg-black/70 text-white shadow-[0_8px_20px_rgba(0,0,0,0.35)] transition hover:bg-black/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--editor-accent)]"
+                                  >
+                                    <Expand className="h-[15px] w-[15px]" />
+                                  </button>
+                                </>
                               ) : (
                                 <div className="flex min-h-[174px] w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
                                   {sceneStatusLabel(scene)}
@@ -569,12 +645,12 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                               )}
                             </div>
                             <SceneImageCandidateStrip
-                              candidates={scene.imageCandidates || []}
+                              candidates={imageCandidateDisplayList}
                               offset={candidateOffsets[scene.id] || 0}
                               selectedImageUrl={scene.imageUrl}
                               disabled={generationLocked}
-                              onMove={(direction) => moveCandidateWindow(scene.id, scene.imageCandidates || [], direction)}
-                              onSelect={(candidate) => selectSceneImageCandidate(scene.id, candidate.id)}
+                              onMove={(direction) => moveCandidateWindow(scene.id, imageCandidateDisplayList, direction)}
+                              onSelect={(candidate) => selectSceneImageCandidate(scene.id, candidate)}
                             />
                           </div>
                         </div>
@@ -645,6 +721,14 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
         </div>
       </main>
 
+      {imageViewer ? (
+        <SceneImageViewerOverlay
+          viewer={imageViewer}
+          onClose={() => setImageViewer(null)}
+          onMove={moveImageViewer}
+        />
+      ) : null}
+
       <footer className="flex min-h-[92px] shrink-0 flex-col items-stretch justify-center gap-[10px] border-t border-[var(--editor-line)] bg-[var(--editor-panel)] px-[16px] py-[12px] sm:flex-row sm:items-center sm:justify-end sm:gap-[18px] sm:px-[22px]">
         <button type="button" onClick={onClose} className="h-[42px] px-[10px] text-[15px] font-[800] text-[var(--editor-muted)]">
           Cancel
@@ -663,6 +747,78 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
           <span className="text-right text-[10px] font-[600] text-[var(--editor-muted)]">Estimated time to generate: ~20 minutes</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function SceneImageViewerOverlay({
+  onClose,
+  onMove,
+  viewer,
+}: {
+  onClose: () => void;
+  onMove: (direction: -1 | 1) => void;
+  viewer: SceneImageViewerState;
+}) {
+  const current = viewer.candidates[viewer.index] || viewer.candidates[0];
+  if (!current) return null;
+  const canMove = viewer.candidates.length > 1;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${viewer.sceneLabel} enlarged image`}
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/82 px-[18px] py-[20px] backdrop-blur-[2px]"
+      onMouseDown={onClose}
+    >
+      <div className="relative flex h-full max-h-[calc(100vh-40px)] w-full max-w-[1160px] items-center justify-center" onMouseDown={(event) => event.stopPropagation()}>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close image viewer"
+          title="Close"
+          className="absolute right-0 top-0 z-[2] flex h-[36px] w-[36px] items-center justify-center rounded-[999px] border border-white/12 bg-black/70 text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition hover:bg-black/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--editor-accent)]"
+        >
+          <X className="h-[17px] w-[17px]" />
+        </button>
+
+        {canMove ? (
+          <button
+            type="button"
+            onClick={() => onMove(-1)}
+            aria-label="Show previous image"
+            title="Previous image"
+            className="absolute left-0 top-1/2 z-[2] flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-[999px] border border-white/12 bg-black/65 text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition hover:bg-black/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--editor-accent)]"
+          >
+            <ChevronLeft className="h-[22px] w-[22px]" />
+          </button>
+        ) : null}
+
+        <div className="flex h-full w-full items-center justify-center px-[54px] py-[44px]">
+          <img
+            src={current.imageUrl}
+            alt=""
+            className="max-h-full max-w-full rounded-[8px] border border-white/10 object-contain shadow-[0_24px_70px_rgba(0,0,0,0.45)]"
+          />
+        </div>
+
+        {canMove ? (
+          <button
+            type="button"
+            onClick={() => onMove(1)}
+            aria-label="Show next image"
+            title="Next image"
+            className="absolute right-0 top-1/2 z-[2] flex h-[42px] w-[42px] -translate-y-1/2 items-center justify-center rounded-[999px] border border-white/12 bg-black/65 text-white shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition hover:bg-black/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--editor-accent)]"
+          >
+            <ChevronRight className="h-[22px] w-[22px]" />
+          </button>
+        ) : null}
+
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[999px] border border-white/10 bg-black/65 px-[10px] py-[5px] text-[11px] font-[800] text-white/85">
+          {viewer.index + 1} / {viewer.candidates.length}
+        </div>
+      </div>
     </div>
   );
 }
@@ -809,7 +965,7 @@ function PromptMentionTextarea({
         placeholder={placeholder}
         aria-label={ariaLabel}
         spellCheck={false}
-        className="relative z-[1] h-full min-h-[210px] w-full resize-none rounded-[6px] border-0 bg-transparent px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-transparent caret-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] selection:bg-[var(--editor-accent-soft)] disabled:cursor-not-allowed disabled:caret-[var(--editor-muted)]"
+        className="relative z-[1] h-full min-h-[210px] w-full resize-none rounded-[6px] border-0 bg-transparent px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-transparent caret-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] selection:bg-[var(--editor-accent-soft)] selection:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:caret-[var(--editor-muted)]"
       />
     </div>
   );

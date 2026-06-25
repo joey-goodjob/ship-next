@@ -11,9 +11,6 @@
   "top_banner": {
     "id": "signup-150-credits",
     "text": "新用户注册即可获得 150 免费积分。",
-    "buttonText": "领取积分",
-    "href": "/sign-in",
-    "target": "_self",
     "dismissedExpiryDays": 1
   },
   "seo": {

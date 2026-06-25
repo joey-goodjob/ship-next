@@ -17,6 +17,7 @@ export * from './llm';
 export * from './generation-runner';
 export * from './direction-detail';
 export * from './media-generation';
+export * from './video-prompts';
 export * from './media-jobs';
 export * from './export-download';
 export * from './cast-library';
