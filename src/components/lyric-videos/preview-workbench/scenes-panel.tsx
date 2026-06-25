@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, RefreshCcw, Users, Wand2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type RefCallback, type UIEvent } from "react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, RefreshCcw, Users, Wand2, X } from "lucide-react";
 import { insertCastMention, parseCastMentionIds, parseCastMentionIdsFromPrompts, removeCastMention } from "@/lib/lyric-video-cast-mentions";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { PanelEmpty } from "./panel-empty";
 import { usePlayback } from "./playback-context";
+import { getVisibleSceneImageCandidates, SCENE_IMAGE_CANDIDATE_WINDOW_SIZE, sortSceneImageCandidates } from "./scene-image-candidates";
 import { formatDurationMs, formatMs, msToSeconds } from "./utils";
-import type { LyricCastMember } from "./types";
+import type { LyricCastMember, LyricScene, LyricSceneImageCandidate } from "./types";
 
 type PromptField = "image" | "video";
 
@@ -35,6 +36,48 @@ function activeSceneCast(cast: LyricCastMember[]) {
     .filter((member) => member.status === "active" && sceneCastRoleRank(member.role) < 4)
     .sort((a, b) => sceneCastRoleRank(a.role) - sceneCastRoleRank(b.role) || (Number(a.sort) || 0) - (Number(b.sort) || 0))
     .slice(0, 4);
+}
+
+function castMentionBoundaryAllows(text: string, index: number) {
+  if (index >= text.length) return true;
+  return !/[\p{L}\p{N}_-]/u.test(text[index] || "");
+}
+
+function normalizedMentionName(name: unknown) {
+  return String(name || "").trim().replace(/\s+/g, " ");
+}
+
+function splitPromptMentions(prompt: string, cast: LyricCastMember[]) {
+  const text = String(prompt || "");
+  const candidates = cast
+    .map((member) => {
+      const name = normalizedMentionName(member.name);
+      return name ? { mention: `@${name}`, mentionLower: `@${name}`.toLowerCase() } : null;
+    })
+    .filter((candidate): candidate is { mention: string; mentionLower: string } => Boolean(candidate))
+    .sort((a, b) => b.mention.length - a.mention.length);
+
+  const parts: Array<{ mention: boolean; text: string }> = [];
+  let cursor = 0;
+  let index = 0;
+  while (index < text.length) {
+    if (text[index] !== "@") {
+      index += 1;
+      continue;
+    }
+    const rest = text.slice(index).toLowerCase();
+    const match = candidates.find((candidate) => rest.startsWith(candidate.mentionLower) && castMentionBoundaryAllows(text, index + candidate.mention.length));
+    if (!match) {
+      index += 1;
+      continue;
+    }
+    if (cursor < index) parts.push({ mention: false, text: text.slice(cursor, index) });
+    parts.push({ mention: true, text: text.slice(index, index + match.mention.length) });
+    index += match.mention.length;
+    cursor = index;
+  }
+  if (cursor < text.length) parts.push({ mention: false, text: text.slice(cursor) });
+  return parts;
 }
 
 export function ScenesPanel() {
@@ -169,11 +212,12 @@ export function ScenesPanel() {
 }
 
 function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const { cast, generationLocked, generationLockReason, project, queueSceneImages, scenes, updateScene } = useEditor();
+  const { cast, generationLocked, generationLockReason, project, queueSceneImages, retrySceneImage, scenes, selectSceneImageCandidate, updateScene } = useEditor();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
   const [sceneCastIdDrafts, setSceneCastIdDrafts] = useState<Record<string, string[]>>({});
+  const [candidateOffsets, setCandidateOffsets] = useState<Record<string, number>>({});
   const [mentionMenu, setMentionMenu] = useState<{ sceneId: string; field: PromptField; query: string; cursor: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
@@ -194,6 +238,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
       ),
     );
     setMentionMenu(null);
+    setCandidateOffsets({});
     setSubmitting(false);
   }, [activeCast, open, scenes]);
 
@@ -330,6 +375,48 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     setMentionMenu(null);
   }
 
+  async function saveSceneDraftIfNeeded(scene: LyricScene) {
+    const prompt = imagePromptDrafts[scene.id] ?? scene.prompt ?? "";
+    const motionPrompt = videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? "";
+    const castIds = sceneCastIdDrafts[scene.id] || [];
+    const promptChanged = prompt.trim() !== String(scene.prompt || "").trim();
+    const motionChanged = motionPrompt.trim() !== String(scene.motionPrompt || "").trim();
+    const castChanged = JSON.stringify(castIds) !== JSON.stringify(scene.castIds || []);
+    if (!promptChanged && !motionChanged && !castChanged) return true;
+    const saved = await updateScene(
+      scene.id,
+      {
+        prompt,
+        motionPrompt,
+        castIds,
+      },
+      { successMessage: null, errorMessage: "Save scene prompt failed" },
+    );
+    return Boolean(saved);
+  }
+
+  async function retryImageCandidate(scene: LyricScene) {
+    if (submitting || generationLocked) return;
+    setSubmitting(true);
+    try {
+      const saved = await saveSceneDraftIfNeeded(scene);
+      if (!saved) return;
+      await retrySceneImage(scene.id);
+      setCandidateOffsets((previous) => ({ ...previous, [scene.id]: 0 }));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function moveCandidateWindow(sceneId: string, candidates: LyricSceneImageCandidate[], direction: -1 | 1) {
+    const maxOffset = Math.max(0, sortSceneImageCandidates(candidates).length - SCENE_IMAGE_CANDIDATE_WINDOW_SIZE);
+    setCandidateOffsets((previous) => {
+      const current = previous[sceneId] || 0;
+      const next = Math.max(0, Math.min(maxOffset, current + direction));
+      return { ...previous, [sceneId]: next };
+    });
+  }
+
   return (
     <div className="fixed inset-0 z-[10000] flex flex-col bg-[var(--editor-panel)] text-[var(--editor-text)]">
       <header className="flex h-[84px] shrink-0 items-start justify-between border-b border-[var(--editor-line)] px-[22px] py-[18px]">
@@ -408,10 +495,12 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                           </div>
                           <button
                             type="button"
-                            disabled
-                            className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] disabled:cursor-not-allowed"
+                            onClick={() => retryImageCandidate(scene)}
+                            disabled={submitting || generationLocked}
+                            title={generationLocked ? generationLockReason : "Generate a new image candidate without replacing the selected image"}
+                            className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            <RefreshCcw className="h-[12px] w-[12px]" />
+                            <RefreshCcw className={cn("h-[12px] w-[12px]", submitting && "animate-spin")} />
                             <span>Retry Image</span>
                             <span className="inline-flex items-center gap-[3px]">
                               <Coins className="h-[11px] w-[11px]" />5
@@ -436,22 +525,19 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                         ) : null}
                         <div className="grid flex-1 grid-cols-1 gap-[10px] sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] sm:items-stretch">
                           <div className="relative min-w-0">
-                            <textarea
-                              ref={(node) => {
+                            <PromptMentionTextarea
+                              textareaRef={(node) => {
                                 textareaRefs.current[textareaRefKey(scene.id, "image")] = node;
                               }}
                               value={imagePromptDrafts[scene.id] ?? scene.prompt ?? ""}
-                              onChange={(event) => updateImagePrompt(scene.id, event.target.value, event.target.selectionStart)}
-                              onClick={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
-                              onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
-                              onKeyDown={(event) => {
-                                if (event.key === "Escape") setMentionMenu(null);
-                              }}
+                              cast={activeCast}
+                              onChange={(prompt, cursor) => updateImagePrompt(scene.id, prompt, cursor)}
+                              onCursorChange={(prompt, cursor) => updateMentionMenuFromCursor(scene.id, "image", prompt, cursor)}
+                              onEscape={() => setMentionMenu(null)}
                               disabled={generationLocked}
                               title={generationLocked ? generationLockReason : undefined}
                               placeholder="Describe the still image for this scene…"
-                              aria-label={`Scene ${index + 1} image prompt`}
-                              className="h-full min-h-[210px] w-full resize-none rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
+                              ariaLabel={`Scene ${index + 1} image prompt`}
                             />
                             {mentionMenu?.sceneId === scene.id && mentionMenu.field === "image" && mentionOptions.length > 0 ? (
                               <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
@@ -472,14 +558,24 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                               </div>
                             ) : null}
                           </div>
-                          <div className="min-h-[210px] w-full overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
-                            {scene.imageUrl ? (
-                              <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
-                                {sceneStatusLabel(scene)}
-                              </div>
-                            )}
+                          <div className="min-w-0">
+                            <div className="min-h-[174px] w-full overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
+                              {scene.imageUrl ? (
+                                <img src={scene.imageUrl} alt="" className="h-full min-h-[174px] w-full object-cover" />
+                              ) : (
+                                <div className="flex min-h-[174px] w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
+                                  {sceneStatusLabel(scene)}
+                                </div>
+                              )}
+                            </div>
+                            <SceneImageCandidateStrip
+                              candidates={scene.imageCandidates || []}
+                              offset={candidateOffsets[scene.id] || 0}
+                              selectedImageUrl={scene.imageUrl}
+                              disabled={generationLocked}
+                              onMove={(direction) => moveCandidateWindow(scene.id, scene.imageCandidates || [], direction)}
+                              onSelect={(candidate) => selectSceneImageCandidate(scene.id, candidate.id)}
+                            />
                           </div>
                         </div>
                       </div>
@@ -505,22 +601,19 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                           </button>
                         </div>
                         <div className="relative min-w-0 flex-1">
-                          <textarea
-                            ref={(node) => {
+                          <PromptMentionTextarea
+                            textareaRef={(node) => {
                               textareaRefs.current[textareaRefKey(scene.id, "video")] = node;
                             }}
                             value={videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? ""}
-                            onChange={(event) => updateVideoPrompt(scene.id, event.target.value, event.target.selectionStart)}
-                            onClick={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
-                            onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
-                            onKeyDown={(event) => {
-                              if (event.key === "Escape") setMentionMenu(null);
-                            }}
+                            cast={activeCast}
+                            onChange={(prompt, cursor) => updateVideoPrompt(scene.id, prompt, cursor)}
+                            onCursorChange={(prompt, cursor) => updateMentionMenuFromCursor(scene.id, "video", prompt, cursor)}
+                            onEscape={() => setMentionMenu(null)}
                             disabled={generationLocked}
                             title={generationLocked ? generationLockReason : undefined}
-                            placeholder="Describe how this image should move — e.g. slow dolly forward as the breeze lifts the curtain…"
-                            aria-label={`Scene ${index + 1} video prompt`}
-                            className="h-full min-h-[210px] w-full resize-none rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
+                            placeholder="Describe how this image should move - e.g. slow dolly forward as the breeze lifts the curtain…"
+                            ariaLabel={`Scene ${index + 1} video prompt`}
                           />
                           {mentionMenu?.sceneId === scene.id && mentionMenu.field === "video" && mentionOptions.length > 0 ? (
                             <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
@@ -577,6 +670,149 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 function sceneStatusLabel(scene: { prompt?: string | null; status?: string | null }) {
   if (scene.status === "lyrics_draft" || !String(scene.prompt || "").trim()) return "Timing draft";
   return scene.status || "draft";
+}
+
+function SceneImageCandidateStrip({
+  candidates,
+  disabled,
+  offset,
+  onMove,
+  onSelect,
+  selectedImageUrl,
+}: {
+  candidates: LyricSceneImageCandidate[];
+  disabled?: boolean;
+  offset: number;
+  onMove: (direction: -1 | 1) => void;
+  onSelect: (candidate: LyricSceneImageCandidate) => void;
+  selectedImageUrl?: string | null;
+}) {
+  const sorted = sortSceneImageCandidates(candidates);
+  const visible = getVisibleSceneImageCandidates(sorted, offset);
+  if (sorted.length === 0) return null;
+
+  const canMoveNewer = offset > 0;
+  const canMoveOlder = offset + SCENE_IMAGE_CANDIDATE_WINDOW_SIZE < sorted.length;
+
+  return (
+    <div className="mt-[8px] flex min-h-[42px] items-center gap-[6px]">
+      <button
+        type="button"
+        onClick={() => onMove(-1)}
+        disabled={!canMoveNewer}
+        aria-label="Show newer image candidates"
+        className="flex h-[30px] w-[24px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-35"
+      >
+        <ChevronLeft className="h-[13px] w-[13px]" />
+      </button>
+      <div className="flex min-w-0 flex-1 items-center gap-[6px] overflow-hidden">
+        {visible.map((candidate) => {
+          const selected = Boolean(selectedImageUrl && candidate.imageUrl === selectedImageUrl);
+          return (
+            <button
+              key={candidate.id}
+              type="button"
+              onClick={() => onSelect(candidate)}
+              disabled={disabled || selected}
+              title={selected ? "Selected image" : "Use this image for animation"}
+              className={cn(
+                "relative h-[38px] w-[54px] shrink-0 overflow-hidden rounded-[5px] border bg-[var(--editor-panel-strong)] transition",
+                selected ? "border-[var(--editor-accent)] ring-1 ring-[var(--editor-accent)]" : "border-[var(--editor-line)] hover:border-[var(--editor-muted)]",
+                disabled && "cursor-not-allowed opacity-60",
+              )}
+            >
+              <img src={candidate.imageUrl} alt="" className="h-full w-full object-cover" />
+              {selected ? (
+                <span className="absolute bottom-[3px] right-[3px] flex h-[15px] w-[15px] items-center justify-center rounded-[999px] bg-[var(--editor-accent)] text-[var(--editor-accent-ink)]">
+                  <Check className="h-[10px] w-[10px]" />
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={() => onMove(1)}
+        disabled={!canMoveOlder}
+        aria-label="Show older image candidates"
+        className="flex h-[30px] w-[24px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-35"
+      >
+        <ChevronRight className="h-[13px] w-[13px]" />
+      </button>
+    </div>
+  );
+}
+
+function PromptMentionTextarea({
+  ariaLabel,
+  cast,
+  disabled,
+  onChange,
+  onCursorChange,
+  onEscape,
+  placeholder,
+  textareaRef,
+  title,
+  value,
+}: {
+  ariaLabel: string;
+  cast: LyricCastMember[];
+  disabled?: boolean;
+  onChange: (prompt: string, cursor?: number) => void;
+  onCursorChange: (prompt: string, cursor?: number) => void;
+  onEscape: () => void;
+  placeholder: string;
+  textareaRef: RefCallback<HTMLTextAreaElement>;
+  title?: string;
+  value: string;
+}) {
+  const highlightRef = useRef<HTMLDivElement | null>(null);
+  const mentionParts = useMemo(() => splitPromptMentions(value, cast), [cast, value]);
+
+  function syncHighlightScroll(event: UIEvent<HTMLTextAreaElement>) {
+    if (!highlightRef.current) return;
+    highlightRef.current.scrollTop = event.currentTarget.scrollTop;
+    highlightRef.current.scrollLeft = event.currentTarget.scrollLeft;
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative h-full min-h-[210px] w-full overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] focus-within:border-[var(--editor-accent)]",
+        disabled && "bg-[var(--editor-panel-strong)]",
+      )}
+    >
+      <div
+        ref={highlightRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)]"
+      >
+        {mentionParts.map((part, index) => (
+          <span key={`${index}-${part.text}`} className={part.mention ? "text-sky-300" : undefined}>
+            {part.text}
+          </span>
+        ))}
+      </div>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(event) => onChange(event.target.value, event.target.selectionStart)}
+        onClick={(event) => onCursorChange(event.currentTarget.value, event.currentTarget.selectionStart)}
+        onKeyUp={(event) => onCursorChange(event.currentTarget.value, event.currentTarget.selectionStart)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") onEscape();
+        }}
+        onScroll={syncHighlightScroll}
+        disabled={disabled}
+        title={title}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        spellCheck={false}
+        className="relative z-[1] h-full min-h-[210px] w-full resize-none rounded-[6px] border-0 bg-transparent px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-transparent caret-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] selection:bg-[var(--editor-accent-soft)] disabled:cursor-not-allowed disabled:caret-[var(--editor-muted)]"
+      />
+    </div>
+  );
 }
 
 function SceneCastButton({

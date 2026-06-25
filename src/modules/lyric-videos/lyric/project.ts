@@ -8,6 +8,7 @@ import {
   lyricVideoLine,
   lyricVideoProject,
   lyricVideoScene,
+  lyricVideoSceneImageCandidate,
   lyricVideoWord,
   type NewLyricVideoProject,
 } from '@/config/db/schema';
@@ -137,7 +138,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
   const project = await getProject(params);
   if (!project) return null;
 
-  const [lines, scenes, exports, words, cast, latestRuns, activeRuns] = await Promise.all([
+  const [lines, scenes, imageCandidates, exports, words, cast, latestRuns, activeRuns] = await Promise.all([
     db()
       .select()
       .from(lyricVideoLine)
@@ -148,6 +149,11 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       .from(lyricVideoScene)
       .where(and(eq(lyricVideoScene.projectId, params.id), eq(lyricVideoScene.userId, params.userId)))
       .orderBy(lyricVideoScene.sort),
+    db()
+      .select()
+      .from(lyricVideoSceneImageCandidate)
+      .where(and(eq(lyricVideoSceneImageCandidate.projectId, params.id), eq(lyricVideoSceneImageCandidate.userId, params.userId)))
+      .orderBy(desc(lyricVideoSceneImageCandidate.createdAt)),
     db()
       .select()
       .from(lyricVideoExport)
@@ -224,6 +230,15 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
     ...line,
     words: words.filter((word: any) => word.lineId === line.id),
   }));
+  const imageCandidatesBySceneId = new Map<string, any[]>();
+  for (const candidate of imageCandidates) {
+    const sceneCandidates = imageCandidatesBySceneId.get(candidate.sceneId) || [];
+    sceneCandidates.push({
+      ...candidate,
+      generationParams: parseJsonField<Record<string, unknown>>(candidate.generationParams, {}),
+    });
+    imageCandidatesBySceneId.set(candidate.sceneId, sceneCandidates);
+  }
 
   const normalizedScenes = scenes.map((scene: any) => {
     const linkedLineIds = parseJsonField<string[]>(scene.linkedLineIds, []);
@@ -237,6 +252,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       styleOverrides: parseJsonField<Record<string, unknown>>(scene.styleOverrides, {}),
       timelineConfig: parseJsonField<Record<string, unknown>>(scene.timelineConfig, {}),
       generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
+      imageCandidates: imageCandidatesBySceneId.get(scene.id) || [],
     };
   });
   const normalizedExports = exports.map((item: any) => ({

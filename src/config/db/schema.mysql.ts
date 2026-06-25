@@ -774,6 +774,35 @@ export const lyricVideoScene = table(
   ]
 );
 
+export const lyricVideoSceneImageCandidate = table(
+  'lyric_video_scene_image_candidate',
+  {
+    id: varchar191('id').primaryKey(),
+    projectId: varchar191('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    sceneId: varchar191('scene_id')
+      .notNull()
+      .references(() => lyricVideoScene.id, { onDelete: 'cascade' }),
+    userId: varchar191('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    imageUrl: text('image_url').notNull(),
+    status: varchar('status', { length: 32 }).notNull().default('success'),
+    imageTaskId: varchar191('image_task_id'),
+    providerTaskId: varchar191('provider_task_id'),
+    imageModel: varchar191('image_model'),
+    promptSnapshot: longtext('prompt_snapshot'),
+    generationParams: longtext('generation_params'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_scene_image_candidate_scene').on(t.sceneId, t.createdAt),
+    index('idx_lyric_video_scene_image_candidate_project').on(t.projectId, t.createdAt),
+  ]
+);
+
 export const lyricVideoCastMember = table(
   'lyric_video_cast_member',
   {
@@ -892,6 +921,8 @@ export type LyricVideoWord = typeof lyricVideoWord.$inferSelect;
 export type NewLyricVideoWord = typeof lyricVideoWord.$inferInsert;
 export type LyricVideoScene = typeof lyricVideoScene.$inferSelect;
 export type NewLyricVideoScene = typeof lyricVideoScene.$inferInsert;
+export type LyricVideoSceneImageCandidate = typeof lyricVideoSceneImageCandidate.$inferSelect;
+export type NewLyricVideoSceneImageCandidate = typeof lyricVideoSceneImageCandidate.$inferInsert;
 export type LyricVideoCastMember = typeof lyricVideoCastMember.$inferSelect;
 export type NewLyricVideoCastMember = typeof lyricVideoCastMember.$inferInsert;
 export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;

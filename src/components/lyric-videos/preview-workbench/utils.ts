@@ -143,7 +143,7 @@ export function projectIsProcessing(project: LyricVideoProject | null, runtimeSt
 }
 
 export function sceneImageIsPending(scene: LyricScene) {
-  return Boolean((scene.providerTaskId || scene.imageTaskId) && !scene.imageUrl && scene.status !== "failed");
+  return Boolean((scene.providerTaskId || scene.imageTaskId) && scene.status === "processing");
 }
 
 const ACTIVE_GENERATION_STATUSES = ["queued", "running", "waiting_provider"];
@@ -232,7 +232,7 @@ export function deriveGenerationProgress(params: {
   const { generationRun, generationSteps, project, runtimeState, scenes } = params;
   const total = scenes.length;
   const success = scenes.filter(sceneHasImage).length;
-  const processing = scenes.filter((scene) => scene.status === "processing" && !scene.imageUrl).length;
+  const processing = scenes.filter((scene) => scene.status === "processing" && scene.providerTaskId).length;
   const failed = scenes.filter((scene) => scene.status === "failed" && !scene.imageUrl).length;
   const failedBatches = failedImageBatchCount(scenes);
   const songAnalysisStep = stepByStage(generationSteps, "song_analysis");

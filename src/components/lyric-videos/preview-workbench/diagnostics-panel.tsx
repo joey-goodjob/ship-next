@@ -152,7 +152,7 @@ function buildImageDiagnostics(scenes: LyricScene[]) {
   const success = scenes.filter(sceneHasImage).length;
   const lyricsDraft = scenes.filter((scene) => scene.status === "lyrics_draft").length;
   const promptReady = scenes.filter((scene) => String(scene.prompt || "").trim() || String(scene.motionPrompt || "").trim()).length;
-  const processingScenes = scenes.filter((scene) => scene.status === "processing" && !scene.imageUrl);
+  const processingScenes = scenes.filter((scene) => scene.status === "processing" && scene.providerTaskId);
   const failedScenes = scenes.filter((scene) => scene.status === "failed" && !scene.imageUrl);
   const missingImage = scenes.filter((scene) => !scene.imageUrl).length;
   const providerTaskIds = scenes.map((scene) => scene.providerTaskId || String(sceneGridParams(scene)?.providerTaskId || ""));

@@ -2,7 +2,7 @@ import { and, eq, isNotNull, isNull, notInArray, or } from 'drizzle-orm';
 import sharp from 'sharp';
 import { db } from '@/core/db';
 import { AIMediaType, AITaskStatus as ProviderTaskStatus, KIE_Z_IMAGE_MODEL } from '@/core/ai';
-import { aiTask, lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene } from '@/config/db/schema';
+import { aiTask, lyricVideoGenerationRun, lyricVideoGenerationStep, lyricVideoProject, lyricVideoScene, lyricVideoSceneImageCandidate } from '@/config/db/schema';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { getUuid } from '@/lib/hash';
 import { createTask, updateTask, AITaskStatus } from '@/modules/ai-tasks/service';
@@ -61,6 +61,137 @@ const VISUALS_ALREADY_RUNNING = 'VISUALS_ALREADY_RUNNING';
 
 export type LyricVideoImageBillingMode = 'included_in_generation' | 'extra_regeneration' | 'system_retry';
 
+export function resolveSelectedSceneImageUrlAfterCandidate(params: {
+  currentImageUrl?: string | null;
+  candidateImageUrl?: string | null;
+}) {
+  const currentImageUrl = String(params.currentImageUrl || '').trim();
+  const candidateImageUrl = String(params.candidateImageUrl || '').trim();
+  return currentImageUrl || candidateImageUrl || null;
+}
+
+export async function selectSceneImageCandidate(params: {
+  userId: string;
+  projectId: string;
+  sceneId: string;
+  candidateId: string;
+}) {
+  const [candidate] = await db()
+    .select()
+    .from(lyricVideoSceneImageCandidate)
+    .where(
+      and(
+        eq(lyricVideoSceneImageCandidate.id, params.candidateId),
+        eq(lyricVideoSceneImageCandidate.sceneId, params.sceneId),
+        eq(lyricVideoSceneImageCandidate.projectId, params.projectId),
+        eq(lyricVideoSceneImageCandidate.userId, params.userId)
+      )
+    )
+    .limit(1);
+
+  if (!candidate) throw new Error('Image candidate not found');
+
+  await db()
+    .update(lyricVideoScene)
+    .set({
+      imageUrl: candidate.imageUrl,
+      status: 'success',
+      completedAt: new Date(),
+      failureCode: null,
+      error: null,
+    })
+    .where(
+      and(
+        eq(lyricVideoScene.id, params.sceneId),
+        eq(lyricVideoScene.projectId, params.projectId),
+        eq(lyricVideoScene.userId, params.userId)
+      )
+    );
+
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  const scene = details?.scenes?.find((item: any) => item.id === params.sceneId);
+  if (!scene) throw new Error('Scene not found');
+  return scene;
+}
+
+async function recordSceneImageCandidate(params: {
+  userId: string;
+  projectId: string;
+  scene: any;
+  imageUrl?: string | null;
+  status?: string;
+  generationParams?: unknown;
+}) {
+  const imageUrl = String(params.imageUrl || '').trim();
+  if (!imageUrl) return { candidate: null, selectedImageUrl: resolveSelectedSceneImageUrlAfterCandidate({ currentImageUrl: params.scene.imageUrl, candidateImageUrl: imageUrl }) };
+
+  const [candidate] = await db()
+    .insert(lyricVideoSceneImageCandidate)
+    .values({
+      id: getUuid(),
+      projectId: params.projectId,
+      sceneId: params.scene.id,
+      userId: params.userId,
+      imageUrl,
+      status: params.status || 'success',
+      imageTaskId: params.scene.imageTaskId || null,
+      providerTaskId: params.scene.providerTaskId || null,
+      imageModel: params.scene.imageModel || null,
+      promptSnapshot: params.scene.imagePromptSnapshot || params.scene.prompt || null,
+      generationParams: safeJson(params.generationParams ?? params.scene.generationParams ?? {}),
+    })
+    .returning();
+
+  return {
+    candidate,
+    selectedImageUrl: resolveSelectedSceneImageUrlAfterCandidate({
+      currentImageUrl: params.scene.imageUrl,
+      candidateImageUrl: imageUrl,
+    }),
+  };
+}
+
+async function ensureSelectedSceneImageCandidate(params: {
+  userId: string;
+  projectId: string;
+  scene: any;
+}) {
+  const imageUrl = String(params.scene.imageUrl || '').trim();
+  if (!imageUrl) return null;
+
+  const existing = await db()
+    .select({ id: lyricVideoSceneImageCandidate.id })
+    .from(lyricVideoSceneImageCandidate)
+    .where(
+      and(
+        eq(lyricVideoSceneImageCandidate.sceneId, params.scene.id),
+        eq(lyricVideoSceneImageCandidate.projectId, params.projectId),
+        eq(lyricVideoSceneImageCandidate.userId, params.userId),
+        eq(lyricVideoSceneImageCandidate.imageUrl, imageUrl)
+      )
+    )
+    .limit(1);
+  if (existing.length > 0) return existing[0];
+
+  const [candidate] = await db()
+    .insert(lyricVideoSceneImageCandidate)
+    .values({
+      id: getUuid(),
+      projectId: params.projectId,
+      sceneId: params.scene.id,
+      userId: params.userId,
+      imageUrl,
+      status: 'success',
+      imageTaskId: params.scene.imageTaskId || null,
+      providerTaskId: params.scene.providerTaskId || null,
+      imageModel: params.scene.imageModel || null,
+      promptSnapshot: params.scene.imagePromptSnapshot || params.scene.prompt || null,
+      generationParams: safeJson(params.scene.generationParams || {}),
+    })
+    .returning();
+  return candidate;
+}
+
 function imageTaskCostCredits(params: { billingMode?: LyricVideoImageBillingMode; sceneCount: number }) {
   const { billingMode, sceneCount } = params;
   if (billingMode === 'included_in_generation' || billingMode === 'system_retry') return 0;
@@ -109,7 +240,7 @@ function isActiveGenerationStatus(status?: string | null) {
 }
 
 export function hasActiveSceneImageGeneration(scenes: Array<{ status?: string | null; imageUrl?: string | null; providerTaskId?: string | null }>) {
-  return scenes.some((scene) => scene.status === 'processing' && !scene.imageUrl && Boolean(scene.providerTaskId));
+  return scenes.some((scene) => scene.status === 'processing' && Boolean(scene.providerTaskId));
 }
 
 export function hasActiveVisualGeneration(params: {
@@ -126,7 +257,7 @@ export function hasActiveVisualGeneration(params: {
 }
 
 function activeOrCurrentScenes(scenes: any[]) {
-  const active = scenes.filter((scene: any) => scene.status === 'processing' && !scene.imageUrl);
+  const active = scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   return active.length > 0 ? active : scenes;
 }
 
@@ -1166,6 +1297,11 @@ export async function queueSceneImages(params: {
     billingMode: billing.billingMode,
   });
   for (const scene of scenes) {
+    await ensureSelectedSceneImageCandidate({
+      userId: params.userId,
+      projectId: params.projectId,
+      scene,
+    });
     const activeCast = activeCastForStoryboard(details.cast);
     const sceneCastIds = cleanSceneCastIds(scene.castIds || [], activeCast);
     const boundCastMembers =
@@ -1544,6 +1680,11 @@ export async function queueSceneImagesGrid(params: {
 
       const batchQueued = [];
       for (const [index, scene] of descriptor.scenes.entries()) {
+        await ensureSelectedSceneImageCandidate({
+          userId: params.userId,
+          projectId: params.projectId,
+          scene,
+        });
         const grid = {
           batchIndex,
           batchNumber: batchIndex + 1,
@@ -1623,6 +1764,11 @@ export async function queueSceneImagesGrid(params: {
       }
       const batchQueued = [];
       for (const [index, scene] of descriptor.scenes.entries()) {
+        await ensureSelectedSceneImageCandidate({
+          userId: params.userId,
+          projectId: params.projectId,
+          scene,
+        });
         const grid = {
           batchIndex,
           batchNumber: batchIndex + 1,
@@ -2039,7 +2185,7 @@ export async function generateVisualsFromStory(params: {
     const imageOutput = {
       ...imageInput,
       queuedSceneCount: queuedImages.length,
-      processingSceneCount: queuedImages.filter((scene: any) => scene.status === 'processing' && !scene.imageUrl).length,
+      processingSceneCount: queuedImages.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId).length,
       failedQueuedSceneCount: queuedImages.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length,
       providerTaskIds: Array.from(new Set(queuedImages.map((scene: any) => scene.providerTaskId).filter(Boolean))),
     };
@@ -2228,10 +2374,17 @@ async function syncGridSceneImageBatch(params: {
         crop: { left, top, width, height },
       },
     };
+    const recordedCandidate = await recordSceneImageCandidate({
+      userId: params.userId,
+      projectId: params.projectId,
+      scene,
+      imageUrl: saved.url,
+      generationParams: mergedGenerationParams,
+    });
     const [updated] = await db()
       .update(lyricVideoScene)
       .set({
-        imageUrl: saved.url,
+        imageUrl: recordedCandidate.selectedImageUrl,
         status: 'success',
         completedAt: new Date(),
         failureCode: null,
@@ -2276,7 +2429,7 @@ async function updateSceneImageProjectStatus(params: {
   project: any;
   scenes: any[];
 }) {
-  const hasProcessing = params.scenes.some((scene: any) => scene.status === 'processing' && !scene.imageUrl);
+  const hasProcessing = params.scenes.some((scene: any) => scene.status === 'processing' && scene.providerTaskId);
   const allDone = params.scenes.length && params.scenes.every((scene: any) => scene.status === 'success' || scene.imageUrl);
   const hasFailures = params.scenes.some((scene: any) => scene.status === 'failed' && !scene.imageUrl);
   const hasImages = params.scenes.some((scene: any) => scene.imageUrl || scene.status === 'success');
@@ -2591,10 +2744,17 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
       const result = await provider.query({ taskId: scene.providerTaskId, mediaType: AIMediaType.IMAGE });
       if (result.taskStatus === ProviderTaskStatus.SUCCESS) {
         const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
+        const recordedCandidate = await recordSceneImageCandidate({
+          userId: params.userId,
+          projectId: params.projectId,
+          scene,
+          imageUrl,
+          generationParams: scene.generationParams,
+        });
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
-            imageUrl,
+            imageUrl: recordedCandidate.selectedImageUrl,
             status: imageUrl ? 'success' : 'failed',
             completedAt: imageUrl ? new Date() : null,
             failureCode: imageUrl ? null : 'missing_image_url',
@@ -2624,10 +2784,18 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
       } else if (result.taskStatus === ProviderTaskStatus.FAILED) {
         const imageUrl = result.taskInfo?.images?.[0]?.imageUrl;
         const message = result.taskInfo?.errorMessage || 'Image generation failed';
+        const recordedCandidate = await recordSceneImageCandidate({
+          userId: params.userId,
+          projectId: params.projectId,
+          scene,
+          imageUrl,
+          status: imageUrl ? 'success' : 'failed',
+          generationParams: scene.generationParams,
+        });
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
-            imageUrl,
+            imageUrl: recordedCandidate.selectedImageUrl,
             status: imageUrl ? 'success' : 'failed',
             completedAt: imageUrl ? new Date() : null,
             failureCode: imageUrl ? null : 'provider_failed',
@@ -2706,5 +2874,7 @@ export async function syncSceneImages(params: { userId: string; projectId: strin
     })),
   });
 
-  return synced;
+  const syncedSceneIds = new Set([...normalizedFailedWithImages, ...synced].map((scene: any) => scene.id));
+  const refreshedScenes = (refreshed?.scenes || []).filter((scene: any) => syncedSceneIds.has(scene.id));
+  return refreshedScenes.length > 0 ? refreshedScenes : synced;
 }

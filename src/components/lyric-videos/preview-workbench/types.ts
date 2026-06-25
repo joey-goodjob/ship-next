@@ -85,6 +85,17 @@ export type LyricScene = {
   status: string;
   error?: string | null;
   sort?: number;
+  imageCandidates?: LyricSceneImageCandidate[];
+};
+
+export type LyricSceneImageCandidate = {
+  id: string;
+  sceneId: string;
+  imageUrl: string;
+  status: string;
+  createdAt: string | Date;
+  promptSnapshot?: string | null;
+  imageModel?: string | null;
 };
 
 export type LyricScenePatch = {
@@ -299,6 +310,8 @@ export type EditorContextValue = {
   regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
   syncCastImages: () => Promise<void>;
   queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;
+  retrySceneImage: (sceneId: string) => Promise<LyricScene | null>;
+  selectSceneImageCandidate: (sceneId: string, candidateId: string) => Promise<LyricScene | null>;
   syncSceneImages: () => Promise<void>;
   retryFailedImageBatches: () => Promise<void>;
   saveLyrics: () => Promise<boolean>;

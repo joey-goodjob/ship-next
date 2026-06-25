@@ -52,6 +52,7 @@ const IMAGE_SYNC_SCENE_FIELDS = [
   "imageTaskId",
   "providerTaskId",
   "generationParams",
+  "imageCandidates",
   "status",
   "error",
   "failureCode",
@@ -282,7 +283,7 @@ export function EditorProvider({
   }, [cast]);
 
   useEffect(() => {
-    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && !scene.imageUrl && scene.status === "processing");
+    const hasProcessingScenes = scenes.some((scene) => scene.providerTaskId && scene.status === "processing");
     if (!hasProcessingScenes || !project) return;
     const timer = window.setInterval(() => {
       syncSceneImages();
@@ -973,7 +974,7 @@ export function EditorProvider({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sceneIds: selectedSceneIds,
-          clearExistingImages: true,
+          clearExistingImages: false,
         }),
       });
       const queuedById = new Map((queued || []).map((scene) => [scene.id, scene]));
@@ -1017,6 +1018,73 @@ export function EditorProvider({
       toast.error(err?.message || "Sync scene images failed");
     } finally {
       imageSyncInFlightRef.current = false;
+    }
+  }
+
+  async function retrySceneImage(sceneId: string) {
+    if (sceneImageQueueInFlightRef.current) {
+      toast.info(t("scene_images_running"));
+      return null;
+    }
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    sceneImageQueueInFlightRef.current = true;
+    setSaveStatus("saving");
+    try {
+      const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/retry-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const updated = queued?.[0] || null;
+      if (updated) setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setProject((previous) =>
+        previous
+          ? {
+              ...previous,
+              scenesStatus: "processing",
+              generationStatus: "waiting_provider",
+              generationProgress: Math.max(previous.generationProgress || 0, 80),
+              pipelineStage: "images_processing",
+              pipelineError: null,
+            }
+          : previous,
+      );
+      setSaveStatus("saved");
+      await refresh();
+      toast.success("Queued a new image candidate");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Retry scene image failed");
+      return null;
+    } finally {
+      sceneImageQueueInFlightRef.current = false;
+    }
+  }
+
+  async function selectSceneImageCandidate(sceneId: string, candidateId: string) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/image-candidates/${candidateId}/select`, {
+        method: "POST",
+      });
+      setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setSaveStatus("saved");
+      toast.success("Scene image selected");
+      return updated;
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Select scene image failed");
+      return null;
     }
   }
 
@@ -1176,6 +1244,8 @@ export function EditorProvider({
       regenerateCastImage,
       syncCastImages,
       queueSceneImages,
+      retrySceneImage,
+      selectSceneImageCandidate,
       syncSceneImages,
       retryFailedImageBatches,
       saveLyrics,
@@ -1212,7 +1282,9 @@ export function EditorProvider({
       zoom,
       storyReviewStatus,
       refresh,
+      retrySceneImage,
       retryFailedImageBatches,
+      selectSceneImageCandidate,
       updateScene,
       updateSceneCastIds,
     ],

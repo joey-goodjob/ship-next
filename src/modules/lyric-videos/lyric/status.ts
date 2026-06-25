@@ -77,7 +77,7 @@ export function deriveRuntimeState(params: RuntimeStateInput) {
   const progressPercent = Number(generationRun?.progressPercent ?? project.generationProgress ?? 0);
   const currentStep = generationSteps.find((step: any) => step.stage === generationRun?.currentStage);
   const failedStep = generationSteps.find((step: any) => step.status === 'failed');
-  const processingScenes = scenes.filter((scene: any) => scene.status === 'processing' && !scene.imageUrl).length;
+  const processingScenes = scenes.filter((scene: any) => scene.status === 'processing' && scene.providerTaskId).length;
   const successfulScenes = scenes.filter((scene: any) => scene.imageUrl || scene.status === 'success').length;
   const failedScenes = scenes.filter((scene: any) => scene.status === 'failed' && !scene.imageUrl).length;
   const latestExport = exports[0] || null;
