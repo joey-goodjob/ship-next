@@ -225,7 +225,7 @@ export function ScenesPanel() {
 }
 
 function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const { cast, generationLocked, generationLockReason, project, queueSceneImages, retrySceneImage, scenes, selectSceneImageCandidate, updateScene } = useEditor();
+  const { cast, generateSceneVideoPrompts, generationLocked, generationLockReason, project, queueSceneImages, retrySceneImage, scenes, selectSceneImageCandidate, updateScene } = useEditor();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
@@ -291,6 +291,9 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
   const selectedCount = selectedIds.size;
   const creditCost = selectedCount * 5;
   const allSelected = scenes.length > 0 && selectedCount === scenes.length;
+  const missingVideoPromptSceneIds = scenes
+    .filter((scene) => !String(videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? "").trim())
+    .map((scene) => scene.id);
   const mentionOptions = mentionMenu
     ? activeCast.filter((member) => member.name.toLowerCase().startsWith(mentionMenu.query.toLowerCase()))
     : [];
@@ -375,6 +378,22 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
       }
       const queued = await queueSceneImages(selectedSceneIds);
       if (queued.length > 0) onClose();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function submitMissingVideoPrompts() {
+    if (!project || submitting || missingVideoPromptSceneIds.length === 0) return;
+    setSubmitting(true);
+    try {
+      const updated = await generateSceneVideoPrompts(missingVideoPromptSceneIds);
+      if (updated.length > 0) {
+        setVideoPromptDrafts((previous) => ({
+          ...previous,
+          ...Object.fromEntries(updated.map((scene) => [scene.id, scene.motionPrompt || ""])),
+        }));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -732,6 +751,16 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
       <footer className="flex min-h-[92px] shrink-0 flex-col items-stretch justify-center gap-[10px] border-t border-[var(--editor-line)] bg-[var(--editor-panel)] px-[16px] py-[12px] sm:flex-row sm:items-center sm:justify-end sm:gap-[18px] sm:px-[22px]">
         <button type="button" onClick={onClose} className="h-[42px] px-[10px] text-[15px] font-[800] text-[var(--editor-muted)]">
           Cancel
+        </button>
+        <button
+          type="button"
+          onClick={submitMissingVideoPrompts}
+          disabled={!project || missingVideoPromptSceneIds.length === 0 || submitting || generationLocked}
+          title={generationLocked ? generationLockReason : undefined}
+          className="inline-flex h-[42px] items-center justify-center gap-[8px] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] px-[14px] text-[13px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-panel-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? <Loader2 className="h-[15px] w-[15px] animate-spin" /> : <Wand2 className="h-[15px] w-[15px]" />}
+          Generate Missing Video Prompts ({missingVideoPromptSceneIds.length})
         </button>
         <div className="flex flex-col items-stretch gap-[6px] sm:items-end">
           <button

@@ -928,6 +928,35 @@ export function EditorProvider({
     }
   }
 
+  async function generateSceneVideoPrompts(sceneIds?: string[]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return [];
+    }
+    if (!project) return [];
+    const selectedSceneIds = sceneIds?.filter(Boolean);
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/video-prompts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sceneIds: selectedSceneIds }),
+      });
+      const updatedById = new Map((updated || []).map((scene) => [scene.id, scene]));
+      if (updatedById.size > 0) {
+        setScenes((previous) => previous.map((scene) => updatedById.get(scene.id) || scene));
+      }
+      setSaveStatus("saved");
+      await refresh();
+      toast.success(updatedById.size > 0 ? `Generated ${updatedById.size} video prompts` : "Video prompts are already complete");
+      return updated || [];
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Generate video prompts failed");
+      return [];
+    }
+  }
+
   async function updateScene(sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) {
     if (generationLocked) {
       showGenerationLockedToast();
@@ -1251,6 +1280,7 @@ export function EditorProvider({
       updateSceneCastIds,
       regenerateCastImage,
       syncCastImages,
+      generateSceneVideoPrompts,
       queueSceneImages,
       retrySceneImage,
       selectSceneImageCandidate,
@@ -1293,6 +1323,7 @@ export function EditorProvider({
       retrySceneImage,
       retryFailedImageBatches,
       selectSceneImageCandidate,
+      generateSceneVideoPrompts,
       updateScene,
       updateSceneCastIds,
     ],

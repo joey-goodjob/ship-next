@@ -309,6 +309,7 @@ export type EditorContextValue = {
   updateSceneCastIds: (sceneId: string, castIds: string[]) => Promise<LyricScene | null>;
   regenerateCastImage: (castId: string) => Promise<LyricCastMember | null>;
   syncCastImages: () => Promise<void>;
+  generateSceneVideoPrompts: (sceneIds?: string[]) => Promise<LyricScene[]>;
   queueSceneImages: (sceneIds: string[]) => Promise<LyricScene[]>;
   retrySceneImage: (sceneId: string) => Promise<LyricScene | null>;
   selectSceneImageCandidate: (sceneId: string, candidate: LyricSceneImageCandidate) => Promise<LyricScene | null>;

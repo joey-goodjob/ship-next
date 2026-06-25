@@ -44,4 +44,24 @@ assert(
   'image queue route should generate video prompts by default while allowing explicit opt-out',
 );
 
+const videoPromptRoutePath = 'src/app/api/lyric-videos/[id]/video-prompts/route.ts';
+assert(fs.existsSync(videoPromptRoutePath), 'a dedicated video prompt route should backfill prompts without image regeneration');
+const videoPromptRouteSource = fs.readFileSync(videoPromptRoutePath, 'utf8');
+assert(
+  videoPromptRouteSource.includes('generateMissingSceneVideoPrompts'),
+  'dedicated video prompt route should call missing prompt generation service',
+);
+
+const editorProviderSource = fs.readFileSync('src/components/lyric-videos/preview-workbench/editor-provider.tsx', 'utf8');
+assert(
+  editorProviderSource.includes('generateSceneVideoPrompts'),
+  'editor provider should expose a video prompt generation action',
+);
+
+const scenesPanelSource = fs.readFileSync('src/components/lyric-videos/preview-workbench/scenes-panel.tsx', 'utf8');
+assert(
+  scenesPanelSource.includes('Generate Missing Video Prompts'),
+  'batch generation dialog should offer a prompt-only backfill action',
+);
+
 console.log('video prompt sync rules ok');
