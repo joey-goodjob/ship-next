@@ -25,6 +25,7 @@ import { generateStoryboard } from './storyboard';
 import { buildGridImageStylePrompt } from './style';
 import { ACTIVE_RUN_STATUSES, GENERATION_STAGES } from './types';
 import { activeCastForStoryboard, cleanSceneCastIds, groupScenesByCastCombination } from './cast-library';
+import { generateMissingSceneVideoPrompts } from './video-prompts';
 
 /**
  * 图片生成模块：把已有的 `lyric_video_scene.prompt` 送去图片供应商，并把结果写回 scene。
@@ -2126,6 +2127,17 @@ export async function generateVisualsFromStory(params: {
         .where(and(eq(lyricVideoProject.id, params.projectId), eq(lyricVideoProject.userId, params.userId)));
     }
 
+    const videoPromptResult = await generateMissingSceneVideoPrompts({
+      userId: params.userId,
+      projectId: params.projectId,
+      sceneIds: scenes.map((scene: any) => scene.id).filter(Boolean),
+      model: params.model,
+    });
+    const videoPromptScenesById = new Map((videoPromptResult.scenes || []).map((scene: any) => [scene.id, scene]));
+    if (videoPromptScenesById.size > 0) {
+      scenes = scenes.map((scene: any) => videoPromptScenesById.get(scene.id) || scene);
+    }
+
     await markVisualsStepSuccess({
       userId: params.userId,
       runId: ledger.run.id,
@@ -2135,6 +2147,11 @@ export async function generateVisualsFromStory(params: {
         generatedStoryboard: Boolean(shouldGenerateStoryboard),
         sceneCount: scenes.length,
         storyPromptLength: storyPrompt.length,
+        videoPromptStatus: videoPromptResult.status,
+        videoPromptSceneCount: videoPromptResult.sceneCount,
+        videoPromptPersistedSceneCount: videoPromptResult.persistedSceneCount,
+        videoPromptFallbackSceneIds: videoPromptResult.fallbackSceneIds || [],
+        videoPromptWarnings: videoPromptResult.warnings || [],
       },
     });
 

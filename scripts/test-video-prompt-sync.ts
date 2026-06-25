@@ -44,6 +44,16 @@ assert(
   'image queue route should generate video prompts by default while allowing explicit opt-out',
 );
 
+const visualsServiceSource = fs.readFileSync('src/modules/lyric-videos/lyric/media-generation.ts', 'utf8');
+assert(
+  visualsServiceSource.includes('generateMissingSceneVideoPrompts'),
+  'Continue visuals flow should generate missing video prompts after storyboard prompts are ready',
+);
+assert(
+  visualsServiceSource.includes('videoPromptPersistedSceneCount'),
+  'Continue visuals prompt step output should record video prompt persistence status',
+);
+
 const videoPromptRoutePath = 'src/app/api/lyric-videos/[id]/video-prompts/route.ts';
 assert(fs.existsSync(videoPromptRoutePath), 'a dedicated video prompt route should backfill prompts without image regeneration');
 const videoPromptRouteSource = fs.readFileSync(videoPromptRoutePath, 'utf8');
