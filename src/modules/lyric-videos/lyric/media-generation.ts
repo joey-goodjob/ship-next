@@ -22,6 +22,7 @@ import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { buildProjectGenerationSnapshot } from './status';
 import { generateStoryboard } from './storyboard';
+import { buildGridImageStylePrompt } from './style';
 import { ACTIVE_RUN_STATUSES, GENERATION_STAGES } from './types';
 import { activeCastForStoryboard, cleanSceneCastIds, groupScenesByCastCombination } from './cast-library';
 
@@ -280,11 +281,12 @@ function scenePromptWithCast(params: { scene: any; cast: any[] }) {
   };
 }
 
-function buildGridSceneImagePrompt(params: {
+export function buildGridSceneImagePrompt(params: {
   scenes: any[];
   gridSize?: number;
   aspectRatio?: string;
   resolution?: string;
+  project?: { artStyle?: string | null; customStyle?: string | null };
   referenceCast?: any;
   hasReferenceImage?: boolean;
 }) {
@@ -309,7 +311,7 @@ function buildGridSceneImagePrompt(params: {
     'Do not create a collage, masonry layout, contact sheet, stacked strips, overlapping frames, variable-size panels, 2-column layout, 4-column layout, or any layout other than the requested square grid.',
     'Do not crop, merge, rotate, or resize individual cells differently. All cell edges must align perfectly.',
   ];
-  const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
+  const globalStyle = buildGridImageStylePrompt(params.project);
   const referenceCast = params.referenceCast;
   const mainCharacter = referenceCast
     ? [
@@ -1433,6 +1435,7 @@ export async function queueSceneImagesGrid(params: {
         gridSize: GRID_SCENE_IMAGE_SIZE,
         aspectRatio,
         resolution,
+        project: details.project,
         referenceCast: batchReferenceCast,
         hasReferenceImage: referenceImageUrls.length > 0,
       });

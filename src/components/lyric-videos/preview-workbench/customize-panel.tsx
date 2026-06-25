@@ -244,7 +244,9 @@ export function CustomizePanel() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[9px]">
           {STYLE_OPTIONS.map((style) => {
             const Icon = STYLE_ICON_BY_KEY[style.icon];
-            const selected = project.artStyle === style.value;
+            const selected =
+              project.artStyle === style.value ||
+              (project.artStyle === "cinematic illustration" && style.value === "realistic");
             return (
               <button
                 key={style.value}

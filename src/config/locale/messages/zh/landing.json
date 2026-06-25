@@ -8,6 +8,14 @@
     "help": "帮助",
     "contact": "联系"
   },
+  "top_banner": {
+    "id": "signup-150-credits",
+    "text": "新用户注册即可获得 150 免费积分。",
+    "buttonText": "领取积分",
+    "href": "/sign-in",
+    "target": "_self",
+    "dismissedExpiryDays": 1
+  },
   "seo": {
     "title": "AI 歌词视频制作工具 - 免费在线生成 Lyric Video",
     "description": "AI 歌词视频制作工具：上传歌曲，自动转写歌词、按节拍同步每一行，并生成适合氛围的歌词视频，支持 YouTube、TikTok、Reels，免费导出。",

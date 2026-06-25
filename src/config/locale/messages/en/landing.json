@@ -8,6 +8,14 @@
     "help": "Help",
     "contact": "Contact"
   },
+  "top_banner": {
+    "id": "signup-150-credits",
+    "text": "New users get 150 free credits when they sign up.",
+    "buttonText": "Claim credits",
+    "href": "/sign-in",
+    "target": "_self",
+    "dismissedExpiryDays": 1
+  },
   "seo": {
     "title": "AI Lyric Video Maker — Free Lyric Video Generator & Creator",
     "description": "AI lyric video maker that turns any song into a synced lyric video. Auto-transcribe lyrics, pick a style, preview, and export for YouTube, TikTok & Reels.",

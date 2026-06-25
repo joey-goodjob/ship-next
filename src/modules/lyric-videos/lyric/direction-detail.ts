@@ -95,7 +95,7 @@ function previewDraftFromOutput(params: {
       currentStoryPrompt && currentStoryPrompt !== formattedActs
         ? [{ title: 'User Story Direction', description: currentStoryPrompt }]
         : normalized.story_acts,
-    visual_style: normalized.visual_style || params.details.project.artStyle || 'cinematic realistic live-action still',
+    visual_style: normalized.visual_style || params.details.project.artStyle || 'realistic',
     color_palette:
       normalized.color_palette.length > 0
         ? normalized.color_palette

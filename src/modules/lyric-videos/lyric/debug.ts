@@ -9,6 +9,7 @@ import { asrTimingDebugSummary, cleanAsrWordsForLyrics, groupWordsIntoLyricLines
 import { fetchBytes, runLibrosaAnalysisForLocalFile, saveAIProviderFiles, saveLocalPublicFile } from './audio';
 import { parseJsonField } from './json';
 import { GRID_SCENE_IMAGE_RESOLUTION, GRID_SCENE_IMAGE_SIZE } from './media-generation';
+import { buildGridImageStylePrompt } from './style';
 import { buildFixedStoryboardSceneDrafts, preprocessLyricVideoForLlm } from './storyboard';
 import {
   type AudioAnalysisResult,
@@ -62,7 +63,8 @@ export function buildStoryboardGridImagePrompt(
   scenes: ReturnType<typeof normalizeDebugImageScenes>,
   gridSize = GRID_SCENE_IMAGE_SIZE,
   aspectRatio = '16:9',
-  resolution = GRID_SCENE_IMAGE_RESOLUTION
+  resolution = GRID_SCENE_IMAGE_RESOLUTION,
+  project?: { artStyle?: string | null; customStyle?: string | null }
 ) {
   const normalizedGridSize = Math.max(1, Math.min(5, Math.floor(Number(gridSize) || GRID_SCENE_IMAGE_SIZE)));
   const totalPanels = normalizedGridSize * normalizedGridSize;
@@ -85,7 +87,7 @@ export function buildStoryboardGridImagePrompt(
     'Do not create a collage, masonry layout, contact sheet, stacked strips, overlapping frames, variable-size panels, 2-column layout, 4-column layout, or any layout other than the requested square grid.',
     'Do not crop, merge, rotate, or resize individual cells differently. All cell edges must align perfectly.',
   ];
-  const globalStyle = 'Global visual style for all panels: cinematic realistic live-action lyric video stills, photorealistic, natural human proportions, consistent art direction, consistent color grading, consistent lighting language, same visual universe across every panel, no mixed illustration styles, no anime, no cartoon, no 3D render, no text, no subtitles, no logos.';
+  const globalStyle = buildGridImageStylePrompt(project);
   const panels = scenes.map((scene, index) => ({
     panel: index + 1,
     scene_index: scene.scene_index,
@@ -133,6 +135,8 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   sceneIds?: Array<number | string>;
   limit?: number;
   gridSize?: number;
+  artStyle?: string;
+  customStyle?: string;
 }) {
   if (!Array.isArray(params.scenes) || params.scenes.length === 0) {
     throw new Error('scenes is required for debug image generation');
@@ -165,7 +169,10 @@ export async function queueStoryboardSceneImagesWithKieForDebug(params: {
   const allPanels = [];
   for (const [batchIndex, batchScenes] of sceneBatches.entries()) {
     const sceneOffset = batchIndex * batchSize;
-    const gridPrompt = buildStoryboardGridImagePrompt(batchScenes, gridSize, aspectRatio, resolution);
+    const gridPrompt = buildStoryboardGridImagePrompt(batchScenes, gridSize, aspectRatio, resolution, {
+      artStyle: params.artStyle,
+      customStyle: params.customStyle,
+    });
     const panels = gridPrompt.panels.map((panel) => ({
       ...panel,
       batchIndex,

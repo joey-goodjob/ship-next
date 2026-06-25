@@ -36,6 +36,8 @@ export async function POST(req: Request) {
         sceneIds: body?.sceneIds,
         limit: body?.limit,
         gridSize,
+        artStyle: typeof body?.artStyle === 'string' ? body.artStyle : undefined,
+        customStyle: typeof body?.customStyle === 'string' ? body.customStyle : undefined,
       }));
     return respData(data);
   } catch (error: any) {

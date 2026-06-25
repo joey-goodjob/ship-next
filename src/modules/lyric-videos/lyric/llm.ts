@@ -29,6 +29,9 @@ import {
   type StoryboardScene,
 } from './types';
 import { activeCastForStoryboard, castRoleForDisplay } from './cast-library';
+import { buildStoryboardStyleBlock, buildUserStyleDirective } from './style';
+
+export { buildUserStyleDirective } from './style';
 
 /**
  * LLM 边界模块：负责把内部结构发给 Kie/Groq 等供应商，并把模型输出整理成内部格式。
@@ -565,21 +568,6 @@ export function mergeSongAnalysisParts(params: {
     ...(params.productionDirectionDetail || {}),
     characters: params.fallback?.characters || [],
   });
-}
-
-/**
- * 把用户在 UI 选择的画面风格（预设 artStyle + 可选的自定义 customStyle）
- * 拼成一段“最高优先级”的风格指令，注入到歌曲分析 / 故事草案 prompt 里。
- * 这是保证用户选的 Style 真正影响生成结果的关键。
- */
-export function buildUserStyleDirective(
-  project?: { artStyle?: string | null; customStyle?: string | null } | null,
-): string {
-  if (!project) return '';
-  const base = String(project.artStyle || '').trim();
-  const custom = String(project.customStyle || '').trim();
-  const parts = [base, custom].filter(Boolean);
-  return parts.join(', ');
 }
 
 function styleDirectiveBlock(styleDirective?: string): string {
@@ -1142,8 +1130,7 @@ export function buildStoryboardScenesPrompt(params: {
   cast?: any[];
 }) {
   const styleText = [
-    params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
-    params.project?.customStyle ? `Custom style notes: ${params.project.customStyle}` : '',
+    buildStoryboardStyleBlock(params.project),
     params.project?.palette ? `Palette: ${params.project.palette}` : '',
     params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
   ]
@@ -1193,7 +1180,7 @@ ${JSON.stringify(fixedScenes)}
 - shotType=insert_shot：image_prompt 必须是空镜或细节特写，聚焦物件、身体局部、衣角、鞋、口袋、尘土、火光、道路纹理等；不要出现完整人物、不要露脸、不要新增角色
 - shotType=landscape_shot：image_prompt 必须以环境为主体，优先大远景、道路、天空、地平线、天气、光影；可以没有人物，若有人只能是极小剪影，不要把主角放在画面中心
 - image_prompt 必须保持地点、色彩和视觉元素一致，不要出现文字、歌词、字幕、logo
-- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
+- image_prompt 必须严格遵守 ## 视觉设定中的 Art style、Custom style notes 和 Style boundary，不得改成其它画风
 - 只输出 JSON，不要解释`;
 }
 
@@ -1205,8 +1192,7 @@ export function buildDebugStoryboardScenesPrompt(params: {
   cast?: any[];
 }) {
   const styleText = [
-    params.project?.artStyle ? `Art style: ${params.project.artStyle}` : '',
-    params.project?.customStyle ? `Custom style notes: ${params.project.customStyle}` : '',
+    buildStoryboardStyleBlock(params.project),
     params.project?.palette ? `Palette: ${params.project.palette}` : '',
     params.storyPrompt || params.project?.storyPrompt ? `Story direction: ${params.storyPrompt || params.project?.storyPrompt}` : '',
   ]
@@ -1275,7 +1261,7 @@ ${JSON.stringify(fixedScenes)}
 ### 视觉一致性
 - image_prompt 必须保持 visual_style 和当前段落 color_tone 的一致
 - 不要出现文字、歌词、字幕、logo
-- image_prompt 必须使用 cinematic realistic live-action still 风格；不要使用 Cinematic illustration、illustration、anime、cartoon、3D render 等插画或渲染风格词
+- image_prompt 必须严格遵守 ## 视觉设定中的 Art style、Custom style notes 和 Style boundary，不得改成其它画风
 
 ### 全局
 - 只输出 JSON，不要解释`;

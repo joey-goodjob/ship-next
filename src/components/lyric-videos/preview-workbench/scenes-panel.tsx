@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, Play, RefreshCcw, Users, Wand2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Clapperboard, Coins, ImageIcon, Loader2, MoreVertical, RefreshCcw, Users, Wand2, X } from "lucide-react";
 import { insertCastMention, parseCastMentionIds, parseCastMentionIdsFromPrompts, removeCastMention } from "@/lib/lyric-video-cast-mentions";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
@@ -369,11 +369,12 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
               const title = scene.text?.trim() || "Instrumental";
               return (
 	                <section
-	                  key={scene.id}
-	                  data-batch-scene-row
-	                  className="grid grid-cols-[32px_minmax(0,1fr)] gap-x-[14px] gap-y-[12px] border-b border-[var(--editor-line)] py-[16px] md:grid-cols-[32px_minmax(140px,180px)_minmax(0,1fr)_minmax(0,1fr)] md:gap-[16px] xl:grid-cols-[44px_220px_minmax(390px,1fr)_minmax(390px,1fr)]"
-	                >
-	                  <div className="pt-[2px] md:pt-[92px]">
+                key={scene.id}
+                data-batch-scene-row
+                className="border-b border-[var(--editor-line)] py-[18px]"
+              >
+                <div className="flex gap-[14px]">
+                  <div className="shrink-0 pt-[2px]">
                     <input
                       type="checkbox"
                       checked={checked}
@@ -385,167 +386,166 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                     />
                   </div>
 
-	                  <div className="min-w-0 pt-0 md:pt-[74px]">
-                    <div className="mb-[8px] flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[11px] font-[800] text-[var(--editor-muted)]">
-                      <span>Scene {index + 1}</span>
-                      <span className="font-mono">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-[12px] flex flex-wrap items-center gap-x-[10px] gap-y-[4px]">
+                      <span className="text-[11px] font-[800] uppercase tracking-[0.04em] text-[var(--editor-muted)]">Scene {index + 1}</span>
+                      <span className="font-mono text-[11px] font-[700] text-[var(--editor-muted)]">
                         {formatMs(scene.startMs)} - {formatMs(scene.endMs)}
                       </span>
-                      <span className="font-mono">{formatDurationMs(durationMs)}</span>
+                      <span className="font-mono text-[11px] font-[700] text-[var(--editor-subtle)]">{formatDurationMs(durationMs)}</span>
+                      <span className="min-w-0 truncate text-[14px] font-[700] text-[var(--editor-text)]">{title}</span>
+                      <span className="ml-auto inline-flex shrink-0 items-center gap-[4px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[8px] py-[3px] text-[10px] font-[800] text-[var(--editor-text)]">
+                        <Coins className="h-[11px] w-[11px]" />5 credits
+                      </span>
                     </div>
-	                    <p className="max-w-[230px] text-[16px] font-[700] leading-[24px] text-[var(--editor-text)]">{title}</p>
-	                    <span className="mt-[14px] inline-flex rounded-[5px] bg-[var(--editor-panel-strong)] px-[6px] py-[3px] text-[10px] font-[800] text-[var(--editor-text)]">
-	                      5 credits
-	                    </span>
-	                  </div>
 
-		                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-3 md:row-start-1">
-		                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
-	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
-	                        <ImageIcon className="h-[15px] w-[15px] shrink-0" />
-	                        <span className="truncate xl:hidden">Still Image</span>
-	                        <span className="hidden truncate xl:inline">Create Still Image</span>
-	                      </div>
-	                      <button
-	                        type="button"
-	                        disabled
-	                        className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] disabled:cursor-not-allowed"
-	                      >
-	                        <RefreshCcw className="h-[12px] w-[12px]" />
-	                        <span className="xl:hidden">Retry</span>
-	                        <span className="hidden xl:inline">Retry Image</span>
-	                        <span className="inline-flex items-center gap-[3px]">
-	                          <Coins className="h-[11px] w-[11px]" />5
-	                        </span>
-		                      </button>
-		                    </div>
-		                    {activeCast.length > 0 ? (
-		                      <div className="mb-[8px] flex flex-wrap items-center gap-[6px]">
-		                        <Users className="h-[12px] w-[12px] text-[var(--editor-muted)]" />
-		                        <SceneCastButton label="None" active={(sceneCastIdDrafts[scene.id] || []).length === 0} disabled={generationLocked} title={generationLocked ? generationLockReason : undefined} onClick={() => clearCastMentions(scene.id)} />
-		                        {activeCast.map((member, castIndex) => (
-		                          <SceneCastButton
-		                            key={member.id}
-		                            label={sceneCastRoleLabel(member, castIndex)}
-		                            active={(sceneCastIdDrafts[scene.id] || []).includes(member.id)}
-		                            disabled={generationLocked}
-		                            title={generationLocked ? generationLockReason : undefined}
-		                            onClick={() => toggleCastMention(scene.id, member)}
-		                          />
-		                        ))}
-		                      </div>
-		                    ) : null}
-		                    <div className="grid gap-[10px] 2xl:grid-cols-[minmax(0,1fr)_minmax(170px,0.86fr)]">
-		                      <div className="relative min-w-0">
-		                        <textarea
-		                          ref={(node) => {
-		                            textareaRefs.current[textareaRefKey(scene.id, "image")] = node;
-		                          }}
-		                          value={imagePromptDrafts[scene.id] ?? scene.prompt ?? ""}
-		                          onChange={(event) => updateImagePrompt(scene.id, event.target.value, event.target.selectionStart)}
-		                          onClick={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
-		                          onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
-		                          onKeyDown={(event) => {
-		                            if (event.key === "Escape") setMentionMenu(null);
-		                          }}
-		                          disabled={generationLocked}
-		                          title={generationLocked ? generationLockReason : undefined}
-		                          aria-label={`Scene ${index + 1} image prompt`}
-		                          className="min-h-[162px] w-full resize-y rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
-		                        />
-		                        {mentionMenu?.sceneId === scene.id && mentionMenu.field === "image" && mentionOptions.length > 0 ? (
-		                          <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
-		                            {mentionOptions.map((member, optionIndex) => (
-		                              <button
-		                                key={member.id}
-		                                type="button"
-		                                onMouseDown={(event) => {
-		                                  event.preventDefault();
-		                                  selectMention(scene.id, "image", member);
-		                                }}
-		                                className="flex w-full items-center justify-between gap-[8px] px-[10px] py-[8px] text-left text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)]"
-		                              >
-		                                <span className="min-w-0 truncate">@{member.name}</span>
-		                                <span className="shrink-0 text-[10px] font-[800] text-[var(--editor-muted)]">{sceneCastRoleLabel(member, optionIndex)}</span>
-		                              </button>
-		                            ))}
-		                          </div>
-		                        ) : null}
-		                      </div>
-		                      <div className="aspect-video w-full overflow-hidden rounded-[5px] bg-[var(--editor-panel-strong)]">
-	                        {scene.imageUrl ? (
-	                          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
-	                        ) : (
-	                          <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
-	                            {sceneStatusLabel(scene)}
-	                          </div>
-	                        )}
-	                      </div>
-	                    </div>
-	                  </div>
+                    <div className="grid grid-cols-1 gap-[12px] lg:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)] lg:items-stretch">
+                      <div className="flex min-w-0 flex-col rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[12px] shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+                        <div className="mb-[10px] flex items-center justify-between gap-[10px]">
+                          <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
+                            <ImageIcon className="h-[15px] w-[15px] shrink-0" />
+                            <span className="truncate">Create Still Image</span>
+                          </div>
+                          <button
+                            type="button"
+                            disabled
+                            className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] disabled:cursor-not-allowed"
+                          >
+                            <RefreshCcw className="h-[12px] w-[12px]" />
+                            <span>Retry Image</span>
+                            <span className="inline-flex items-center gap-[3px]">
+                              <Coins className="h-[11px] w-[11px]" />5
+                            </span>
+                          </button>
+                        </div>
+                        {activeCast.length > 0 ? (
+                          <div className="mb-[10px] flex flex-wrap items-center gap-[6px]">
+                            <Users className="h-[12px] w-[12px] text-[var(--editor-muted)]" />
+                            <SceneCastButton label="None" active={(sceneCastIdDrafts[scene.id] || []).length === 0} disabled={generationLocked} title={generationLocked ? generationLockReason : undefined} onClick={() => clearCastMentions(scene.id)} />
+                            {activeCast.map((member, castIndex) => (
+                              <SceneCastButton
+                                key={member.id}
+                                label={sceneCastRoleLabel(member, castIndex)}
+                                active={(sceneCastIdDrafts[scene.id] || []).includes(member.id)}
+                                disabled={generationLocked}
+                                title={generationLocked ? generationLockReason : undefined}
+                                onClick={() => toggleCastMention(scene.id, member)}
+                              />
+                            ))}
+                          </div>
+                        ) : null}
+                        <div className="grid flex-1 grid-cols-1 gap-[10px] sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] sm:items-stretch">
+                          <div className="relative min-w-0">
+                            <textarea
+                              ref={(node) => {
+                                textareaRefs.current[textareaRefKey(scene.id, "image")] = node;
+                              }}
+                              value={imagePromptDrafts[scene.id] ?? scene.prompt ?? ""}
+                              onChange={(event) => updateImagePrompt(scene.id, event.target.value, event.target.selectionStart)}
+                              onClick={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
+                              onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "image", event.currentTarget.value, event.currentTarget.selectionStart)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Escape") setMentionMenu(null);
+                              }}
+                              disabled={generationLocked}
+                              title={generationLocked ? generationLockReason : undefined}
+                              placeholder="Describe the still image for this scene…"
+                              aria-label={`Scene ${index + 1} image prompt`}
+                              className="h-full min-h-[210px] w-full resize-none rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
+                            />
+                            {mentionMenu?.sceneId === scene.id && mentionMenu.field === "image" && mentionOptions.length > 0 ? (
+                              <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
+                                {mentionOptions.map((member, optionIndex) => (
+                                  <button
+                                    key={member.id}
+                                    type="button"
+                                    onMouseDown={(event) => {
+                                      event.preventDefault();
+                                      selectMention(scene.id, "image", member);
+                                    }}
+                                    className="flex w-full items-center justify-between gap-[8px] px-[10px] py-[8px] text-left text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)]"
+                                  >
+                                    <span className="min-w-0 truncate">@{member.name}</span>
+                                    <span className="shrink-0 text-[10px] font-[800] text-[var(--editor-muted)]">{sceneCastRoleLabel(member, optionIndex)}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="min-h-[210px] w-full overflow-hidden rounded-[6px] bg-[var(--editor-panel-strong)]">
+                            {scene.imageUrl ? (
+                              <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[12px] font-[800] uppercase text-[var(--editor-subtle)]">
+                                {sceneStatusLabel(scene)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
 
-	                  <div className="col-start-2 min-w-0 rounded-[7px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[10px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] md:col-start-4 md:row-start-1">
-	                    <div className="mb-[8px] flex items-center justify-between gap-[10px]">
-	                      <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
-	                        <Clapperboard className="h-[15px] w-[15px] shrink-0" />
-	                        <span className="truncate xl:hidden">Animate</span>
-	                        <span className="hidden truncate xl:inline">Animate the Image</span>
-	                      </div>
-	                      <button
-	                        type="button"
-	                        className="inline-flex h-[28px] w-[142px] shrink-0 items-center justify-between rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[9px] text-[11px] font-[800] text-[var(--editor-text)]"
-	                      >
-	                        Video Model
-	                        <ChevronDown className="h-[13px] w-[13px] text-[var(--editor-muted)]" />
-	                      </button>
-	                    </div>
-		                    <div className="relative min-w-0">
-		                      <textarea
-		                        ref={(node) => {
-		                          textareaRefs.current[textareaRefKey(scene.id, "video")] = node;
-		                        }}
-		                        value={videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? ""}
-		                        onChange={(event) => updateVideoPrompt(scene.id, event.target.value, event.target.selectionStart)}
-		                        onClick={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
-		                        onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
-		                        onKeyDown={(event) => {
-		                          if (event.key === "Escape") setMentionMenu(null);
-		                        }}
-		                        disabled={generationLocked}
-		                        title={generationLocked ? generationLockReason : undefined}
-		                        aria-label={`Scene ${index + 1} video prompt`}
-		                        className="min-h-[210px] w-full resize-y rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
-		                      />
-		                      {mentionMenu?.sceneId === scene.id && mentionMenu.field === "video" && mentionOptions.length > 0 ? (
-		                        <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
-		                          {mentionOptions.map((member, optionIndex) => (
-		                            <button
-		                              key={member.id}
-		                              type="button"
-		                              onMouseDown={(event) => {
-		                                event.preventDefault();
-		                                selectMention(scene.id, "video", member);
-		                              }}
-		                              className="flex w-full items-center justify-between gap-[8px] px-[10px] py-[8px] text-left text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)]"
-		                            >
-		                              <span className="min-w-0 truncate">@{member.name}</span>
-		                              <span className="shrink-0 text-[10px] font-[800] text-[var(--editor-muted)]">{sceneCastRoleLabel(member, optionIndex)}</span>
-		                            </button>
-		                          ))}
-		                        </div>
-		                      ) : null}
-		                    </div>
-	                    <div className="mt-[8px] flex items-center justify-between rounded-[5px] border border-dashed border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[7px] text-[11px] font-[800] text-[var(--editor-muted)]">
-	                      <span className="inline-flex items-center gap-[6px]">
-	                        <Play className="h-[12px] w-[12px]" />
-	                        Video preview placeholder
-	                      </span>
-	                      <span className="inline-flex items-center gap-[3px]">
-	                        <Coins className="h-[11px] w-[11px]" />5
-	                      </span>
-	                    </div>
-	                  </div>
-                </section>
+                      <div className="hidden items-center justify-center lg:flex">
+                        <div className="flex h-[28px] w-[28px] items-center justify-center rounded-[999px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)]">
+                          <ChevronRight className="h-[15px] w-[15px]" />
+                        </div>
+                      </div>
+
+                      <div className="flex min-w-0 flex-col rounded-[8px] border border-[var(--editor-line)] bg-[var(--editor-panel-soft)] p-[12px] shadow-[0_1px_2px_rgba(15,23,42,0.05)]">
+                        <div className="mb-[10px] flex items-center justify-between gap-[10px]">
+                          <div className="inline-flex min-w-0 items-center gap-[7px] text-[13px] font-[800] text-[var(--editor-text)]">
+                            <Clapperboard className="h-[15px] w-[15px] shrink-0" />
+                            <span className="truncate">Animate the Image</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="inline-flex h-[28px] w-[142px] shrink-0 items-center justify-between rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[9px] text-[11px] font-[800] text-[var(--editor-text)]"
+                          >
+                            Video Model
+                            <ChevronDown className="h-[13px] w-[13px] text-[var(--editor-muted)]" />
+                          </button>
+                        </div>
+                        <div className="relative min-w-0 flex-1">
+                          <textarea
+                            ref={(node) => {
+                              textareaRefs.current[textareaRefKey(scene.id, "video")] = node;
+                            }}
+                            value={videoPromptDrafts[scene.id] ?? scene.motionPrompt ?? ""}
+                            onChange={(event) => updateVideoPrompt(scene.id, event.target.value, event.target.selectionStart)}
+                            onClick={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
+                            onKeyUp={(event) => updateMentionMenuFromCursor(scene.id, "video", event.currentTarget.value, event.currentTarget.selectionStart)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Escape") setMentionMenu(null);
+                            }}
+                            disabled={generationLocked}
+                            title={generationLocked ? generationLockReason : undefined}
+                            placeholder="Describe how this image should move — e.g. slow dolly forward as the breeze lifts the curtain…"
+                            aria-label={`Scene ${index + 1} video prompt`}
+                            className="h-full min-h-[210px] w-full resize-none rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] focus:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:bg-[var(--editor-panel-strong)] disabled:text-[var(--editor-muted)]"
+                          />
+                          {mentionMenu?.sceneId === scene.id && mentionMenu.field === "video" && mentionOptions.length > 0 ? (
+                            <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
+                              {mentionOptions.map((member, optionIndex) => (
+                                <button
+                                  key={member.id}
+                                  type="button"
+                                  onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    selectMention(scene.id, "video", member);
+                                  }}
+                                  className="flex w-full items-center justify-between gap-[8px] px-[10px] py-[8px] text-left text-[12px] font-[800] text-[var(--editor-text)] hover:bg-[var(--editor-bg)]"
+                                >
+                                  <span className="min-w-0 truncate">@{member.name}</span>
+                                  <span className="shrink-0 text-[10px] font-[800] text-[var(--editor-muted)]">{sceneCastRoleLabel(member, optionIndex)}</span>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
               );
             })}
           </div>

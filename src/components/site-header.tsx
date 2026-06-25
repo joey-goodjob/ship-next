@@ -9,6 +9,7 @@ import { DiscordIcon } from "@/components/discord-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { LocaleSelector } from "@/components/locale-selector";
 import { SiteUserMenu } from "@/components/site-user-menu";
+import { TopBanner, type TopBannerConfig } from "@/components/top-banner";
 import { useSession } from "@/core/auth/client";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +25,12 @@ export function SiteHeader({
   navLinks,
   discordLink,
   variant = "default",
+  topBanner,
 }: {
   navLinks?: NavLink[];
   discordLink?: Pick<NavLink, "href" | "label">;
   variant?: SiteHeaderVariant;
+  topBanner?: TopBannerConfig;
 }) {
   const t = useTranslations("common");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -95,6 +98,8 @@ export function SiteHeader({
             : null,
       )}
     >
+      {topBanner ? <TopBanner banner={topBanner} /> : null}
+
       <div className="mx-auto grid h-[88px] max-w-[1180px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
         {/* Brand */}
         <Link href="/" className="flex w-fit items-center rounded-md p-1 transition-transform active:scale-95">
