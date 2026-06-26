@@ -7,6 +7,7 @@ import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
 import { LatestExport } from "./latest-export";
 import { usePlayback } from "./playback-context";
+import { RoadmapGuide } from "./roadmap-guide";
 import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, resolvePreviewCaptionText, secondsToMs } from "./utils";
 
 export function VideoPreview() {
@@ -53,12 +54,15 @@ export function VideoPreview() {
       data-preview-stage
       className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[var(--editor-bg)] p-[16px]"
     >
-      <GenerationProgressBanner
-        locked={generationLocked}
-        lockReason={generationLockReason}
-        progress={progress}
-        onRetry={retryFailedImageBatches}
-      />
+      <div className="absolute left-[24px] top-[24px] z-20 flex max-w-[calc(100%-48px)] flex-col items-start gap-[10px]">
+        <RoadmapGuide />
+        <GenerationProgressBanner
+          locked={generationLocked}
+          lockReason={generationLockReason}
+          progress={progress}
+          onRetry={retryFailedImageBatches}
+        />
+      </div>
       {shouldShowLatestExport ? (
         <div className="absolute right-[24px] top-[24px] z-20 w-[min(320px,calc(100%-48px))]">
           <LatestExport
@@ -135,13 +139,16 @@ function GenerationProgressBanner({
   if (!shouldShow) return null;
 
   return (
-    <div className="absolute left-[24px] top-[24px] z-20 w-[min(540px,calc(100%-48px))] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[14px] py-[12px] shadow-[0_8px_24px_rgba(15,23,42,0.10)]">
+    <div className="w-[min(540px,100%)] rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[14px] py-[12px] shadow-[0_8px_24px_rgba(15,23,42,0.10)]">
       <div className="flex flex-wrap items-center justify-between gap-[10px]">
         <div className="min-w-0">
           <p className="truncate text-[13px] font-[900] text-[var(--editor-text)]">{progress.primary}</p>
           <p className="mt-[4px] text-[12px] font-[650] leading-5 text-[var(--editor-muted)]">
             {progress.imageText}. You can leave this page and come back later.
           </p>
+          {progress.refundNotice ? (
+            <p className="mt-[4px] text-[12px] font-[800] leading-5 text-[var(--editor-text)]">{progress.refundNotice}</p>
+          ) : null}
         </div>
         {progress.retryable ? (
           <button

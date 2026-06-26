@@ -95,6 +95,8 @@
     --editor-accent-ink: oklch(0.129 0.042 264.695);
     --editor-danger: oklch(0.577 0.245 27.325);
     --editor-danger-soft: oklch(0.971 0.013 17.38);
+    --editor-success: oklch(0.627 0.144 162.48);
+    --editor-success-soft: oklch(0.95 0.045 162.48);
 
     --background: var(--brand-page);
     --foreground: var(--brand-ink);
@@ -169,6 +171,8 @@
     --editor-accent-ink: oklch(0.129 0.042 264.695);
     --editor-danger: oklch(0.704 0.191 22.216);
     --editor-danger-soft: color-mix(in oklch, var(--editor-danger) 18%, var(--editor-panel));
+    --editor-success: oklch(0.723 0.162 162.48);
+    --editor-success-soft: color-mix(in oklch, var(--editor-success) 20%, var(--editor-panel));
 
     --background: var(--brand-page);
     --foreground: var(--brand-ink);

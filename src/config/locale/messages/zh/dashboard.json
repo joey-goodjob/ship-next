@@ -12,7 +12,10 @@
   },
   "create": {
     "title": "Create",
-    "title_loop": ["Ready to create your music video?", "准备好创建你的音乐视频了吗？"],
+    "title_loop": [
+      "Ready to create your music video?",
+      "准备好创建你的音乐视频了吗？"
+    ],
     "description": "上传歌曲、命名项目，并启动歌词视频的故事方向生成。",
     "project_name": "项目名称",
     "project_name_placeholder": "请输入项目名称...",
@@ -69,6 +72,52 @@
     "scenes": "分镜",
     "preview": "预览",
     "exports": "导出",
+    "progress": {
+      "start_creating": {
+        "title": "开始创作",
+        "detail": "打开项目继续完成设置。"
+      },
+      "lyrics_failed": {
+        "title": "需要处理",
+        "detail": "歌词生成失败，打开项目后可重试。"
+      },
+      "scenes_failed": {
+        "title": "需要处理",
+        "detail": "分镜生成失败，打开项目后可重试。"
+      },
+      "export_failed": {
+        "title": "需要处理",
+        "detail": "导出失败，打开项目后可重试。"
+      },
+      "video_ready": {
+        "title": "视频已完成",
+        "detail": "打开后可预览或下载导出文件。"
+      },
+      "exporting_video": {
+        "title": "正在导出视频",
+        "detail": "MP4 正在渲染中。"
+      },
+      "ready_to_export": {
+        "title": "可以导出",
+        "detail": "分镜已准备好，可预览并导出 MP4。"
+      },
+      "review_scene_draft": {
+        "title": "检查分镜草稿",
+        "detail": "打开项目检查分镜，再继续导出。"
+      },
+      "creating_scenes": {
+        "title": "正在生成分镜",
+        "detail": "系统正在准备故事板和视觉画面。"
+      },
+      "lyrics_ready": {
+        "title": "歌词已准备好",
+        "detail": "打开项目创建或检查分镜。"
+      },
+      "transcribing_lyrics": {
+        "title": "正在识别歌词",
+        "detail": "系统正在把音频处理成带时间轴的歌词。"
+      }
+    },
     "save_lyrics": "保存歌词",
     "generate_storyboard": "生成分镜",
     "queue_images": "排队生成 Kie 图片",
@@ -110,6 +159,62 @@
     "max_four_characters": "当前版本最多支持四个启用的角色。",
     "no_audio": "该项目暂无可用音频",
     "diagnostics_copied": "诊断信息已复制",
-    "copy_failed": "复制失败"
+    "copy_failed": "复制失败",
+    "roadmap": {
+      "badge_next": "下一步 · {n}/{total}",
+      "badge_done": "已完成",
+      "badge_completed": "已完成 · {n}/{total}",
+      "stage_lyrics": "歌词",
+      "stage_story": "故事",
+      "stage_scenes": "分镜",
+      "stage_images": "图片",
+      "stage_export": "导出",
+      "stage_done": "完成",
+      "lyrics_action": "上传歌曲并识别歌词",
+      "lyrics_how": "上传音频后，系统会自动识别歌词与时间轴。",
+      "lyrics_cta": "去上传歌词",
+      "story_action": "确认故事方向",
+      "story_how": "在右侧 Story 面板检查内容，然后点 Confirm & Generate Scenes。",
+      "story_cta": "去确认故事",
+      "scenes_action": "生成分镜时间轴",
+      "scenes_how": "根据故事把歌词切成一段段画面，去 Scenes 面板生成。",
+      "scenes_cta": "去生成分镜",
+      "images_wait_action": "图片生成中 · {success}/{total}",
+      "images_wait_how": "无需等待，可以先去调整角色或字体，完成后画面会自动出现。",
+      "images_wait_cta": "去调整角色 / 字体",
+      "images_retry_action": "{failed} 张图片生成失败",
+      "images_retry_how": "去 Scenes 面板重试失败的批次，已成功的会保留。",
+      "images_retry_cta": "去重试",
+      "images_action": "生成场景图片",
+      "images_how": "去 Scenes 面板点 Batch Generation，为每个分镜生成画面。",
+      "images_cta": "去生成图片",
+      "export_action": "导出视频",
+      "export_action_busy": "正在导出视频…",
+      "export_how": "画面齐了，渲染成视频并下载。",
+      "export_how_busy": "渲染进行中，完成后可在右上角下载。",
+      "export_cta": "去导出",
+      "export_cta_busy": "导出中…",
+      "done_action": "全部完成 🎉",
+      "done_how": "视频已生成，可在预览区播放，或在右上角下载。",
+      "lyrics_done_title": "歌词已导入",
+      "lyrics_done_how": "已识别歌词与时间轴，可在 Lyrics 面板查看或修改。",
+      "lyrics_review_cta": "查看 / 修改歌词",
+      "story_done_title": "故事方向已确认",
+      "story_done_how": "可在 Customize 面板重新编辑故事内容。",
+      "story_review_cta": "查看 / 修改故事",
+      "scenes_done_title": "分镜时间轴已生成",
+      "scenes_done_how": "可在 Scenes 面板调整每段画面的内容。",
+      "scenes_review_cta": "查看分镜",
+      "images_done_title": "场景图片已生成",
+      "images_done_how": "可在 Scenes 面板替换或重新生成某张图片。",
+      "images_review_cta": "查看图片",
+      "export_done_title": "视频已导出",
+      "export_done_how": "可在右上角下载已导出的视频。",
+      "export_review_cta": "",
+      "nav_prev": "看上一步",
+      "nav_back": "回到当前",
+      "expand": "展开引导",
+      "collapse": "收起引导"
+    }
   }
 }

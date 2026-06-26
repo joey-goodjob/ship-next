@@ -12,7 +12,10 @@
   },
   "create": {
     "title": "Create",
-    "title_loop": ["Ready to create your music video?", "准备好创建你的音乐视频了吗？"],
+    "title_loop": [
+      "Ready to create your music video?",
+      "准备好创建你的音乐视频了吗？"
+    ],
     "description": "Upload a song, name the project, and start a lyric video direction pass.",
     "project_name": "Project name",
     "project_name_placeholder": "Enter a project name...",
@@ -69,6 +72,52 @@
     "scenes": "Scenes",
     "preview": "Preview",
     "exports": "Exports",
+    "progress": {
+      "start_creating": {
+        "title": "Start creating",
+        "detail": "Open the project to continue setup."
+      },
+      "lyrics_failed": {
+        "title": "Needs attention",
+        "detail": "Lyrics failed. Open the project to retry."
+      },
+      "scenes_failed": {
+        "title": "Needs attention",
+        "detail": "Scenes failed. Open the project to retry."
+      },
+      "export_failed": {
+        "title": "Needs attention",
+        "detail": "Export failed. Open the project to retry."
+      },
+      "video_ready": {
+        "title": "Video ready",
+        "detail": "Open to preview or download the export."
+      },
+      "exporting_video": {
+        "title": "Exporting video",
+        "detail": "Your MP4 is being rendered."
+      },
+      "ready_to_export": {
+        "title": "Ready to export",
+        "detail": "Scenes are ready for preview and MP4 export."
+      },
+      "review_scene_draft": {
+        "title": "Review scene draft",
+        "detail": "Open the project to review scenes before export."
+      },
+      "creating_scenes": {
+        "title": "Creating scenes",
+        "detail": "Storyboards and visuals are being prepared."
+      },
+      "lyrics_ready": {
+        "title": "Lyrics ready",
+        "detail": "Open the project to create or review scenes."
+      },
+      "transcribing_lyrics": {
+        "title": "Transcribing lyrics",
+        "detail": "Audio is being processed into timed lyrics."
+      }
+    },
     "save_lyrics": "Save lyrics",
     "generate_storyboard": "Generate storyboard",
     "queue_images": "Queue Kie images",
@@ -110,6 +159,62 @@
     "max_four_characters": "This version supports up to four active characters.",
     "no_audio": "No audio available for this project",
     "diagnostics_copied": "Diagnostics copied",
-    "copy_failed": "Copy failed"
+    "copy_failed": "Copy failed",
+    "roadmap": {
+      "badge_next": "Next · {n}/{total}",
+      "badge_done": "Done",
+      "badge_completed": "Done · {n}/{total}",
+      "stage_lyrics": "Lyrics",
+      "stage_story": "Story",
+      "stage_scenes": "Scenes",
+      "stage_images": "Images",
+      "stage_export": "Export",
+      "stage_done": "Done",
+      "lyrics_action": "Upload your song & detect lyrics",
+      "lyrics_how": "Upload audio and the lyrics and timing are detected automatically.",
+      "lyrics_cta": "Upload lyrics",
+      "story_action": "Confirm the story direction",
+      "story_how": "Review the Story panel on the right, then click Confirm & Generate Scenes.",
+      "story_cta": "Confirm story",
+      "scenes_action": "Generate the scene timeline",
+      "scenes_how": "Split the lyrics into scenes based on the story — generate them in the Scenes panel.",
+      "scenes_cta": "Generate scenes",
+      "images_wait_action": "Generating images · {success}/{total}",
+      "images_wait_how": "No need to wait — adjust cast or fonts meanwhile; images appear automatically when ready.",
+      "images_wait_cta": "Adjust cast / fonts",
+      "images_retry_action": "{failed} images failed to generate",
+      "images_retry_how": "Retry the failed batches in the Scenes panel; successful images are kept.",
+      "images_retry_cta": "Retry",
+      "images_action": "Generate scene images",
+      "images_how": "Open the Scenes panel and click Batch Generation to create an image for each scene.",
+      "images_cta": "Generate images",
+      "export_action": "Export the video",
+      "export_action_busy": "Exporting video…",
+      "export_how": "All visuals are ready — render and download the video.",
+      "export_how_busy": "Rendering in progress; download from the top right when it's done.",
+      "export_cta": "Export",
+      "export_cta_busy": "Exporting…",
+      "done_action": "All done 🎉",
+      "done_how": "Your video is ready — play it in the preview, or download from the top right.",
+      "lyrics_done_title": "Lyrics imported",
+      "lyrics_done_how": "Lyrics and timing are detected; view or edit them in the Lyrics panel.",
+      "lyrics_review_cta": "View / edit lyrics",
+      "story_done_title": "Story direction confirmed",
+      "story_done_how": "Re-edit the story anytime in the Customize panel.",
+      "story_review_cta": "View / edit story",
+      "scenes_done_title": "Scene timeline generated",
+      "scenes_done_how": "Adjust the content of each scene in the Scenes panel.",
+      "scenes_review_cta": "View scenes",
+      "images_done_title": "Scene images generated",
+      "images_done_how": "Replace or regenerate any image in the Scenes panel.",
+      "images_review_cta": "View images",
+      "export_done_title": "Video exported",
+      "export_done_how": "Download the exported video from the top right.",
+      "export_review_cta": "",
+      "nav_prev": "Previous step",
+      "nav_back": "Back to current",
+      "expand": "Expand",
+      "collapse": "Collapse"
+    }
   }
 }
