@@ -948,7 +948,7 @@ export function AudioUploadTrim({
                           )}
                         </div>
 
-                        <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                        <div className="mt-5 flex flex-col gap-4">
                           {showTrimControls && durationStatus === "ready" ? (
                             <div className="flex flex-col gap-3 md:flex-row md:items-end">
                               <label className="text-left text-sm font-semibold leading-5 text-brand-muted">
@@ -1009,11 +1009,11 @@ export function AudioUploadTrim({
                             </div>
                           ) : null}
 
-                          <div className="grid grid-cols-2 gap-3 sm:flex sm:justify-end xl:pb-0.5">
+                          <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:justify-end">
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-11 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
+                              className="h-11 min-w-0 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
                               onClick={() => audioInputRef.current?.click()}
                             >
                               <RefreshCcw className="size-4" />
@@ -1022,7 +1022,7 @@ export function AudioUploadTrim({
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-11 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
+                              className="h-11 min-w-0 rounded-[9px] border-brand-line px-4 text-sm font-semibold leading-5 text-brand-muted [@media(hover:hover)]:hover:bg-brand-panel-strong"
                               onClick={clearAudioFile}
                             >
                               <Trash2 className="size-4" />

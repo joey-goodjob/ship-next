@@ -1641,6 +1641,19 @@ export async function replaceScenes(params: {
   });
 }
 
+function normalizeUpdatedScene(updated: any) {
+  if (!updated) return updated;
+  return {
+    ...updated,
+    linkedLineIds: parseJsonField<string[]>(updated.linkedLineIds, []),
+    castIds: parseJsonField<string[]>(updated.castIds, []),
+    styleOverrides: parseJsonField<Record<string, unknown>>(updated.styleOverrides, {}),
+    timelineConfig: parseJsonField<Record<string, unknown>>(updated.timelineConfig, {}),
+    generationParams: parseJsonField<Record<string, unknown>>(updated.generationParams, {}),
+    videoGenerationParams: parseJsonField<Record<string, unknown>>(updated.videoGenerationParams, {}),
+  };
+}
+
 export async function updateScene(params: {
   userId: string;
   projectId: string;
@@ -1676,5 +1689,5 @@ export async function updateScene(params: {
     )
     .returning();
 
-  return updated;
+  return normalizeUpdatedScene(updated);
 }

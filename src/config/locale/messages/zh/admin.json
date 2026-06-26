@@ -19,7 +19,7 @@
     "subscriptions": "订阅",
     "credits": "积分",
     "invite_codes": "邀请码",
-    "creations": "作品"
+    "creations": "使用记录"
   },
   "stats": {
     "total_users": "总用户数",
@@ -251,8 +251,8 @@
     "tab_consume": "消费"
   },
   "creations": {
-    "title": "作品生成",
-    "description": "查看歌词视频项目、用户媒体、生成状态、导出结果和失败原因。",
+    "title": "用户使用记录",
+    "description": "查看每个用户创建了什么歌词视频、上传了什么、生成结果、消耗积分和失败原因。",
     "refresh": "刷新",
     "search_placeholder": "搜索标题、文件名、用户或邮箱",
     "total": "共 {count} 个作品",
@@ -266,6 +266,7 @@
     "source_audio": "原始音频",
     "processed_audio": "处理后音频",
     "rendered_video": "导出视频",
+    "credits_used": "{count} 积分",
     "empty_media": "这个作品还没有可播放的媒体。",
     "empty_steps": "暂无生成步骤记录。",
     "empty_scenes": "暂无场景记录。",
@@ -277,18 +278,55 @@
     "badges": {
       "render": "导出：{status}"
     },
+    "tabs": {
+      "all": "全部",
+      "processing": "处理中",
+      "preview": "预览就绪",
+      "rendered": "已导出",
+      "failed": "失败"
+    },
+    "summary": {
+      "total": {
+        "title": "使用记录",
+        "detail": "所有用户创建的歌词视频项目。"
+      },
+      "completed": {
+        "title": "已导出",
+        "detail": "{media} 条记录已有可播放成片。"
+      },
+      "processing": {
+        "title": "进行中",
+        "detail": "{media} 条记录已有处理后音频。"
+      },
+      "failed": {
+        "title": "需要排查",
+        "detail": "当前加载记录中已消耗 {credits} 积分。"
+      }
+    },
     "sections": {
       "media": "媒体",
       "progress": "进度",
+      "failure_diagnostics": "失败诊断",
       "steps": "生成步骤",
       "workflow": "工作流",
       "scenes": "场景"
+    },
+    "diagnostics": {
+      "stage": "阶段",
+      "status": "状态",
+      "model": "模型",
+      "attempts": "尝试次数",
+      "time": "时间",
+      "task": "任务",
+      "error": "错误"
     },
     "metrics": {
       "scenes": "图片",
       "exports": "导出",
       "failed_images": "失败图片",
-      "elapsed": "耗时"
+      "elapsed": "耗时",
+      "credits": "积分",
+      "media": "媒体"
     }
   },
   "invite_codes": {

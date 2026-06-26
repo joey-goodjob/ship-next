@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  AlertTriangle,
   ChevronDown,
+  CheckCircle2,
+  Clock3,
   ExternalLink,
   FileAudio,
   Film,
@@ -61,10 +64,13 @@ type AdminCreation = {
     id: string;
     stage: string;
     status: string;
+    attemptCount?: number | null;
     provider?: string | null;
     model?: string | null;
     providerTaskId?: string | null;
     errorMessage?: string | null;
+    updatedAt?: string | null;
+    completedAt?: string | null;
   }>;
   scenes: Array<{
     id: string;
@@ -83,6 +89,7 @@ type AdminCreation = {
     aspectRatio: string;
     videoUrl?: string | null;
     taskId?: string | null;
+    costCredits?: number | null;
     error?: string | null;
   }>;
   mediaJobs: Array<{
@@ -110,12 +117,50 @@ type AdminCreation = {
   previewHref: string;
 };
 
+type AdminCreationView = "all" | "processing" | "preview" | "rendered" | "failed";
+
+type UsageSummary = {
+  total: number;
+  completed: number;
+  processing: number;
+  failed: number;
+  needsAttention: number;
+  withSourceAudio: number;
+  withProcessedAudio: number;
+  withRenderedVideo: number;
+  consumedCredits: number;
+};
+
+type ViewCounts = Record<AdminCreationView, number>;
+
 type PageData = {
   items: AdminCreation[];
   total: number;
+  summary: UsageSummary;
+  viewCounts: ViewCounts;
 };
 
 const PAGE_SIZE = 12;
+
+const emptySummary: UsageSummary = {
+  total: 0,
+  completed: 0,
+  processing: 0,
+  failed: 0,
+  needsAttention: 0,
+  withSourceAudio: 0,
+  withProcessedAudio: 0,
+  withRenderedVideo: 0,
+  consumedCredits: 0,
+};
+
+const emptyViewCounts: ViewCounts = {
+  all: 0,
+  processing: 0,
+  preview: 0,
+  rendered: 0,
+  failed: 0,
+};
 
 function formatBytes(value?: number) {
   if (!value || value <= 0) return "-";
@@ -135,6 +180,13 @@ function statusClass(status: string) {
     return "border-amber-200 bg-amber-50 text-amber-700";
   }
   return "border-slate-200 bg-slate-50 text-slate-700";
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString();
 }
 
 function mediaUrl(id: string, kind: "source-audio" | "processed-audio" | "rendered-video") {
@@ -163,6 +215,49 @@ function NativeAudio({
   );
 }
 
+function SummaryCard({
+  title,
+  value,
+  detail,
+  icon,
+  tone,
+}: {
+  title: string;
+  value: string;
+  detail: string;
+  icon: React.ReactNode;
+  tone: "violet" | "emerald" | "amber" | "rose";
+}) {
+  const toneClassName =
+    {
+      violet: "border-violet-200 bg-violet-50 text-violet-700",
+      emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      amber: "border-amber-200 bg-amber-50 text-amber-700",
+      rose: "border-rose-200 bg-rose-50 text-rose-700",
+    }[tone];
+
+  return (
+    <Card className="border-border/70 bg-background py-0 shadow-sm">
+      <CardContent className="flex min-h-[112px] items-start gap-4 p-4">
+        <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl border", toneClassName)}>
+          {icon}
+        </div>
+        <div className="min-w-0 space-y-1">
+          <div className="text-muted-foreground text-xs font-medium uppercase tracking-[0.16em]">
+            {title}
+          </div>
+          <div className="text-2xl font-semibold tabular-nums tracking-tight">
+            {value}
+          </div>
+          <div className="text-muted-foreground text-sm leading-snug">
+            {detail}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function CreationRow({
   item,
   expanded,
@@ -174,6 +269,15 @@ function CreationRow({
 }) {
   const t = useTranslations("admin.creations");
   const createdAt = new Date(item.createdAt).toLocaleString();
+  const failureDiagnostic =
+    item.generationSteps.find((step) => step.errorMessage || step.status === "failed") || null;
+  const failureStage = failureDiagnostic?.stage || item.latestRun?.currentStage || item.pipelineStage;
+  const failureModel = [failureDiagnostic?.provider, failureDiagnostic?.model].filter(Boolean).join(" / ") || "-";
+  const failureTime = formatDateTime(failureDiagnostic?.completedAt || failureDiagnostic?.updatedAt || item.updatedAt);
+  const consumedCredits = item.exports.reduce(
+    (total, exportItem) => total + Math.max(0, Number(exportItem.costCredits || 0)),
+    0
+  );
 
   return (
     <Card className="py-0">
@@ -210,6 +314,7 @@ function CreationRow({
             <MetaLine>{item.audioFilename || t("untitled_audio")}</MetaLine>
             <MetaLine>{item.audioDurationLabel}</MetaLine>
             <MetaLine>{formatBytes(item.audioSizeBytes)}</MetaLine>
+            <MetaLine>{t("credits_used", { count: consumedCredits })}</MetaLine>
             <MetaLine>{item.user.utmSource || t("direct_source")}</MetaLine>
           </div>
         </div>
@@ -268,12 +373,54 @@ function CreationRow({
                     <div className="text-muted-foreground text-xs">{t("metrics.elapsed")}</div>
                     <div className="mt-1 font-semibold">{item.elapsedLabel}</div>
                   </div>
+                  <div className="rounded-lg border bg-background p-3">
+                    <div className="text-muted-foreground text-xs">{t("metrics.credits")}</div>
+                    <div className="mt-1 font-semibold tabular-nums">{consumedCredits}</div>
+                  </div>
+                  <div className="rounded-lg border bg-background p-3">
+                    <div className="text-muted-foreground text-xs">{t("metrics.media")}</div>
+                    <div className="mt-1 font-semibold tabular-nums">
+                      {[item.hasSourceAudio, item.hasProcessedAudio, item.hasRenderedVideo].filter(Boolean).length}/3
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {item.firstError ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-                  {item.firstError}
+                <div className="space-y-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em]">
+                    {t("sections.failure_diagnostics")}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.stage")}</div>
+                      <div className="mt-0.5 break-words">{failureStage || "-"}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.status")}</div>
+                      <div className="mt-0.5 break-words">{failureDiagnostic?.status || item.generationStatus || "-"}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.model")}</div>
+                      <div className="mt-0.5 break-words">{failureModel}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.attempts")}</div>
+                      <div className="mt-0.5">{failureDiagnostic?.attemptCount ?? "-"}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.time")}</div>
+                      <div className="mt-0.5 break-words">{failureTime}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">{t("diagnostics.task")}</div>
+                      <div className="mt-0.5 break-all">{failureDiagnostic?.providerTaskId || "-"}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold">{t("diagnostics.error")}</div>
+                    <div className="mt-1 break-words">{item.firstError}</div>
+                  </div>
                 </div>
               ) : null}
 
@@ -283,11 +430,24 @@ function CreationRow({
                 </div>
                 <div className="space-y-1.5">
                   {item.generationSteps.length > 0 ? item.generationSteps.map((step) => (
-                    <div key={step.id} className="flex min-w-0 items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-xs">
-                      <span className="truncate font-medium">{step.stage}</span>
-                      <span className={cn("shrink-0 rounded-full border px-2 py-0.5", statusClass(step.status))}>
-                        {step.status}
-                      </span>
+                    <div key={step.id} className="space-y-1.5 rounded-md border bg-background px-3 py-2 text-xs">
+                      <div className="flex min-w-0 items-center justify-between gap-3">
+                        <span className="truncate font-medium">{step.stage}</span>
+                        <span className={cn("shrink-0 rounded-full border px-2 py-0.5", statusClass(step.status))}>
+                          {step.status}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+                        <span>{t("diagnostics.attempts")}: {step.attemptCount ?? 0}</span>
+                        {step.model ? <span>{t("diagnostics.model")}: {[step.provider, step.model].filter(Boolean).join(" / ")}</span> : null}
+                        {step.updatedAt ? <span>{t("diagnostics.time")}: {formatDateTime(step.updatedAt)}</span> : null}
+                      </div>
+                      {step.providerTaskId ? (
+                        <div className="break-all text-muted-foreground">{t("diagnostics.task")}: {step.providerTaskId}</div>
+                      ) : null}
+                      {step.errorMessage ? (
+                        <div className="break-words font-medium text-rose-700">{step.errorMessage}</div>
+                      ) : null}
                     </div>
                   )) : (
                     <p className="text-sm text-muted-foreground">{t("empty_steps")}</p>
@@ -353,10 +513,16 @@ function CreationRow({
 
 export default function AdminCreationsPage() {
   const t = useTranslations("admin.creations");
-  const [data, setData] = useState<PageData>({ items: [], total: 0 });
+  const [data, setData] = useState<PageData>({
+    items: [],
+    total: 0,
+    summary: emptySummary,
+    viewCounts: emptyViewCounts,
+  });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [activeView, setActiveView] = useState<AdminCreationView>("all");
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -367,7 +533,7 @@ export default function AdminCreationsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, activeView]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -376,25 +542,38 @@ export default function AdminCreationsPage() {
       pageSize: String(PAGE_SIZE),
     });
     if (debouncedSearch) params.set("search", debouncedSearch);
+    if (activeView !== "all") params.set("view", activeView);
 
     const res = await fetch(`/api/admin/creations?${params}`);
     const json = await res.json();
     if (json.code === 0) {
       const nextData = json.data as PageData;
-      setData(nextData);
+      setData({
+        items: nextData.items || [],
+        total: nextData.total || 0,
+        summary: nextData.summary || emptySummary,
+        viewCounts: nextData.viewCounts || emptyViewCounts,
+      });
       setExpandedIds((current) => {
         if (current.size > 0) return current;
-        return new Set(nextData.items[0]?.id ? [nextData.items[0].id] : []);
+        return new Set(nextData.items?.[0]?.id ? [nextData.items[0].id] : []);
       });
     }
     setLoading(false);
-  }, [debouncedSearch, page]);
+  }, [activeView, debouncedSearch, page]);
 
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(data.total / PAGE_SIZE)), [data.total]);
+  const tabs: Array<{ view: AdminCreationView; label: string; count: number }> = [
+    { view: "all", label: t("tabs.all"), count: data.viewCounts.all },
+    { view: "processing", label: t("tabs.processing"), count: data.viewCounts.processing },
+    { view: "preview", label: t("tabs.preview"), count: data.viewCounts.preview },
+    { view: "rendered", label: t("tabs.rendered"), count: data.viewCounts.rendered },
+    { view: "failed", label: t("tabs.failed"), count: data.viewCounts.failed },
+  ];
 
   function toggle(id: string) {
     setExpandedIds((current) => {
@@ -418,6 +597,43 @@ export default function AdminCreationsPage() {
         </Button>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard
+          title={t("summary.total.title")}
+          value={data.summary.total.toLocaleString()}
+          detail={t("summary.total.detail")}
+          icon={<Film className="size-5" />}
+          tone="violet"
+        />
+        <SummaryCard
+          title={t("summary.completed.title")}
+          value={data.summary.completed.toLocaleString()}
+          detail={t("summary.completed.detail", {
+            media: data.summary.withRenderedVideo.toLocaleString(),
+          })}
+          icon={<CheckCircle2 className="size-5" />}
+          tone="emerald"
+        />
+        <SummaryCard
+          title={t("summary.processing.title")}
+          value={data.summary.processing.toLocaleString()}
+          detail={t("summary.processing.detail", {
+            media: data.summary.withProcessedAudio.toLocaleString(),
+          })}
+          icon={<Clock3 className="size-5" />}
+          tone="amber"
+        />
+        <SummaryCard
+          title={t("summary.failed.title")}
+          value={data.summary.failed.toLocaleString()}
+          detail={t("summary.failed.detail", {
+            credits: data.summary.consumedCredits.toLocaleString(),
+          })}
+          icon={<AlertTriangle className="size-5" />}
+          tone="rose"
+        />
+      </div>
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:max-w-sm">
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -432,6 +648,34 @@ export default function AdminCreationsPage() {
           <User className="size-4" />
           {t("total", { count: data.total })}
         </div>
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto rounded-xl border bg-background p-1 shadow-sm">
+        {tabs.map((tab) => (
+          <button
+            key={tab.view}
+            type="button"
+            onClick={() => setActiveView(tab.view)}
+            className={cn(
+              "inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors",
+              activeView === tab.view
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {tab.label}
+            <span
+              className={cn(
+                "rounded-full px-1.5 py-0.5 text-xs tabular-nums",
+                activeView === tab.view
+                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {tab.count.toLocaleString()}
+            </span>
+          </button>
+        ))}
       </div>
 
       {loading && data.items.length === 0 ? (

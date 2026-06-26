@@ -2,6 +2,17 @@ import type { LyricScene, LyricSceneImageCandidate } from "./types";
 
 export const SCENE_IMAGE_CANDIDATE_WINDOW_SIZE = 4;
 
+export type SceneImageCandidateStripItem =
+  | {
+      kind: "pending";
+      id: "pending-retry-image";
+    }
+  | {
+      kind: "candidate";
+      id: string;
+      candidate: LyricSceneImageCandidate;
+    };
+
 function candidateCreatedAtMs(candidate: LyricSceneImageCandidate) {
   const value = candidate.createdAt instanceof Date ? candidate.createdAt.getTime() : Date.parse(String(candidate.createdAt || ""));
   return Number.isFinite(value) ? value : 0;
@@ -16,6 +27,41 @@ export function getVisibleSceneImageCandidates(candidates: LyricSceneImageCandid
   const maxOffset = Math.max(0, sorted.length - SCENE_IMAGE_CANDIDATE_WINDOW_SIZE);
   const safeOffset = Math.max(0, Math.min(maxOffset, Math.floor(Number(offset) || 0)));
   return sorted.slice(safeOffset, safeOffset + SCENE_IMAGE_CANDIDATE_WINDOW_SIZE);
+}
+
+export function getSceneImageCandidateStripItems({
+  candidates = [],
+  offset = 0,
+  pending = false,
+}: {
+  candidates?: LyricSceneImageCandidate[];
+  offset?: number;
+  pending?: boolean;
+}) {
+  const sortedItems: SceneImageCandidateStripItem[] = sortSceneImageCandidates(candidates).map((candidate) => ({
+    kind: "candidate",
+    id: candidate.id,
+    candidate,
+  }));
+  const items: SceneImageCandidateStripItem[] = pending
+    ? [
+        {
+          kind: "pending",
+          id: "pending-retry-image",
+        },
+        ...sortedItems,
+      ]
+    : sortedItems;
+  const maxOffset = Math.max(0, items.length - SCENE_IMAGE_CANDIDATE_WINDOW_SIZE);
+  const safeOffset = Math.max(0, Math.min(maxOffset, Math.floor(Number(offset) || 0)));
+
+  return {
+    visible: items.slice(safeOffset, safeOffset + SCENE_IMAGE_CANDIDATE_WINDOW_SIZE),
+    total: items.length,
+    offset: safeOffset,
+    canMoveNewer: safeOffset > 0,
+    canMoveOlder: safeOffset + SCENE_IMAGE_CANDIDATE_WINDOW_SIZE < items.length,
+  };
 }
 
 export function getSceneImageCandidateDisplayList(scene: Pick<LyricScene, "id" | "imageUrl" | "imageCandidates" | "prompt" | "status">) {

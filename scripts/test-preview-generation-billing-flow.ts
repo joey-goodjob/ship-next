@@ -57,6 +57,12 @@ assert(
   "Image sync must mark the included preview-generation billing task successful after all included images finish.",
 );
 assert(
+  mediaGeneration.includes("markIncludedPreviewGenerationBillingRefunded(") &&
+    mediaGeneration.includes("billingMode: 'preview_generation_refund'") &&
+    mediaGeneration.includes("status: 'partial_success'"),
+  "Partial image success must refund the included preview-generation billing task while keeping generated assets.",
+);
+assert(
   !createPage.includes("creditCost={10}"),
   "Create page must not hard-code a 10-credit preview generation cost.",
 );

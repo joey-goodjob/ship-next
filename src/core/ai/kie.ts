@@ -15,6 +15,7 @@ import {
 
 const defaultUuid: UuidFunction = () => crypto.randomUUID();
 export const KIE_Z_IMAGE_MODEL = 'z-image';
+export const KIE_SEEDANCE_VIDEO_MODEL = 'bytedance/seedance-1.5-pro';
 
 const KIE_Z_IMAGE_MODEL_ALIASES = new Set([
   KIE_Z_IMAGE_MODEL,
@@ -237,9 +238,12 @@ export class KieProvider implements AIProvider {
       model: params.model,
       callBackUrl: params.callbackUrl,
       input: {
-        aspect_ratio: 'landscape',
-        n_frames: '10',
-        size: 'standard',
+        aspect_ratio: '16:9',
+        resolution: '480p',
+        duration: 4,
+        fixed_lens: false,
+        generate_audio: false,
+        nsfw_checker: true,
       },
     };
 
@@ -250,16 +254,28 @@ export class KieProvider implements AIProvider {
     if (params.options) {
       const options = params.options;
       if (options.image_input && Array.isArray(options.image_input)) {
-        payload.input.image_urls = options.image_input;
+        payload.input.input_urls = options.image_input;
+      }
+      if (options.input_urls && Array.isArray(options.input_urls)) {
+        payload.input.input_urls = options.input_urls;
       }
       if (options.aspect_ratio) {
         payload.input.aspect_ratio = options.aspect_ratio;
       }
       if (options.duration) {
-        payload.input.n_frames = options.duration;
+        payload.input.duration = Number(options.duration);
       }
-      if (!payload.input.n_frames) {
-        payload.input.n_frames = '10';
+      if (options.resolution) {
+        payload.input.resolution = options.resolution;
+      }
+      if (typeof options.fixed_lens === 'boolean') {
+        payload.input.fixed_lens = options.fixed_lens;
+      }
+      if (typeof options.generate_audio === 'boolean') {
+        payload.input.generate_audio = options.generate_audio;
+      }
+      if (typeof options.nsfw_checker === 'boolean') {
+        payload.input.nsfw_checker = options.nsfw_checker;
       }
     }
 

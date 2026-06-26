@@ -11,6 +11,7 @@ import {
 } from '@/config/db/schema';
 
 export type AdminCreationMediaKind = 'source-audio' | 'processed-audio' | 'rendered-video';
+export type AdminCreationView = 'all' | 'processing' | 'preview' | 'rendered' | 'failed';
 
 type MetricInput = {
   scenes?: Array<{ imageUrl?: string | null; status?: string | null }>;
@@ -29,6 +30,31 @@ export type AdminCreationMetrics = {
   mediaJobFailedCount: number;
 };
 
+export type AdminCreationUsageSummary = {
+  total: number;
+  completed: number;
+  processing: number;
+  failed: number;
+  needsAttention: number;
+  withSourceAudio: number;
+  withProcessedAudio: number;
+  withRenderedVideo: number;
+  consumedCredits: number;
+};
+
+type UsageSummaryInput = {
+  pipelineStage?: string | null;
+  generationStatus?: string | null;
+  renderStatus?: string | null;
+  generationProgress?: number | null;
+  metrics?: Partial<AdminCreationMetrics>;
+  exports?: Array<{ costCredits?: number | null }>;
+  firstError?: string | null;
+  hasSourceAudio?: boolean;
+  hasProcessedAudio?: boolean;
+  hasRenderedVideo?: boolean;
+};
+
 type MediaLookupInput = {
   project: {
     originalAudioUrl?: string | null;
@@ -45,6 +71,14 @@ function firstText(...values: Array<string | null | undefined>) {
 
 function toTime(value: unknown) {
   return value instanceof Date ? value.getTime() : 0;
+}
+
+function isProcessingStatus(value?: string | null) {
+  return ['queued', 'pending', 'processing', 'running'].includes(value || '');
+}
+
+function isFailedStatus(value?: string | null) {
+  return ['failed', 'error'].includes(value || '');
 }
 
 export function formatAdminCreationDuration(durationMs?: number | null) {
@@ -82,6 +116,55 @@ export function deriveAdminCreationMetrics({
   };
 }
 
+export function deriveAdminCreationUsageSummary(items: UsageSummaryInput[]): AdminCreationUsageSummary {
+  return items.reduce<AdminCreationUsageSummary>(
+    (summary, item) => {
+      const failed =
+        isFailedStatus(item.pipelineStage) ||
+        isFailedStatus(item.generationStatus) ||
+        isFailedStatus(item.renderStatus) ||
+        Boolean(item.firstError);
+      const processing =
+        !failed &&
+        (isProcessingStatus(item.generationStatus) ||
+          isProcessingStatus(item.pipelineStage) ||
+          (Number(item.generationProgress || 0) > 0 && Number(item.generationProgress || 0) < 100));
+      const completed = item.renderStatus === 'ready' || Boolean(item.hasRenderedVideo);
+      const needsAttention =
+        failed ||
+        Boolean(item.metrics?.imageFailedCount) ||
+        Boolean(item.metrics?.exportFailedCount) ||
+        Boolean(item.metrics?.mediaJobFailedCount);
+
+      summary.total += 1;
+      if (completed) summary.completed += 1;
+      if (processing) summary.processing += 1;
+      if (failed) summary.failed += 1;
+      if (needsAttention) summary.needsAttention += 1;
+      if (item.hasSourceAudio) summary.withSourceAudio += 1;
+      if (item.hasProcessedAudio) summary.withProcessedAudio += 1;
+      if (item.hasRenderedVideo) summary.withRenderedVideo += 1;
+      summary.consumedCredits += (item.exports || []).reduce(
+        (total, exportItem) => total + Math.max(0, Number(exportItem.costCredits || 0)),
+        0
+      );
+
+      return summary;
+    },
+    {
+      total: 0,
+      completed: 0,
+      processing: 0,
+      failed: 0,
+      needsAttention: 0,
+      withSourceAudio: 0,
+      withProcessedAudio: 0,
+      withRenderedVideo: 0,
+      consumedCredits: 0,
+    }
+  );
+}
+
 export function findAdminCreationMediaUrl(input: MediaLookupInput, kind: AdminCreationMediaKind) {
   if (kind === 'source-audio') {
     return firstText(input.project.originalAudioUrl, input.project.audioUrl, input.project.processedAudioUrl);
@@ -94,34 +177,97 @@ export function findAdminCreationMediaUrl(input: MediaLookupInput, kind: AdminCr
   return firstText(input.exports?.find((item) => item.videoUrl)?.videoUrl, input.project.renderUrl);
 }
 
+function normalizeAdminCreationView(value?: string | null): AdminCreationView {
+  return ['processing', 'preview', 'rendered', 'failed'].includes(value || '')
+    ? (value as AdminCreationView)
+    : 'all';
+}
+
+function getAdminCreationViewCondition(view: AdminCreationView) {
+  if (view === 'processing') {
+    return or(
+      inArray(lyricVideoProject.generationStatus, ['queued', 'pending', 'processing', 'running']),
+      inArray(lyricVideoProject.pipelineStage, ['queued', 'pending', 'processing', 'running'])
+    );
+  }
+
+  if (view === 'preview') {
+    return or(
+      eq(lyricVideoProject.pipelineStage, 'preview_ready'),
+      eq(lyricVideoProject.scenesStatus, 'ready')
+    );
+  }
+
+  if (view === 'rendered') {
+    return eq(lyricVideoProject.renderStatus, 'ready');
+  }
+
+  if (view === 'failed') {
+    return or(
+      inArray(lyricVideoProject.pipelineStage, ['failed', 'error']),
+      inArray(lyricVideoProject.generationStatus, ['failed', 'error']),
+      inArray(lyricVideoProject.renderStatus, ['failed', 'error'])
+    );
+  }
+
+  return undefined;
+}
+
+function getAdminCreationWhere(search?: string | null, view: AdminCreationView = 'all') {
+  const conditions: SQL[] = [isNull(lyricVideoProject.deletedAt)];
+  const cleanSearch = search?.trim();
+
+  if (cleanSearch) {
+    conditions.push(
+      or(
+        like(lyricVideoProject.title, `%${cleanSearch}%`),
+        like(lyricVideoProject.audioFilename, `%${cleanSearch}%`),
+        like(user.email, `%${cleanSearch}%`),
+        like(user.name, `%${cleanSearch}%`)
+      )!
+    );
+  }
+
+  const viewCondition = getAdminCreationViewCondition(view);
+  if (viewCondition) {
+    conditions.push(viewCondition);
+  }
+
+  return and(...conditions);
+}
+
+async function countAdminCreationsByView(search: string | null | undefined, view: AdminCreationView) {
+  const [result] = await db()
+    .select({ count: count() })
+    .from(lyricVideoProject)
+    .leftJoin(user, eq(user.id, lyricVideoProject.userId))
+    .where(getAdminCreationWhere(search, view));
+
+  return Number(result?.count || 0);
+}
+
 export async function getAdminCreations(params: {
   page?: number;
   pageSize?: number;
   search?: string | null;
+  view?: string | null;
 }) {
   const page = Math.max(1, Number(params.page || 1));
   const pageSize = Math.min(50, Math.max(1, Number(params.pageSize || 12)));
   const offset = (page - 1) * pageSize;
   const search = params.search?.trim();
+  const view = normalizeAdminCreationView(params.view);
 
-  const conditions: SQL[] = [isNull(lyricVideoProject.deletedAt)];
-  if (search) {
-    conditions.push(
-      or(
-        like(lyricVideoProject.title, `%${search}%`),
-        like(lyricVideoProject.audioFilename, `%${search}%`),
-        like(user.email, `%${search}%`),
-        like(user.name, `%${search}%`)
-      )!
-    );
-  }
-  const where = and(...conditions);
+  const where = getAdminCreationWhere(search, view);
 
-  const [totalResult] = await db()
-    .select({ count: count() })
-    .from(lyricVideoProject)
-    .leftJoin(user, eq(user.id, lyricVideoProject.userId))
-    .where(where);
+  const [total, allCount, processingCount, previewCount, renderedCount, failedCount] = await Promise.all([
+    countAdminCreationsByView(search, view),
+    countAdminCreationsByView(search, 'all'),
+    countAdminCreationsByView(search, 'processing'),
+    countAdminCreationsByView(search, 'preview'),
+    countAdminCreationsByView(search, 'rendered'),
+    countAdminCreationsByView(search, 'failed'),
+  ]);
 
   const rows = await db()
     .select({
@@ -141,7 +287,28 @@ export async function getAdminCreations(params: {
 
   const projectIds = rows.map((row: any) => row.project.id);
   if (projectIds.length === 0) {
-    return { items: [], total: Number(totalResult?.count || 0) };
+    return {
+      items: [],
+      total,
+      summary: {
+        total: allCount,
+        completed: renderedCount,
+        processing: processingCount,
+        failed: failedCount,
+        needsAttention: failedCount,
+        withSourceAudio: 0,
+        withProcessedAudio: 0,
+        withRenderedVideo: 0,
+        consumedCredits: 0,
+      },
+      viewCounts: {
+        all: allCount,
+        processing: processingCount,
+        preview: previewCount,
+        rendered: renderedCount,
+        failed: failedCount,
+      },
+    };
   }
 
   const [runs, steps, scenes, exports, mediaJobs] = await Promise.all([
@@ -250,10 +417,13 @@ export async function getAdminCreations(params: {
         id: step.id,
         stage: step.stage,
         status: step.status,
+        attemptCount: step.attemptCount,
         provider: step.provider,
         model: step.model,
         providerTaskId: step.providerTaskId,
         errorMessage: step.errorMessage,
+        updatedAt: step.updatedAt,
+        completedAt: step.completedAt,
       })),
       scenes: projectScenes.slice(0, 8).map((scene: any) => ({
         id: scene.id,
@@ -272,6 +442,7 @@ export async function getAdminCreations(params: {
         aspectRatio: item.aspectRatio,
         videoUrl: item.videoUrl,
         taskId: item.taskId,
+        costCredits: item.costCredits,
         error: item.error,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
@@ -298,7 +469,27 @@ export async function getAdminCreations(params: {
     };
   });
 
-  return { items, total: Number(totalResult?.count || 0) };
+  const visibleSummary = deriveAdminCreationUsageSummary(items);
+
+  return {
+    items,
+    total,
+    summary: {
+      ...visibleSummary,
+      total: allCount,
+      completed: renderedCount,
+      processing: processingCount,
+      failed: failedCount,
+      needsAttention: failedCount + visibleSummary.needsAttention - visibleSummary.failed,
+    },
+    viewCounts: {
+      all: allCount,
+      processing: processingCount,
+      preview: previewCount,
+      rendered: renderedCount,
+      failed: failedCount,
+    },
+  };
 }
 
 export async function findAdminCreationMedia(params: {

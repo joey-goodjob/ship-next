@@ -1214,6 +1214,52 @@ async function markIncludedPreviewGenerationBillingSucceeded(params: {
   });
 }
 
+async function markIncludedPreviewGenerationBillingRefunded(params: {
+  userId: string;
+  projectId: string;
+  runId?: string | null;
+  output: unknown;
+}) {
+  const billableTasks = await db()
+    .select()
+    .from(aiTask)
+    .where(
+      and(
+        eq(aiTask.userId, params.userId),
+        eq(aiTask.mediaType, 'lyric_video_preview'),
+        eq(aiTask.provider, 'internal'),
+        or(eq(aiTask.status, AITaskStatus.PENDING), eq(aiTask.status, AITaskStatus.SUCCESS))
+      )
+    );
+
+  const billingTask = billableTasks.find((task: any) => {
+    const options = parseTaskOptions(task.options);
+    if (options.projectId !== params.projectId || options.includedImageGeneration !== true) return false;
+    return params.runId ? options.runId === params.runId : true;
+  });
+  if (!billingTask) return;
+
+  await updateTask({
+    taskId: billingTask.id,
+    status: AITaskStatus.FAILED,
+    taskResult: {
+      projectId: params.projectId,
+      runId: params.runId || null,
+      billingMode: 'preview_generation_refund',
+      status: 'partial_success',
+      reason: 'Partial image generation kept successful assets and refunded the full preview generation charge.',
+      output: params.output,
+    },
+  });
+
+  logLyricStage('scene-images', 'preview-billing-refund-partial-success', {
+    projectId: params.projectId,
+    userId: params.userId,
+    runId: params.runId || null,
+    billingTaskId: billingTask.id,
+  });
+}
+
 export async function queueSceneImages(params: {
   userId: string;
   projectId: string;
@@ -2061,34 +2107,34 @@ export async function generateVisualsFromStory(params: {
     return alreadyRunningVisualsResponse({ details: refreshed || details, storyPrompt });
   }
 
-  const directionDetail = await ensureProductionDirectionDetail({
-    userId: params.userId,
-    projectId: params.projectId,
-    storyPrompt,
-    model: params.model,
-  });
-  logLyricStage('visuals', 'service-start', {
-    projectId: params.projectId,
-    userId: params.userId,
-    pipelineStage: details.project.pipelineStage,
-    lyricsStatus: details.project.lyricsStatus,
-    scenesStatus: details.project.scenesStatus,
-    renderStatus: details.project.renderStatus,
-    lineCount: details.lines.length,
-    sceneCount: details.scenes.length,
-    storyPromptLength: storyPrompt.length,
-    directionDetailStatus: directionDetail.status,
-    directionDetailReused: directionDetail.reused,
-    directionDetailStoryPromptHash: directionDetail.storyPromptHash,
-    regenerateStoryboard: Boolean(params.regenerateStoryboard),
-    regenerateImages: Boolean(params.regenerateImages),
-    model: params.model,
-  });
-
   const ledger = ledgerResult.ledger;
   let currentVisualsStage: 'prompt_generation' | 'image_generation' = 'prompt_generation';
 
   try {
+    const directionDetail = await ensureProductionDirectionDetail({
+      userId: params.userId,
+      projectId: params.projectId,
+      storyPrompt,
+      model: params.model,
+    });
+    logLyricStage('visuals', 'service-start', {
+      projectId: params.projectId,
+      userId: params.userId,
+      pipelineStage: details.project.pipelineStage,
+      lyricsStatus: details.project.lyricsStatus,
+      scenesStatus: details.project.scenesStatus,
+      renderStatus: details.project.renderStatus,
+      lineCount: details.lines.length,
+      sceneCount: details.scenes.length,
+      storyPromptLength: storyPrompt.length,
+      directionDetailStatus: directionDetail.status,
+      directionDetailReused: directionDetail.reused,
+      directionDetailStoryPromptHash: directionDetail.storyPromptHash,
+      regenerateStoryboard: Boolean(params.regenerateStoryboard),
+      regenerateImages: Boolean(params.regenerateImages),
+      model: params.model,
+    });
+
     const shouldGenerateStoryboard =
       params.regenerateStoryboard ||
       details.scenes.length === 0 ||
@@ -2518,6 +2564,12 @@ async function updateSceneImageProjectStatus(params: {
       status: 'partial_success',
       outputSnapshot,
       errorMessage: 'Some scene images failed',
+    });
+    await markIncludedPreviewGenerationBillingRefunded({
+      userId: params.userId,
+      projectId: params.projectId,
+      runId: params.project?.activeRunId,
+      output: outputSnapshot,
     });
     await db()
       .update(lyricVideoProject)

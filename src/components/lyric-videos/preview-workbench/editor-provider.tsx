@@ -34,6 +34,7 @@ import type {
 } from "./types";
 import {
   calculatePreviewTotalDurationSeconds,
+  canUpdateSceneWhileGenerationLocked,
   clamp,
   createWordsFromLines,
   deriveLinesFromWords,
@@ -59,6 +60,19 @@ const IMAGE_SYNC_SCENE_FIELDS = [
   "error",
   "failureCode",
   "completedAt",
+  "updatedAt",
+];
+
+const VIDEO_SYNC_SCENE_FIELDS = [
+  "videoUrl",
+  "videoTaskId",
+  "videoProviderTaskId",
+  "videoStatus",
+  "videoModel",
+  "videoPromptSnapshot",
+  "videoGenerationParams",
+  "videoCompletedAt",
+  "videoError",
   "updatedAt",
 ];
 
@@ -143,6 +157,7 @@ export function EditorProvider({
   const imageSyncInFlightRef = useRef(false);
   const visualGenerationInFlightRef = useRef(false);
   const sceneImageQueueInFlightRef = useRef(false);
+  const sceneImageRetryInFlightSceneIdsRef = useRef(new Set<string>());
   const retryImageBatchesInFlightRef = useRef(false);
   const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
@@ -289,6 +304,15 @@ export function EditorProvider({
     if (!hasProcessingScenes || !project) return;
     const timer = window.setInterval(() => {
       syncSceneImages();
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [project, scenes]);
+
+  useEffect(() => {
+    const hasProcessingSceneVideos = scenes.some((scene) => scene.videoProviderTaskId && scene.videoStatus === "processing");
+    if (!hasProcessingSceneVideos || !project) return;
+    const timer = window.setInterval(() => {
+      syncSceneVideos();
     }, 5000);
     return () => window.clearInterval(timer);
   }, [project, scenes]);
@@ -957,8 +981,8 @@ export function EditorProvider({
     }
   }
 
-  async function updateScene(sceneId: string, data: LyricScenePatch, options?: { successMessage?: string | null; errorMessage?: string }) {
-    if (generationLocked) {
+  async function updateScene(sceneId: string, data: LyricScenePatch, options?: { allowDuringImageGeneration?: boolean; successMessage?: string | null; errorMessage?: string }) {
+    if (!canUpdateSceneWhileGenerationLocked({ allowDuringImageGeneration: options?.allowDuringImageGeneration, generationLocked, project })) {
       showGenerationLockedToast();
       return null;
     }
@@ -1035,6 +1059,34 @@ export function EditorProvider({
     }
   }
 
+  async function queueSceneVideos(sceneIds: string[]) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return [];
+    }
+    if (!project) return [];
+    const selectedSceneIds = sceneIds.filter(Boolean);
+    if (selectedSceneIds.length === 0) return [];
+    setSaveStatus("saving");
+    try {
+      const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scene-videos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sceneIds: selectedSceneIds }),
+      });
+      const queuedById = new Map((queued || []).map((scene) => [scene.id, scene]));
+      setScenes((previous) => previous.map((scene) => queuedById.get(scene.id) || scene));
+      setSaveStatus("saved");
+      await refresh();
+      toast.success(`Queued ${selectedSceneIds.length} scene videos`);
+      return queued || [];
+    } catch (err: any) {
+      setSaveStatus("failed");
+      toast.error(err?.message || "Queue scene videos failed");
+      return [];
+    }
+  }
+
   async function syncSceneImages() {
     if (!project) return;
     if (imageSyncInFlightRef.current) return;
@@ -1052,23 +1104,48 @@ export function EditorProvider({
     }
   }
 
-  async function retrySceneImage(sceneId: string) {
-    if (sceneImageQueueInFlightRef.current) {
+  async function syncSceneVideos() {
+    if (!project) return;
+    try {
+      const synced = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scene-videos`);
+      if (synced?.length) {
+        const syncedById = new Map(synced.map((scene) => [scene.id, scene]));
+        setScenes((previous) =>
+          previous.map((scene) => {
+            const next = syncedById.get(scene.id);
+            if (!next) return scene;
+            return {
+              ...scene,
+              ...Object.fromEntries(VIDEO_SYNC_SCENE_FIELDS.map((field) => [field, (next as any)[field]])),
+            };
+          }),
+        );
+      }
+      void refresh();
+    } catch (err: any) {
+      toast.error(err?.message || "Sync scene videos failed");
+    }
+  }
+
+  async function retrySceneImage(sceneId: string, options?: { allowDuringImageGeneration?: boolean }) {
+    if (sceneImageRetryInFlightSceneIdsRef.current.has(sceneId)) {
       toast.info(t("scene_images_running"));
       return null;
     }
-    if (generationLocked) {
+    if (generationLocked && !options?.allowDuringImageGeneration) {
       showGenerationLockedToast();
       return null;
     }
     if (!project) return null;
-    sceneImageQueueInFlightRef.current = true;
+    sceneImageRetryInFlightSceneIdsRef.current.add(sceneId);
     setSaveStatus("saving");
     try {
       const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/retry-image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          allowConcurrentImageGeneration: Boolean(options?.allowDuringImageGeneration),
+        }),
       });
       const updated = queued?.[0] || null;
       if (updated) setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
@@ -1093,7 +1170,7 @@ export function EditorProvider({
       toast.error(err?.message || "Retry scene image failed");
       return null;
     } finally {
-      sceneImageQueueInFlightRef.current = false;
+      sceneImageRetryInFlightSceneIdsRef.current.delete(sceneId);
     }
   }
 
@@ -1282,9 +1359,11 @@ export function EditorProvider({
       syncCastImages,
       generateSceneVideoPrompts,
       queueSceneImages,
+      queueSceneVideos,
       retrySceneImage,
       selectSceneImageCandidate,
       syncSceneImages,
+      syncSceneVideos,
       retryFailedImageBatches,
       saveLyrics,
       queueExport,
@@ -1320,10 +1399,12 @@ export function EditorProvider({
       zoom,
       storyReviewStatus,
       refresh,
+      queueSceneVideos,
       retrySceneImage,
       retryFailedImageBatches,
       selectSceneImageCandidate,
       generateSceneVideoPrompts,
+      syncSceneVideos,
       updateScene,
       updateSceneCastIds,
     ],

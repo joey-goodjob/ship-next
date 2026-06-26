@@ -101,6 +101,7 @@ export const envConfigs: Record<string, string> = {
   kie_codex_model: process.env.KIE_CODEX_MODEL ?? 'gpt-5-5',
   kie_image_model: process.env.KIE_IMAGE_MODEL ?? 'z-image',
   kie_character_image_model: process.env.KIE_CHARACTER_IMAGE_MODEL ?? 'nano-banana-2',
+  kie_video_model: process.env.KIE_VIDEO_MODEL ?? 'bytedance/seedance-1.5-pro',
   wavespeed_api_key: process.env.WAVESPEED_API_KEY ?? '',
   wavespeed_base_url:
     process.env.WAVESPEED_BASE_URL ??

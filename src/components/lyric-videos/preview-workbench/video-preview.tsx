@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { RefreshCcw, Wand2 } from "lucide-react";
 import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
@@ -8,7 +8,7 @@ import { useEditor } from "./editor-context";
 import { LatestExport } from "./latest-export";
 import { usePlayback } from "./playback-context";
 import { RoadmapGuide } from "./roadmap-guide";
-import { clamp, deriveGenerationProgress, getPreviewStageStyle, normalizePreviewConfig, resolvePreviewCaptionText, secondsToMs } from "./utils";
+import { clamp, deriveGenerationProgress, getPreviewStageStyle, msToSeconds, normalizePreviewConfig, resolvePreviewCaptionText, resolveSceneMedia, secondsToMs } from "./utils";
 
 export function VideoPreview() {
   const {
@@ -26,9 +26,11 @@ export function VideoPreview() {
     scenes,
     words,
   } = useEditor();
-  const { currentLine, currentScene, currentTime, totalDuration } = usePlayback();
+  const { currentLine, currentScene, currentTime, isPlaying, totalDuration } = usePlayback();
+  const sceneVideoRef = useRef<HTMLVideoElement | null>(null);
   const stageStyle = getPreviewStageStyle(project?.aspectRatio);
-  const hasImage = Boolean(currentScene?.imageUrl);
+  const sceneMedia = resolveSceneMedia(currentScene);
+  const hasSceneMedia = sceneMedia.kind !== "empty";
   const hasLyrics = lines.length > 0 || words.length > 0 || project?.lyricsStatus === "ready";
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const directionReady = runtimeState?.currentStage === "direction_ready" || generationRun?.currentStage === "direction_ready" || project?.pipelineStage === "direction_ready";
@@ -48,6 +50,31 @@ export function VideoPreview() {
       fallbackTitle: project?.title,
     });
   }, [currentLine, currentScene?.endMs, currentScene?.startMs, currentTime, hasLyrics, project?.title, words]);
+
+  useEffect(() => {
+    const video = sceneVideoRef.current;
+    if (!video || !currentScene || sceneMedia.kind !== "video") return;
+
+    const sceneLocalTime = Math.max(0, currentTime - msToSeconds(currentScene.startMs));
+    if (Number.isFinite(sceneLocalTime) && Math.abs(video.currentTime - sceneLocalTime) > 0.12) {
+      try {
+        video.currentTime = sceneLocalTime;
+      } catch {
+        // The browser may reject seeking before metadata is ready; the next tick will retry.
+      }
+    }
+
+    if (!isPlaying) {
+      video.pause();
+      return;
+    }
+
+    if (video.paused) {
+      void video.play().catch(() => {
+        // Main audio controls remain authoritative; failed inline video playback should not block preview.
+      });
+    }
+  }, [currentScene, currentTime, isPlaying, sceneMedia.kind, sceneMedia.url]);
 
   return (
     <section
@@ -80,9 +107,22 @@ export function VideoPreview() {
       >
         {loading ? (
           <PreviewPlaceholder title="Loading project..." description="Preparing the editor workspace." />
-        ) : hasImage ? (
+        ) : hasSceneMedia ? (
           <>
-            <img src={currentScene?.imageUrl || ""} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            {sceneMedia.kind === "video" ? (
+              <video
+                key={sceneMedia.url}
+                ref={sceneVideoRef}
+                src={sceneMedia.url}
+                poster={sceneMedia.posterUrl}
+                className="absolute inset-0 h-full w-full object-cover"
+                muted
+                playsInline
+                preload="auto"
+              />
+            ) : (
+              <img src={sceneMedia.url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            )}
             {previewConfig.captionsEnabled && captionText ? (
               <div className="absolute inset-x-[32px] bottom-[8%] flex justify-center">
                 <p

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 import {
   compactAdminCreationId,
+  deriveAdminCreationUsageSummary,
   deriveAdminCreationMetrics,
   findAdminCreationMediaUrl,
   formatAdminCreationDuration,
@@ -41,6 +42,85 @@ assert.deepEqual(
     exportFailedCount: 1,
     mediaJobQueuedCount: 1,
     mediaJobFailedCount: 1,
+  }
+);
+
+assert.deepEqual(
+  deriveAdminCreationUsageSummary([
+    {
+      pipelineStage: 'preview_ready',
+      generationStatus: 'success',
+      renderStatus: 'ready',
+      generationProgress: 100,
+      metrics: {
+        sceneCount: 6,
+        imageReadyCount: 6,
+        imageFailedCount: 0,
+        exportCount: 1,
+        exportReadyCount: 1,
+        exportFailedCount: 0,
+        mediaJobQueuedCount: 0,
+        mediaJobFailedCount: 0,
+      },
+      exports: [{ costCredits: 5 }],
+      firstError: '',
+      hasSourceAudio: true,
+      hasProcessedAudio: true,
+      hasRenderedVideo: true,
+    },
+    {
+      pipelineStage: 'generating_images',
+      generationStatus: 'processing',
+      renderStatus: 'empty',
+      generationProgress: 42,
+      metrics: {
+        sceneCount: 5,
+        imageReadyCount: 2,
+        imageFailedCount: 1,
+        exportCount: 0,
+        exportReadyCount: 0,
+        exportFailedCount: 0,
+        mediaJobQueuedCount: 1,
+        mediaJobFailedCount: 0,
+      },
+      exports: [],
+      firstError: '',
+      hasSourceAudio: true,
+      hasProcessedAudio: false,
+      hasRenderedVideo: false,
+    },
+    {
+      pipelineStage: 'failed',
+      generationStatus: 'failed',
+      renderStatus: 'failed',
+      generationProgress: 58,
+      metrics: {
+        sceneCount: 4,
+        imageReadyCount: 1,
+        imageFailedCount: 2,
+        exportCount: 1,
+        exportReadyCount: 0,
+        exportFailedCount: 1,
+        mediaJobQueuedCount: 0,
+        mediaJobFailedCount: 1,
+      },
+      exports: [{ costCredits: 3 }],
+      firstError: 'render failed',
+      hasSourceAudio: true,
+      hasProcessedAudio: true,
+      hasRenderedVideo: false,
+    },
+  ]),
+  {
+    total: 3,
+    completed: 1,
+    processing: 1,
+    failed: 1,
+    needsAttention: 2,
+    withSourceAudio: 3,
+    withProcessedAudio: 2,
+    withRenderedVideo: 1,
+    consumedCredits: 8,
   }
 );
 

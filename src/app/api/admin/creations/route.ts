@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { getAuth } from '@/core/auth';
-import { respErr, respPage } from '@/lib/resp';
+import { respData, respErr } from '@/lib/resp';
 import { getAdminCreations } from '@/modules/lyric-videos/admin';
 import { hasPermission } from '@/modules/rbac/service';
 
@@ -17,9 +17,10 @@ export async function GET(req: Request) {
     const page = Math.max(1, Number(searchParams.get('page') || 1));
     const pageSize = Math.min(50, Math.max(1, Number(searchParams.get('pageSize') || 12)));
     const search = searchParams.get('search');
+    const view = searchParams.get('view');
 
-    const data = await getAdminCreations({ page, pageSize, search });
-    return respPage(data.items, data.total);
+    const data = await getAdminCreations({ page, pageSize, search, view });
+    return respData(data);
   } catch (error: any) {
     return respErr(error?.message || 'Internal error');
   }

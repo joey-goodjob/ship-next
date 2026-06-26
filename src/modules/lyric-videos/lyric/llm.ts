@@ -54,6 +54,16 @@ function isTransientProviderStatus(status: number) {
   return [408, 429, 500, 502, 503, 504, 520, 522, 524].includes(status);
 }
 
+function kieResponseBodyStatus(data: any) {
+  const value = data?.code ?? data?.statusCode ?? data?.error?.code;
+  const status = Number(value);
+  return Number.isFinite(status) ? status : null;
+}
+
+function kieResponseBodyMessage(data: any) {
+  return String(data?.msg || data?.message || data?.error?.message || '').trim();
+}
+
 export async function callKieGeminiChat(params: {
   text: string;
   mediaUrl?: string;
@@ -294,6 +304,7 @@ export async function callKieCodexResponses(params: {
   });
 
   let response: Response | undefined;
+  let responseData: any;
   let lastRequestError: unknown;
   const requestBody = JSON.stringify({
     model,
@@ -333,9 +344,29 @@ export async function callKieCodexResponses(params: {
         response = undefined;
         continue;
       }
+      if (response.ok) {
+        responseData = await response.json();
+        const bodyStatus = kieResponseBodyStatus(responseData);
+        if (bodyStatus && isTransientProviderStatus(bodyStatus) && attempt < maxAttempts) {
+          logLyricStage('kie-codex-responses', 'body-code-retry', {
+            durationMs: Date.now() - startedAt,
+            model,
+            endpoint,
+            status: response.status,
+            bodyStatus,
+            attempt,
+            maxAttempts,
+            errorPreview: previewText(JSON.stringify(responseData), 500),
+          });
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+          response = undefined;
+          responseData = undefined;
+          continue;
+        }
+      }
       break;
     } catch (error) {
-      logLyricStageError('kie-codex-responses', attempt < 3 ? 'request-retry' : 'request-error', error, {
+      logLyricStageError('kie-codex-responses', attempt < maxAttempts ? 'request-retry' : 'request-error', error, {
         durationMs: Date.now() - startedAt,
         model,
         endpoint,
@@ -385,7 +416,34 @@ export async function callKieCodexResponses(params: {
     });
   }
 
-  const data = await response.json();
+  const data = responseData || (await response.json());
+  const bodyStatus = kieResponseBodyStatus(data);
+  if (bodyStatus && bodyStatus >= 400) {
+    const text = JSON.stringify(data);
+    logLyricStage('kie-codex-responses', 'body-code-error', {
+      durationMs: Date.now() - startedAt,
+      model,
+      endpoint,
+      status: response.status,
+      bodyStatus,
+      errorPreview: previewText(text, 1200),
+    });
+    throw createLyricVideoError(
+      providerErrorMessage('Kie Codex responses', bodyStatus, kieResponseBodyMessage(data) || text),
+      {
+        errorKind: 'provider_request_failed',
+        provider: 'kie_codex',
+        model,
+        diagnostics: {
+          endpoint,
+          status: response.status,
+          bodyStatus,
+          durationMs: Date.now() - startedAt,
+          responsePreview: previewText(text, 1200),
+        },
+      }
+    );
+  }
   const contentText = chatContentToText(data.output_text || data.output || data.content || data.response?.output || '');
   logLyricStage('kie-codex-responses', 'response-success', {
     durationMs: Date.now() - startedAt,

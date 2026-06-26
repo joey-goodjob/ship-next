@@ -1,16 +1,49 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Check, ChevronDown, Coins, Download, Edit3, Loader2, Lock, Menu, Settings } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { Link } from "@/core/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 
+type CreditsResponse = {
+  code?: number;
+  data?: {
+    balance?: number;
+  };
+};
+
 export function TopNavBar() {
   const { exporting, generationLocked, generationLockReason, project, queueExport, saveStatus, updateProjectField } = useEditor();
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [creditBalanceLoaded, setCreditBalanceLoaded] = useState(false);
 
   const saveLabel =
     saveStatus === "saving" ? "Saving" : saveStatus === "failed" ? "Save failed" : saveStatus === "saved" ? "Saved" : "Ready";
+  const creditLabel = creditBalanceLoaded ? (creditBalance === null ? "--" : creditBalance.toLocaleString()) : "...";
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetch("/api/credits")
+      .then((response) => response.json())
+      .then((body: CreditsResponse) => {
+        if (!mounted) return;
+        const balance = Number(body?.data?.balance);
+        setCreditBalance(body?.code === 0 && Number.isFinite(balance) ? balance : null);
+      })
+      .catch(() => {
+        if (mounted) setCreditBalance(null);
+      })
+      .finally(() => {
+        if (mounted) setCreditBalanceLoaded(true);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <header className="top-nav-bar flex h-[56px] shrink-0 items-center border-b border-[var(--editor-line)] bg-[var(--editor-panel)] px-[20px]">
@@ -61,7 +94,7 @@ export function TopNavBar() {
         </button>
         <span className="flex items-center gap-[5px] text-[14px] font-[800] text-[var(--editor-accent)]" title="Credits">
           <Coins className="h-[16px] w-[16px]" />
-          --
+          {creditLabel}
         </span>
         <Settings className="h-[18px] w-[18px] text-[var(--editor-muted)]" />
         <Menu className="h-[18px] w-[18px] text-[var(--editor-muted)]" />

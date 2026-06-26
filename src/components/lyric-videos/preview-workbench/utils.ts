@@ -159,8 +159,67 @@ export function isGenerationLocked(project: LyricVideoProject | null, generation
   );
 }
 
+function imageGenerationIsActive(project: LyricVideoProject | null) {
+  return project?.pipelineStage === "images_queueing" || project?.pipelineStage === "images_processing";
+}
+
+export function canUpdateSceneWhileGenerationLocked({
+  allowDuringImageGeneration,
+  generationLocked,
+  project,
+}: {
+  allowDuringImageGeneration?: boolean;
+  generationLocked: boolean;
+  project: LyricVideoProject | null;
+}) {
+  if (!generationLocked) return true;
+  return Boolean(allowDuringImageGeneration) && imageGenerationIsActive(project);
+}
+
+export function canRetrySceneImage({
+  generationLocked,
+  pendingRetry,
+  project,
+  scene,
+  submitting,
+}: {
+  generationLocked: boolean;
+  pendingRetry?: boolean;
+  project: LyricVideoProject | null;
+  scene: LyricScene;
+  submitting?: boolean;
+}) {
+  if (submitting || pendingRetry || sceneImageIsPending(scene)) return false;
+  if (!generationLocked) return true;
+  return imageGenerationIsActive(project);
+}
+
 export function sceneHasImage(scene: LyricScene) {
   return Boolean(scene.imageUrl || scene.status === "success");
+}
+
+export function resolveSceneMedia(scene?: Pick<LyricScene, "imageUrl" | "videoUrl"> | null) {
+  const videoUrl = String(scene?.videoUrl || "").trim();
+  const imageUrl = String(scene?.imageUrl || "").trim();
+  if (videoUrl) {
+    return {
+      kind: "video" as const,
+      url: videoUrl,
+      posterUrl: imageUrl || undefined,
+    };
+  }
+  if (imageUrl) {
+    return {
+      kind: "image" as const,
+      url: imageUrl,
+      posterUrl: undefined,
+    };
+  }
+  return {
+    kind: "empty" as const,
+    url: "",
+    posterUrl: undefined,
+  };
 }
 
 export function sceneGridParams(scene: LyricScene) {
@@ -253,11 +312,15 @@ export function deriveGenerationProgress(params: {
     total > 0
       ? `Images ${success}/${total}${processing ? `, processing ${processing}` : ""}${failed ? `, failed ${failed}` : ""}`
       : "Images not queued yet";
+  const isPartialComplete = failed > 0 && processing === 0;
+  const refundNotice = isPartialComplete
+    ? "We kept the successful images and refunded all credits for this generation."
+    : "";
   const primary =
     directionReady
       ? "方向已生成，等待生成全部场景"
-      : failed > 0 && processing === 0
-      ? `Image generation partial ${success}/${total}, failed ${failed}, retry available`
+      : isPartialComplete
+      ? "Partial generation completed"
       : total > 0 && (processing > 0 || generationStatus === "waiting_provider")
         ? `Image generation ${success}/${total}${failed ? `, failed ${failed}` : ""}`
         : stageLabel(currentStage);
@@ -265,6 +328,7 @@ export function deriveGenerationProgress(params: {
   return {
     primary,
     imageText,
+    refundNotice,
     total,
     success,
     processing,

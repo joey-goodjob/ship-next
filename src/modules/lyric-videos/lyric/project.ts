@@ -252,6 +252,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       styleOverrides: parseJsonField<Record<string, unknown>>(scene.styleOverrides, {}),
       timelineConfig: parseJsonField<Record<string, unknown>>(scene.timelineConfig, {}),
       generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
+      videoGenerationParams: parseJsonField<Record<string, unknown>>(scene.videoGenerationParams, {}),
       imageCandidates: imageCandidatesBySceneId.get(scene.id) || [],
     };
   });

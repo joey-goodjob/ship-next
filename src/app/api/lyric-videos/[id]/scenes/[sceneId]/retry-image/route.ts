@@ -27,12 +27,14 @@ export async function POST(
       sceneId,
       model: body.model,
       billingMode: 'extra_regeneration',
+      allowConcurrentImageGeneration: Boolean(body.allowConcurrentImageGeneration),
     });
     const data = await service.queueSceneImages({
       userId,
       projectId: id,
       sceneId,
       model: body.model,
+      skipActiveGenerationGuard: Boolean(body.allowConcurrentImageGeneration),
     });
     logLyricStage('scene-images', 'route-retry-success', {
       durationMs: Date.now() - startedAt,

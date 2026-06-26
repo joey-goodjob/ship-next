@@ -19,7 +19,7 @@
     "subscriptions": "Subscriptions",
     "credits": "Credits",
     "invite_codes": "Invite Codes",
-    "creations": "Creations"
+    "creations": "Usage Records"
   },
   "stats": {
     "total_users": "Total Users",
@@ -251,8 +251,8 @@
     "tab_consume": "Consume"
   },
   "creations": {
-    "title": "Creations",
-    "description": "Inspect lyric-video projects, user media, generation status, exports, and failures.",
+    "title": "Usage Records",
+    "description": "Inspect what each user created, uploaded, generated, spent, and where a workflow failed.",
     "refresh": "Refresh",
     "search_placeholder": "Search title, file, user, or email",
     "total": "{count} creations",
@@ -266,6 +266,7 @@
     "source_audio": "Original audio",
     "processed_audio": "Processed audio",
     "rendered_video": "Rendered video",
+    "credits_used": "{count} credits",
     "empty_media": "No playable media recorded for this creation.",
     "empty_steps": "No generation steps recorded.",
     "empty_scenes": "No scenes recorded.",
@@ -277,18 +278,55 @@
     "badges": {
       "render": "render: {status}"
     },
+    "tabs": {
+      "all": "All",
+      "processing": "Processing",
+      "preview": "Preview ready",
+      "rendered": "Rendered",
+      "failed": "Failed"
+    },
+    "summary": {
+      "total": {
+        "title": "Usage records",
+        "detail": "All lyric-video projects across users."
+      },
+      "completed": {
+        "title": "Rendered",
+        "detail": "{media} records have playable final video."
+      },
+      "processing": {
+        "title": "In progress",
+        "detail": "{media} records already have processed audio."
+      },
+      "failed": {
+        "title": "Needs review",
+        "detail": "{credits} visible credits were spent on loaded records."
+      }
+    },
     "sections": {
       "media": "Media",
       "progress": "Progress",
+      "failure_diagnostics": "Failure diagnostics",
       "steps": "Generation steps",
       "workflow": "Workflow",
       "scenes": "Scenes"
+    },
+    "diagnostics": {
+      "stage": "Stage",
+      "status": "Status",
+      "model": "Model",
+      "attempts": "Attempts",
+      "time": "Time",
+      "task": "Task",
+      "error": "Error"
     },
     "metrics": {
       "scenes": "Images",
       "exports": "Exports",
       "failed_images": "Failed images",
-      "elapsed": "Elapsed"
+      "elapsed": "Elapsed",
+      "credits": "Credits",
+      "media": "Media"
     }
   },
   "invite_codes": {

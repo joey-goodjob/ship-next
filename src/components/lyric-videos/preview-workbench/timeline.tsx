@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { usePlayback } from "./playback-context";
 import type { LyricLine, LyricScene, LyricWord } from "./types";
-import { clamp, formatClock, msToSeconds } from "./utils";
+import { clamp, formatClock, msToSeconds, resolveSceneMedia } from "./utils";
 
 export function Timeline({ height }: { height: number }) {
   const { lines, scenes, words, zoom } = useEditor();
@@ -112,14 +112,22 @@ const TimelineScenes = memo(function TimelineScenes({
     const left = (msToSeconds(scene.startMs) / totalDuration) * 100;
     const width = ((scene.endMs - scene.startMs) / 1000 / totalDuration) * 100;
     const active = activeSceneId === scene.id;
+    const media = resolveSceneMedia(scene);
     return (
       <div
         key={scene.id}
         className={cn("absolute top-0 overflow-hidden border-r border-[var(--editor-bg)]", active ? "outline outline-[2px] outline-[var(--editor-accent)]" : "")}
         style={{ left: `${left}%`, width: `${Math.max(width, 1.5)}%`, height: sceneHeight }}
       >
-        {scene.imageUrl ? (
-          <img src={scene.imageUrl} alt="" className="h-full w-full object-cover" />
+        {media.kind === "video" ? (
+          <>
+            <video src={media.url} poster={media.posterUrl} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+            <span className="pointer-events-none absolute left-[4px] top-[4px] rounded-[3px] bg-black/55 px-[4px] py-[2px] text-[8px] font-[900] uppercase tracking-[0.06em] text-white/85">
+              Video
+            </span>
+          </>
+        ) : media.kind === "image" ? (
+          <img src={media.url} alt="" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-[var(--editor-panel-strong)] text-[10px] font-[800] uppercase text-[var(--editor-subtle)]">
             {scene.status}
