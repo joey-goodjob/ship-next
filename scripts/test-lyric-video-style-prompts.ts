@@ -114,6 +114,21 @@ assert.match(realistic3DPrompt, /realistic 3D rendered/i, '3D render style shoul
 assert.doesNotMatch(realistic3DPrompt, /no 3D render/i, '3D render must not be forbidden when selected');
 assert.doesNotMatch(realistic3DPrompt, /Do not switch[^\r\n.]*3D render/i, '3D render must not be blocked by style boundary');
 
+const digitalPrompt = buildGridSceneImagePrompt({
+  scenes: [
+    {
+      id: 'scene_1',
+      startMs: 0,
+      endMs: 4000,
+      prompt: 'Digital illustration of a performer on a stylized night skyline.',
+    },
+  ],
+  project: { artStyle: 'digital', customStyle: 'teal moonlit city' },
+}).compiledPrompt;
+
+assert.match(digitalPrompt, /digital illustration/i, 'digital style should be present');
+assert.doesNotMatch(digitalPrompt, /Do not switch[^\r\n.]*digital illustration/i, 'digital style must not be blocked by style boundary');
+
 const legacyPrompt = buildStoryboardScenesPrompt({
   songAnalysis,
   scenes: fixedScenes,

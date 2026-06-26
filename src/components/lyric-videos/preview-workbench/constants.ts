@@ -1,11 +1,46 @@
+const STYLE_PREVIEW_BASE_URL = "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/style-previews/lyric-video-styles";
+
 export const STYLE_OPTIONS = [
-  { value: "realistic", label: "Realistic", icon: "film" },
-  { value: "realistic 3D render", label: "Realistic 3D render", icon: "box" },
-  { value: "anime", label: "Anime", icon: "smile" },
-  { value: "cartoon", label: "Cartoon", icon: "clapperboard" },
-  { value: "digital oil painting", label: "Digital oil painting", icon: "brush" },
-  { value: "pencil sketch", label: "Pencil sketch", icon: "pencil" },
-  { value: "pixel art", label: "Pixel art", icon: "grid" },
+  {
+    value: "realistic",
+    label: "Realistic",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/realistic.webp`,
+  },
+  {
+    value: "realistic 3D render",
+    label: "3D Render",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/realistic-3d-render.webp`,
+  },
+  {
+    value: "anime",
+    label: "Anime",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/anime.webp`,
+  },
+  {
+    value: "cartoon",
+    label: "Cartoon",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/cartoon.webp`,
+  },
+  {
+    value: "digital",
+    label: "Digital",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/digital.webp`,
+  },
+  {
+    value: "digital oil painting",
+    label: "Oil painting",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/oil-painting.webp`,
+  },
+  {
+    value: "pencil sketch",
+    label: "Pencil",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/pencil-sketch.webp`,
+  },
+  {
+    value: "pixel art",
+    label: "Pixel art",
+    previewSrc: `${STYLE_PREVIEW_BASE_URL}/pixel-art.webp`,
+  },
 ] as const;
 
 export const FORMAT_OPTIONS = [

@@ -5,18 +5,11 @@ import type { KeyboardEvent } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   BookText,
-  Box,
-  Brush,
   Check,
-  Clapperboard,
-  Film,
-  Grid3X3,
   Loader2,
   Monitor,
-  Pencil,
   PencilLine,
   Smartphone,
-  Smile,
   Wand2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,16 +18,6 @@ import { useEditor } from "./editor-context";
 import { FieldBlock } from "./field-block";
 import { PanelEmpty } from "./panel-empty";
 import type { StoryChangeSource, StoryReviewStatus } from "./types";
-
-const STYLE_ICON_BY_KEY: Record<(typeof STYLE_OPTIONS)[number]["icon"], LucideIcon> = {
-  box: Box,
-  brush: Brush,
-  clapperboard: Clapperboard,
-  film: Film,
-  grid: Grid3X3,
-  pencil: Pencil,
-  smile: Smile,
-};
 
 const FORMAT_ICON_BY_KEY: Record<(typeof FORMAT_OPTIONS)[number]["icon"], LucideIcon> = {
   monitor: Monitor,
@@ -241,9 +224,8 @@ export function CustomizePanel() {
       </FieldBlock>
 
       <FieldBlock icon={PencilLine} label="Style" locked={storyLocked} lockReason={storyLockReason} surface="card">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[9px]">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(112px,1fr))] gap-x-[14px] gap-y-[12px]">
           {STYLE_OPTIONS.map((style) => {
-            const Icon = STYLE_ICON_BY_KEY[style.icon];
             const selected =
               project.artStyle === style.value ||
               (project.artStyle === "cinematic illustration" && style.value === "realistic");
@@ -255,26 +237,46 @@ export function CustomizePanel() {
                 disabled={storyLocked}
                 title={storyLocked ? storyLockReason : undefined}
                 className={cn(
-                  "relative flex h-[45px] min-w-0 items-center gap-[10px] rounded-[6px] border px-[11px] pr-[28px] text-left transition-colors disabled:cursor-not-allowed disabled:opacity-55",
-                  selected
-                    ? "border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] text-[var(--editor-text)] shadow-[inset_0_0_0_1px_var(--editor-accent)]"
-                    : "border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:bg-[var(--editor-bg)] hover:text-[var(--editor-text)]",
+                  "group min-w-0 rounded-[7px] text-left transition-opacity disabled:cursor-not-allowed disabled:opacity-55",
+                  !storyLocked && "hover:text-[var(--editor-text)]",
                 )}
               >
                 <span
                   className={cn(
-                    "flex size-[25px] shrink-0 items-center justify-center rounded-[5px]",
-                    selected ? "text-[var(--editor-accent)]" : "text-[var(--editor-subtle)]",
+                    "relative block aspect-square w-full overflow-hidden rounded-[6px] border bg-[var(--editor-panel)] transition-colors",
+                    selected
+                      ? "border-[var(--editor-accent)] shadow-[0_0_0_1px_var(--editor-accent)]"
+                      : "border-[var(--editor-line)] group-hover:border-[var(--editor-muted)]/70",
                   )}
                 >
-                  <Icon className="h-[15px] w-[15px]" />
+                  <img
+                    src={style.previewSrc}
+                    alt={`${style.label} style preview`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
                 </span>
-                <span className="min-w-0 truncate text-[12px] font-[800]">{style.label}</span>
-                {selected ? (
-                  <span className="absolute right-[8px] top-[7px] flex size-[15px] items-center justify-center rounded-full bg-[var(--editor-accent)] text-[var(--editor-accent-ink)]">
-                    <Check className="h-[10px] w-[10px] stroke-[3]" />
+                <span className="mt-[7px] flex min-w-0 items-center gap-[7px]">
+                  <span
+                    className={cn(
+                      "flex size-[16px] shrink-0 items-center justify-center rounded-full border transition-colors",
+                      selected
+                        ? "border-[var(--editor-accent)] bg-[var(--editor-accent)]"
+                        : "border-[var(--editor-muted)]/65 bg-transparent",
+                    )}
+                    aria-hidden="true"
+                  >
+                    {selected ? <span className="size-[6px] rounded-full bg-[var(--editor-accent-ink)]" /> : null}
                   </span>
-                ) : null}
+                  <span
+                    className={cn(
+                      "min-w-0 truncate text-[12px] font-[850]",
+                      selected ? "text-[var(--editor-text)]" : "text-[var(--editor-muted)]",
+                    )}
+                  >
+                    {style.label}
+                  </span>
+                </span>
               </button>
             );
           })}

@@ -16,37 +16,42 @@ const STYLE_PRESETS: Record<string, StylePreset> = {
   realistic: {
     label: 'realistic',
     prompt: 'photorealistic live-action music-video stills, natural human proportions, real camera language, cinematic lighting, consistent color grading',
-    boundary: 'Do not switch into anime, cartoon, 3D render, pencil sketch, pixel art, or painterly illustration unless the custom style explicitly asks for that texture.',
+    boundary: 'Do not switch into anime, cartoon, 3D render, digital illustration, pencil sketch, pixel art, or painterly illustration unless the custom style explicitly asks for that texture.',
   },
   'realistic 3d render': {
     label: 'realistic 3D render',
     prompt: 'realistic 3D rendered music-video stills, detailed materials, cinematic lighting, consistent 3D character design, natural proportions',
-    boundary: 'Do not switch into live-action photography, anime, cartoon, pencil sketch, pixel art, or oil painting.',
+    boundary: 'Do not switch into live-action photography, anime, cartoon, digital illustration, pencil sketch, pixel art, or oil painting.',
   },
   anime: {
     label: 'anime',
     prompt: 'anime music-video stills, expressive anime character design, clean linework, cinematic anime lighting, coherent illustrated backgrounds',
-    boundary: 'Do not switch into photorealistic live-action, 3D render, western cartoon, oil painting, pencil sketch, or pixel art.',
+    boundary: 'Do not switch into photorealistic live-action, 3D render, western cartoon, digital illustration, oil painting, pencil sketch, or pixel art.',
   },
   cartoon: {
     label: 'cartoon',
     prompt: 'cartoon music-video stills, stylized character shapes, clean graphic silhouettes, expressive poses, cohesive animated-world backgrounds',
-    boundary: 'Do not switch into photorealistic live-action, anime, 3D render, oil painting, pencil sketch, or pixel art.',
+    boundary: 'Do not switch into photorealistic live-action, anime, 3D render, digital illustration, oil painting, pencil sketch, or pixel art.',
+  },
+  digital: {
+    label: 'digital',
+    prompt: 'digital illustration music-video stills, polished painted-digital surfaces, crisp character rendering, cinematic lighting, cohesive stylized environments',
+    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, oil painting, pencil sketch, or pixel art.',
   },
   'digital oil painting': {
     label: 'digital oil painting',
     prompt: 'digital oil painting music-video stills, visible painterly brushwork, rich color layering, cinematic composition, cohesive painted environments',
-    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, pencil sketch, or pixel art.',
+    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, digital illustration, pencil sketch, or pixel art.',
   },
   'pencil sketch': {
     label: 'pencil sketch',
     prompt: 'pencil sketch music-video stills, graphite linework, hand-drawn shading, paper texture, cinematic composition in monochrome or restrained color',
-    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, oil painting, or pixel art.',
+    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, digital illustration, oil painting, or pixel art.',
   },
   'pixel art': {
     label: 'pixel art',
     prompt: 'pixel art music-video stills, deliberate low-resolution pixel shapes, limited palette, crisp sprite-like silhouettes, cohesive pixel-art environments',
-    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, oil painting, or pencil sketch.',
+    boundary: 'Do not switch into photorealistic live-action, anime, cartoon, 3D render, digital illustration, oil painting, or pencil sketch.',
   },
 };
 
