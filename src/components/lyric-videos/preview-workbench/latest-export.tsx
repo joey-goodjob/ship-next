@@ -1,19 +1,24 @@
 import { Download } from "lucide-react";
 import { buildExportDownloadFilename, buildExportDownloadUrl } from "./export-download";
-import type { LyricExport } from "./types";
+import { exportIsStaleForScenes } from "./export-status-dialog-model";
+import type { LyricExport, LyricScene } from "./types";
 
 export function LatestExport({
   exportJob,
+  currentExportFingerprint,
   isExporting = false,
   projectId,
   renderStatus,
   renderUrl,
+  scenes = [],
 }: {
   exportJob?: LyricExport;
+  currentExportFingerprint?: string;
   isExporting?: boolean;
   projectId?: string | null;
   renderStatus: string;
   renderUrl?: string | null;
+  scenes?: Array<Pick<LyricScene, "id" | "videoUrl" | "videoCompletedAt">>;
 }) {
   const url = buildExportDownloadUrl({
     projectId: exportJob?.projectId || projectId,
@@ -24,11 +29,16 @@ export function LatestExport({
   const isFailed = status === "failed";
   const isQueued = status === "queued";
   const isProcessing = status === "processing";
-  const isReady = hasRenderedVideo && Boolean(url) && (status === "success" || status === "ready");
-  const title = isExporting || isQueued || isProcessing ? "Preparing your MP4..." : isFailed ? "Export failed" : isReady ? "Your video is ready" : "Latest export";
+  const isStale = currentExportFingerprint
+    ? String(exportJob?.exportFingerprint || "").trim() !== currentExportFingerprint
+    : exportIsStaleForScenes(exportJob, scenes);
+  const isReady = !isStale && hasRenderedVideo && Boolean(url) && (status === "success" || status === "ready");
+  const title = isExporting || isQueued || isProcessing ? "Preparing your MP4..." : isFailed ? "Export failed" : isStale ? "Export needs refresh" : isReady ? "Your video is ready" : "Latest export";
   const statusText =
     isExporting || isQueued || isProcessing
       ? "You can keep editing while Railway prepares the MP4."
+      : isStale
+        ? "Scene videos changed. Export again for the current preview."
       : status || "empty";
   const filename = buildExportDownloadFilename(exportJob);
 

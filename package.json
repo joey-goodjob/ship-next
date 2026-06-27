@@ -24,6 +24,7 @@
     "test:lyric-video-style-prompts": "tsx scripts/test-lyric-video-style-prompts.ts",
     "test:asr-scenes": "tsx scripts/test-asr-scene-fixture.ts",
     "test:lyric-video-e2e": "tsx scripts/with-env.ts tsx scripts/run-lyric-video-e2e.ts --runs=3",
+    "test:scene-video-retry-pending": "tsx scripts/test-scene-video-retry-pending-state.ts",
     "test:seo-pages": "tsx scripts/validate-seo-pages.ts",
     "test:seo-r2-images": "tsx scripts/test-seo-r2-image-urls.ts"
   },

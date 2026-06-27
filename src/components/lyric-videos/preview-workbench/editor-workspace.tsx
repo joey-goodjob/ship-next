@@ -18,7 +18,7 @@ import { VideoPreview } from "./video-preview";
 import { clamp, defaultSidePanelWidth, readStoredNumber } from "./utils";
 
 export function EditorWorkspace() {
-  const { exportError, exporting, latestExport, loadError, loading, preparingAudio, project, uploadAndTranscribe } = useEditor();
+  const { currentExportFingerprint, exportError, exporting, latestExport, loadError, loading, preparingAudio, project, scenes, uploadAndTranscribe } = useEditor();
   const wasExportingRef = useRef(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() =>
@@ -145,11 +145,13 @@ export function EditorWorkspace() {
         exportError={exportError}
         exporting={exporting}
         latestExport={latestExport}
+        currentExportFingerprint={currentExportFingerprint}
         onOpenChange={setExportDialogOpen}
         open={exportDialogOpen}
         projectId={project?.id}
         renderStatus={project?.renderStatus || "empty"}
         renderUrl={project?.renderUrl}
+        scenes={scenes}
       />
     </div>
   );

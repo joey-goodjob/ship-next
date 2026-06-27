@@ -10,34 +10,40 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { deriveExportStatusDialogModel } from "./export-status-dialog-model";
-import type { LyricExport } from "./types";
+import type { LyricExport, LyricScene } from "./types";
 
 export function ExportStatusDialog({
   exportError,
   exporting,
   latestExport,
+  currentExportFingerprint,
   onOpenChange,
   open,
   projectId,
   renderStatus,
   renderUrl,
+  scenes = [],
 }: {
   exportError: string;
   exporting: boolean;
   latestExport?: LyricExport;
+  currentExportFingerprint?: string;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   projectId?: string | null;
   renderStatus: string;
   renderUrl?: string | null;
+  scenes?: Array<Pick<LyricScene, "id" | "videoUrl" | "videoCompletedAt">>;
 }) {
   const model = deriveExportStatusDialogModel({
     exportError,
     exporting,
     latestExport,
+    currentExportFingerprint,
     projectId,
     renderStatus,
     renderUrl,
+    scenes,
   });
 
   return (
@@ -49,14 +55,14 @@ export function ExportStatusDialog({
               "flex size-[40px] items-center justify-center rounded-[8px] border",
               model.status === "ready"
                 ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
-                : model.status === "failed"
+                : model.status === "failed" || model.status === "stale"
                   ? "border-[var(--editor-danger)] bg-[var(--editor-panel-soft)] text-[var(--editor-danger)]"
                   : "border-[var(--editor-accent)] bg-[var(--editor-panel-soft)] text-[var(--editor-accent)]",
             )}
           >
             {model.status === "ready" ? (
               <CheckCircle2 className="h-[20px] w-[20px]" />
-            ) : model.status === "failed" ? (
+            ) : model.status === "failed" || model.status === "stale" ? (
               <AlertCircle className="h-[20px] w-[20px]" />
             ) : (
               <Loader2 className="h-[20px] w-[20px] animate-spin" />

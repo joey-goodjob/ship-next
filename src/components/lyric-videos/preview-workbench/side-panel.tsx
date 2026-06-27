@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo } from "react";
 import type { ComponentType } from "react";
-import { Activity, Clapperboard, FileText, Settings, Type, Users } from "lucide-react";
+import { Activity, Clapperboard, Download, FileText, Settings, Type, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CastPanel } from "./cast-panel";
 import { CustomizePanel } from "./customize-panel";
 import { DiagnosticsPanel } from "./diagnostics-panel";
 import { useEditor } from "./editor-context";
+import { ExportsPanel } from "./exports-panel";
+import { getVisiblePanelTabs } from "./export-versions-model";
 import { FontPanel } from "./font-panel";
 import { LyricsPanel } from "./lyrics-panel";
 import { ScenesPanel } from "./scenes-panel";
@@ -22,15 +24,15 @@ const DIAGNOSTICS_TAB: { id: PanelTab; label: string; icon: ComponentType<{ clas
   icon: Activity,
 };
 
-const BASE_PANEL_TABS: Array<{ id: PanelTab; label: string; icon: ComponentType<{ className?: string }> }> = [
-  { id: "customize", label: "Customize", icon: Settings },
-  { id: "lyrics", label: "Lyrics", icon: FileText },
-  { id: "font", label: "Font", icon: Type },
-  { id: "cast", label: "Cast", icon: Users },
-  { id: "scenes", label: "Scenes", icon: Clapperboard },
-];
-
-const PANEL_TABS = SHOW_DIAGNOSTICS_TAB ? [...BASE_PANEL_TABS, DIAGNOSTICS_TAB] : BASE_PANEL_TABS;
+const PANEL_TAB_ICONS: Record<PanelTab, ComponentType<{ className?: string }>> = {
+  customize: Settings,
+  lyrics: FileText,
+  font: Type,
+  cast: Users,
+  scenes: Clapperboard,
+  exports: Download,
+  diagnostics: Activity,
+};
 
 type VisiblePanelTabsInput = {
   generationRun?: GenerationRun | null;
@@ -42,6 +44,7 @@ type VisiblePanelTabsInput = {
 
 export function deriveVisiblePanelTabs(input: VisiblePanelTabsInput) {
   const { generationRun = null, generationSteps, project, runtimeState, scenes } = input;
+  const panelTabs = getVisiblePanelTabs({ showDiagnostics: SHOW_DIAGNOSTICS_TAB });
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const exportReady = project?.renderStatus === "ready" || runtimeState?.latestExportStatus === "ready";
   const scenesReady =
@@ -52,9 +55,9 @@ export function deriveVisiblePanelTabs(input: VisiblePanelTabsInput) {
   const storyReady = progress.directionReady || currentStage === "direction_ready" || Boolean(project?.storyPrompt?.trim());
   const storyReviewMode = storyReady && !progress.isActive && !progress.error && !scenesReady && !exportReady;
 
-  if (!storyReviewMode) return PANEL_TABS;
+  if (!storyReviewMode) return panelTabs;
   const storyReviewTabIds: PanelTab[] = SHOW_DIAGNOSTICS_TAB ? ["customize", "cast", "diagnostics"] : ["customize", "cast"];
-  return PANEL_TABS.filter((tab) => storyReviewTabIds.includes(tab.id));
+  return panelTabs.filter((tab) => storyReviewTabIds.includes(tab.id));
 }
 
 export function SidePanel({ width }: { width: number }) {
@@ -74,7 +77,7 @@ export function SidePanel({ width }: { width: number }) {
     >
       <div className="flex h-[52px] items-end gap-[24px] border-b border-[var(--editor-line)] px-[24px]">
         {tabs.map((tab) => {
-          const Icon = tab.icon;
+          const Icon = PANEL_TAB_ICONS[tab.id] || DIAGNOSTICS_TAB.icon;
           const active = effectiveActiveTab === tab.id;
           return (
             <button
@@ -99,6 +102,7 @@ export function SidePanel({ width }: { width: number }) {
         {effectiveActiveTab === "font" ? <FontPanel /> : null}
         {effectiveActiveTab === "cast" ? <CastPanel /> : null}
         {effectiveActiveTab === "scenes" ? <ScenesPanel /> : null}
+        {effectiveActiveTab === "exports" ? <ExportsPanel /> : null}
         {SHOW_DIAGNOSTICS_TAB && effectiveActiveTab === "diagnostics" ? <DiagnosticsPanel /> : null}
       </div>
     </aside>

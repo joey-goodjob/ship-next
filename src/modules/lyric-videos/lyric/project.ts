@@ -15,8 +15,10 @@ import {
 } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { logLyricStage } from '@/lib/lyric-video-log';
+import { extractExportFingerprintFromSettings } from '@/lib/lyric-video-export-freshness';
 import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
+import { dedupeSceneVideoCandidates } from './scene-video-candidates';
 import { deriveRuntimeState, normalizeExportStatus } from './status';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
 
@@ -245,15 +247,16 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
     });
     imageCandidatesBySceneId.set(candidate.sceneId, sceneCandidates);
   }
-
   const videoCandidatesBySceneId = new Map<string, any[]>();
-  for (const candidate of videoCandidates) {
-    const sceneCandidates = videoCandidatesBySceneId.get(candidate.sceneId) || [];
+  for (const candidate of dedupeSceneVideoCandidates(videoCandidates)) {
+    const sceneId = String(candidate.sceneId || '');
+    if (!sceneId) continue;
+    const sceneCandidates = videoCandidatesBySceneId.get(sceneId) || [];
     sceneCandidates.push({
       ...candidate,
       generationParams: parseJsonField<Record<string, unknown>>(candidate.generationParams, {}),
     });
-    videoCandidatesBySceneId.set(candidate.sceneId, sceneCandidates);
+    videoCandidatesBySceneId.set(sceneId, sceneCandidates);
   }
 
   const normalizedScenes = scenes.map((scene: any) => {
@@ -276,6 +279,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
   const normalizedExports = exports.map((item: any) => ({
     ...item,
     status: normalizeExportStatus(item.status),
+    exportFingerprint: extractExportFingerprintFromSettings(item.settings),
   }));
   const runtimeState = deriveRuntimeState({
     project: normalizedProject,

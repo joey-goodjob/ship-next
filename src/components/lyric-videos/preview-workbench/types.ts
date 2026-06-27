@@ -1,5 +1,5 @@
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
-export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "diagnostics";
+export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "exports" | "diagnostics";
 export type StoryReviewStatus = "idle" | "unconfirmed" | "dirty" | "confirmed";
 export type StoryChangeSource = "manual_edit" | "ai_rewrite" | "ai_new_story" | null;
 
@@ -179,6 +179,7 @@ export type LyricExport = {
   projectId?: string;
   status: string;
   videoUrl?: string | null;
+  exportFingerprint?: string | null;
   error?: string | null;
   resolution: string;
   aspectRatio: string;
@@ -291,6 +292,7 @@ export type EditorContextValue = {
   cast: LyricCastMember[];
   exports: LyricExport[];
   latestExport?: LyricExport;
+  currentExportFingerprint: string;
   runtimeState?: RuntimeState | null;
   loading: boolean;
   loadError: string;
