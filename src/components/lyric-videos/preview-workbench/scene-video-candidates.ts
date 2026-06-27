@@ -22,6 +22,20 @@ export function sortSceneVideoCandidates(candidates: LyricSceneVideoCandidate[] 
   return [...candidates].sort((a, b) => candidateCreatedAtMs(b) - candidateCreatedAtMs(a));
 }
 
+function sourceImageUrlFromGenerationParams(params?: LyricScene["videoGenerationParams"]) {
+  const raw = typeof params === "string" ? safeParseJson(params) : params;
+  if (!raw || typeof raw !== "object") return "";
+  return String((raw as Record<string, unknown>).sourceImageUrl || "").trim();
+}
+
+function safeParseJson(value: string) {
+  try {
+    return JSON.parse(value) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 export function getSceneVideoCandidateStripItems({
   candidates = [],
   offset = 0,
@@ -58,7 +72,7 @@ export function getSceneVideoCandidateStripItems({
 }
 
 export function getSceneVideoCandidateDisplayList(
-  scene: Pick<LyricScene, "id" | "motionPrompt" | "videoCandidates" | "videoStatus" | "videoUrl">,
+  scene: Pick<LyricScene, "id" | "motionPrompt" | "videoCandidates" | "videoGenerationParams" | "videoStatus" | "videoUrl">,
 ) {
   const candidates = scene.videoCandidates || [];
   const currentVideoUrl = String(scene.videoUrl || "").trim();
@@ -74,6 +88,7 @@ export function getSceneVideoCandidateDisplayList(
       status: scene.videoStatus || "success",
       createdAt: "9999-12-31T23:59:59.999Z",
       promptSnapshot: scene.motionPrompt || null,
+      sourceImageUrl: sourceImageUrlFromGenerationParams(scene.videoGenerationParams) || null,
     },
     ...candidates,
   ];
@@ -92,7 +107,7 @@ export function getSceneVideoPosterUrl({
 export function getSelectedSceneVideoPosterUrl({
   scene,
 }: {
-  scene: Pick<LyricScene, "imageUrl" | "videoCandidates" | "videoUrl">;
+  scene: Pick<LyricScene, "imageUrl" | "videoCandidates" | "videoGenerationParams" | "videoUrl">;
 }) {
   const selectedVideoUrl = String(scene.videoUrl || "").trim();
   const selectedCandidate = selectedVideoUrl
@@ -100,7 +115,7 @@ export function getSelectedSceneVideoPosterUrl({
     : undefined;
   return getSceneVideoPosterUrl({
     candidate: selectedCandidate,
-    fallbackPosterUrl: scene.imageUrl,
+    fallbackPosterUrl: sourceImageUrlFromGenerationParams(scene.videoGenerationParams) || scene.imageUrl,
   });
 }
 

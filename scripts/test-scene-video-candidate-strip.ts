@@ -6,6 +6,7 @@ import {
   getSceneVideoCandidateStripItems,
   getSelectedSceneVideoPosterUrl,
 } from "../src/components/lyric-videos/preview-workbench/scene-video-candidates";
+import type { LyricSceneVideoCandidate } from "../src/components/lyric-videos/preview-workbench/types";
 
 const scene = {
   id: "scene-1",
@@ -49,6 +50,14 @@ const selected = applySelectedSceneVideoCandidate(scene, scene.videoCandidates[0
 assert.equal(selected.videoUrl, "https://cdn.example.com/old.mp4");
 assert.equal(selected.videoStatus, "success");
 
+const legacyCandidate: LyricSceneVideoCandidate = {
+  id: "legacy",
+  sceneId: "scene-1",
+  videoUrl: "https://cdn.example.com/legacy.mp4",
+  status: "success",
+  createdAt: "2026-01-03T00:00:00.000Z",
+};
+
 assert.equal(
   getSceneVideoPosterUrl({
     candidate: scene.videoCandidates[0],
@@ -59,13 +68,7 @@ assert.equal(
 
 assert.equal(
   getSceneVideoPosterUrl({
-    candidate: {
-      id: "legacy",
-      sceneId: "scene-1",
-      videoUrl: "https://cdn.example.com/legacy.mp4",
-      status: "success",
-      createdAt: "2026-01-03T00:00:00.000Z",
-    },
+    candidate: legacyCandidate,
     fallbackPosterUrl: "https://cdn.example.com/current-scene-image.jpg",
   }),
   "https://cdn.example.com/current-scene-image.jpg",
@@ -81,5 +84,29 @@ assert.equal(
   }),
   "https://cdn.example.com/old-source.jpg",
 );
+
+assert.equal(
+  getSelectedSceneVideoPosterUrl({
+    scene: {
+      ...scene,
+      imageUrl: "https://cdn.example.com/newly-selected-still.jpg",
+      videoUrl: "https://cdn.example.com/current.mp4",
+      videoCandidates: [],
+      videoGenerationParams: {
+        sourceImageUrl: "https://cdn.example.com/original-video-source.jpg",
+      },
+    },
+  }),
+  "https://cdn.example.com/original-video-source.jpg",
+);
+
+const syntheticCurrent = getSceneVideoCandidateDisplayList({
+  ...scene,
+  videoCandidates: [],
+  videoGenerationParams: {
+    sourceImageUrl: "https://cdn.example.com/current-source.jpg",
+  },
+});
+assert.equal(syntheticCurrent[0].sourceImageUrl, "https://cdn.example.com/current-source.jpg");
 
 console.log("scene video candidate strip tests passed");
