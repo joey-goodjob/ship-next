@@ -5,6 +5,7 @@ import { lyricVideoExport, lyricVideoProject } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { buildCaptionChunks, type CaptionWord } from '@/lib/lyric-caption-chunks';
 import { logLyricStage } from '@/lib/lyric-video-log';
+import { buildLyricVideoExportFingerprint, withExportFreshnessSettings } from '@/lib/lyric-video-export-freshness';
 import { createTask } from '@/modules/ai-tasks/service';
 import { createMediaJob } from './media-jobs';
 import { safeJson } from './json';
@@ -190,6 +191,15 @@ export function calculateStaticVideoExportCostCredits(_params: { audioDurationMs
   return 0;
 }
 
+function assertScenesReadyForExport(scenes: any[]) {
+  if (scenes.some((scene) => scene.videoStatus === 'processing')) {
+    throw new Error('Scene video generation is still processing. Please wait before exporting.');
+  }
+  if (!scenes.some((scene) => scene.videoUrl || scene.imageUrl)) {
+    throw new Error('Generate at least one scene image or video before export');
+  }
+}
+
 export async function queueExport(params: {
   userId: string;
   projectId: string;
@@ -203,11 +213,20 @@ export async function queueExport(params: {
   if (details.lines.length === 0) throw new Error('Add lyrics before export');
   if (details.scenes.length === 0) throw new Error('Generate scenes before export');
   if (!details.project.audioUrl) throw new Error('Upload audio before export');
-  if (!details.scenes.some((scene: any) => scene.imageUrl)) throw new Error('Generate at least one scene image before export');
+  assertScenesReadyForExport(details.scenes);
 
   const costCredits = calculateStaticVideoExportCostCredits({ audioDurationMs: details.project.audioDurationMs });
   const watermark = normalizeExportWatermark(params.watermark);
-  const exportSettings = buildExportSettings({ settings: params.settings, watermark });
+  const exportFingerprint = buildLyricVideoExportFingerprint({
+    project: details.project,
+    lines: details.lines,
+    words: details.words,
+    scenes: details.scenes,
+  });
+  const exportSettings = withExportFreshnessSettings({
+    settings: buildExportSettings({ settings: params.settings, watermark }),
+    fingerprint: exportFingerprint,
+  });
   const task = await createTask({
     userId: params.userId,
     mediaType: 'video',

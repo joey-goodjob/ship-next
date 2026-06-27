@@ -1,5 +1,5 @@
 export type SaveStatus = "idle" | "saving" | "saved" | "failed";
-export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "diagnostics";
+export type PanelTab = "customize" | "lyrics" | "font" | "cast" | "scenes" | "exports" | "diagnostics";
 export type StoryReviewStatus = "idle" | "unconfirmed" | "dirty" | "confirmed";
 export type StoryChangeSource = "manual_edit" | "ai_rewrite" | "ai_new_story" | null;
 
@@ -95,6 +95,7 @@ export type LyricScene = {
   error?: string | null;
   sort?: number;
   imageCandidates?: LyricSceneImageCandidate[];
+  videoCandidates?: LyricSceneVideoCandidate[];
 };
 
 export type LyricSceneImageCandidate = {
@@ -105,6 +106,20 @@ export type LyricSceneImageCandidate = {
   createdAt: string | Date;
   promptSnapshot?: string | null;
   imageModel?: string | null;
+};
+
+export type LyricSceneVideoCandidate = {
+  id: string;
+  sceneId: string;
+  videoUrl: string;
+  status: string;
+  createdAt: string | Date;
+  videoTaskId?: string | null;
+  providerTaskId?: string | null;
+  videoModel?: string | null;
+  promptSnapshot?: string | null;
+  sourceImageUrl?: string | null;
+  generationParams?: Record<string, unknown> | string | null;
 };
 
 export type LyricScenePatch = {
@@ -164,6 +179,7 @@ export type LyricExport = {
   projectId?: string;
   status: string;
   videoUrl?: string | null;
+  exportFingerprint?: string | null;
   error?: string | null;
   resolution: string;
   aspectRatio: string;
@@ -276,6 +292,7 @@ export type EditorContextValue = {
   cast: LyricCastMember[];
   exports: LyricExport[];
   latestExport?: LyricExport;
+  currentExportFingerprint: string;
   runtimeState?: RuntimeState | null;
   loading: boolean;
   loadError: string;
@@ -323,6 +340,7 @@ export type EditorContextValue = {
   queueSceneVideos: (sceneIds: string[]) => Promise<LyricScene[]>;
   retrySceneImage: (sceneId: string, options?: { allowDuringImageGeneration?: boolean }) => Promise<LyricScene | null>;
   selectSceneImageCandidate: (sceneId: string, candidate: LyricSceneImageCandidate) => Promise<LyricScene | null>;
+  selectSceneVideoCandidate: (sceneId: string, candidate: LyricSceneVideoCandidate) => Promise<LyricScene | null>;
   syncSceneImages: () => Promise<void>;
   syncSceneVideos: () => Promise<void>;
   retryFailedImageBatches: () => Promise<void>;

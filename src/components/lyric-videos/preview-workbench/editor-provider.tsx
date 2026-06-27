@@ -4,11 +4,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { buildLyricVideoExportFingerprint } from "@/lib/lyric-video-export-freshness";
 import { debugPreviewWorkbench } from "./debug-log";
 import { EditorContext } from "./editor-context";
+import { shouldQueueExportForCurrentPreview } from "./export-versions-model";
 import { PlaybackProvider } from "./playback-context";
 import { normalizeSceneCastIds } from "./scene-cast-ids";
 import { applySelectedSceneImageCandidate } from "./scene-image-candidates";
+import {
+  applyQueuedSceneVideo,
+  applySelectedSceneVideoCandidate,
+  mergeScenesWithPendingSceneVideoRetries,
+  mergeVideoSyncedScenes,
+  nextSceneVideoRetryPendingAfterQueueResponse,
+  pruneFinishedSceneVideoRetryPending,
+  type SceneVideoRetryPendingMap,
+} from "./scene-video-candidates";
 import type {
   CreateCastMemberInput,
   EditorContextValue,
@@ -21,6 +32,7 @@ import type {
   LyricScene,
   LyricSceneImageCandidate,
   LyricScenePatch,
+  LyricSceneVideoCandidate,
   LyricVideoProject,
   LyricWord,
   PanelTab,
@@ -75,6 +87,7 @@ const VIDEO_SYNC_SCENE_FIELDS = [
   "videoGenerationParams",
   "videoCompletedAt",
   "videoError",
+  "videoCandidates",
   "updatedAt",
 ];
 
@@ -157,9 +170,11 @@ export function EditorProvider({
   const [storyReviewBaseline, setStoryReviewBaseline] = useState("");
   const saveTimerRef = useRef<number | null>(null);
   const imageSyncInFlightRef = useRef(false);
+  const videoSyncInFlightRef = useRef(false);
   const visualGenerationInFlightRef = useRef(false);
   const sceneImageQueueInFlightRef = useRef(false);
   const sceneImageRetryInFlightSceneIdsRef = useRef(new Set<string>());
+  const sceneVideoRetryPendingRef = useRef<SceneVideoRetryPendingMap>(new Map());
   const retryImageBatchesInFlightRef = useRef(false);
   const refreshInFlightRef = useRef(false);
   const autoTranscribeProjectRef = useRef<string | null>(null);
@@ -179,6 +194,15 @@ export function EditorProvider({
   }, [lines, project?.audioDurationMs, scenes, words]);
 
   const latestExport = exports[0];
+  const currentExportFingerprint = useMemo(() => {
+    if (!project) return "";
+    return buildLyricVideoExportFingerprint({
+      project,
+      lines,
+      words,
+      scenes,
+    });
+  }, [lines, project, scenes, words]);
   const generationLocked = useMemo(
     () => Boolean(debugGenerationLocked) || isGenerationLocked(project, generationRun, runtimeState),
     [debugGenerationLocked, generationRun, project, runtimeState],
@@ -220,6 +244,17 @@ export function EditorProvider({
     return Object.keys(pendingProjectPatchRef.current).length > 0 || Object.keys(projectPatchInFlightRef.current).length > 0;
   }
 
+  function applyScenesWithVideoRetryPending(nextScenes: LyricScene[] | ((previous: LyricScene[]) => LyricScene[])) {
+    setScenes((previous) => {
+      const resolvedScenes = typeof nextScenes === "function" ? nextScenes(previous) : nextScenes;
+      sceneVideoRetryPendingRef.current = pruneFinishedSceneVideoRetryPending({
+        previous: sceneVideoRetryPendingRef.current,
+        scenes: resolvedScenes,
+      });
+      return resolvedScenes;
+    });
+  }
+
   const refresh = useCallback(async () => {
     if (refreshInFlightRef.current) return;
     refreshInFlightRef.current = true;
@@ -233,7 +268,13 @@ export function EditorProvider({
       setGenerationSteps(details.generationSteps || []);
       setLinesState(details.lines || []);
       setWordsState(wordsFromDetails(details));
-      setScenes(details.scenes || []);
+      applyScenesWithVideoRetryPending((previous) =>
+        mergeScenesWithPendingSceneVideoRetries({
+          previous,
+          incoming: details.scenes || [],
+          pending: sceneVideoRetryPendingRef.current,
+        }),
+      );
       setCast(details.cast || []);
       setExports(details.exports || []);
       setLyricsDirty(false);
@@ -1069,7 +1110,15 @@ export function EditorProvider({
     if (!project) return [];
     const selectedSceneIds = sceneIds.filter(Boolean);
     if (selectedSceneIds.length === 0) return [];
+    const selectedSceneIdSet = new Set(selectedSceneIds);
+    const scenesBeforeQueue = new Map(scenes.map((scene) => [scene.id, scene]));
+    for (const sceneId of selectedSceneIds) {
+      sceneVideoRetryPendingRef.current.set(sceneId, { phase: "saving" });
+    }
     setSaveStatus("saving");
+    setScenes((previous) =>
+      previous.map((scene) => (selectedSceneIdSet.has(scene.id) ? applyQueuedSceneVideo(scene) : scene)),
+    );
     try {
       const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scene-videos`, {
         method: "POST",
@@ -1077,14 +1126,49 @@ export function EditorProvider({
         body: JSON.stringify({ sceneIds: selectedSceneIds }),
       });
       const queuedById = new Map((queued || []).map((scene) => [scene.id, scene]));
-      setScenes((previous) => previous.map((scene) => queuedById.get(scene.id) || scene));
+      for (const sceneId of selectedSceneIds) {
+        sceneVideoRetryPendingRef.current = nextSceneVideoRetryPendingAfterQueueResponse({
+          previous: sceneVideoRetryPendingRef.current,
+          sceneId,
+          queued: queuedById.get(sceneId) || null,
+        });
+      }
+      applyScenesWithVideoRetryPending((previous) =>
+        previous.map((scene) => {
+          const queuedScene = queuedById.get(scene.id);
+          if (!queuedScene) return scene;
+          return {
+            ...scene,
+            ...queuedScene,
+            videoCandidates: queuedScene.videoCandidates || scene.videoCandidates,
+          };
+        }),
+      );
       setSaveStatus("saved");
-      await refresh();
+      void refresh();
       toast.success(`Queued ${selectedSceneIds.length} scene videos`);
       return queued || [];
     } catch (err: any) {
+      const message = err?.message || "Queue scene videos failed";
+      for (const sceneId of selectedSceneIds) {
+        sceneVideoRetryPendingRef.current.delete(sceneId);
+      }
+      setScenes((previous) =>
+        previous.map((scene) => {
+          if (!selectedSceneIdSet.has(scene.id)) return scene;
+          const beforeQueue = scenesBeforeQueue.get(scene.id);
+          return {
+            ...scene,
+            videoTaskId: beforeQueue?.videoTaskId ?? scene.videoTaskId,
+            videoProviderTaskId: beforeQueue?.videoProviderTaskId ?? scene.videoProviderTaskId,
+            videoStatus: beforeQueue?.videoStatus || (beforeQueue?.videoUrl || scene.videoUrl ? "success" : "failed"),
+            videoGenerationParams: beforeQueue?.videoGenerationParams ?? scene.videoGenerationParams,
+            videoError: message,
+          };
+        }),
+      );
       setSaveStatus("failed");
-      toast.error(err?.message || "Queue scene videos failed");
+      toast.error(message);
       return [];
     }
   }
@@ -1108,24 +1192,20 @@ export function EditorProvider({
 
   async function syncSceneVideos() {
     if (!project) return;
+    if (videoSyncInFlightRef.current) return;
+    videoSyncInFlightRef.current = true;
     try {
       const synced = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scene-videos`);
       if (synced?.length) {
-        const syncedById = new Map(synced.map((scene) => [scene.id, scene]));
-        setScenes((previous) =>
-          previous.map((scene) => {
-            const next = syncedById.get(scene.id);
-            if (!next) return scene;
-            return {
-              ...scene,
-              ...Object.fromEntries(VIDEO_SYNC_SCENE_FIELDS.map((field) => [field, (next as any)[field]])),
-            };
-          }),
+        applyScenesWithVideoRetryPending((previous) =>
+          mergeVideoSyncedScenes({ fields: VIDEO_SYNC_SCENE_FIELDS, previous, synced }),
         );
       }
       void refresh();
     } catch (err: any) {
       toast.error(err?.message || "Sync scene videos failed");
+    } finally {
+      videoSyncInFlightRef.current = false;
     }
   }
 
@@ -1222,6 +1302,33 @@ export function EditorProvider({
     }
   }
 
+  async function selectSceneVideoCandidate(sceneId: string, candidate: LyricSceneVideoCandidate) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    let previousScenes: LyricScene[] | null = null;
+    setScenes((previous) => {
+      previousScenes = previous;
+      return previous.map((scene) => (scene.id === sceneId ? applySelectedSceneVideoCandidate(scene, candidate) : scene));
+    });
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/video-candidates/${candidate.id}/select`, {
+        method: "POST",
+      });
+      setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setSaveStatus("saved");
+      return updated;
+    } catch (err: any) {
+      if (previousScenes) setScenes(previousScenes);
+      setSaveStatus("failed");
+      toast.error(err?.message || "Select scene video failed");
+      return null;
+    }
+  }
+
   async function retryFailedImageBatches() {
     if (retryImageBatchesInFlightRef.current) {
       toast.info(t("scene_images_running"));
@@ -1295,8 +1402,25 @@ export function EditorProvider({
   }
 
   async function queueExport() {
+    setActiveTab("exports");
     if (generationLocked) {
       showGenerationLockedToast();
+      return;
+    }
+    const decision = shouldQueueExportForCurrentPreview({
+      currentExportFingerprint,
+      exporting,
+      exports,
+      scenes,
+    });
+    if (!decision.queue) {
+      if (decision.reason === "ready") {
+        toast.success("Current preview already has a ready export");
+      } else if (decision.reason === "in_progress") {
+        toast.message("Export already in progress");
+      } else if (decision.reason === "scene_video_processing") {
+        toast.error("Scene video generation is still processing");
+      }
       return;
     }
     if (exporting) return;
@@ -1341,6 +1465,7 @@ export function EditorProvider({
       cast,
       exports,
       latestExport,
+      currentExportFingerprint,
       loading,
       loadError,
       saveStatus,
@@ -1382,6 +1507,7 @@ export function EditorProvider({
       queueSceneVideos,
       retrySceneImage,
       selectSceneImageCandidate,
+      selectSceneVideoCandidate,
       syncSceneImages,
       syncSceneVideos,
       retryFailedImageBatches,
@@ -1395,6 +1521,7 @@ export function EditorProvider({
       cast,
       castBusy,
       creatingStory,
+      currentExportFingerprint,
       exportError,
       exporting,
       exports,
@@ -1423,6 +1550,7 @@ export function EditorProvider({
       retrySceneImage,
       retryFailedImageBatches,
       selectSceneImageCandidate,
+      selectSceneVideoCandidate,
       generateSceneVideoPrompts,
       syncSceneVideos,
       updateScene,

@@ -5,10 +5,19 @@ import { RefreshCcw, Wand2 } from "lucide-react";
 import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
 import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
 import { useEditor } from "./editor-context";
-import { LatestExport } from "./latest-export";
 import { usePlayback } from "./playback-context";
 import { RoadmapGuide } from "./roadmap-guide";
-import { clamp, deriveGenerationProgress, getPreviewStageStyle, msToSeconds, normalizePreviewConfig, resolvePreviewCaptionText, resolveSceneMedia, secondsToMs } from "./utils";
+import {
+  clamp,
+  deriveGenerationProgress,
+  getPreviewStageStyle,
+  getSceneVideoPreloadUrls,
+  msToSeconds,
+  normalizePreviewConfig,
+  resolvePreviewCaptionText,
+  resolveSceneMedia,
+  secondsToMs,
+} from "./utils";
 
 export function VideoPreview() {
   const {
@@ -16,8 +25,6 @@ export function VideoPreview() {
     generationLockReason,
     generationRun,
     generationSteps,
-    exporting,
-    latestExport,
     lines,
     loading,
     project,
@@ -35,7 +42,10 @@ export function VideoPreview() {
   const progress = deriveGenerationProgress({ project, generationRun, generationSteps, runtimeState, scenes });
   const directionReady = runtimeState?.currentStage === "direction_ready" || generationRun?.currentStage === "direction_ready" || project?.pipelineStage === "direction_ready";
   const previewConfig = useMemo(() => normalizePreviewConfig(project?.previewConfig), [project?.previewConfig]);
-  const shouldShowLatestExport = Boolean(exporting || latestExport || project?.renderUrl || (project?.renderStatus && project.renderStatus !== "empty"));
+  const sceneVideoPreloadUrls = useMemo(
+    () => getSceneVideoPreloadUrls({ scenes, currentSceneId: currentScene?.id }),
+    [currentScene?.id, scenes],
+  );
   const captionText = useMemo(() => {
     const currentMs = secondsToMs(currentTime);
     const activeChunk = findActiveCaptionChunk(words, currentMs, {
@@ -90,17 +100,6 @@ export function VideoPreview() {
           onRetry={retryFailedImageBatches}
         />
       </div>
-      {shouldShowLatestExport ? (
-        <div className="absolute right-[24px] top-[24px] z-20 w-[min(320px,calc(100%-48px))]">
-          <LatestExport
-            exportJob={latestExport}
-            isExporting={exporting}
-            projectId={project?.id}
-            renderStatus={project?.renderStatus || "empty"}
-            renderUrl={project?.renderUrl}
-          />
-        </div>
-      ) : null}
       <div
         className="relative max-h-full max-w-full overflow-hidden rounded-[4px] bg-[var(--editor-panel-strong)]"
         style={stageStyle}
@@ -119,10 +118,23 @@ export function VideoPreview() {
                 muted
                 playsInline
                 preload="auto"
+                autoPlay={isPlaying}
               />
             ) : (
               <img src={sceneMedia.url} alt="" className="absolute inset-0 h-full w-full object-cover" />
             )}
+            {sceneVideoPreloadUrls.map((url) => (
+              <video
+                key={url}
+                src={url}
+                className="pointer-events-none absolute h-px w-px opacity-0"
+                muted
+                playsInline
+                preload="auto"
+                aria-hidden="true"
+                tabIndex={-1}
+              />
+            ))}
             {previewConfig.captionsEnabled && captionText ? (
               <div className="absolute inset-x-[32px] bottom-[8%] flex justify-center">
                 <p

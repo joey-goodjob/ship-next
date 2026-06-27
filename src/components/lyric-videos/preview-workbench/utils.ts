@@ -222,6 +222,40 @@ export function resolveSceneMedia(scene?: Pick<LyricScene, "imageUrl" | "videoUr
   };
 }
 
+export function getSceneVideoPreloadUrls({
+  currentSceneId,
+  limit = 2,
+  scenes,
+}: {
+  currentSceneId?: string;
+  limit?: number;
+  scenes: Array<Pick<LyricScene, "id" | "videoUrl">>;
+}) {
+  const safeLimit = Math.max(0, Math.floor(limit));
+  if (!currentSceneId || safeLimit === 0 || scenes.length === 0) return [];
+
+  const currentIndex = scenes.findIndex((scene) => scene.id === currentSceneId);
+  if (currentIndex < 0) return [];
+
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const addScene = (scene?: Pick<LyricScene, "id" | "videoUrl">) => {
+    const videoUrl = String(scene?.videoUrl || "").trim();
+    if (!videoUrl || seen.has(videoUrl)) return;
+    seen.add(videoUrl);
+    urls.push(videoUrl);
+  };
+
+  for (let index = currentIndex + 1; index < scenes.length && urls.length < safeLimit; index += 1) {
+    addScene(scenes[index]);
+  }
+  for (let index = currentIndex - 1; index >= 0 && urls.length < safeLimit; index -= 1) {
+    addScene(scenes[index]);
+  }
+
+  return urls;
+}
+
 export function sceneGridParams(scene: LyricScene) {
   if (!scene.generationParams) return null;
   let params = typeof scene.generationParams === "string" ? null : scene.generationParams;

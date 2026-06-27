@@ -9,13 +9,16 @@ import {
   lyricVideoProject,
   lyricVideoScene,
   lyricVideoSceneImageCandidate,
+  lyricVideoSceneVideoCandidate,
   lyricVideoWord,
   type NewLyricVideoProject,
 } from '@/config/db/schema';
 import { getUuid } from '@/lib/hash';
 import { logLyricStage } from '@/lib/lyric-video-log';
+import { extractExportFingerprintFromSettings } from '@/lib/lyric-video-export-freshness';
 import { hasAudioInputPatch } from './audio';
 import { parseJsonField, safeJson, sceneTextFromLineIds, normalizeTitle } from './json';
+import { dedupeSceneVideoCandidates } from './scene-video-candidates';
 import { deriveRuntimeState, normalizeExportStatus } from './status';
 import { LYRIC_VIDEO_DEFAULT_STYLE } from './types';
 
@@ -138,7 +141,7 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
   const project = await getProject(params);
   if (!project) return null;
 
-  const [lines, scenes, imageCandidates, exports, words, cast, latestRuns, activeRuns] = await Promise.all([
+  const [lines, scenes, imageCandidates, videoCandidates, exports, words, cast, latestRuns, activeRuns] = await Promise.all([
     db()
       .select()
       .from(lyricVideoLine)
@@ -154,6 +157,11 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       .from(lyricVideoSceneImageCandidate)
       .where(and(eq(lyricVideoSceneImageCandidate.projectId, params.id), eq(lyricVideoSceneImageCandidate.userId, params.userId)))
       .orderBy(desc(lyricVideoSceneImageCandidate.createdAt)),
+    db()
+      .select()
+      .from(lyricVideoSceneVideoCandidate)
+      .where(and(eq(lyricVideoSceneVideoCandidate.projectId, params.id), eq(lyricVideoSceneVideoCandidate.userId, params.userId)))
+      .orderBy(desc(lyricVideoSceneVideoCandidate.createdAt)),
     db()
       .select()
       .from(lyricVideoExport)
@@ -239,6 +247,17 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
     });
     imageCandidatesBySceneId.set(candidate.sceneId, sceneCandidates);
   }
+  const videoCandidatesBySceneId = new Map<string, any[]>();
+  for (const candidate of dedupeSceneVideoCandidates(videoCandidates)) {
+    const sceneId = String(candidate.sceneId || '');
+    if (!sceneId) continue;
+    const sceneCandidates = videoCandidatesBySceneId.get(sceneId) || [];
+    sceneCandidates.push({
+      ...candidate,
+      generationParams: parseJsonField<Record<string, unknown>>(candidate.generationParams, {}),
+    });
+    videoCandidatesBySceneId.set(sceneId, sceneCandidates);
+  }
 
   const normalizedScenes = scenes.map((scene: any) => {
     const linkedLineIds = parseJsonField<string[]>(scene.linkedLineIds, []);
@@ -254,11 +273,13 @@ export async function getProjectDetails(params: { userId: string; id: string }) 
       generationParams: parseJsonField<Record<string, unknown>>(scene.generationParams, {}),
       videoGenerationParams: parseJsonField<Record<string, unknown>>(scene.videoGenerationParams, {}),
       imageCandidates: imageCandidatesBySceneId.get(scene.id) || [],
+      videoCandidates: videoCandidatesBySceneId.get(scene.id) || [],
     };
   });
   const normalizedExports = exports.map((item: any) => ({
     ...item,
     status: normalizeExportStatus(item.status),
+    exportFingerprint: extractExportFingerprintFromSettings(item.settings),
   }));
   const runtimeState = deriveRuntimeState({
     project: normalizedProject,
