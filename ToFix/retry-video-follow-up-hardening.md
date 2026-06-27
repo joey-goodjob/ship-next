@@ -159,4 +159,3 @@ where provider_task_id is not null;
 - 任意两个 scene 连续点击 Retry Video
 - 观察 pending 是否稳定、候选是否只进入对应 scene
 - 同时检查 server log、`lyric_video_scene`、`lyric_video_scene_video_candidate`
-
