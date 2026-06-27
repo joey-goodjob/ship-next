@@ -953,6 +953,41 @@ export const lyricVideoSceneImageCandidate = table(
   ]
 );
 
+export const lyricVideoSceneVideoCandidate = table(
+  'lyric_video_scene_video_candidate',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => lyricVideoProject.id, { onDelete: 'cascade' }),
+    sceneId: text('scene_id')
+      .notNull()
+      .references(() => lyricVideoScene.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    videoUrl: text('video_url').notNull(),
+    status: text('status').notNull().default('success'),
+    videoTaskId: text('video_task_id'),
+    providerTaskId: text('provider_task_id'),
+    videoModel: text('video_model'),
+    promptSnapshot: text('prompt_snapshot'),
+    sourceImageUrl: text('source_image_url'),
+    generationParams: text('generation_params'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index('idx_lyric_video_scene_video_candidate_scene').on(t.sceneId, t.createdAt),
+    index('idx_lyric_video_scene_video_candidate_project').on(t.projectId, t.createdAt),
+  ]
+);
+
 export const lyricVideoCastMember = table(
   'lyric_video_cast_member',
   {
@@ -1079,6 +1114,8 @@ export type LyricVideoScene = typeof lyricVideoScene.$inferSelect;
 export type NewLyricVideoScene = typeof lyricVideoScene.$inferInsert;
 export type LyricVideoSceneImageCandidate = typeof lyricVideoSceneImageCandidate.$inferSelect;
 export type NewLyricVideoSceneImageCandidate = typeof lyricVideoSceneImageCandidate.$inferInsert;
+export type LyricVideoSceneVideoCandidate = typeof lyricVideoSceneVideoCandidate.$inferSelect;
+export type NewLyricVideoSceneVideoCandidate = typeof lyricVideoSceneVideoCandidate.$inferInsert;
 export type LyricVideoCastMember = typeof lyricVideoCastMember.$inferSelect;
 export type NewLyricVideoCastMember = typeof lyricVideoCastMember.$inferInsert;
 export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;

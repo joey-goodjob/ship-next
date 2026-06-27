@@ -9,6 +9,7 @@ import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
 import { normalizeSceneCastIds } from "./scene-cast-ids";
 import { applySelectedSceneImageCandidate } from "./scene-image-candidates";
+import { applySelectedSceneVideoCandidate } from "./scene-video-candidates";
 import type {
   CreateCastMemberInput,
   EditorContextValue,
@@ -21,6 +22,7 @@ import type {
   LyricScene,
   LyricSceneImageCandidate,
   LyricScenePatch,
+  LyricSceneVideoCandidate,
   LyricVideoProject,
   LyricWord,
   PanelTab,
@@ -75,6 +77,7 @@ const VIDEO_SYNC_SCENE_FIELDS = [
   "videoGenerationParams",
   "videoCompletedAt",
   "videoError",
+  "videoCandidates",
   "updatedAt",
 ];
 
@@ -1222,6 +1225,34 @@ export function EditorProvider({
     }
   }
 
+
+  async function selectSceneVideoCandidate(sceneId: string, candidate: LyricSceneVideoCandidate) {
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return null;
+    }
+    if (!project) return null;
+    let previousScenes: LyricScene[] | null = null;
+    setScenes((previous) => {
+      previousScenes = previous;
+      return previous.map((scene) => (scene.id === sceneId ? applySelectedSceneVideoCandidate(scene, candidate) : scene));
+    });
+    setSaveStatus("saving");
+    try {
+      const updated = await requestJson<LyricScene>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/video-candidates/${candidate.id}/select`, {
+        method: "POST",
+      });
+      setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
+      setSaveStatus("saved");
+      return updated;
+    } catch (err: any) {
+      if (previousScenes) setScenes(previousScenes);
+      setSaveStatus("failed");
+      toast.error(err?.message || "Select scene video failed");
+      return null;
+    }
+  }
+
   async function retryFailedImageBatches() {
     if (retryImageBatchesInFlightRef.current) {
       toast.info(t("scene_images_running"));
@@ -1382,6 +1413,7 @@ export function EditorProvider({
       queueSceneVideos,
       retrySceneImage,
       selectSceneImageCandidate,
+      selectSceneVideoCandidate,
       syncSceneImages,
       syncSceneVideos,
       retryFailedImageBatches,
@@ -1423,6 +1455,7 @@ export function EditorProvider({
       retrySceneImage,
       retryFailedImageBatches,
       selectSceneImageCandidate,
+      selectSceneVideoCandidate,
       generateSceneVideoPrompts,
       syncSceneVideos,
       updateScene,

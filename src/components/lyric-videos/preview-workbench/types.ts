@@ -95,6 +95,7 @@ export type LyricScene = {
   error?: string | null;
   sort?: number;
   imageCandidates?: LyricSceneImageCandidate[];
+  videoCandidates?: LyricSceneVideoCandidate[];
 };
 
 export type LyricSceneImageCandidate = {
@@ -105,6 +106,20 @@ export type LyricSceneImageCandidate = {
   createdAt: string | Date;
   promptSnapshot?: string | null;
   imageModel?: string | null;
+};
+
+export type LyricSceneVideoCandidate = {
+  id: string;
+  sceneId: string;
+  videoUrl: string;
+  status: string;
+  createdAt: string | Date;
+  videoTaskId?: string | null;
+  providerTaskId?: string | null;
+  videoModel?: string | null;
+  promptSnapshot?: string | null;
+  sourceImageUrl?: string | null;
+  generationParams?: Record<string, unknown> | string | null;
 };
 
 export type LyricScenePatch = {
@@ -323,6 +338,7 @@ export type EditorContextValue = {
   queueSceneVideos: (sceneIds: string[]) => Promise<LyricScene[]>;
   retrySceneImage: (sceneId: string, options?: { allowDuringImageGeneration?: boolean }) => Promise<LyricScene | null>;
   selectSceneImageCandidate: (sceneId: string, candidate: LyricSceneImageCandidate) => Promise<LyricScene | null>;
+  selectSceneVideoCandidate: (sceneId: string, candidate: LyricSceneVideoCandidate) => Promise<LyricScene | null>;
   syncSceneImages: () => Promise<void>;
   syncSceneVideos: () => Promise<void>;
   retryFailedImageBatches: () => Promise<void>;

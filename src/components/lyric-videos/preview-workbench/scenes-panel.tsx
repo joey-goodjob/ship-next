@@ -18,8 +18,16 @@ import {
   SCENE_IMAGE_CANDIDATE_WINDOW_SIZE,
   type SceneImageCandidateStripItem,
 } from "./scene-image-candidates";
+import {
+  getSceneVideoCandidateDisplayList,
+  getSceneVideoCandidateStripItems,
+  getSceneVideoPosterUrl,
+  getSelectedSceneVideoPosterUrl,
+  SCENE_VIDEO_CANDIDATE_WINDOW_SIZE,
+  type SceneVideoCandidateStripItem,
+} from "./scene-video-candidates";
 import { canRetrySceneImage, formatDurationMs, formatMs, msToSeconds } from "./utils";
-import type { LyricCastMember, LyricScene, LyricSceneImageCandidate } from "./types";
+import type { LyricCastMember, LyricScene, LyricSceneImageCandidate, LyricSceneVideoCandidate } from "./types";
 
 type PromptField = "image" | "video";
 
@@ -228,12 +236,13 @@ export function ScenesPanel() {
 }
 
 function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: boolean }) {
-  const { cast, generateSceneVideoPrompts, generationLocked, generationLockReason, project, queueSceneImages, queueSceneVideos, retrySceneImage, scenes, selectSceneImageCandidate, updateScene } = useEditor();
+  const { cast, generateSceneVideoPrompts, generationLocked, generationLockReason, project, queueSceneImages, queueSceneVideos, retrySceneImage, scenes, selectSceneImageCandidate, selectSceneVideoCandidate, updateScene } = useEditor();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [imagePromptDrafts, setImagePromptDrafts] = useState<Record<string, string>>({});
   const [videoPromptDrafts, setVideoPromptDrafts] = useState<Record<string, string>>({});
   const [sceneCastIdDrafts, setSceneCastIdDrafts] = useState<Record<string, string[]>>({});
   const [candidateOffsets, setCandidateOffsets] = useState<Record<string, number>>({});
+  const [videoCandidateOffsets, setVideoCandidateOffsets] = useState<Record<string, number>>({});
   const [pendingImageRetryBySceneId, setPendingImageRetryBySceneId] = useState<Record<string, "saving" | "processing">>({});
   const [imageViewer, setImageViewer] = useState<SceneImageViewerState | null>(null);
   const [mentionMenu, setMentionMenu] = useState<{ sceneId: string; field: PromptField; query: string; cursor: number } | null>(null);
@@ -277,6 +286,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     );
     setMentionMenu(null);
     setCandidateOffsets({});
+    setVideoCandidateOffsets({});
     setImageViewer(null);
     setSubmitting(false);
   }, [activeCast, open, scenes]);
@@ -612,6 +622,16 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     });
   }
 
+  function moveVideoCandidateWindow(sceneId: string, candidates: LyricSceneVideoCandidate[], direction: -1 | 1, pending = false) {
+    const { total } = getSceneVideoCandidateStripItems({ candidates, pending });
+    const maxOffset = Math.max(0, total - SCENE_VIDEO_CANDIDATE_WINDOW_SIZE);
+    setVideoCandidateOffsets((previous) => {
+      const current = previous[sceneId] || 0;
+      const next = Math.max(0, Math.min(maxOffset, current + direction));
+      return { ...previous, [sceneId]: next };
+    });
+  }
+
   function openSceneImageViewer(sceneLabel: string, candidates: LyricSceneImageCandidate[], imageUrl?: string | null) {
     if (candidates.length === 0) return;
     setImageViewer({
@@ -670,7 +690,10 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
               const durationMs = Math.max(0, (scene.endMs || scene.startMs) - scene.startMs);
               const title = scene.text?.trim() || "Instrumental";
               const imageCandidateDisplayList = getSceneImageCandidateDisplayList(scene);
+              const videoCandidateDisplayList = getSceneVideoCandidateDisplayList(scene);
               const imageRetryPending = Boolean(pendingImageRetryBySceneId[scene.id]);
+              const videoGenerationPending = scene.videoStatus === "processing";
+              const selectedVideoPosterUrl = getSelectedSceneVideoPosterUrl({ scene });
               const retryEnabled = canRetrySceneImage({
                 generationLocked,
                 pendingRetry: imageRetryPending,
@@ -853,7 +876,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                            </button>
 	                          </div>
 	                        </div>
-	                        <div className="grid min-h-[230px] min-w-0 grid-cols-1 gap-[10px] xl:grid-cols-[1fr_240px]">
+	                        <div className="grid flex-1 grid-cols-1 gap-[10px] sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] sm:items-stretch">
 	                          <div className="relative min-w-0">
 	                            <PromptMentionTextarea
 	                              textareaRef={(node) => {
@@ -888,26 +911,38 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                              </div>
 	                            ) : null}
 	                          </div>
-	                          <div className="relative min-h-[180px] overflow-hidden rounded-[7px] border border-[var(--editor-line)] bg-black">
-	                            {scene.videoUrl ? (
-	                              <video
-	                                className="h-full min-h-[180px] w-full object-cover"
-	                                src={scene.videoUrl}
-	                                poster={scene.imageUrl || undefined}
-	                                controls
-	                                muted
-	                                playsInline
-	                              />
-	                            ) : scene.imageUrl ? (
-	                              <img src={scene.imageUrl} alt={`Scene ${index + 1} video source`} className="h-full min-h-[180px] w-full object-cover opacity-80" />
-	                            ) : (
-	                              <div className="flex h-full min-h-[180px] items-center justify-center px-[18px] text-center text-[12px] font-[800] text-[var(--editor-muted)]">
-	                                Generate a still image first
+	                          <div className="min-w-0 sm:w-full sm:max-w-[292px] sm:justify-self-end">
+	                            <div className="relative aspect-video w-full overflow-hidden rounded-[6px] bg-black">
+	                              {scene.videoUrl ? (
+		                                <video
+		                                  className="h-full w-full object-cover"
+		                                  src={scene.videoUrl}
+		                                  poster={selectedVideoPosterUrl || undefined}
+		                                  controls
+	                                  muted
+	                                  playsInline
+	                                />
+	                              ) : scene.imageUrl ? (
+	                                <img src={scene.imageUrl} alt={`Scene ${index + 1} video source`} className="h-full w-full object-cover opacity-80" />
+	                              ) : (
+	                                <div className="flex h-full items-center justify-center px-[18px] text-center text-[12px] font-[800] text-[var(--editor-muted)]">
+	                                  Generate a still image first
+	                                </div>
+	                              )}
+	                              <div className="pointer-events-none absolute left-[8px] top-[8px] rounded-[5px] bg-black/55 px-[7px] py-[4px] text-[10px] font-[800] uppercase tracking-[0.08em] text-white/80">
+	                                {scene.videoStatus === "processing" ? "Processing" : scene.videoUrl ? "Ready" : "Video"}
 	                              </div>
-	                            )}
-	                            <div className="pointer-events-none absolute left-[8px] top-[8px] rounded-[5px] bg-black/55 px-[7px] py-[4px] text-[10px] font-[800] uppercase tracking-[0.08em] text-white/80">
-	                              {scene.videoStatus === "processing" ? "Processing" : scene.videoUrl ? "Ready" : "Video"}
 	                            </div>
+	                            <SceneVideoCandidateStrip
+	                              candidates={videoCandidateDisplayList}
+		                              offset={videoCandidateOffsets[scene.id] || 0}
+		                              pending={videoGenerationPending}
+		                              fallbackPosterUrl={scene.imageUrl}
+		                              selectedVideoUrl={scene.videoUrl}
+	                              disabled={generationLocked}
+	                              onMove={(direction) => moveVideoCandidateWindow(scene.id, videoCandidateDisplayList, direction, videoGenerationPending)}
+	                              onSelect={(candidate) => selectSceneVideoCandidate(scene.id, candidate)}
+	                            />
 	                          </div>
 	                        </div>
 	                      </div>
@@ -1147,6 +1182,119 @@ function SceneImageCandidateButton({
       )}
     >
       <img src={candidate.imageUrl} alt="" className="h-full w-full object-cover" />
+      {selected ? (
+        <span className="absolute bottom-[3px] right-[3px] flex h-[15px] w-[15px] items-center justify-center rounded-[999px] bg-[var(--editor-accent)] text-[var(--editor-accent-ink)]">
+          <Check className="h-[10px] w-[10px]" />
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
+function SceneVideoCandidateStrip({
+  candidates,
+  disabled,
+  fallbackPosterUrl,
+  offset,
+  onMove,
+  onSelect,
+  pending,
+  selectedVideoUrl,
+}: {
+  candidates: LyricSceneVideoCandidate[];
+  disabled?: boolean;
+  fallbackPosterUrl?: string | null;
+  offset: number;
+  onMove: (direction: -1 | 1) => void;
+  onSelect: (candidate: LyricSceneVideoCandidate) => void;
+  pending?: boolean;
+  selectedVideoUrl?: string | null;
+}) {
+  const strip = getSceneVideoCandidateStripItems({ candidates, offset, pending });
+  if (strip.total === 0) return null;
+
+  return (
+    <div className="mt-[8px] flex min-h-[42px] items-center gap-[6px]">
+      <button
+        type="button"
+        onClick={() => onMove(-1)}
+        disabled={!strip.canMoveNewer}
+        aria-label="Show newer video candidates"
+        className="flex h-[30px] w-[24px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-35"
+      >
+        <ChevronLeft className="h-[13px] w-[13px]" />
+      </button>
+      <div className="flex min-w-0 flex-1 items-center gap-[6px] overflow-hidden">
+        {strip.visible.map((item) => {
+          if (item.kind === "pending") return <PendingSceneVideoCandidate key={item.id} />;
+          return (
+            <SceneVideoCandidateButton
+              key={item.id}
+              item={item}
+              disabled={disabled}
+              fallbackPosterUrl={fallbackPosterUrl}
+              selectedVideoUrl={selectedVideoUrl}
+              onSelect={onSelect}
+            />
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={() => onMove(1)}
+        disabled={!strip.canMoveOlder}
+        aria-label="Show older video candidates"
+        className="flex h-[30px] w-[24px] shrink-0 items-center justify-center rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-35"
+      >
+        <ChevronRight className="h-[13px] w-[13px]" />
+      </button>
+    </div>
+  );
+}
+
+function PendingSceneVideoCandidate() {
+  return (
+    <div
+      role="status"
+      aria-label="Video generation in progress"
+      className="relative flex h-[38px] w-[54px] shrink-0 items-center justify-center overflow-hidden rounded-[5px] border border-[var(--editor-accent)] bg-black ring-1 ring-[var(--editor-accent-soft)]"
+    >
+      <span className="absolute inset-0 animate-pulse bg-[var(--editor-accent-soft)] opacity-70" />
+      <Loader2 className="relative z-[1] h-[16px] w-[16px] animate-spin text-[var(--editor-accent)]" />
+    </div>
+  );
+}
+
+function SceneVideoCandidateButton({
+  disabled,
+  fallbackPosterUrl,
+  item,
+  onSelect,
+  selectedVideoUrl,
+}: {
+  disabled?: boolean;
+  fallbackPosterUrl?: string | null;
+  item: Extract<SceneVideoCandidateStripItem, { kind: "candidate" }>;
+  onSelect: (candidate: LyricSceneVideoCandidate) => void;
+  selectedVideoUrl?: string | null;
+}) {
+  const candidate = item.candidate;
+  const selected = Boolean(selectedVideoUrl && candidate.videoUrl === selectedVideoUrl);
+  const posterUrl = getSceneVideoPosterUrl({ candidate, fallbackPosterUrl });
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(candidate)}
+      disabled={disabled || selected}
+      title={selected ? "Selected video" : "Use this video for the scene"}
+      className={cn(
+        "relative h-[38px] w-[54px] shrink-0 overflow-hidden rounded-[5px] border bg-black transition",
+        selected ? "border-[var(--editor-accent)] ring-1 ring-[var(--editor-accent)]" : "border-[var(--editor-line)] hover:border-[var(--editor-muted)]",
+        disabled && "cursor-not-allowed opacity-60",
+      )}
+    >
+      <video src={candidate.videoUrl} poster={posterUrl || undefined} className="h-full w-full object-cover" muted playsInline preload="metadata" />
       {selected ? (
         <span className="absolute bottom-[3px] right-[3px] flex h-[15px] w-[15px] items-center justify-center rounded-[999px] bg-[var(--editor-accent)] text-[var(--editor-accent-ink)]">
           <Check className="h-[10px] w-[10px]" />

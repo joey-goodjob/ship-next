@@ -1,14 +1,17 @@
 import { and, eq, inArray, isNotNull } from 'drizzle-orm';
 import { AIMediaType, AITaskStatus, KIE_SEEDANCE_VIDEO_MODEL } from '@/core/ai';
 import { db } from '@/core/db';
-import { lyricVideoScene } from '@/config/db/schema';
+import { lyricVideoScene, lyricVideoSceneVideoCandidate } from '@/config/db/schema';
 import { getAllConfigs } from '@/modules/config/service';
+import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 import { createTask, updateTask } from '@/modules/ai-tasks/service';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
-import { safeJson } from './json';
+import { getUuid } from '@/lib/hash';
+import { parseJsonField, safeJson } from './json';
 import { getProjectDetails } from './project';
 import { createKieProvider } from './llm';
 import { calculateSceneVideoCostCredits } from './costs';
+import { storageKeyFromUrl } from './worker-render';
 
 const SEEDANCE_SCENE_VIDEO_MIN_DURATION = 4;
 const SEEDANCE_SCENE_VIDEO_MAX_DURATION = 12;
@@ -42,6 +45,101 @@ function providerVideoUrl(result: any) {
 
 function isTerminalProviderFailure(status?: string | null) {
   return status === AITaskStatus.FAILED || status === AITaskStatus.CANCELED;
+}
+
+export async function archiveSceneVideoUrl(params: {
+  projectId: string;
+  sceneId: string;
+  videoUrl: string;
+  configs: Record<string, string>;
+}) {
+  const videoUrl = String(params.videoUrl || '').trim();
+  if (!videoUrl) throw new Error('Scene video URL is required');
+  if (storageKeyFromUrl(videoUrl, params.configs)) return videoUrl;
+  if (!isStorageConfigured(params.configs)) throw new Error('Storage is required to archive scene video');
+
+  const key = `scene-videos/${params.projectId}/${params.sceneId}-${Date.now()}.mp4`;
+  const result = await getStorage(params.configs).downloadAndUpload({
+    url: videoUrl,
+    key,
+    contentType: 'video/mp4',
+  });
+  if (!result.success || !result.url) throw new Error(result.error || 'Archive scene video failed');
+  return result.url;
+}
+
+async function recordSceneVideoCandidate(params: {
+  userId: string;
+  projectId: string;
+  scene: any;
+  videoUrl: string;
+}) {
+  const videoUrl = String(params.videoUrl || '').trim();
+  if (!videoUrl) return null;
+
+  const [candidate] = await db()
+    .insert(lyricVideoSceneVideoCandidate)
+    .values({
+      id: getUuid(),
+      projectId: params.projectId,
+      sceneId: params.scene.id,
+      userId: params.userId,
+      videoUrl,
+      status: 'success',
+      videoTaskId: params.scene.videoTaskId || null,
+      providerTaskId: params.scene.videoProviderTaskId || null,
+      videoModel: params.scene.videoModel || null,
+      promptSnapshot: params.scene.videoPromptSnapshot || params.scene.motionPrompt || null,
+      sourceImageUrl: params.scene.imageUrl || null,
+      generationParams: safeJson(parseJsonField<Record<string, unknown>>(params.scene.videoGenerationParams, {})),
+    })
+    .returning();
+
+  return candidate;
+}
+
+export async function selectSceneVideoCandidate(params: {
+  userId: string;
+  projectId: string;
+  sceneId: string;
+  candidateId: string;
+}) {
+  const [candidate] = await db()
+    .select()
+    .from(lyricVideoSceneVideoCandidate)
+    .where(
+      and(
+        eq(lyricVideoSceneVideoCandidate.id, params.candidateId),
+        eq(lyricVideoSceneVideoCandidate.sceneId, params.sceneId),
+        eq(lyricVideoSceneVideoCandidate.projectId, params.projectId),
+        eq(lyricVideoSceneVideoCandidate.userId, params.userId)
+      )
+    )
+    .limit(1);
+
+  if (!candidate) throw new Error('Video candidate not found');
+
+  const candidateCreatedAt = candidate.createdAt instanceof Date ? candidate.createdAt : new Date(candidate.createdAt);
+  await db()
+    .update(lyricVideoScene)
+    .set({
+      videoUrl: candidate.videoUrl,
+      videoStatus: 'success',
+      videoCompletedAt: Number.isNaN(candidateCreatedAt.getTime()) ? new Date() : candidateCreatedAt,
+      videoError: null,
+    })
+    .where(
+      and(
+        eq(lyricVideoScene.id, params.sceneId),
+        eq(lyricVideoScene.projectId, params.projectId),
+        eq(lyricVideoScene.userId, params.userId)
+      )
+    );
+
+  const details = await getProjectDetails({ userId: params.userId, id: params.projectId });
+  const scene = details?.scenes?.find((item: any) => item.id === params.sceneId);
+  if (!scene) throw new Error('Scene not found');
+  return scene;
 }
 
 export async function queueSceneVideos(params: {
@@ -204,6 +302,7 @@ export async function syncSceneVideos(params: {
   if (processing.length === 0) return scenes;
 
   const provider = await createKieProvider();
+  const configs = await getAllConfigs();
   const updatedScenes: any[] = [];
 
   for (const scene of processing) {
@@ -214,6 +313,12 @@ export async function syncSceneVideos(params: {
       });
       const videoUrl = providerVideoUrl(result);
       if (result.taskStatus === AITaskStatus.SUCCESS && videoUrl) {
+        const archivedVideoUrl = await archiveSceneVideoUrl({
+          projectId: params.projectId,
+          sceneId: scene.id,
+          videoUrl,
+          configs,
+        });
         if (scene.videoTaskId) {
           await updateTask({
             taskId: scene.videoTaskId,
@@ -222,10 +327,16 @@ export async function syncSceneVideos(params: {
             taskInfo: result.taskInfo,
           });
         }
+        await recordSceneVideoCandidate({
+          userId: params.userId,
+          projectId: params.projectId,
+          scene,
+          videoUrl: archivedVideoUrl,
+        });
         const [updated] = await db()
           .update(lyricVideoScene)
           .set({
-            videoUrl,
+            videoUrl: archivedVideoUrl,
             videoStatus: 'success',
             videoCompletedAt: new Date(),
             videoError: null,
