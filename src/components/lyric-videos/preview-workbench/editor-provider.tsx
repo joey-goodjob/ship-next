@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { debugPreviewWorkbench } from "./debug-log";
 import { EditorContext } from "./editor-context";
 import { PlaybackProvider } from "./playback-context";
+import { normalizeSceneCastIds } from "./scene-cast-ids";
 import { applySelectedSceneImageCandidate } from "./scene-image-candidates";
 import type {
   CreateCastMemberInput,
@@ -898,7 +900,7 @@ export function EditorProvider({
       setScenes((previous) =>
         previous.map((scene) => ({
           ...scene,
-          castIds: (scene.castIds || []).filter((id) => id !== castId),
+          castIds: normalizeSceneCastIds(scene.castIds).filter((id) => id !== castId),
         })),
       );
       setSaveStatus("saving");
@@ -1128,6 +1130,14 @@ export function EditorProvider({
   }
 
   async function retrySceneImage(sceneId: string, options?: { allowDuringImageGeneration?: boolean }) {
+    debugPreviewWorkbench("editor-provider", "retry-scene-image-start", {
+      sceneId,
+      allowDuringImageGeneration: Boolean(options?.allowDuringImageGeneration),
+      generationLocked,
+      projectId: project?.id,
+      generationStatus: project?.generationStatus,
+      pipelineStage: project?.pipelineStage,
+    });
     if (sceneImageRetryInFlightSceneIdsRef.current.has(sceneId)) {
       toast.info(t("scene_images_running"));
       return null;
@@ -1140,14 +1150,26 @@ export function EditorProvider({
     sceneImageRetryInFlightSceneIdsRef.current.add(sceneId);
     setSaveStatus("saving");
     try {
+      const requestBody = {
+        allowConcurrentImageGeneration: Boolean(options?.allowDuringImageGeneration),
+      };
+      debugPreviewWorkbench("editor-provider", "retry-scene-image-request", {
+        sceneId,
+        allowConcurrentImageGeneration: requestBody.allowConcurrentImageGeneration,
+      });
       const queued = await requestJson<LyricScene[]>(`/api/lyric-videos/${project.id}/scenes/${sceneId}/retry-image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          allowConcurrentImageGeneration: Boolean(options?.allowDuringImageGeneration),
-        }),
+        body: JSON.stringify(requestBody),
       });
       const updated = queued?.[0] || null;
+      debugPreviewWorkbench("editor-provider", "retry-scene-image-response", {
+        requestedSceneId: sceneId,
+        updatedSceneId: updated?.id,
+        status: updated?.status,
+        providerTaskId: updated?.providerTaskId,
+        imageTaskId: updated?.imageTaskId,
+      });
       if (updated) setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
       setProject((previous) =>
         previous
@@ -1163,7 +1185,6 @@ export function EditorProvider({
       );
       setSaveStatus("saved");
       await refresh();
-      toast.success("Queued a new image candidate");
       return updated;
     } catch (err: any) {
       setSaveStatus("failed");
@@ -1192,7 +1213,6 @@ export function EditorProvider({
       });
       setScenes((previous) => previous.map((scene) => (scene.id === updated.id ? { ...scene, ...updated } : scene)));
       setSaveStatus("saved");
-      toast.success("Scene image selected");
       return updated;
     } catch (err: any) {
       if (previousScenes) setScenes(previousScenes);

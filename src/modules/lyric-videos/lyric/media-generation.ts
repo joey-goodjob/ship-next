@@ -1292,20 +1292,38 @@ export async function queueSceneImages(params: {
     scenes = scenes.slice(0, DEFAULT_SCENE_IMAGE_BATCH_LIMIT);
   }
 
+  logLyricStage('scene-images', 'queue-scene-images-start', {
+    projectId: params.projectId,
+    userId: params.userId,
+    sceneIds: scenes.map((scene: any) => scene.id),
+    skipActiveGenerationGuard: Boolean(params.skipActiveGenerationGuard),
+    generationStatus: details.project.generationStatus,
+    pipelineStage: details.project.pipelineStage,
+    scenesStatus: details.project.scenesStatus,
+  });
+
   if (scenes.length === 0) throw new Error('No scenes to generate');
   const scenesMissingPrompts = scenes.filter((scene: any) => !String(scene.prompt || '').trim());
   if (scenesMissingPrompts.length > 0) {
     throw new Error('Generate storyboard prompts before creating scene images');
   }
   if (!params.skipActiveGenerationGuard && hasActiveVisualGeneration({ project: details.project, scenes: details.scenes })) {
+    const returnedScenes = activeOrCurrentScenes(scenes);
     logLyricStage('scene-images', 'queue-already-running', {
       projectId: params.projectId,
       userId: params.userId,
       sceneIds: scenes.map((scene: any) => scene.id),
+      skipActiveGenerationGuard: Boolean(params.skipActiveGenerationGuard),
       pipelineStage: details.project.pipelineStage,
       generationStatus: details.project.generationStatus,
+      returnedScenes: returnedScenes.map((scene: any) => ({
+        id: scene.id,
+        status: scene.status,
+        providerTaskId: scene.providerTaskId,
+        imageTaskId: scene.imageTaskId,
+      })),
     });
-    return activeOrCurrentScenes(scenes);
+    return returnedScenes;
   }
   if (!params.skipActiveGenerationGuard) {
     const claimed = await claimImageQueueStart({
@@ -1319,7 +1337,22 @@ export async function queueSceneImages(params: {
       const refreshed = await getProjectDetails({ userId: params.userId, id: params.projectId });
       const refreshedScenes = refreshed?.scenes || details.scenes;
       const selectedIds = new Set(scenes.map((scene: any) => scene.id));
-      return activeOrCurrentScenes(refreshedScenes.filter((scene: any) => selectedIds.has(scene.id)));
+      const returnedScenes = activeOrCurrentScenes(refreshedScenes.filter((scene: any) => selectedIds.has(scene.id)));
+      logLyricStage('scene-images', 'queue-claim-denied', {
+        projectId: params.projectId,
+        userId: params.userId,
+        sceneIds: scenes.map((scene: any) => scene.id),
+        skipActiveGenerationGuard: Boolean(params.skipActiveGenerationGuard),
+        generationStatus: refreshed?.project?.generationStatus || details.project.generationStatus,
+        pipelineStage: refreshed?.project?.pipelineStage || details.project.pipelineStage,
+        returnedScenes: returnedScenes.map((scene: any) => ({
+          id: scene.id,
+          status: scene.status,
+          providerTaskId: scene.providerTaskId,
+          imageTaskId: scene.imageTaskId,
+        })),
+      });
+      return returnedScenes;
     }
   }
 
@@ -1402,6 +1435,14 @@ export async function queueSceneImages(params: {
     });
 
     try {
+      logLyricStage('scene-images', 'provider-generate-start', {
+        projectId: params.projectId,
+        userId: params.userId,
+        sceneId: scene.id,
+        taskId: task.id,
+        provider: providerSelection.providerName,
+        model: actualModel,
+      });
       const result = await providerSelection.provider.generate({
         params: {
           mediaType: AIMediaType.IMAGE,

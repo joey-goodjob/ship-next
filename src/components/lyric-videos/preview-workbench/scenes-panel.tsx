@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { insertCastMention, parseCastMentionIds, parseCastMentionIdsFromPrompts, removeCastMention } from "@/lib/lyric-video-cast-mentions";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
+import { debugPreviewWorkbench } from "./debug-log";
 import { PanelEmpty } from "./panel-empty";
 import { usePlayback } from "./playback-context";
+import { normalizeSceneCastIds } from "./scene-cast-ids";
 import {
   getSceneImageCandidateDisplayList,
   getSceneImageCandidateStripItems,
@@ -129,7 +131,7 @@ export function ScenesPanel() {
             const active = currentScene?.id === scene.id;
             const durationMs = Math.max(0, (scene.endMs || scene.startMs) - scene.startMs);
             const title = scene.text?.trim() || "Instrumental";
-            const sceneCastIds = scene.castIds || [];
+            const sceneCastIds = normalizeSceneCastIds(scene.castIds);
 
             return (
               <div
@@ -237,11 +239,31 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
   const [mentionMenu, setMentionMenu] = useState<{ sceneId: string; field: PromptField; query: string; cursor: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const previousOpenRef = useRef(open);
   const activeCast = useMemo(() => activeSceneCast(cast), [cast]);
 
   useEffect(() => {
+    if (previousOpenRef.current === open) return;
+    debugPreviewWorkbench("batch-generation", "open-change", {
+      open,
+      previousOpen: previousOpenRef.current,
+      projectId: project?.id,
+      generationStatus: project?.generationStatus,
+      pipelineStage: project?.pipelineStage,
+      sceneCount: scenes.length,
+    });
+    previousOpenRef.current = open;
+  }, [open, project?.generationStatus, project?.id, project?.pipelineStage, scenes.length]);
+
+  useEffect(() => {
     if (!open) return;
-    const imagePromptEntries = scenes.map((scene) => [scene.id, promptWithInitialCastMentions(scene.prompt || "", scene.castIds || [])] as const);
+    debugPreviewWorkbench("batch-generation", "state-reset", {
+      projectId: project?.id,
+      generationStatus: project?.generationStatus,
+      pipelineStage: project?.pipelineStage,
+      sceneCount: scenes.length,
+    });
+    const imagePromptEntries = scenes.map((scene) => [scene.id, promptWithInitialCastMentions(scene.prompt || "", normalizeSceneCastIds(scene.castIds))] as const);
     setSelectedIds(new Set());
     setImagePromptDrafts(Object.fromEntries(imagePromptEntries));
     setVideoPromptDrafts(Object.fromEntries(scenes.map((scene) => [scene.id, scene.motionPrompt || ""])));
@@ -382,7 +404,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
         const castIds = sceneCastIdDrafts[scene.id] || [];
         const promptChanged = prompt.trim() !== String(scene.prompt || "").trim();
         const motionChanged = motionPrompt.trim() !== String(scene.motionPrompt || "").trim();
-        const castChanged = JSON.stringify(castIds) !== JSON.stringify(scene.castIds || []);
+        const castChanged = JSON.stringify(castIds) !== JSON.stringify(normalizeSceneCastIds(scene.castIds));
         if (!promptChanged && !motionChanged && !castChanged) continue;
         const saved = await updateScene(
           scene.id,
@@ -423,7 +445,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
         const castIds = sceneCastIdDrafts[scene.id] || [];
         const promptChanged = prompt.trim() !== String(scene.prompt || "").trim();
         const motionChanged = motionPrompt.trim() !== String(scene.motionPrompt || "").trim();
-        const castChanged = JSON.stringify(castIds) !== JSON.stringify(scene.castIds || []);
+        const castChanged = JSON.stringify(castIds) !== JSON.stringify(normalizeSceneCastIds(scene.castIds));
         if (!promptChanged && !motionChanged && !castChanged) continue;
         const saved = await updateScene(
           scene.id,
@@ -451,7 +473,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
       const castIds = sceneCastIdDrafts[scene.id] || [];
       const promptChanged = prompt.trim() !== String(scene.prompt || "").trim();
       const motionChanged = motionPrompt.trim() !== String(scene.motionPrompt || "").trim();
-      const castChanged = JSON.stringify(castIds) !== JSON.stringify(scene.castIds || []);
+      const castChanged = JSON.stringify(castIds) !== JSON.stringify(normalizeSceneCastIds(scene.castIds));
       if (promptChanged || motionChanged || castChanged) {
         const saved = await updateScene(
           scene.id,
@@ -531,7 +553,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
     const castIds = sceneCastIdDrafts[scene.id] || [];
     const promptChanged = prompt.trim() !== String(scene.prompt || "").trim();
     const motionChanged = motionPrompt.trim() !== String(scene.motionPrompt || "").trim();
-    const castChanged = JSON.stringify(castIds) !== JSON.stringify(scene.castIds || []);
+    const castChanged = JSON.stringify(castIds) !== JSON.stringify(normalizeSceneCastIds(scene.castIds));
     const retrySaveChanges = generationLocked ? promptChanged || castChanged : promptChanged || motionChanged || castChanged;
     if (!retrySaveChanges) return true;
     const saved = await updateScene(
@@ -544,30 +566,40 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 
   async function retryImageCandidate(scene: LyricScene) {
     const pendingRetry = Boolean(pendingImageRetryBySceneId[scene.id]);
-    if (!canRetrySceneImage({ generationLocked, pendingRetry, project, scene, submitting })) return;
-    setSubmitting(true);
+    debugPreviewWorkbench("batch-generation", "retry-image-click", {
+      sceneId: scene.id,
+      generationLocked,
+      pendingRetry,
+      projectId: project?.id,
+      generationStatus: project?.generationStatus,
+      pipelineStage: project?.pipelineStage,
+    });
+    if (!canRetrySceneImage({ generationLocked, pendingRetry, project, scene })) return;
     setPendingImageRetryBySceneId((previous) => ({ ...previous, [scene.id]: "saving" }));
-    try {
-      const saved = await saveSceneDraftIfNeeded(scene);
-      if (!saved) {
-        setPendingImageRetryBySceneId((previous) => {
-          const next = { ...previous };
-          delete next[scene.id];
-          return next;
-        });
-        return;
-      }
-      const queued = await retrySceneImage(scene.id, { allowDuringImageGeneration: generationLocked });
+    const saved = await saveSceneDraftIfNeeded(scene);
+    if (!saved) {
       setPendingImageRetryBySceneId((previous) => {
         const next = { ...previous };
-        if (queued?.status === "processing") next[scene.id] = "processing";
-        else delete next[scene.id];
+        delete next[scene.id];
         return next;
       });
-      setCandidateOffsets((previous) => ({ ...previous, [scene.id]: 0 }));
-    } finally {
-      setSubmitting(false);
+      return;
     }
+    const queued = await retrySceneImage(scene.id, { allowDuringImageGeneration: true });
+    debugPreviewWorkbench("batch-generation", "retry-image-response", {
+      sceneId: scene.id,
+      updatedSceneId: queued?.id,
+      status: queued?.status,
+      providerTaskId: queued?.providerTaskId,
+      imageTaskId: queued?.imageTaskId,
+    });
+    setPendingImageRetryBySceneId((previous) => {
+      const next = { ...previous };
+      if (queued?.status === "processing" && (queued.providerTaskId || queued.imageTaskId)) next[scene.id] = "processing";
+      else delete next[scene.id];
+      return next;
+    });
+    setCandidateOffsets((previous) => ({ ...previous, [scene.id]: 0 }));
   }
 
   function moveCandidateWindow(sceneId: string, candidates: LyricSceneImageCandidate[], direction: -1 | 1, pending = false) {
@@ -644,7 +676,6 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                 pendingRetry: imageRetryPending,
                 project,
                 scene,
-                submitting,
               });
               const retryDisabledReason = imageRetryPending
                 ? "Image generation is in progress"
@@ -697,7 +728,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
                             title={retryDisabledReason || "Generate a new image candidate without replacing the selected image"}
                             className="inline-flex h-[28px] shrink-0 items-center gap-[6px] rounded-[5px] bg-[var(--editor-panel-strong)] px-[9px] text-[11px] font-[800] text-[var(--editor-muted)] hover:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            <RefreshCcw className={cn("h-[12px] w-[12px]", submitting && "animate-spin")} />
+                            <RefreshCcw className={cn("h-[12px] w-[12px]", imageRetryPending && "animate-spin")} />
                             <span>Retry Image</span>
                             <span className="inline-flex items-center gap-[3px]">
                               <Coins className="h-[11px] w-[11px]" />5

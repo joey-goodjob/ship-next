@@ -45,6 +45,7 @@ export async function POST(
         id: scene.id,
         status: scene.status,
         providerTaskId: scene.providerTaskId,
+        imageTaskId: scene.imageTaskId,
         hasImageUrl: Boolean(scene.imageUrl),
       })),
     });
