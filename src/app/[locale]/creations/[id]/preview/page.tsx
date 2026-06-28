@@ -6,12 +6,20 @@ export default async function CreationPreviewPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ debugLock?: string }>;
+  searchParams?: Promise<{ debugLock?: string; setup?: string }>;
 }) {
   const { id } = await params;
   const query = searchParams ? await searchParams : {};
   const debugGenerationLocked =
     process.env.NODE_ENV !== "production" && ["1", "true", "yes"].includes(String(query.debugLock || "").toLowerCase());
+  const deferAutoDirection = ["1", "true", "yes"].includes(String(query.setup || "").toLowerCase());
 
-  return <PreviewWorkbench projectId={id} appName={envConfigs.app_name} debugGenerationLocked={debugGenerationLocked} />;
+  return (
+    <PreviewWorkbench
+      projectId={id}
+      appName={envConfigs.app_name}
+      debugGenerationLocked={debugGenerationLocked}
+      deferAutoDirection={deferAutoDirection}
+    />
+  );
 }

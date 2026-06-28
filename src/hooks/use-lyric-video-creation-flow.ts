@@ -2,7 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
-import { DEFAULT_CHARACTER_PRESET_SLUG, getCharacterPreset, type CharacterPreset } from "@/lib/character-presets";
+import type { CharacterPreset } from "@/lib/character-presets";
+import { buildDraftProjectCreateBody, previewSetupHref } from "@/lib/lyric-video-setup-flow";
 import { logLyricStage, logLyricStageError } from "@/lib/lyric-video-log";
 
 type ApiResponse<T> = {
@@ -31,20 +32,6 @@ type LyricVideoProject = {
   storyPrompt?: string;
   generationStatus?: string;
   generationProgress?: number;
-};
-
-type GenerationRunResponse = {
-  run?: unknown;
-  steps?: unknown[];
-  lines?: unknown[];
-  words?: unknown[];
-  scenes?: unknown[];
-  project?: LyricVideoProject;
-  songAnalysis?: {
-    story_acts?: unknown[];
-  } | null;
-  directionReady?: boolean;
-  stopAfter?: string;
 };
 
 type GenerateOptions = {
@@ -87,45 +74,6 @@ async function requestJson<T>(url: string, init?: RequestInit) {
     throw new Error(body.message || "Request failed");
   }
   return body.data as T;
-}
-
-function secondsToMs(seconds: number) {
-  return Math.max(0, Math.round(seconds * 1000));
-}
-
-function titleFromFilename(filename: string) {
-  return filename.replace(/\.[^/.]+$/, "").trim() || "Untitled lyric video";
-}
-
-function resolvePublicAssetUrl(url: string) {
-  if (!url || /^https?:\/\//.test(url)) return url;
-  if (typeof window === "undefined") return url;
-  return `${window.location.origin}${url.startsWith("/") ? url : `/${url}`}`;
-}
-
-function selectedCharacterSlugsFromPayload(payload: PendingLyricVideoPayload) {
-  const slugs = Array.isArray(payload.selectedCharacterSlugs)
-    ? payload.selectedCharacterSlugs
-    : payload.selectedCharacterSlug
-      ? [payload.selectedCharacterSlug]
-      : [];
-  const selected = Array.from(new Set(slugs.filter(Boolean))).slice(0, 4);
-  return selected.length > 0 ? selected : [DEFAULT_CHARACTER_PRESET_SLUG];
-}
-
-function roleForSelectedCharacter(index: number) {
-  return ['primary', 'secondary', 'tertiary', 'quaternary'][index] || 'inactive';
-}
-
-function assertPrompt1DirectionReady(generated: GenerationRunResponse) {
-  const reachedSongAnalysis = generated.directionReady === true || generated.stopAfter === "song_analysis";
-  const hasStoryDirection =
-    Boolean(generated.project?.storyPrompt?.trim()) ||
-    (Array.isArray(generated.songAnalysis?.story_acts) && generated.songAnalysis.story_acts.length > 0);
-
-  if (!reachedSongAnalysis || !hasStoryDirection) {
-    throw new Error("Prompt1 story direction is not ready yet");
-  }
 }
 
 /**
@@ -241,51 +189,44 @@ export function useLyricVideoCreationFlow() {
   const [error, setError] = useState("");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  const createProjectAndGenerate = useCallback(
+  const createProjectAndCustomize = useCallback(
     async (payload: PendingLyricVideoPayload) => {
       // 前端主链路：
       // 1. 用 upload-audio 返回的 url 创建 `lyric_video_project`
-      // 2. 可选写入默认角色 `lyric_video_cast_member`
-      // 3. 调 `/api/lyric-videos/:id/generate` 并等待 Prompt1 产出故事方向后再进预览页
+      // 2. 进入 preview setup 模式，让用户先选择风格和角色
+      // 3. 用户确认后，再从工作台触发 direction generation 和扣费
       setError("");
       setStage("creating");
       setUploadProgress(null);
 
-      const originalDurationMs = secondsToMs(payload.options.durationSeconds);
-      const trimStartMs = payload.options.useEntireAudio ? 0 : secondsToMs(payload.startTime);
-      const trimEndMs = payload.options.useEntireAudio ? originalDurationMs : secondsToMs(payload.endTime);
-      const filename = payload.uploaded.filename || payload.filename;
-      const projectTitle = payload.options.projectTitle?.trim() || titleFromFilename(filename);
+      const createBody = buildDraftProjectCreateBody({
+        uploaded: {
+          url: payload.uploaded.url,
+          key: payload.uploaded.key,
+          filename: payload.uploaded.filename || payload.filename,
+          size: payload.uploaded.size || payload.fileSize,
+          contentType: payload.uploaded.contentType || payload.fileType || "audio/mpeg",
+          checksum: payload.uploaded.checksum,
+        },
+        startTime: payload.startTime,
+        endTime: payload.endTime,
+        options: payload.options,
+      });
 
       const createStartedAt = Date.now();
       logLyricStage("create-project", "start", {
-        title: projectTitle,
-        filename,
-        audioDurationMs: originalDurationMs,
-        trimStartMs,
-        trimEndMs,
-        aspectRatio: payload.options.aspectRatio,
-        resolution: payload.options.resolution,
+        title: createBody.title,
+        filename: createBody.audioFilename,
+        audioDurationMs: createBody.audioDurationMs,
+        trimStartMs: createBody.trimStartMs,
+        trimEndMs: createBody.trimEndMs,
+        aspectRatio: createBody.aspectRatio,
+        resolution: createBody.resolution,
       });
       const project = await requestJson<LyricVideoProject>("/api/lyric-videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: projectTitle,
-          audioUrl: payload.uploaded.url,
-          audioStorageKey: payload.uploaded.key,
-          originalAudioUrl: payload.uploaded.url,
-          originalAudioStorageKey: payload.uploaded.key,
-          audioFilename: filename,
-          audioDurationMs: originalDurationMs,
-          audioMimeType: payload.fileType || "audio/mpeg",
-          audioSizeBytes: payload.uploaded.size || payload.fileSize,
-          audioChecksum: payload.uploaded.checksum,
-          trimStartMs,
-          trimEndMs,
-          aspectRatio: payload.options.aspectRatio,
-          resolution: payload.options.resolution,
-        }),
+        body: JSON.stringify(createBody),
       });
       logLyricStage("create-project", "success", {
         durationMs: Date.now() - createStartedAt,
@@ -296,83 +237,9 @@ export function useLyricVideoCreationFlow() {
         scenesStatus: project.scenesStatus,
       });
 
-      const selectedCharacters = selectedCharacterSlugsFromPayload(payload)
-        .map((slug) => getCharacterPreset(slug))
-        .filter(Boolean) as CharacterPreset[];
-      for (const [index, selectedCharacter] of selectedCharacters.entries()) {
-        const castStartedAt = Date.now();
-        const role = roleForSelectedCharacter(index);
-        logLyricStage("create-project-cast", "start", {
-          projectId: project.id,
-          characterSlug: selectedCharacter.slug,
-          characterName: selectedCharacter.name,
-          role,
-        });
-        const thumbnailUrl = resolvePublicAssetUrl(selectedCharacter.thumbnailUrl || selectedCharacter.referenceImageUrl);
-        const referenceImageUrl = resolvePublicAssetUrl(selectedCharacter.referenceImageUrl || selectedCharacter.thumbnailUrl);
-        const referenceImageUrls = (
-          selectedCharacter.referenceImageUrls?.length
-            ? selectedCharacter.referenceImageUrls
-            : [referenceImageUrl]
-        )
-          .map(resolvePublicAssetUrl)
-          .filter(Boolean);
-        await requestJson(`/api/lyric-videos/${project.id}/cast`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: selectedCharacter.name,
-            role,
-            description: selectedCharacter.description,
-            promptFragment: selectedCharacter.promptFragment,
-            referenceImageUrl,
-            generationParams: {
-              source: "preset",
-              presetSlug: selectedCharacter.slug,
-              thumbnailUrl,
-              referenceImageUrls,
-            },
-            status: "active",
-          }),
-        });
-        logLyricStage("create-project-cast", "success", {
-          durationMs: Date.now() - castStartedAt,
-          projectId: project.id,
-          characterSlug: selectedCharacter.slug,
-          characterName: selectedCharacter.name,
-          role,
-        });
-      }
-
-      setStage("generating");
-      const generateStartedAt = Date.now();
-      logLyricStage("guided-generate", "wait-start", { projectId: project.id });
-      const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "guided", wait: true }),
-      });
-      assertPrompt1DirectionReady(generated);
-      logLyricStage("guided-generate", "direction-ready", {
-        durationMs: Date.now() - generateStartedAt,
-        projectId: project.id,
-        lineCount: generated.lines?.length || 0,
-        wordCount: generated.words?.length || 0,
-        sceneCount: generated.scenes?.length || 0,
-        storyActsCount: generated.songAnalysis?.story_acts?.length || 0,
-        directionReady: generated.directionReady,
-        stopAfter: generated.stopAfter,
-        hasStoryPrompt: Boolean(generated.project?.storyPrompt),
-        pipelineStage: generated.project?.pipelineStage,
-        lyricsStatus: generated.project?.lyricsStatus,
-        scenesStatus: generated.project?.scenesStatus,
-        generationStatus: generated.project?.generationStatus,
-        generationProgress: generated.project?.generationProgress,
-      });
-
       clearPendingPayload();
       setStage("redirecting");
-      router.push(`/creations/${project.id}/preview`);
+      router.push(previewSetupHref(project.id));
     },
     [router],
   );
@@ -399,7 +266,7 @@ export function useLyricVideoCreationFlow() {
     }
   }, []);
 
-  const generateFromUploaded = useCallback(
+  const continueToCustomizeFromUploaded = useCallback(
     async (
       uploaded: UploadedAudio,
       startTime: number,
@@ -426,7 +293,7 @@ export function useLyricVideoCreationFlow() {
           createdAt: Date.now(),
         };
 
-        await createProjectAndGenerate(payload);
+        await createProjectAndCustomize(payload);
       } catch (err: any) {
         setStage("failed");
         setUploadProgress(null);
@@ -434,10 +301,10 @@ export function useLyricVideoCreationFlow() {
         throw err;
       }
     },
-    [createProjectAndGenerate],
+    [createProjectAndCustomize],
   );
 
-  const generateFromFile = useCallback(
+  const continueToCustomizeFromFile = useCallback(
     async (
       file: File,
       startTime: number,
@@ -446,9 +313,9 @@ export function useLyricVideoCreationFlow() {
       selectedCharacters?: CharacterPreset[] | CharacterPreset | null,
     ) => {
       const uploaded = await uploadOnly(file);
-      await generateFromUploaded(uploaded, startTime, endTime, options, selectedCharacters);
+      await continueToCustomizeFromUploaded(uploaded, startTime, endTime, options, selectedCharacters);
     },
-    [generateFromUploaded, uploadOnly],
+    [continueToCustomizeFromUploaded, uploadOnly],
   );
 
   const preparePendingAuth = useCallback(
@@ -498,14 +365,14 @@ export function useLyricVideoCreationFlow() {
     if (!payload) return false;
 
     try {
-      await createProjectAndGenerate(payload);
+      await createProjectAndCustomize(payload);
       return true;
     } catch (err: any) {
       setStage("failed");
       setError(err?.message || "Failed to create lyric video");
       return false;
     }
-  }, [createProjectAndGenerate]);
+  }, [createProjectAndCustomize]);
 
   const resetCreationState = useCallback(() => {
     setStage("idle");
@@ -519,8 +386,8 @@ export function useLyricVideoCreationFlow() {
     uploadProgress,
     isWorking: stage !== "idle" && stage !== "failed",
     uploadOnly,
-    generateFromUploaded,
-    generateFromFile,
+    continueToCustomizeFromUploaded,
+    continueToCustomizeFromFile,
     preparePendingAuth,
     resumePending,
     resetCreationState,

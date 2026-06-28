@@ -9,7 +9,9 @@ import {
   Check,
   Clock,
   FolderOpen,
+  Link2,
   Music,
+  Music2,
   Pause,
   Play,
   RefreshCcw,
@@ -21,6 +23,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const DEFAULT_MAX_FILE_SIZE = 100 * 1024 * 1024;
 const DEFAULT_FORMATS = ["mp3", "wav", "flac", "aac", "ogg", "m4a"];
@@ -39,6 +49,12 @@ type CreditsResponse = {
 
 type CreationStage = "idle" | "uploading" | "waiting-auth" | "creating" | "generating" | "redirecting" | "failed";
 
+type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data?: T;
+};
+
 export type UploadedAudioSource = {
   url: string;
   key: string;
@@ -47,6 +63,38 @@ export type UploadedAudioSource = {
   contentType?: string;
   checksum?: string;
   durationSeconds?: number;
+};
+
+export type AudioImportDialogCopy = {
+  title: string;
+  description: string;
+  localTitle: string;
+  localDescription: string;
+  formats: string;
+  maxSize: string;
+  sunoTitle: string;
+  sunoDescription: string;
+  sunoPlaceholder: string;
+  importButton: string;
+  importingButton: string;
+  sunoOnly: string;
+  errorFallback: string;
+};
+
+const DEFAULT_IMPORT_DIALOG_COPY: AudioImportDialogCopy = {
+  title: "Add New Music",
+  description: "Choose how you want to add your music",
+  localTitle: "Local Upload",
+  localDescription: "Upload audio file from your device",
+  formats: "MP3 / WAV",
+  maxSize: "Max 100MB",
+  sunoTitle: "Paste Suno Link",
+  sunoDescription: "Import a public Suno song when available",
+  sunoPlaceholder: "https://suno.com/song/...",
+  importButton: "Import Music",
+  importingButton: "Importing...",
+  sunoOnly: "Public Suno links only",
+  errorFallback: "Could not import this Suno song. Download the MP3 from Suno and upload it instead.",
 };
 
 export interface AudioUploadTrimProps {
@@ -72,6 +120,11 @@ export interface AudioUploadTrimProps {
   maxFileSizeLabel?: string;
   initialUploadedAudio?: UploadedAudioSource | null;
   deferInitialAudioUntilReady?: boolean;
+  enableSunoImport?: boolean;
+  sunoImportTrigger?: "upload-area" | "button";
+  sunoImportButtonLabel?: string;
+  importDialogCopy?: Partial<AudioImportDialogCopy>;
+  onImportSunoAudio?: (inputUrl: string) => Promise<UploadedAudioSource>;
   onClearInitialAudio?: () => void;
   onBack?: () => void;
   onGenerate?: (
@@ -381,6 +434,11 @@ export function AudioUploadTrim({
   maxFileSizeLabel = "100MB",
   initialUploadedAudio = null,
   deferInitialAudioUntilReady = false,
+  enableSunoImport = false,
+  sunoImportTrigger = "upload-area",
+  sunoImportButtonLabel = "Suno Link",
+  importDialogCopy,
+  onImportSunoAudio,
   onClearInitialAudio,
   onBack,
   onGenerate,
@@ -403,6 +461,10 @@ export function AudioUploadTrim({
   const [waveformPeaks, setWaveformPeaks] = useState<number[]>(() => fallbackPeaks(initialUploadedAudio?.filename || "empty"));
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [creditBalanceLoading, setCreditBalanceLoading] = useState(showCredits);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [sunoUrl, setSunoUrl] = useState("");
+  const [sunoImportError, setSunoImportError] = useState("");
+  const [sunoImportLoading, setSunoImportLoading] = useState(false);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const audioInputId = useId();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -415,6 +477,7 @@ export function AudioUploadTrim({
   const hasEnoughCredits = !showCredits || creditBalance === null || creditBalance >= requiredCredits;
   const isHomeCard = presentation === "home-card";
   const isNarrowHomeCard = isHomeCard && homeCardSize === "narrow";
+  const importCopy = { ...DEFAULT_IMPORT_DIALOG_COPY, ...importDialogCopy };
   const hasAudio = Boolean(audioFile || uploadedAudio);
   const audioName = audioFile?.name || uploadedAudio?.filename || "";
   const audioSize = audioFile?.size || uploadedAudio?.size || 0;
@@ -460,21 +523,7 @@ export function AudioUploadTrim({
 
   useEffect(() => {
     if (!initialUploadedAudio?.url) return;
-    if (audioPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(audioPreviewUrl);
-    setAudioFile(null);
-    setUploadedAudio(initialUploadedAudio);
-    setAudioPreviewUrl(initialUploadedAudio.url);
-    const nextDurationSeconds = normalizeDurationSeconds(initialUploadedAudio.durationSeconds);
-    setAudioDurationMs(nextDurationSeconds ? ms(nextDurationSeconds) : 0);
-    setDurationStatus(nextDurationSeconds ? "ready" : "loading");
-    setStartSeconds(0);
-    setEndSeconds(nextDurationSeconds ? Number(nextDurationSeconds.toFixed(3)) : 0);
-    setUseEntireAudio(false);
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setIsDraggingAudio(false);
-    setGenerateStatus("idle");
-    setWaveformPeaks(fallbackPeaks(initialUploadedAudio.filename));
+    loadUploadedAudioSource(initialUploadedAudio);
   }, [initialUploadedAudio?.url, initialUploadedAudio?.durationSeconds]);
 
   useEffect(() => {
@@ -529,6 +578,43 @@ export function AudioUploadTrim({
     onClearInitialAudio?.();
   }
 
+  function loadUploadedAudioSource(source: UploadedAudioSource) {
+    if (audioPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(audioPreviewUrl);
+    const nextDurationSeconds = normalizeDurationSeconds(source.durationSeconds);
+    autoGeneratedFileRef.current = null;
+    setAudioFile(null);
+    setUploadedAudio(source);
+    setAudioPreviewUrl(source.url);
+    setAudioDurationMs(nextDurationSeconds ? ms(nextDurationSeconds) : 0);
+    setDurationStatus(nextDurationSeconds ? "ready" : "loading");
+    setStartSeconds(0);
+    setEndSeconds(nextDurationSeconds ? Number(nextDurationSeconds.toFixed(3)) : 0);
+    setUseEntireAudio(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setIsDraggingAudio(false);
+    setGenerateStatus("idle");
+    setWaveformPeaks(fallbackPeaks(source.filename));
+  }
+
+  function openAudioPicker() {
+    if (!enableSunoImport || sunoImportTrigger === "button") {
+      audioInputRef.current?.click();
+      return;
+    }
+    openSunoImportDialog();
+  }
+
+  function openSunoImportDialog() {
+    setSunoImportError("");
+    setImportDialogOpen(true);
+  }
+
+  function openLocalAudioPicker() {
+    setImportDialogOpen(false);
+    window.setTimeout(() => audioInputRef.current?.click(), 0);
+  }
+
   async function selectAudioFile(file?: File | null) {
     if (!file) return;
     if (!isSupportedAudioFile(file, acceptedFormats)) {
@@ -541,6 +627,8 @@ export function AudioUploadTrim({
     }
 
     if (audioPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(audioPreviewUrl);
+    setImportDialogOpen(false);
+    setSunoImportError("");
     autoGeneratedFileRef.current = null;
     const nextUrl = URL.createObjectURL(file);
     setAudioFile(file);
@@ -567,6 +655,43 @@ export function AudioUploadTrim({
     } catch {
       setDurationStatus((status) => (status === "ready" ? "ready" : "error"));
       toast.error("Unable to decode audio waveform");
+    }
+  }
+
+  async function importSunoAudio(event?: React.FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    const inputUrl = sunoUrl.trim();
+    if (!inputUrl) {
+      setSunoImportError(importCopy.errorFallback);
+      return;
+    }
+
+    setSunoImportLoading(true);
+    setSunoImportError("");
+    try {
+      let imported: UploadedAudioSource;
+      if (onImportSunoAudio) {
+        imported = await onImportSunoAudio(inputUrl);
+      } else {
+        const response = await fetch("/api/storage/import-suno-audio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: inputUrl }),
+        });
+        const body = (await response.json().catch(() => ({}))) as ApiResponse<UploadedAudioSource>;
+        if (!response.ok || body.code !== 0 || !body.data) {
+          throw new Error(body.message || importCopy.errorFallback);
+        }
+        imported = body.data;
+      }
+
+      loadUploadedAudioSource(imported);
+      setSunoUrl("");
+      setImportDialogOpen(false);
+    } catch (error: any) {
+      setSunoImportError(error?.message || importCopy.errorFallback);
+    } finally {
+      setSunoImportLoading(false);
     }
   }
 
@@ -727,9 +852,89 @@ export function AudioUploadTrim({
       <track kind="captions" />
     </audio>
   ) : null;
+  const sunoImportDialog = enableSunoImport ? (
+    <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto rounded-md border-brand-line bg-brand-panel p-0 text-brand-ink shadow-[0_30px_95px_var(--brand-elevation-shadow)] sm:max-w-[760px]">
+        <DialogHeader className="items-center border-b border-brand-line px-6 py-8 text-center">
+          <span className="flex size-14 items-center justify-center rounded-md bg-brand-accent text-brand-accent-ink shadow-[0_18px_38px_var(--brand-accent-shadow)]">
+            <Music2 className="size-7" aria-hidden={true} />
+          </span>
+          <DialogTitle className="text-xl font-black leading-7 text-brand-ink">{importCopy.title}</DialogTitle>
+          <DialogDescription className="text-sm font-medium leading-5 text-brand-muted">
+            {importCopy.description}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="relative grid gap-4 p-5 md:grid-cols-2 md:gap-5 md:p-6">
+          <button
+            type="button"
+            onClick={openLocalAudioPicker}
+            className="group flex min-h-[270px] flex-col items-center justify-center rounded-md border border-brand-line bg-brand-panel-strong px-5 py-8 text-center transition-[border-color,background-color,transform,box-shadow] active:scale-[0.99] [@media(hover:hover)]:hover:border-brand-accent [@media(hover:hover)]:hover:bg-brand-accent-soft/50 [@media(hover:hover)]:hover:shadow-[0_18px_45px_var(--brand-accent-shadow-soft)]"
+          >
+            <span className="flex size-16 items-center justify-center rounded-md bg-brand-accent-soft text-brand-accent transition-colors group-hover:text-brand-accent-hover">
+              <CloudUpload className="size-8" aria-hidden={true} />
+            </span>
+            <span className="mt-6 text-lg font-black leading-6 text-brand-ink">{importCopy.localTitle}</span>
+            <span className="mt-3 text-sm font-medium leading-5 text-brand-muted">{importCopy.localDescription}</span>
+            <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold leading-5 text-brand-muted">
+              <Check className="size-4 text-brand-accent" aria-hidden={true} />
+              {importCopy.formats}
+            </span>
+            <span className="mt-1 text-xs font-semibold leading-5 text-brand-subtle">{importCopy.maxSize}</span>
+          </button>
+
+          <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 hidden size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-brand-line bg-brand-panel text-xs font-black text-brand-muted shadow-md md:flex">
+            OR
+          </div>
+
+          <form
+            onSubmit={importSunoAudio}
+            className="flex min-h-[270px] flex-col items-center justify-center rounded-md border border-brand-line bg-brand-panel-strong px-5 py-8 text-center"
+          >
+            <span className="flex size-16 items-center justify-center rounded-md bg-brand-accent-soft text-brand-accent">
+              <Link2 className="size-8" aria-hidden={true} />
+            </span>
+            <label htmlFor={`${audioInputId}-suno-url`} className="mt-6 text-lg font-black leading-6 text-brand-ink">
+              {importCopy.sunoTitle}
+            </label>
+            <p className="mt-3 text-sm font-medium leading-5 text-brand-muted">{importCopy.sunoDescription}</p>
+            <div className="mt-6 w-full">
+              <Input
+                id={`${audioInputId}-suno-url`}
+                value={sunoUrl}
+                onChange={(event) => {
+                  setSunoUrl(event.target.value);
+                  if (sunoImportError) setSunoImportError("");
+                }}
+                placeholder={importCopy.sunoPlaceholder}
+                disabled={sunoImportLoading}
+                className="h-12 rounded-md border-brand-line bg-brand-panel px-4 text-sm font-semibold text-brand-ink placeholder:text-brand-muted focus-visible:border-brand-accent focus-visible:ring-brand-accent/30"
+              />
+              {sunoImportError ? (
+                <p className="mt-3 text-left text-xs font-semibold leading-5 text-red-500">{sunoImportError}</p>
+              ) : null}
+            </div>
+            <Button
+              type="submit"
+              disabled={sunoImportLoading || sunoUrl.trim().length === 0}
+              className="mt-4 h-12 w-full rounded-md bg-brand-accent text-sm font-black text-brand-accent-ink shadow-[0_16px_34px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
+            >
+              {sunoImportLoading ? <Loader2 className="size-4 animate-spin" /> : <Link2 className="size-4" />}
+              {sunoImportLoading ? importCopy.importingButton : importCopy.importButton}
+            </Button>
+            <span className="mt-6 inline-flex items-center gap-2 rounded-md border border-brand-line bg-brand-panel px-3 py-1.5 text-xs font-bold text-brand-muted">
+              <Check className="size-4 text-brand-accent" aria-hidden={true} />
+              {importCopy.sunoOnly}
+            </span>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  ) : null;
 
   if (isHomeCard) {
     return (
+      <>
       <main className="mx-auto w-full max-w-[900px] px-0 py-0">
         {showBack ? (
           <button
@@ -757,7 +962,7 @@ export function AudioUploadTrim({
             onSubmit={(event) => {
               event.preventDefault();
               if (!hasAudio) {
-                audioInputRef.current?.click();
+                openAudioPicker();
                 return;
               }
               if (isGenerateDisabled) return;
@@ -820,9 +1025,9 @@ export function AudioUploadTrim({
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => audioInputRef.current?.click()}
+                  onClick={openAudioPicker}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") audioInputRef.current?.click();
+                    if (event.key === "Enter" || event.key === " ") openAudioPicker();
                   }}
                   onDragEnter={(event) => {
                     event.preventDefault();
@@ -837,12 +1042,26 @@ export function AudioUploadTrim({
                     setIsDraggingAudio(false);
                   }}
                   onDrop={handleAudioDrop}
-                  className={`mt-8 flex ${isNarrowHomeCard ? "min-h-[220px]" : "min-h-[280px]"} cursor-pointer items-center justify-center rounded-[18px] border-2 border-dashed px-6 py-8 text-center transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] ${
+                  className={`relative mt-8 flex ${isNarrowHomeCard ? "min-h-[220px]" : "min-h-[280px]"} cursor-pointer items-center justify-center rounded-[18px] border-2 border-dashed px-6 py-8 text-center transition-[background-color,border-color,transform] duration-200 active:scale-[0.99] ${
                     isDraggingAudio
                       ? "border-brand-accent bg-brand-accent-soft"
                       : "border-brand-line bg-brand-panel [@media(hover:hover)]:hover:border-brand-accent [@media(hover:hover)]:hover:bg-brand-accent-soft/50"
                   }`}
                 >
+                  {enableSunoImport && sunoImportTrigger === "button" ? (
+                    <button
+                      type="button"
+                      className="absolute right-4 top-4 z-10 inline-flex h-9 items-center gap-1.5 rounded-md border border-brand-line bg-brand-panel-strong px-3 text-xs font-black leading-4 text-brand-accent shadow-sm transition-[background-color,border-color,transform] active:scale-[0.96] [@media(hover:hover)]:hover:border-brand-accent [@media(hover:hover)]:hover:bg-brand-accent-soft"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openSunoImportDialog();
+                      }}
+                    >
+                      <Link2 className="size-3.5" aria-hidden={true} />
+                      {sunoImportButtonLabel}
+                    </button>
+                  ) : null}
                   <div>
                     <span className="mx-auto flex size-20 items-center justify-center rounded-full bg-brand-accent-soft text-brand-accent shadow-[0_18px_45px_var(--brand-accent-shadow-soft)]">
                       <CloudUpload className="size-10" aria-hidden={true} />
@@ -856,7 +1075,7 @@ export function AudioUploadTrim({
                       className="mt-6 h-11 rounded-[9px] bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-accent-ink shadow-[0_18px_38px_var(--brand-accent-shadow)] [@media(hover:hover)]:hover:bg-brand-accent-hover"
                       onClick={(event) => {
                         event.stopPropagation();
-                        audioInputRef.current?.click();
+                        openAudioPicker();
                       }}
                     >
                       <Upload className="size-6" />
@@ -1094,10 +1313,13 @@ export function AudioUploadTrim({
           </form>
         </section>
       </main>
+      {sunoImportDialog}
+      </>
     );
   }
 
   return (
+    <>
     <main className={compact ? "mx-auto w-full max-w-[960px] px-0 py-0" : "mx-auto min-h-[660px] w-full max-w-[1240px] px-8 py-10"}>
       {showBack ? (
         <button
@@ -1125,9 +1347,9 @@ export function AudioUploadTrim({
           <div
             role="button"
             tabIndex={0}
-            onClick={() => audioInputRef.current?.click()}
+            onClick={openAudioPicker}
             onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") audioInputRef.current?.click();
+              if (event.key === "Enter" || event.key === " ") openAudioPicker();
             }}
             onDragEnter={(event) => {
               event.preventDefault();
@@ -1161,7 +1383,7 @@ export function AudioUploadTrim({
           </div>
           <Button
             type="button"
-            onClick={() => audioInputRef.current?.click()}
+            onClick={openAudioPicker}
             className="mt-5 h-11 gap-2 rounded-md bg-brand-accent px-6 text-base font-semibold leading-6 text-brand-ink hover:bg-brand-accent-hover"
           >
             <Upload className="size-5" />
@@ -1335,5 +1557,7 @@ export function AudioUploadTrim({
         </section>
       )}
     </main>
+    {sunoImportDialog}
+    </>
   );
 }

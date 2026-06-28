@@ -309,6 +309,7 @@ export type EditorContextValue = {
   visualGenerationBusy: boolean;
   generationLocked: boolean;
   generationLockReason: string;
+  deferAutoDirection: boolean;
   storyChangeSource: StoryChangeSource;
   storyReviewStatus: StoryReviewStatus;
   setActiveTab: (tab: PanelTab) => void;
@@ -326,6 +327,7 @@ export type EditorContextValue = {
     endTime: number,
     options: { useEntireAudio: boolean; durationSeconds: number },
   ) => Promise<void>;
+  startDirectionGeneration: () => Promise<void>;
   createStory: (feedback?: string) => Promise<void>;
   generateStoryboardPrompts: () => Promise<void>;
   createCastMember: (params: CreateCastMemberInput) => Promise<LyricCastMember | null>;

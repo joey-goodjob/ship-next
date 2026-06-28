@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { buildLyricVideoExportFingerprint } from "@/lib/lyric-video-export-freshness";
+import { shouldAutoStartDirection } from "@/lib/lyric-video-setup-flow";
 import { debugPreviewWorkbench } from "./debug-log";
 import { EditorContext } from "./editor-context";
 import { shouldQueueExportForCurrentPreview } from "./export-versions-model";
@@ -135,11 +136,13 @@ export function EditorProvider({
   appName,
   children,
   debugGenerationLocked,
+  deferAutoDirection = false,
   projectId,
 }: {
   appName: string;
   children: ReactNode;
   debugGenerationLocked?: boolean;
+  deferAutoDirection?: boolean;
   projectId: string;
 }) {
   const t = useTranslations("dashboard.workbench");
@@ -360,17 +363,18 @@ export function EditorProvider({
     return () => window.clearInterval(timer);
   }, [project, scenes]);
 
-  useEffect(() => {
+  async function startDirectionGeneration() {
     const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
-    const shouldAutoTranscribe =
-      project &&
-      hasAudio &&
-      lines.length === 0 &&
-      !preparingAudio &&
-      !generationLocked &&
-      !["processing", "asr_processing", "normalizing", "ready", "failed"].includes(project.lyricsStatus || "") &&
-      autoTranscribeProjectRef.current !== project.id;
-    if (!shouldAutoTranscribe) return;
+    if (!project || !hasAudio) {
+      toast.error(t("project_unavailable"));
+      return;
+    }
+    if (preparingAudio) return;
+    if (generationLocked) {
+      showGenerationLockedToast();
+      return;
+    }
+    if (["processing", "asr_processing", "normalizing", "ready"].includes(project.lyricsStatus || "")) return;
 
     autoTranscribeProjectRef.current = project.id;
     setPreparingAudio(true);
@@ -396,43 +400,59 @@ export function EditorProvider({
       trimEndMs: project.trimEndMs,
     });
 
-    requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "guided" }),
-    })
-      .then(async (generated) => {
-        console.info("[lyric-video] guided generation queued from preview", {
-          projectId: project.id,
-          lineCount: generated.lines?.length || 0,
-          sceneCount: generated.scenes?.length || 0,
-          firstScene: generated.scenes?.[0],
-        });
-        setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
-        if (generated.run) setGenerationRun(generated.run);
-        if (generated.steps) setGenerationSteps(generated.steps);
-        if (generated.lines?.length) setLinesState(generated.lines);
-        if (generated.words?.length || generated.lines?.length) {
-          setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
-        }
-        if (generated.scenes?.length) setScenes(generated.scenes);
-        setLyricsDirty(false);
-        setWordsDirty(false);
-        setActiveTab("customize");
-        await refresh();
-        setSaveStatus("saved");
-        toast.success(t("direction_started"));
-      })
-      .catch(async (err: any) => {
-        console.error("[lyric-video] guided generation flow failed from preview", err);
-        setSaveStatus("failed");
-        await refresh();
-        toast.error(err?.message || t("direction_failed"));
-      })
-      .finally(() => {
-        setPreparingAudio(false);
+    try {
+      const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "guided" }),
       });
-  }, [generationLocked, lines.length, preparingAudio, project, refresh]);
+      console.info("[lyric-video] guided generation queued from preview", {
+        projectId: project.id,
+        lineCount: generated.lines?.length || 0,
+        sceneCount: generated.scenes?.length || 0,
+        firstScene: generated.scenes?.[0],
+      });
+      setProject((previous) => (generated.project ? mergeIncomingProject(generated.project) : previous));
+      if (generated.run) setGenerationRun(generated.run);
+      if (generated.steps) setGenerationSteps(generated.steps);
+      if (generated.lines?.length) setLinesState(generated.lines);
+      if (generated.words?.length || generated.lines?.length) {
+        setWordsState(generated.words?.length ? sortWords(generated.words) : createWordsFromLines(generated.lines || []));
+      }
+      if (generated.scenes?.length) setScenes(generated.scenes);
+      setLyricsDirty(false);
+      setWordsDirty(false);
+      setActiveTab("customize");
+      await refresh();
+      setSaveStatus("saved");
+      toast.success(t("direction_started"));
+    } catch (err: any) {
+      console.error("[lyric-video] guided generation flow failed from preview", err);
+      setSaveStatus("failed");
+      await refresh();
+      toast.error(err?.message || t("direction_failed"));
+    } finally {
+      setPreparingAudio(false);
+    }
+  }
+
+  useEffect(() => {
+    const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
+    const canAutoStart =
+      project &&
+      shouldAutoStartDirection({
+        deferAutoDirection,
+        hasAudio,
+        lineCount: lines.length,
+      }) &&
+      !preparingAudio &&
+      !generationLocked &&
+      !["processing", "asr_processing", "normalizing", "ready", "failed"].includes(project.lyricsStatus || "") &&
+      autoTranscribeProjectRef.current !== project.id;
+    if (!canAutoStart) return;
+
+    void startDirectionGeneration();
+  }, [deferAutoDirection, generationLocked, lines.length, preparingAudio, project, refresh]);
 
   useEffect(() => {
     const shouldCreateStory =
@@ -1481,6 +1501,7 @@ export function EditorProvider({
       visualGenerationBusy,
       generationLocked,
       generationLockReason,
+      deferAutoDirection,
       storyChangeSource,
       storyReviewStatus,
       setActiveTab,
@@ -1493,6 +1514,7 @@ export function EditorProvider({
       setLines,
       setWords,
       uploadAndTranscribe,
+      startDirectionGeneration,
       createStory,
       generateStoryboardPrompts,
       createCastMember,
@@ -1528,6 +1550,7 @@ export function EditorProvider({
       generationRun,
       generationSteps,
       generationLocked,
+      deferAutoDirection,
       visualGenerationBusy,
       latestExport,
       lines,

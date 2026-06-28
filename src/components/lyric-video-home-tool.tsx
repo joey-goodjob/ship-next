@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Loader2, Music2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { AudioUploadTrim } from "@/components/audio-upload-trim";
+import { AudioUploadTrim, type UploadedAudioSource } from "@/components/audio-upload-trim";
 import { LyricVideoMaterialCarousel } from "@/components/lyric-video-material-carousel";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,10 +58,11 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
   const [isRedirecting, setIsRedirecting] = useState(false);
   const displayStage = isRedirecting ? "redirecting" : stage;
   const displayWorking = isWorking || isRedirecting;
+  const pendingSunoUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!session?.user) return;
-    if (authOpen && pendingUploadRef.current) setAuthOpen(false);
+    if (authOpen && (pendingUploadRef.current || pendingSunoUrlRef.current)) setAuthOpen(false);
   }, [authOpen, session?.user]);
 
   async function uploadAndContinue(pending: PendingUpload) {
@@ -84,6 +85,34 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
       pendingUploadRef.current = null;
       router.push("/create?source=home-upload");
     }
+  }
+
+  async function importSunoAndContinue(inputUrl: string): Promise<UploadedAudioSource> {
+    setIsRedirecting(true);
+    const response = await fetch("/api/storage/import-suno-audio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: inputUrl }),
+    });
+    const body = (await response.json().catch(() => ({}))) as {
+      code?: number;
+      message?: string;
+      data?: UploadedAudioSource;
+    };
+    if (!response.ok || body.code !== 0 || !body.data) {
+      setIsRedirecting(false);
+      throw new Error(body.message || "Could not import this Suno song");
+    }
+
+    writeHomeUploadedAudio({
+      ...body.data,
+      filename: body.data.filename || "suno-song.mp3",
+      size: body.data.size || 0,
+      contentType: body.data.contentType || "audio/mpeg",
+    });
+    pendingSunoUrlRef.current = null;
+    router.push("/create?source=suno-link");
+    return body.data;
   }
 
   async function handleGenerate(
@@ -111,12 +140,32 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
     await uploadAndContinue({ file, startTime, endTime, options });
   }
 
+  async function handleSunoImport(inputUrl: string) {
+    resetCreationState();
+    setIsRedirecting(false);
+
+    if (!session?.user) {
+      pendingSunoUrlRef.current = inputUrl;
+      setAuthMode("sign-in");
+      setAuthError("");
+      setAuthOpen(true);
+      throw new Error("Sign in to import your Suno link");
+    }
+
+    return importSunoAndContinue(inputUrl);
+  }
+
   async function continueAfterAuth() {
     const pending = pendingUploadRef.current;
-    if (!pending) return;
+    const pendingSunoUrl = pendingSunoUrlRef.current;
+    if (!pending && !pendingSunoUrl) return;
     setAuthOpen(false);
     try {
-      await uploadAndContinue(pending);
+      if (pendingSunoUrl) {
+        await importSunoAndContinue(pendingSunoUrl);
+        return;
+      }
+      await uploadAndContinue(pending as PendingUpload);
     } catch (err: any) {
       setIsRedirecting(false);
       toast.error(err?.message || "Failed to upload your song");
@@ -174,6 +223,10 @@ export function LyricVideoHomeTool({ showMaterialCarousel = false }: LyricVideoH
             showTrimControls={false}
             autoGenerateOnReady
             completionState="idle"
+            enableSunoImport
+            sunoImportTrigger="button"
+            sunoImportButtonLabel="Suno Link"
+            onImportSunoAudio={handleSunoImport}
             onGenerate={handleGenerate}
             generateLabel="Upload song"
             workingLabel={displayStage === "idle" ? "Preparing your song..." : stageLabel(displayStage)}
