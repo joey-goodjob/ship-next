@@ -260,8 +260,8 @@
     "plan_features": "如果你同时拥有 Pro 或 Ultra，单次积分会沿用当前套餐的功能权限。",
     "purchase_title": "单次购买",
     "purchase_description": "即时可用，无需订阅。",
-    "purchase_cta": "继续使用 {credits} 积分",
-    "applied": "注册和结账流程开启后，积分会自动添加到你的账号。"
+    "purchase_cta": "购买 {credits} 积分",
+    "applied": "结账成功后，积分会自动添加到你的账号。"
   },
   "pricing_credit_packs": [
     {

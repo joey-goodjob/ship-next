@@ -55,14 +55,16 @@ export type PricingCheckoutPayload = {
   plan_name: string;
   price: number;
   currency: "usd";
-  type: "subscription";
+  type: "subscription" | "one-time";
   description: string;
-  plan: {
+  plan?: {
     name: string;
     interval: "month" | "year";
     intervalCount: 1;
   };
   credits: number;
+  credits_valid_days?: number;
+  redirect?: string;
   payment_provider: "stripe";
 };
 
@@ -174,6 +176,7 @@ const PLANS: Array<{
 
 const DEFAULT_PACK_INDEX = 2;
 const DEFAULT_DURATION_MINUTES = 3;
+const CREDIT_PACK_VALID_DAYS = 365;
 
 const PLAN_MONTHLY_CREDITS: Record<PlanKey, number> = {
   free: 150,
@@ -261,6 +264,37 @@ export function buildPricingCheckoutPayload({
       intervalCount: 1,
     },
     credits: getPlanCheckoutCredits(planKey, billingCycle),
+    payment_provider: "stripe",
+  };
+}
+
+function parsePriceInCents(price: string) {
+  const amount = Number(price.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : null;
+}
+
+function parseCreditAmount(credits: string) {
+  const amount = Number(credits.replace(/,/g, ""));
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : null;
+}
+
+export function buildCreditPackCheckoutPayload(
+  pack: CreditPack
+): PricingCheckoutPayload | null {
+  const credits = parseCreditAmount(pack.credits);
+  const price = parsePriceInCents(pack.price);
+  if (!credits || !price) return null;
+
+  const name = `${pack.credits} credits pack`;
+  return {
+    product_name: name,
+    plan_name: name,
+    price,
+    currency: "usd",
+    type: "one-time",
+    description: name,
+    credits,
+    credits_valid_days: CREDIT_PACK_VALID_DAYS,
     payment_provider: "stripe",
   };
 }
@@ -536,8 +570,54 @@ function CreditPacks({
   packs: CreditPack[];
 }) {
   const t = useTranslations("landing");
+  const commonT = useTranslations("common");
+  const locale = useLocale();
   const [selectedIndex, setSelectedIndex] = useState(DEFAULT_PACK_INDEX);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const selectedPack = packs[selectedIndex] ?? packs[DEFAULT_PACK_INDEX];
+  const signInPath =
+    locale === "en"
+      ? "/sign-in?redirect=/pricing"
+      : `/${locale}/sign-in?redirect=/${locale}/pricing`;
+  const settingsCreditsPath =
+    locale === "en" ? "/settings/credits" : `/${locale}/settings/credits`;
+
+  async function handleCheckout() {
+    const payload = buildCreditPackCheckoutPayload(selectedPack);
+    if (!payload) return;
+
+    setIsCheckingOut(true);
+    setCheckoutError(null);
+
+    try {
+      const res = await fetch("/api/payment/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          redirect: settingsCreditsPath,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.code === 0 && data.data?.checkout_url) {
+        window.location.href = data.data.checkout_url;
+        return;
+      }
+
+      if (data.message === "Unauthorized") {
+        window.location.href = signInPath;
+        return;
+      }
+
+      setCheckoutError(data.message || "Checkout failed");
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Checkout failed");
+    } finally {
+      setIsCheckingOut(false);
+    }
+  }
 
   return (
     <section className="mt-20 rounded-lg border border-brand-line bg-brand-panel p-5 shadow-sm sm:p-8 lg:grid lg:grid-cols-[1fr_360px] lg:gap-10">
@@ -608,12 +688,21 @@ function CreditPacks({
         <p className="mt-3 text-sm font-semibold leading-6 text-brand-muted">
           {t("credits_pack.purchase_description")}
         </p>
-        <Link
-          href="/create"
-          className="mt-5 flex min-h-12 items-center justify-center rounded-md bg-brand-accent px-4 text-center text-sm font-black text-brand-ink hover:bg-brand-accent/90"
+        <button
+          type="button"
+          disabled={isCheckingOut}
+          className="mt-5 flex min-h-12 w-full items-center justify-center rounded-md bg-brand-accent px-4 text-center text-sm font-black text-brand-ink transition-colors hover:bg-brand-accent/90 disabled:cursor-not-allowed disabled:opacity-70"
+          onClick={handleCheckout}
         >
-          {t("credits_pack.purchase_cta", { credits: selectedPack.credits })}
-        </Link>
+          {isCheckingOut
+            ? commonT("pricing.processing")
+            : t("credits_pack.purchase_cta", { credits: selectedPack.credits })}
+        </button>
+        {checkoutError ? (
+          <p className="mt-3 text-xs font-bold leading-5 text-rose-600">
+            {checkoutError}
+          </p>
+        ) : null}
         <p className="mt-4 text-xs font-semibold leading-5 text-brand-muted">
           {t("credits_pack.applied")}
         </p>

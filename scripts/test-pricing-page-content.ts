@@ -60,5 +60,7 @@ assert(zhLandingText.includes("每年收取 {amount}"), "Chinese annual billing 
 assert(!pricingBlock.includes("coming_soon"), "pricing.tsx must not show coming soon feature states.");
 assert(!enLandingText.includes("Coming soon"), "English pricing copy must not include Coming soon labels.");
 assert(!zhLandingText.includes("即将支持"), "Chinese pricing copy must not include 即将支持 labels.");
+assert(!enLandingText.includes("checkout are ready"), "English credit-pack copy must not describe checkout as pending.");
+assert(!zhLandingText.includes("结账流程开启后"), "Chinese credit-pack copy must not describe checkout as pending.");
 
 console.log("pricing page content checks passed");
