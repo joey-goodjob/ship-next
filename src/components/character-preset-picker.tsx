@@ -3,12 +3,32 @@
 import { Check, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { CharacterPreset } from "@/lib/character-presets";
+import {
+  characterPresetSelectionSummary,
+  type CharacterPreset,
+  type CharacterPresetDescriptions,
+} from "@/lib/character-presets";
+
+export type CharacterPresetPickerCopy = {
+  stepLabel: string;
+  title: string;
+  description: string;
+  selectedCount: (count: number, max: number) => string;
+  selectedHint: string;
+  selectedCastLibrary: string;
+  selectedPrimaryActor: string;
+  primaryLabel: string;
+  roleLabel: string;
+  chooseAtLeastOne: string;
+  maxCharacters: string;
+};
 
 export function CharacterPresetPicker({
   presets,
   selectedSlugs,
   selectedSlug,
+  copy,
+  descriptions,
   disabled,
   onChange,
   onSelectionChange,
@@ -16,6 +36,8 @@ export function CharacterPresetPicker({
   presets: CharacterPreset[];
   selectedSlug?: string;
   selectedSlugs?: string[];
+  copy: CharacterPresetPickerCopy;
+  descriptions?: CharacterPresetDescriptions;
   disabled?: boolean;
   onChange?: (slug: string) => void;
   onSelectionChange?: (slugs: string[]) => void;
@@ -27,7 +49,7 @@ export function CharacterPresetPicker({
   function setSelection(slugs: string[]) {
     const cleanSlugs = Array.from(new Set(slugs.filter(Boolean))).slice(0, 4);
     if (cleanSlugs.length === 0) {
-      toast.error("Choose at least one character.");
+      toast.error(copy.chooseAtLeastOne);
       return;
     }
     onSelectionChange?.(cleanSlugs);
@@ -37,14 +59,14 @@ export function CharacterPresetPicker({
   function togglePreset(slug: string) {
     if (selected.includes(slug)) {
       if (selected.length <= 1) {
-        toast.error("Choose at least one character.");
+        toast.error(copy.chooseAtLeastOne);
         return;
       }
       setSelection(selected.filter((item) => item !== slug));
       return;
     }
     if (selected.length >= 4) {
-      toast.error("This version supports up to four characters.");
+      toast.error(copy.maxCharacters);
       return;
     }
     setSelection([...selected, slug]);
@@ -53,22 +75,22 @@ export function CharacterPresetPicker({
   return (
     <section className="w-full border-t border-brand-line pt-7 text-left" aria-labelledby="character-preset-title">
       <span className="inline-flex h-11 items-center justify-center rounded-[10px] bg-brand-accent px-4 text-sm font-black text-brand-accent-ink shadow-[0_10px_22px_var(--brand-accent-shadow)]">
-        Step 2
+        {copy.stepLabel}
       </span>
       <div className="mt-5">
         <h3 id="character-preset-title" className="text-3xl font-black tracking-[-0.012em] text-brand-ink">
-          Choose your cast
+          {copy.title}
         </h3>
-        <p className="mt-3 text-base font-semibold text-brand-muted">Select at least one character and up to four for this lyric video.</p>
+        <p className="mt-3 text-base font-semibold text-brand-muted">{copy.description}</p>
       </div>
 
       <div className="mt-6 rounded-[12px] border border-brand-line bg-brand-panel p-4">
         <span className="flex items-center gap-2 text-sm font-black text-brand-ink">
           <Users className="size-4" />
-          {selected.length} / 4 selected
+          {copy.selectedCount(selected.length, 4)}
         </span>
         <span className="mt-2 block text-xs font-semibold leading-5 text-brand-muted">
-          Scenes may still use no character, but every project starts with a cast library.
+          {copy.selectedHint}
         </span>
       </div>
 
@@ -119,13 +141,15 @@ export function CharacterPresetPicker({
               <div className="flex flex-wrap items-center gap-3">
                 <h4 className="text-2xl font-black tracking-[-0.012em] text-brand-ink">{selectedPresets.map((preset) => preset.name).join(" + ")}</h4>
                 <span className="inline-flex rounded-full border border-brand-accent/25 bg-brand-accent-soft px-4 py-1.5 text-sm font-black text-brand-accent-hover">
-                  {selectedPresets.length > 1 ? "Selected cast library" : "Selected primary actor"}
+                  {selectedPresets.length > 1 ? copy.selectedCastLibrary : copy.selectedPrimaryActor}
                 </span>
               </div>
               <p className="mt-4 text-lg font-semibold leading-8 text-brand-muted">
-                {selectedPresets
-                  .map((preset, index) => `${index === 0 ? "Primary" : `Role ${index + 1}`}: ${preset.description}`)
-                  .join(" ")}
+                {characterPresetSelectionSummary(selectedPresets, {
+                  primaryLabel: copy.primaryLabel,
+                  roleLabel: copy.roleLabel,
+                  descriptions,
+                })}
               </p>
             </div>
           </div>

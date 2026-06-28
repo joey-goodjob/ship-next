@@ -36,7 +36,31 @@
     "choose_audio": "Choose an audio file first",
     "name_required": "Enter a project name first",
     "read_error": "Unable to read audio duration",
-    "failed": "Failed to create lyric video"
+    "failed": "Failed to create lyric video",
+    "character_presets": {
+      "step_label": "Step 2",
+      "title": "Choose your cast",
+      "description": "Select at least one character and up to four for this lyric video.",
+      "selected_count": "{count} / {max} selected",
+      "selected_hint": "Scenes may still use no character, but every project starts with a cast library.",
+      "selected_cast_library": "Selected cast library",
+      "selected_primary_actor": "Selected primary actor",
+      "primary_label": "Primary",
+      "role_label": "Role {number}",
+      "choose_at_least_one": "Choose at least one character.",
+      "max_characters": "This version supports up to four characters.",
+      "descriptions": {
+        "vera": "Pop diva and dance-pop singer with blonde hair fading into soft pink ends, layered gold jewelry, plain black crop top, high-waisted black stage pants, retro microphone, and purple studio flash mood.",
+        "kai": "Male R&B and alt-rap performer with shoulder-length dark locs, navy athletic sweatshirt with bright blue sleeve stripes, clean white trousers, plain black belt, pendant necklace, and soft pink studio mood.",
+        "luna": "Hyperpop and K-pop inspired female performer with long vivid aqua-blue hair, translucent pink butterfly hair clips, pastel checkerboard crop top, pastel pink pants, and teal studio flash mood.",
+        "rosa": "Cyberpop female performer with vivid orange wavy hair, metallic silver crop top, oversized futuristic cargo pants, chunky pale boots, wrist tech cuffs, and neon cyan/coral mood.",
+        "ace": "Dance-pop DJ performer with platinum blond short hair, white oval sunglasses, black headphones around the neck, white ribbed tank top, light denim jeans, and cool blue studio flash mood.",
+        "tex": "Mature country-pop performer with a cream western suit, vest, cream cowboy hat, subtle patterned shirt, warm retro studio lighting, and relaxed charismatic stage presence.",
+        "ty": "Young male hip-hop performer with short textured curls, blank green baseball cap, plain black t-shirt, silver chain, abstract tattooed forearms, and warm orange studio flash mood.",
+        "jayden": "Male street DJ and pop-rap performer with short textured dark hair, trimmed beard, oversized sunglasses, black studded leather jacket, pink tee, loose dark trousers, and slim chains.",
+        "jay": "Indie R&B male vocalist with short textured dark hair, neat beard, soft sky-blue hoodie, black drawstrings, calm vulnerable expression, and warm beige/green film-grain studio mood."
+      }
+    }
   },
   "lyric_videos": {
     "title": "Creations",

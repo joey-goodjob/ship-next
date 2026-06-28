@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Music2 } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim, type UploadedAudioSource } from "@/components/audio-upload-trim";
-import { CharacterPresetPicker } from "@/components/character-preset-picker";
+import { CharacterPresetPicker, type CharacterPresetPickerCopy } from "@/components/character-preset-picker";
 import { Typewriter } from "@/components/ui/typewriter-text";
 import {
   clearHomeUploadedAudio,
@@ -22,6 +22,16 @@ import {
 
 const DEFAULT_RESOLUTION = "1080p";
 const DEFAULT_ASPECT_RATIO = "16:9";
+
+function stringMapFromRaw(raw: unknown) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string")
+      .map(([key, value]) => [key, value.trim()])
+      .filter(([, value]) => value.length > 0),
+  );
+}
 
 function titleFromFilename(filename: string) {
   return filename.replace(/\.[^/.]+$/, "").trim() || "Untitled lyric video";
@@ -43,6 +53,20 @@ export default function DashboardCreatePage() {
   const t = useTranslations("dashboard.create");
   const rawTitleLoop = t.raw("title_loop");
   const titleLoop = Array.isArray(rawTitleLoop) ? rawTitleLoop.filter((item): item is string => typeof item === "string") : [t("title")];
+  const characterPresetCopy: CharacterPresetPickerCopy = {
+    stepLabel: t("character_presets.step_label"),
+    title: t("character_presets.title"),
+    description: t("character_presets.description"),
+    selectedCount: (count, max) => t("character_presets.selected_count", { count, max }),
+    selectedHint: t("character_presets.selected_hint"),
+    selectedCastLibrary: t("character_presets.selected_cast_library"),
+    selectedPrimaryActor: t("character_presets.selected_primary_actor"),
+    primaryLabel: t("character_presets.primary_label"),
+    roleLabel: t("character_presets.role_label"),
+    chooseAtLeastOne: t("character_presets.choose_at_least_one"),
+    maxCharacters: t("character_presets.max_characters"),
+  };
+  const characterPresetDescriptions = stringMapFromRaw(t.raw("character_presets.descriptions"));
   const [selectedCharacterSlugs, setSelectedCharacterSlugs] = useState<string[]>([DEFAULT_CHARACTER_PRESET_SLUG]);
   const [homeUploadedAudio, setHomeUploadedAudio] = useState<UploadedAudio | null>(null);
   const {
@@ -133,6 +157,8 @@ export default function DashboardCreatePage() {
             <CharacterPresetPicker
               presets={CHARACTER_PRESETS}
               selectedSlugs={selectedCharacterSlugs}
+              copy={characterPresetCopy}
+              descriptions={characterPresetDescriptions}
               disabled={isWorking}
               onSelectionChange={setSelectedCharacterSlugs}
             />
