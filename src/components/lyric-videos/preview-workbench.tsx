@@ -7,12 +7,10 @@ import { EditorWorkspace } from "./preview-workbench/editor-workspace";
 export function PreviewWorkbench({
   appName,
   debugGenerationLocked,
-  deferAutoDirection = false,
   projectId,
 }: {
   appName: string;
   debugGenerationLocked?: boolean;
-  deferAutoDirection?: boolean;
   projectId: string;
 }) {
   useEffect(() => {
@@ -28,12 +26,7 @@ export function PreviewWorkbench({
   }, []);
 
   return (
-    <EditorProvider
-      appName={appName}
-      projectId={projectId}
-      debugGenerationLocked={debugGenerationLocked}
-      deferAutoDirection={deferAutoDirection}
-    >
+    <EditorProvider appName={appName} projectId={projectId} debugGenerationLocked={debugGenerationLocked}>
       <EditorWorkspace />
     </EditorProvider>
   );

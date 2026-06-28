@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Music2 } from "lucide-react";
 import { toast } from "sonner";
 import { AudioUploadTrim, type UploadedAudioSource } from "@/components/audio-upload-trim";
+import { CharacterPresetPicker, type CharacterPresetPickerCopy } from "@/components/character-preset-picker";
 import { Typewriter } from "@/components/ui/typewriter-text";
 import {
   clearHomeUploadedAudio,
@@ -12,9 +13,25 @@ import {
   useLyricVideoCreationFlow,
   type UploadedAudio,
 } from "@/hooks/use-lyric-video-creation-flow";
+import {
+  CHARACTER_PRESETS,
+  DEFAULT_CHARACTER_PRESET_SLUG,
+  getCharacterPreset,
+  type CharacterPreset,
+} from "@/lib/character-presets";
 
 const DEFAULT_RESOLUTION = "1080p";
 const DEFAULT_ASPECT_RATIO = "16:9";
+
+function stringMapFromRaw(raw: unknown) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string")
+      .map(([key, value]) => [key, value.trim()])
+      .filter(([, value]) => value.length > 0),
+  );
+}
 
 function titleFromFilename(filename: string) {
   return filename.replace(/\.[^/.]+$/, "").trim() || "Untitled lyric video";
@@ -36,13 +53,29 @@ export default function DashboardCreatePage() {
   const t = useTranslations("dashboard.create");
   const rawTitleLoop = t.raw("title_loop");
   const titleLoop = Array.isArray(rawTitleLoop) ? rawTitleLoop.filter((item): item is string => typeof item === "string") : [t("title")];
+  const characterPresetCopy: CharacterPresetPickerCopy = {
+    stepLabel: t("character_presets.step_label"),
+    title: t("character_presets.title"),
+    description: t("character_presets.description"),
+    selectedCount: (count, max) => t("character_presets.selected_count", { count, max }),
+    selectedHint: t("character_presets.selected_hint"),
+    selectedCastLibrary: t("character_presets.selected_cast_library"),
+    selectedPrimaryActor: t("character_presets.selected_primary_actor"),
+    primaryLabel: t("character_presets.primary_label"),
+    roleLabel: t("character_presets.role_label"),
+    chooseAtLeastOne: t("character_presets.choose_at_least_one"),
+    maxCharacters: t("character_presets.max_characters"),
+  };
+  const characterPresetDescriptions = stringMapFromRaw(t.raw("character_presets.descriptions"));
+  const [selectedCharacterSlugs, setSelectedCharacterSlugs] = useState<string[]>([DEFAULT_CHARACTER_PRESET_SLUG]);
   const [homeUploadedAudio, setHomeUploadedAudio] = useState<UploadedAudio | null>(null);
   const {
     stage,
     error,
     uploadProgress,
-    continueToCustomizeFromFile,
-    continueToCustomizeFromUploaded,
+    isWorking,
+    generateFromFile,
+    generateFromUploaded,
     resetCreationState,
   } = useLyricVideoCreationFlow();
 
@@ -66,6 +99,7 @@ export default function DashboardCreatePage() {
     uploadedAudio?: UploadedAudioSource | null,
   ) {
     const projectTitle = titleFromFilename(uploadedAudio?.filename || file?.name || "");
+    const selectedCharacters = selectedCharacterSlugs.map((slug) => getCharacterPreset(slug)).filter(Boolean) as CharacterPreset[];
     const generateOptions = {
       ...options,
       projectTitle,
@@ -75,7 +109,7 @@ export default function DashboardCreatePage() {
 
     try {
       if (uploadedAudio) {
-        await continueToCustomizeFromUploaded(uploadedAudio, startTime, endTime, generateOptions);
+        await generateFromUploaded(uploadedAudio, startTime, endTime, generateOptions, selectedCharacters);
         clearHomeUploadedAudio();
         setHomeUploadedAudio(null);
         return;
@@ -86,7 +120,7 @@ export default function DashboardCreatePage() {
         return;
       }
 
-      await continueToCustomizeFromFile(file, startTime, endTime, generateOptions);
+      await generateFromFile(file, startTime, endTime, generateOptions, selectedCharacters);
     } catch (err: any) {
       toast.error(err?.message || t("failed"));
     }
@@ -135,10 +169,19 @@ export default function DashboardCreatePage() {
             errorFallback: t("import_music.error_fallback"),
           }}
           onClearInitialAudio={clearInitialAudio}
+          afterTrimSlot={
+            <CharacterPresetPicker
+              presets={CHARACTER_PRESETS}
+              selectedSlugs={selectedCharacterSlugs}
+              copy={characterPresetCopy}
+              descriptions={characterPresetDescriptions}
+              disabled={isWorking}
+              onSelectionChange={setSelectedCharacterSlugs}
+            />
+          }
           onGenerate={handleGenerate}
-          generateLabel={t("continue_to_customize")}
-          workingLabel={stage === "uploading" ? t("uploading") : t("creating_project")}
-          successLabel={t("customize_ready")}
+          workingLabel={stage === "uploading" ? t("uploading") : t("working")}
+          successLabel={t("direction_ready")}
         />
 
         {error ? (

@@ -9,7 +9,6 @@ import {
   Loader2,
   Monitor,
   PencilLine,
-  Sparkles,
   Smartphone,
   Wand2,
 } from "lucide-react";
@@ -137,26 +136,10 @@ function StoryFeedbackModal({
 /* ------------------------------------------------------------------ */
 
 export function CustomizePanel() {
-  const {
-    createStory,
-    creatingStory,
-    deferAutoDirection,
-    generationLocked,
-    generationLockReason,
-    lines,
-    preparingAudio,
-    project,
-    scenes,
-    startDirectionGeneration,
-    storyChangeSource,
-    storyReviewStatus,
-    updateProjectField,
-  } = useEditor();
+  const { createStory, creatingStory, generationLocked, generationLockReason, project, scenes, storyChangeSource, storyReviewStatus, updateProjectField } = useEditor();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   if (!project) return <PanelEmpty title="Project unavailable" description="Refresh the page or open a project from the library." />;
-  const hasAudio = Boolean(project.originalAudioUrl || project.audioUrl || project.processedAudioUrl);
-  const showSetupConfirm = deferAutoDirection && hasAudio && lines.length === 0;
   const scenesCreated =
     !["empty", "lyrics_draft"].includes(project.scenesStatus || "empty") ||
     scenes.some((scene) => scene.status !== "lyrics_draft" && String(scene.prompt || "").trim());
@@ -193,29 +176,6 @@ export function CustomizePanel() {
         onSubmit={handleFeedbackSubmit}
         onClose={() => setShowFeedbackModal(false)}
       />
-
-      {showSetupConfirm ? (
-        <section className="mb-[4px] rounded-[8px] border border-[var(--editor-accent)] bg-[var(--editor-accent-soft)] p-[14px]">
-          <div className="flex flex-col gap-[12px]">
-            <div>
-              <h3 className="text-[14px] font-[900] text-[var(--editor-text)]">Customize before generating</h3>
-              <p className="mt-[4px] text-[12px] font-[650] leading-5 text-[var(--editor-muted)]">
-                Choose a style and add characters now. When you are ready, generate the first preview direction.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={startDirectionGeneration}
-              disabled={preparingAudio || generationLocked}
-              title={generationLocked ? generationLockReason : undefined}
-              className="inline-flex h-[38px] w-fit items-center gap-[8px] rounded-[6px] bg-[var(--editor-accent)] px-[13px] text-[13px] font-[900] text-[var(--editor-accent-ink)] hover:bg-[var(--editor-accent-hover)] disabled:cursor-not-allowed disabled:opacity-55"
-            >
-              {preparingAudio ? <Loader2 className="h-[14px] w-[14px] animate-spin" /> : <Sparkles className="h-[14px] w-[14px]" />}
-              {preparingAudio ? "Generating..." : "Generate Preview"}
-            </button>
-          </div>
-        </section>
-      ) : null}
 
       <FieldBlock
         icon={BookText}
