@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Check, Gift, Info, Mic2, Sparkles, Star, WandSparkles, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/core/i18n/navigation";
@@ -10,6 +10,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  FIRST_MONTH_OFFER_ID,
+  formatFirstMonthOfferEndDate,
+  getFirstMonthOfferCountdown,
+  getFirstMonthOfferPrice,
+  isFirstMonthOfferEligible,
+} from "@/lib/pricing-offers";
 import { cn } from "@/lib/utils";
 
 type BillingCycle = "monthly" | "annual";
@@ -51,6 +58,7 @@ type PlanVisual = {
 };
 
 export type PricingCheckoutPayload = {
+  product_id: string;
   product_name: string;
   plan_name: string;
   price: number;
@@ -64,6 +72,7 @@ export type PricingCheckoutPayload = {
   };
   credits: number;
   credits_valid_days?: number;
+  offer?: string;
   redirect?: string;
   payment_provider: "stripe";
 };
@@ -239,10 +248,12 @@ export function buildPricingCheckoutPayload({
   planKey,
   billingCycle,
   planName,
+  offer,
 }: {
   planKey: PlanKey;
   billingCycle: BillingCycle;
   planName: string;
+  offer?: string;
 }): PricingCheckoutPayload | null {
   if (planKey === "free") return null;
 
@@ -250,8 +261,14 @@ export function buildPricingCheckoutPayload({
   if (!price) return null;
 
   const interval = billingCycle === "annual" ? "year" : "month";
+  const productId = `${planKey}-${billingCycle}`;
+  const activeOffer =
+    offer === FIRST_MONTH_OFFER_ID && isFirstMonthOfferEligible(planKey, billingCycle)
+      ? offer
+      : undefined;
 
   return {
+    product_id: productId,
     product_name: planName,
     plan_name: planName,
     price,
@@ -264,6 +281,7 @@ export function buildPricingCheckoutPayload({
       intervalCount: 1,
     },
     credits: getPlanCheckoutCredits(planKey, billingCycle),
+    offer: activeOffer,
     payment_provider: "stripe",
   };
 }
@@ -287,6 +305,7 @@ export function buildCreditPackCheckoutPayload(
 
   const name = `${pack.credits} credits pack`;
   return {
+    product_id: `${pack.credits.replace(/,/g, "")}-credits-pack`,
     product_name: name,
     plan_name: name,
     price,
@@ -320,10 +339,12 @@ function PlanCard({
   plan,
   billingCycle,
   features,
+  offer,
 }: {
   plan: (typeof PLANS)[number];
   billingCycle: BillingCycle;
   features: FeatureCopy[];
+  offer?: string;
 }) {
   const t = useTranslations("landing");
   const commonT = useTranslations("common");
@@ -331,6 +352,8 @@ function PlanCard({
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const showAnnualPrice = billingCycle === "annual" && Boolean(plan.annualBilledPrice);
+  const showFirstMonthOffer =
+    offer === FIRST_MONTH_OFFER_ID && isFirstMonthOfferEligible(plan.key, billingCycle);
   const visual = PLAN_VISUALS[plan.key];
   const planName = t(`pricing_plans.${plan.key}.name`);
   const isPaidPlan = plan.key !== "free";
@@ -349,6 +372,7 @@ function PlanCard({
       planKey: plan.key as CheckoutPlanKey,
       billingCycle,
       planName,
+      offer,
     });
 
     if (!payload) return;
@@ -420,22 +444,36 @@ function PlanCard({
       </div>
 
       <div className="mt-6">
-        {showAnnualPrice ? (
+        {showFirstMonthOffer ? (
+          <div className="mb-1 text-sm font-black text-white/45 line-through">
+            ${plan.monthlyPrice}
+          </div>
+        ) : showAnnualPrice ? (
           <div className="mb-1 text-sm font-black text-white/45 line-through">
             ${plan.monthlyPrice}
           </div>
         ) : null}
         <div className="flex items-end gap-2">
           <span className="font-mono text-5xl font-black leading-none tracking-[-0.022em] text-white tabular-nums">
-            {formatPrice(plan, billingCycle)}
+            {showFirstMonthOffer
+              ? `$${getFirstMonthOfferPrice(plan.monthlyPrice)}`
+              : formatPrice(plan, billingCycle)}
           </span>
           <span className="mb-1.5 text-sm font-black text-white/58">
-            / {t("pricing_labels.month")}
+            {showFirstMonthOffer
+              ? t("pricing_offer.first_month_suffix")
+              : `/ ${t("pricing_labels.month")}`}
           </span>
         </div>
       </div>
 
-      {showAnnualPrice ? (
+      {showFirstMonthOffer ? (
+        <p className="mt-2 text-sm font-semibold text-white/58">
+          {t("pricing_offer.renews_at", {
+            amount: `$${plan.monthlyPrice}`,
+          })}
+        </p>
+      ) : showAnnualPrice ? (
         <div className="mt-2 space-y-1">
           <p className="text-sm font-semibold text-white/58">
             {t("pricing_labels.billed_annually", {
@@ -527,6 +565,66 @@ function PlanCard({
         </ul>
       </div>
     </div>
+  );
+}
+
+function PricingOfferPanel() {
+  const t = useTranslations("landing");
+  const locale = useLocale();
+  const [countdown, setCountdown] = useState(() => getFirstMonthOfferCountdown());
+  const [endDate, setEndDate] = useState(() => formatFirstMonthOfferEndDate(locale));
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setCountdown(getFirstMonthOfferCountdown());
+      setEndDate(formatFirstMonthOfferEndDate(locale));
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [locale]);
+
+  return (
+    <section className="mx-auto mt-12 max-w-4xl rounded-[18px] border-2 border-white/10 bg-[#18191d] px-5 py-7 text-left shadow-[8px_8px_0_0_rgba(0,0,0,0.78)] sm:px-8">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-md">
+          <div className="inline-flex rounded-full border-2 border-brand-accent px-4 py-1 text-xs font-black uppercase text-brand-accent">
+            {t("pricing_offer.eyebrow")}
+          </div>
+          <h2 className="mt-5 text-3xl font-black leading-tight text-white sm:text-4xl">
+            {t("pricing_offer.title_start")}
+            <span className="mt-1 block text-5xl text-brand-accent sm:text-6xl">
+              {t("pricing_offer.discount")}
+            </span>
+          </h2>
+          <p className="mt-4 text-sm font-semibold leading-6 text-white/62 sm:text-base">
+            {t("pricing_offer.description")}
+          </p>
+          <p className="mt-2 text-sm font-black text-white/72">
+            {t("pricing_offer.ends", { date: endDate })}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            [countdown.days, t("pricing_offer.days")],
+            [countdown.hours, t("pricing_offer.hours")],
+            [countdown.minutes, t("pricing_offer.minutes")],
+            [countdown.seconds, t("pricing_offer.seconds")],
+          ].map(([value, label]) => (
+            <div
+              key={label}
+              className="flex size-24 flex-col items-center justify-center rounded-[14px] bg-[#222327] text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            >
+              <span className="font-mono text-4xl font-black text-white tabular-nums">
+                {String(value).padStart(2, "0")}
+              </span>
+              <span className="mt-1 text-xs font-bold text-white/50">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -946,9 +1044,10 @@ function EnterpriseSection() {
   );
 }
 
-export function Pricing({ title }: { title?: string } = {}) {
+export function Pricing({ title, offer }: { title?: string; offer?: string } = {}) {
   const t = useTranslations("landing");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  const activeOffer = offer === FIRST_MONTH_OFFER_ID ? offer : undefined;
   const features = t.raw("pricing_features") as FeatureCopy[];
   const creditPacks = t.raw("pricing_credit_packs") as CreditPack[];
   const creditInfoGroups = t.raw("pricing_credit_info") as CreditInfoGroup[];
@@ -994,6 +1093,8 @@ export function Pricing({ title }: { title?: string } = {}) {
             />
           </div>
 
+          {activeOffer ? <PricingOfferPanel /> : null}
+
           <div className="mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {PLANS.map((plan) => (
               <PlanCard
@@ -1001,6 +1102,7 @@ export function Pricing({ title }: { title?: string } = {}) {
                 plan={plan}
                 billingCycle={billingCycle}
                 features={features}
+                offer={activeOffer}
               />
             ))}
           </div>

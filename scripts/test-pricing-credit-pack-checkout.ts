@@ -8,6 +8,7 @@ const payload = buildCreditPackCheckoutPayload({
 });
 
 assert.deepEqual(payload, {
+  product_id: "2500-credits-pack",
   product_name: "2,500 credits pack",
   plan_name: "2,500 credits pack",
   price: 5000,

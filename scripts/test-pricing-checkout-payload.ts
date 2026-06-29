@@ -22,15 +22,29 @@ assert.deepEqual(creatorMonthly?.plan, {
   interval: 'month',
   intervalCount: 1,
 });
+assert.equal(creatorMonthly?.product_id, 'creator-monthly');
+assert.equal(creatorMonthly?.offer, undefined);
+
+const creatorMonthlyOffer = buildPricingCheckoutPayload({
+  planKey: 'creator',
+  billingCycle: 'monthly',
+  planName: 'Creator',
+  offer: 'first-month-30',
+});
+
+assert.equal(creatorMonthlyOffer?.offer, 'first-month-30');
 
 const proAnnual = buildPricingCheckoutPayload({
   planKey: 'pro',
   billingCycle: 'annual',
   planName: 'Pro',
+  offer: 'first-month-30',
 });
 
 assert.equal(proAnnual?.price, 99000);
 assert.equal(proAnnual?.credits, 72000);
+assert.equal(proAnnual?.product_id, 'pro-annual');
+assert.equal(proAnnual?.offer, undefined);
 assert.deepEqual(proAnnual?.plan, {
   name: 'Pro',
   interval: 'year',

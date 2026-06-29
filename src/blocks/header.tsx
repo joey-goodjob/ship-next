@@ -25,6 +25,7 @@ export async function Header({
     },
   ];
   const topBanner = t.raw("top_banner") as TopBannerConfig;
+  const authenticatedTopBanner = t.raw("top_banner_authenticated") as TopBannerConfig;
 
   return (
     <SiteHeader
@@ -32,6 +33,7 @@ export async function Header({
       discordLink={{ href: "https://discord.gg/2YmWtNx3z7", label: "Discord" }}
       variant={variant}
       topBanner={topBanner}
+      authenticatedTopBanner={authenticatedTopBanner}
     />
   );
 }

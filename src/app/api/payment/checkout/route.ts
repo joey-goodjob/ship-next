@@ -4,6 +4,7 @@ import { getAuth } from '@/core/auth';
 import { createCheckout } from '@/modules/payment/service';
 import { envConfigs } from '@/config';
 import { getAllConfigs } from '@/modules/config/service';
+import { getCheckoutPromotionCode } from '@/lib/checkout-promotion-offers';
 
 export async function POST(req: Request) {
   try {
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
       redirect,
       credits,
       credits_valid_days,
+      offer,
     } = body;
 
     if (!product_id && !price) {
@@ -50,6 +52,12 @@ export async function POST(req: Request) {
       : `${baseUrl}/settings/billing`;
     const successUrl = `${baseUrl}/api/payment/callback?redirect=${encodeURIComponent(finalRedirect)}`;
     const cancelUrl = `${baseUrl}/pricing`;
+    const promotionCode = getCheckoutPromotionCode({
+      offer,
+      productId: product_id,
+      type: type || 'one-time',
+      plan,
+    });
 
     const checkout = await createCheckout({
       userId: session.user.id,
@@ -75,6 +83,7 @@ export async function POST(req: Request) {
           interval: plan.interval,
           intervalCount: plan.intervalCount,
         } : undefined,
+        discount: promotionCode ? { code: promotionCode } : undefined,
       },
       provider: payment_provider,
     });

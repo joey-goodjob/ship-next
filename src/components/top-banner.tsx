@@ -93,6 +93,30 @@ export function TopBanner({
       </Link>
     )
   ) : null;
+  const content = (
+    <div className="flex min-w-0 flex-1 items-center justify-center gap-2 text-center text-xs font-extrabold leading-4 sm:text-sm sm:leading-5">
+      <Gift className="hidden size-4 shrink-0 sm:block" aria-hidden={true} />
+      <span className="min-w-0 text-balance">{banner.text}</span>
+    </div>
+  );
+  const linkedContent = href && !button ? (
+    isExternalHref(href) ? (
+      <a
+        href={href}
+        target={target}
+        rel={target === "_blank" ? "noreferrer noopener" : undefined}
+        className="min-w-0 flex-1 hover:underline"
+      >
+        {content}
+      </a>
+    ) : (
+      <Link href={href} className="min-w-0 flex-1 hover:underline">
+        {content}
+      </Link>
+    )
+  ) : (
+    content
+  );
 
   return (
     <div
@@ -102,10 +126,7 @@ export function TopBanner({
       )}
     >
       <div className="mx-auto flex min-h-10 max-w-[1180px] items-center justify-between gap-2 px-4 py-1.5 sm:px-8">
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-2 text-center text-xs font-extrabold leading-4 sm:text-sm sm:leading-5">
-          <Gift className="hidden size-4 shrink-0 sm:block" aria-hidden={true} />
-          <span className="min-w-0 text-balance">{banner.text}</span>
-        </div>
+        {linkedContent}
 
         <div className="flex shrink-0 items-center gap-1.5">
           {button}

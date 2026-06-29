@@ -11,6 +11,13 @@
   "top_banner": {
     "id": "signup-150-credits",
     "text": "新用户注册即可获得 150 免费积分。",
+    "href": "/sign-in?redirect=/create",
+    "dismissedExpiryDays": 1
+  },
+  "top_banner_authenticated": {
+    "id": "first-month-30-off-rolling",
+    "text": "限时优惠：首月 7 折 · {date} 结束 → 领取优惠",
+    "href": "/pricing?offer=first-month-30",
     "dismissedExpiryDays": 1
   },
   "seo": {
@@ -148,6 +155,19 @@
     "description": "先免费开始，估算一首歌大概需要多少积分，再选择月度套餐或单次积分包，用于 AI 生成与无水印导出。",
     "seoTitle": "歌词视频制作价格 — 免费积分、创作者与 Pro 方案",
     "seoDescription": "查看 LyricVideoMaker 价格、免费积分、创作者订阅和加购积分包，为 YouTube、TikTok、Reels 制作 AI 歌词视频。"
+  },
+  "pricing_offer": {
+    "eyebrow": "限时优惠",
+    "title_start": "首月专享",
+    "discount": "30% OFF",
+    "description": "登录用户专属优惠，适用于任意月付套餐的第一个月。",
+    "ends": "优惠截止 {date}",
+    "first_month_suffix": "首月",
+    "renews_at": "之后按 {amount}/月续费",
+    "days": "天",
+    "hours": "小时",
+    "minutes": "分钟",
+    "seconds": "秒"
   },
   "pricing_labels": {
     "monthly": "月付",

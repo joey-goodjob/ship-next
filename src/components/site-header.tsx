@@ -11,7 +11,9 @@ import { LocaleSelector } from "@/components/locale-selector";
 import { SiteUserMenu } from "@/components/site-user-menu";
 import { TopBanner, type TopBannerConfig } from "@/components/top-banner";
 import { useSession } from "@/core/auth/client";
+import { FIRST_MONTH_OFFER_ID, formatFirstMonthOfferEndDate } from "@/lib/pricing-offers";
 import { cn } from "@/lib/utils";
+import { useLocale } from "next-intl";
 
 export interface NavLink {
   href: string;
@@ -27,19 +29,45 @@ export function SiteHeader({
   discordLink,
   variant = "default",
   topBanner,
+  authenticatedTopBanner,
 }: {
   navLinks?: NavLink[];
   discordLink?: Pick<NavLink, "href" | "label">;
   variant?: SiteHeaderVariant;
   topBanner?: TopBannerConfig;
+  authenticatedTopBanner?: TopBannerConfig;
 }) {
   const t = useTranslations("common");
+  const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { data: session } = useSession();
+  const [offerEndDate, setOfferEndDate] = useState(() => formatFirstMonthOfferEndDate(locale));
+  const { data: session, isPending } = useSession();
   const user = session?.user;
+  const resolvedAuthenticatedTopBanner =
+    authenticatedTopBanner?.href?.includes(`offer=${FIRST_MONTH_OFFER_ID}`)
+      ? {
+          ...authenticatedTopBanner,
+          text: authenticatedTopBanner.text.replace("{date}", offerEndDate),
+        }
+      : authenticatedTopBanner;
+  const activeTopBanner = isPending
+    ? undefined
+    : user
+      ? resolvedAuthenticatedTopBanner || topBanner
+      : topBanner;
   const isHeroOverlay = variant === "heroOverlay";
   const isTransparent = isHeroOverlay && !scrolled && !mobileOpen;
+
+  useEffect(() => {
+    const syncOfferEndDate = () => {
+      setOfferEndDate(formatFirstMonthOfferEndDate(locale));
+    };
+    syncOfferEndDate();
+    const interval = window.setInterval(syncOfferEndDate, 60 * 1000);
+
+    return () => window.clearInterval(interval);
+  }, [locale]);
 
   useEffect(() => {
     if (!isHeroOverlay) {
@@ -161,7 +189,7 @@ export function SiteHeader({
             : null,
       )}
     >
-      {topBanner ? <TopBanner banner={topBanner} /> : null}
+      {activeTopBanner ? <TopBanner banner={activeTopBanner} /> : null}
 
       <div className="mx-auto grid h-[88px] max-w-[1180px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
         {/* Brand */}

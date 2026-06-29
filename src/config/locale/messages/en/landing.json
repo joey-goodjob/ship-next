@@ -11,6 +11,13 @@
   "top_banner": {
     "id": "signup-150-credits",
     "text": "New users get 150 free credits when they sign up.",
+    "href": "/sign-in?redirect=/create",
+    "dismissedExpiryDays": 1
+  },
+  "top_banner_authenticated": {
+    "id": "first-month-30-off-rolling",
+    "text": "Special offer: 30% OFF your first month · Ends {date} → Claim offer",
+    "href": "/pricing?offer=first-month-30",
     "dismissedExpiryDays": 1
   },
   "seo": {
@@ -152,6 +159,19 @@
     "description": "Start free, estimate the credits for your song, then choose a monthly plan or a one-time credit pack when you are ready to export.",
     "seoTitle": "Lyric Video Maker Pricing — Free Credits, Creator & Pro Plans",
     "seoDescription": "Compare LyricVideoMaker plans, free credits, monthly creator tiers, and credit packs for making AI lyric videos for YouTube, TikTok, and Reels."
+  },
+  "pricing_offer": {
+    "eyebrow": "Limited-time offer",
+    "title_start": "Your First Month",
+    "discount": "30% OFF",
+    "description": "An exclusive offer just for you — applies to your first month on any monthly plan.",
+    "ends": "Offer Ends {date}",
+    "first_month_suffix": "first month",
+    "renews_at": "Renews at {amount}/month",
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes",
+    "seconds": "seconds"
   },
   "pricing_labels": {
     "monthly": "Monthly",
