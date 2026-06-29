@@ -88,10 +88,11 @@ export async function Footer() {
       ],
     },
     {
-      title: t("footer.legal"),
+      title: t("footer.company"),
       links: [
         { label: t("footer.privacy"), href: "/privacy-policy" },
         { label: t("footer.terms"), href: "/terms-of-service" },
+        { label: t("footer.contact"), href: "/contact" },
       ],
     },
   ];
