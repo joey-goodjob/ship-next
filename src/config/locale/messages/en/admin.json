@@ -19,11 +19,67 @@
     "subscriptions": "Subscriptions",
     "credits": "Credits",
     "invite_codes": "Invite Codes",
+    "analytics": "Traffic Analytics",
     "creations": "Usage Records"
   },
   "stats": {
     "total_users": "Total Users",
     "roles": "Roles"
+  },
+  "analytics": {
+    "title": "Traffic Analytics",
+    "description": "Monitor traffic, popular content, source channels, and country or region activity for {range} ({timezone}).",
+    "refresh": "Refresh",
+    "loading": "Loading traffic data...",
+    "missing_table": "The traffic_event table is not available yet. Run the database migration before traffic can be stored.",
+    "filters": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "custom": "Custom",
+      "start_date": "Start date",
+      "end_date": "End date",
+      "apply": "Apply"
+    },
+    "cards": {
+      "unique_visitors": "Unique Visitors",
+      "page_views": "Page Views",
+      "online_visitors": "Online Now",
+      "top_pages": "Top Pages",
+      "range_detail": "{range}",
+      "online_detail": "Active in the last 5 minutes",
+      "top_pages_detail": "Ranked pages in this range"
+    },
+    "sections": {
+      "trend": "Traffic Trend",
+      "trend_description": "Page views and unique visitors over time.",
+      "pages": "Popular Pages",
+      "pages_description": "Top visited pages and the visitors they attracted.",
+      "sources": "Source Channels",
+      "sources_description": "Traffic source breakdown from direct, search, social, AI, and referrals.",
+      "locations": "Country / Region",
+      "locations_description": "Traffic distribution by country and available region information."
+    },
+    "tables": {
+      "common": {
+        "page_views": "Page Views",
+        "unique_visitors": "Visitors"
+      },
+      "pages": {
+        "page": "Page",
+        "path": "Path"
+      },
+      "sources": {
+        "channel": "Channel",
+        "detail": "Detail"
+      },
+      "locations": {
+        "country": "Country",
+        "region": "Region"
+      }
+    },
+    "empty": {
+      "no_data": "No traffic data yet"
+    }
   },
   "users": {
     "title": "Users",
