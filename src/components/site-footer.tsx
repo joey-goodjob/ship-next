@@ -27,6 +27,7 @@ export function SiteFooter({
   copyright?: string;
 }) {
   const year = new Date().getFullYear();
+  const hasSocials = Boolean(socials?.length);
 
   return (
     <footer className="bg-brand-panel text-brand-ink">
@@ -52,21 +53,25 @@ export function SiteFooter({
           >
             <div className="col-span-full space-y-6 lg:col-span-1">
               <BrandLogo variant="footer" showName />
-              <p className="text-base font-semibold leading-6">Follow us on</p>
-              <div className="flex gap-2">
-                {socials?.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    aria-label={s.label}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex size-9 items-center justify-center rounded-md bg-brand-ink text-brand-panel"
-                  >
-                    <s.icon className="size-[17px]" />
-                  </a>
-                ))}
-              </div>
+              {hasSocials ? (
+                <>
+                  <p className="text-base font-semibold leading-6">Follow us on</p>
+                  <div className="flex gap-2">
+                    {socials?.map((s) => (
+                      <a
+                        key={s.label}
+                        href={s.href}
+                        aria-label={s.label}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex size-9 items-center justify-center rounded-md bg-brand-ink text-brand-panel"
+                      >
+                        <s.icon className="size-[17px]" />
+                      </a>
+                    ))}
+                  </div>
+                </>
+              ) : null}
               <p className="text-sm font-semibold text-brand-muted">
                 {copyright || `All rights reserved © ${year}`}
               </p>

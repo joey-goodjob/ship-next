@@ -6,8 +6,10 @@ const PUBLIC_ROUTE_GROUPS = [
   { paths: { en: "/", zh: "/zh" }, priority: 1 },
   { paths: { en: "/pricing", zh: "/zh/pricing" }, priority: 0.8 },
   { paths: { en: "/resources", zh: "/zh/resources" }, priority: 0.5 },
+  { paths: { en: "/contact", zh: "/zh/contact" }, priority: 0.4 },
   { paths: { en: "/privacy-policy", zh: "/zh/privacy-policy" }, priority: 0.3 },
   { paths: { en: "/terms-of-service", zh: "/zh/terms-of-service" }, priority: 0.3 },
+  { paths: { en: "/refund-policy", zh: "/zh/refund-policy" }, priority: 0.3 },
 ] as const;
 
 type LocalizedRouteGroup = {

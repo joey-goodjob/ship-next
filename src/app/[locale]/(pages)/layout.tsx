@@ -1,6 +1,5 @@
-import { Link } from "@/core/i18n/navigation";
-import { ArrowLeft } from "lucide-react";
-import { envConfigs } from "@/config";
+import { Footer } from "@/blocks/footer";
+import { Header } from "@/blocks/header";
 
 export default function PagesLayout({
   children,
@@ -8,19 +7,14 @@ export default function PagesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-3xl px-6 py-16">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8"
-        >
-          <ArrowLeft className="size-4" />
-          {envConfigs.app_name}
-        </Link>
-        <article className="prose prose-neutral dark:prose-invert max-w-none">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Header />
+      <main className="flex-1 px-6 py-16 sm:py-20">
+        <article className="prose prose-neutral mx-auto max-w-3xl dark:prose-invert">
           {children}
         </article>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }
