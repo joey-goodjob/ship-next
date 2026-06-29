@@ -377,6 +377,59 @@ export const apikey = table(
   ]
 );
 
+export const trafficEvent = table(
+  'traffic_event',
+  {
+    id: text('id').primaryKey(),
+    eventType: text('event_type').notNull(),
+    visitorId: text('visitor_id').notNull(),
+    sessionId: text('session_id').notNull(),
+    pathname: text('pathname').notNull(),
+    normalizedPath: text('normalized_path').notNull(),
+    pageTitle: text('page_title'),
+    referrer: text('referrer'),
+    referrerHost: text('referrer_host').notNull().default(''),
+    sourceChannel: text('source_channel').notNull().default('direct'),
+    sourceDetail: text('source_detail').notNull().default('direct'),
+    country: text('country').notNull().default(''),
+    region: text('region').notNull().default(''),
+    city: text('city').notNull().default(''),
+    ipHash: text('ip_hash').notNull().default(''),
+    userAgent: text('user_agent').notNull().default(''),
+    locale: text('locale').notNull().default(''),
+    utmSource: text('utm_source').notNull().default(''),
+    utmMedium: text('utm_medium').notNull().default(''),
+    utmCampaign: text('utm_campaign').notNull().default(''),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+  },
+  (table) => [
+    index('idx_traffic_event_created_at').on(table.createdAt),
+    index('idx_traffic_event_type_created_at').on(
+      table.eventType,
+      table.createdAt
+    ),
+    index('idx_traffic_event_visitor_created_at').on(
+      table.visitorId,
+      table.createdAt
+    ),
+    index('idx_traffic_event_path_created_at').on(
+      table.normalizedPath,
+      table.createdAt
+    ),
+    index('idx_traffic_event_source_created_at').on(
+      table.sourceChannel,
+      table.createdAt
+    ),
+    index('idx_traffic_event_country_region_created_at').on(
+      table.country,
+      table.region,
+      table.createdAt
+    ),
+  ]
+);
+
 // ─── RBAC ────────────────────────────────────────────────────────────────────
 
 export const role = table(

@@ -19,11 +19,67 @@
     "subscriptions": "订阅",
     "credits": "积分",
     "invite_codes": "邀请码",
+    "analytics": "访问统计",
     "creations": "使用记录"
   },
   "stats": {
     "total_users": "总用户数",
     "roles": "角色数"
+  },
+  "analytics": {
+    "title": "访问统计",
+    "description": "查看 {range}（{timezone}）内的访问量、热门页面、来源渠道和国家/地区分布。",
+    "refresh": "刷新",
+    "loading": "正在加载访问数据...",
+    "missing_table": "traffic_event 表还没有创建。需要先执行数据库迁移，后续访问才会被写入统计。",
+    "filters": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "custom": "自定义",
+      "start_date": "开始日期",
+      "end_date": "结束日期",
+      "apply": "应用"
+    },
+    "cards": {
+      "unique_visitors": "独立访客",
+      "page_views": "页面访问",
+      "online_visitors": "当前在线",
+      "top_pages": "热门页面",
+      "range_detail": "{range}",
+      "online_detail": "最近 5 分钟内活跃",
+      "top_pages_detail": "当前时间范围内的页面排名"
+    },
+    "sections": {
+      "trend": "访问趋势",
+      "trend_description": "按时间查看页面访问量和独立访客。",
+      "pages": "热门页面",
+      "pages_description": "访问最多的页面以及带来的访客数。",
+      "sources": "来源渠道",
+      "sources_description": "按直接访问、搜索、社媒、AI 和外链推荐统计来源。",
+      "locations": "国家 / 地区",
+      "locations_description": "按国家和可用地区信息查看访问分布。"
+    },
+    "tables": {
+      "common": {
+        "page_views": "访问量",
+        "unique_visitors": "访客"
+      },
+      "pages": {
+        "page": "页面",
+        "path": "路径"
+      },
+      "sources": {
+        "channel": "渠道",
+        "detail": "详情"
+      },
+      "locations": {
+        "country": "国家",
+        "region": "地区"
+      }
+    },
+    "empty": {
+      "no_data": "暂无访问数据"
+    }
   },
   "users": {
     "title": "用户管理",

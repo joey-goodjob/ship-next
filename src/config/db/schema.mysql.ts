@@ -334,6 +334,57 @@ export const apikey = table(
   ]
 );
 
+export const trafficEvent = table(
+  'traffic_event',
+  {
+    id: varchar191('id').primaryKey(),
+    eventType: varchar('event_type', { length: 50 }).notNull(),
+    visitorId: varchar191('visitor_id').notNull(),
+    sessionId: varchar191('session_id').notNull(),
+    pathname: text('pathname').notNull(),
+    normalizedPath: varchar('normalized_path', { length: 500 }).notNull(),
+    pageTitle: varchar('page_title', { length: 200 }),
+    referrer: text('referrer'),
+    referrerHost: varchar('referrer_host', { length: 255 }).notNull().default(''),
+    sourceChannel: varchar('source_channel', { length: 120 }).notNull().default('direct'),
+    sourceDetail: varchar('source_detail', { length: 120 }).notNull().default('direct'),
+    country: varchar('country', { length: 8 }).notNull().default(''),
+    region: varchar('region', { length: 120 }).notNull().default(''),
+    city: varchar('city', { length: 120 }).notNull().default(''),
+    ipHash: varchar('ip_hash', { length: 24 }).notNull().default(''),
+    userAgent: text('user_agent').notNull(),
+    locale: varchar('locale', { length: 24 }).notNull().default(''),
+    utmSource: varchar('utm_source', { length: 120 }).notNull().default(''),
+    utmMedium: varchar('utm_medium', { length: 120 }).notNull().default(''),
+    utmCampaign: varchar('utm_campaign', { length: 160 }).notNull().default(''),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_traffic_event_created_at').on(table.createdAt),
+    index('idx_traffic_event_type_created_at').on(
+      table.eventType,
+      table.createdAt
+    ),
+    index('idx_traffic_event_visitor_created_at').on(
+      table.visitorId,
+      table.createdAt
+    ),
+    index('idx_traffic_event_path_created_at').on(
+      table.normalizedPath,
+      table.createdAt
+    ),
+    index('idx_traffic_event_source_created_at').on(
+      table.sourceChannel,
+      table.createdAt
+    ),
+    index('idx_traffic_event_country_region_created_at').on(
+      table.country,
+      table.region,
+      table.createdAt
+    ),
+  ]
+);
+
 // ─── RBAC ────────────────────────────────────────────────────────────────────
 
 export const role = table(
