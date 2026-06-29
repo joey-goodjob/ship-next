@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/core/i18n/navigation";
 import { authClient, signIn } from "@/core/auth/client";
 import { defaultLocale } from "@/config/locale";
-import { envConfigs } from "@/config";
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -64,6 +64,17 @@ export default function SignInPage() {
   const emailVerificationEnabled = configs.email_verification_enabled === "true";
   const hasSocial = googleEnabled || githubEnabled;
   const hasAnyMethod = emailEnabled || hasSocial;
+  const trustLinks = [
+    { label: t("sign.privacy_link"), href: "/privacy-policy" },
+    { label: t("sign.terms_link"), href: "/terms-of-service" },
+    { label: t("sign.refund_link"), href: "/refund-policy" },
+    { label: t("sign.contact_link"), href: "/contact" },
+  ];
+  const trustPoints = [
+    t("sign.trust_point_projects"),
+    t("sign.trust_point_credits"),
+    t("sign.trust_point_exports"),
+  ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,14 +112,20 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="self-center font-serif italic text-lg">
-          {envConfigs.app_name}
-        </Link>
+    <AuthPageShell
+      eyebrow={t("sign.auth_eyebrow")}
+      headline={t("sign.auth_headline")}
+      description={t("sign.auth_description")}
+      points={trustPoints}
+      legalText={t("sign.auth_legal_text")}
+      trustLinks={trustLinks}
+    >
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-xl">{t("sign.sign_in_title")}</CardTitle>
+            <p className="text-sm leading-6 text-muted-foreground">
+              {t("sign.sign_in_description")}
+            </p>
           </CardHeader>
           <CardContent>
             {configsLoaded && !hasAnyMethod ? (
@@ -206,7 +223,6 @@ export default function SignInPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }
