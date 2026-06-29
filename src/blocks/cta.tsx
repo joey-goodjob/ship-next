@@ -2,6 +2,11 @@ import { Link } from "@/core/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Upload } from "lucide-react";
 
+const TAAFT_URL =
+  "https://theresanaiforthat.com/ai/ai-lyric-video-maker/?ref=featured&v=1703659";
+const TAAFT_BADGE_URL =
+  "https://media.theresanaiforthat.com/featured-on-taaft.png?width=600";
+
 export async function CTA() {
   const t = await getTranslations("landing");
 
@@ -17,11 +22,19 @@ export async function CTA() {
 
       <div className="relative z-10 mx-auto flex min-h-[390px] max-w-[1200px] items-center">
         <div className="max-w-[620px]">
-          <img
-            src="/imgs/beatviz-featured-on-taaft.webp"
-            alt="Featured on There's An AI For That"
-            className="mb-8 hidden h-auto w-[230px] border border-white/70 bg-white/74 px-2 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:block lg:w-[300px]"
-          />
+          <a
+            href={TAAFT_URL}
+            target="_blank"
+            rel="nofollow noopener"
+            className="mb-8 hidden w-fit transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent/60 active:scale-[0.98] sm:block"
+          >
+            <img
+              src={TAAFT_BADGE_URL}
+              alt="Featured on There's An AI For That"
+              width={300}
+              className="h-auto w-[230px] border border-white/70 bg-white/74 px-2 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)] lg:w-[300px]"
+            />
+          </a>
           <h2 className="text-balance text-[34px] font-bold leading-[1.14] text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.28)] sm:text-[44px] lg:text-[58px]">
             {t("cta.line1")}
             <br />
