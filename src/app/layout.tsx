@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
+import { SiteTrafficTracker } from "@/components/site-traffic-tracker";
 import { buildAnalyticsConfig } from "@/lib/analytics-config";
 import { buildPublicMetadata } from "@/lib/site-metadata";
 import { getAllConfigs } from "@/modules/config/service";
@@ -110,6 +112,9 @@ export default async function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <Suspense fallback={null}>
+            <SiteTrafficTracker />
+          </Suspense>
           {children}
           <Toaster position="top-center" richColors />
         </ThemeProvider>
