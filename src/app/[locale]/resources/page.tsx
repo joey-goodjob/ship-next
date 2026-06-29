@@ -15,6 +15,7 @@ type ResourcesContent = {
   cardDescription: string;
   badgeAlt: string;
   uneedBadgeAlt: string;
+  taaftBadgeAlt: string;
   metadataTitle: string;
   metadataDescription: string;
 };
@@ -23,6 +24,10 @@ const DANG_URL = "https://dang.ai";
 const DANG_BADGE_URL = "https://assets.dang.ai/badges/dang-verified-dark.png";
 const UNEED_URL = "https://www.uneed.best/tool/lyric-video-maker";
 const UNEED_BADGE_URL = "https://www.uneed.best/EMBED3.png";
+const TAAFT_URL =
+  "https://theresanaiforthat.com/ai/ai-lyric-video-maker/?ref=featured&v=1703659";
+const TAAFT_BADGE_URL =
+  "https://media.theresanaiforthat.com/featured-on-taaft.png?width=600";
 
 const content: Record<"en" | "zh", ResourcesContent> = {
   en: {
@@ -30,9 +35,11 @@ const content: Record<"en" | "zh", ResourcesContent> = {
     description:
       "Directory links and trusted places where LyricVideoMaker is listed.",
     cardTitle: "LyricVideoMaker on AI Directories",
-    cardDescription: "We are listed on Dang.ai and launching soon on Uneed.",
+    cardDescription:
+      "We are listed on Dang.ai, launching soon on Uneed, and featured on There is an AI for That.",
     badgeAlt: "Verified on DANG!",
     uneedBadgeAlt: "Launching Soon on Uneed",
+    taaftBadgeAlt: "Featured on There is an AI for That",
     metadataTitle: "Resources | LyricVideoMaker",
     metadataDescription:
       "Resources and directory listings for LyricVideoMaker, including the Dang.ai listing badge.",
@@ -41,9 +48,11 @@ const content: Record<"en" | "zh", ResourcesContent> = {
     title: "Resources",
     description: "这里放 LyricVideoMaker 的资源页面和可信目录收录信息。",
     cardTitle: "LyricVideoMaker on AI Directories",
-    cardDescription: "我们已收录在 Dang.ai，并即将在 Uneed 上线。",
+    cardDescription:
+      "我们已收录在 Dang.ai，即将在 Uneed 上线，并被 There is an AI for That 推荐。",
     badgeAlt: "Verified on DANG!",
     uneedBadgeAlt: "Launching Soon on Uneed",
+    taaftBadgeAlt: "Featured on There is an AI for That",
     metadataTitle: "Resources | LyricVideoMaker",
     metadataDescription:
       "LyricVideoMaker 的资源页面和目录收录信息，包括 Dang.ai 验证徽章。",
@@ -131,6 +140,19 @@ export default async function ResourcesPage({ params }: PageParams) {
                     src={UNEED_BADGE_URL}
                     alt={page.uneedBadgeAlt}
                     width={250}
+                    className="block h-auto max-w-full border-0"
+                  />
+                </a>
+                <a
+                  href={TAAFT_URL}
+                  target="_blank"
+                  rel="nofollow noopener"
+                  className="inline-flex rounded-[10px] outline-none transition-transform focus-visible:ring-2 focus-visible:ring-brand-accent/50 active:scale-[0.98]"
+                >
+                  <img
+                    src={TAAFT_BADGE_URL}
+                    alt={page.taaftBadgeAlt}
+                    width={300}
                     className="block h-auto max-w-full border-0"
                   />
                 </a>
