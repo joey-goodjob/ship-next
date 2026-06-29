@@ -26,6 +26,7 @@ export async function GET(
         'Content-Disposition': `attachment; filename="${file.filename}"`,
         'Content-Length': String(file.body.length),
         'Cache-Control': 'private, no-store',
+        'X-Robots-Tag': 'noindex, nofollow, noarchive',
       },
     });
   } catch (error: any) {
