@@ -19,7 +19,7 @@ import { analyzeAudioForWorker } from '@/modules/lyric-videos/lyric/worker-audio
 import { trimAudioForWorker } from '@/modules/lyric-videos/lyric/worker-audio-trim';
 
 const workerId = process.env.MEDIA_WORKER_ID || `${os.hostname()}:${process.pid}`;
-const pollIntervalMs = Math.max(250, Number(process.env.MEDIA_WORKER_POLL_INTERVAL_MS) || 2000);
+const pollIntervalMs = Math.max(250, Number(process.env.MEDIA_WORKER_POLL_INTERVAL_MS) || 30_000);
 const concurrency = Math.max(1, Number(process.env.MEDIA_WORKER_CONCURRENCY) || 1);
 const runOnce = process.env.MEDIA_WORKER_RUN_ONCE === 'true';
 const jobStaleAfterMs = Math.max(60_000, Number(process.env.MEDIA_WORKER_JOB_STALE_AFTER_MS) || 300_000);

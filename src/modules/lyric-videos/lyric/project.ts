@@ -115,7 +115,23 @@ export async function createProject(params: {
 
 export async function listProjects(userId: string) {
   return db()
-    .select()
+    .select({
+      id: lyricVideoProject.id,
+      userId: lyricVideoProject.userId,
+      title: lyricVideoProject.title,
+      status: lyricVideoProject.status,
+      audioFilename: lyricVideoProject.audioFilename,
+      audioDurationMs: lyricVideoProject.audioDurationMs,
+      pipelineStage: lyricVideoProject.pipelineStage,
+      lyricsStatus: lyricVideoProject.lyricsStatus,
+      scenesStatus: lyricVideoProject.scenesStatus,
+      renderStatus: lyricVideoProject.renderStatus,
+      aspectRatio: lyricVideoProject.aspectRatio,
+      resolution: lyricVideoProject.resolution,
+      createdAt: lyricVideoProject.createdAt,
+      updatedAt: lyricVideoProject.updatedAt,
+      deletedAt: lyricVideoProject.deletedAt,
+    })
     .from(lyricVideoProject)
     .where(and(eq(lyricVideoProject.userId, userId), isNull(lyricVideoProject.deletedAt)))
     .orderBy(desc(lyricVideoProject.createdAt));
