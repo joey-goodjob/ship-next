@@ -15,8 +15,8 @@
     ]
   },
   "seo": {
-    "title": "Neural Frames 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 Neural Frames 替代方案做歌词视频？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，歌词始终可读。免费导出，无需订阅。",
+    "title": "Neural Frames 替代方案 — AI 歌词视频制作，免费导出带水印",
+    "description": "在找 Neural Frames 替代方案做歌词视频？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，歌词始终可读。免费导出带水印版本，无需订阅。",
     "keywords": [
       "Neural Frames 替代",
       "Neural Frames 替代方案",
@@ -27,7 +27,7 @@
   "hero": {
     "badge": "Neural Frames 替代方案 — AI 歌词视频，免费",
     "h1": "Neural Frames 替代方案 —— AI 画面也保歌词清晰",
-    "subhead": "Neural Frames 生成 AI 画面，但歌词经常被画面淹没。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 转写同步歌词，生成匹配情绪的画面，同时保持歌词清晰可读。免费导出，无需订阅。",
+    "subhead": "Neural Frames 生成 AI 画面，但歌词经常被画面淹没。LyricVideoMaker 专为歌词视频设计：上传歌曲，AI 转写同步歌词，生成匹配情绪的画面，同时保持歌词清晰可读。免费导出带水印版本，无需订阅。",
     "primaryCta": "免费做可读歌词视频",
     "secondaryCta": "查看制作流程"
   },
@@ -35,7 +35,7 @@
     "AI 自动转写歌词",
     "歌词始终清晰可读",
     "16:9、9:16、1:1 多格式导出",
-    "免费导出，无需订阅或信用卡"
+    "免费导出带水印版本，无需订阅或信用卡"
   ],
   "comparisonTable": {
     "title": "Neural Frames 和 LyricVideoMaker 做歌词视频有什么不同",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。无需注册即可开始，也不需要手动输入歌词。项目从歌词和时间开始，所以 AI 画面会服务于文字，而不是占满整个屏幕。",
+        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。免费注册即送积分，也不需要手动输入歌词。项目从歌词和时间开始，所以 AI 画面会服务于文字，而不是占满整个屏幕。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。确认歌词准确可读，然后导出 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "description": "发布前先看完整预览。确认歌词准确可读，然后导出 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出带水印版本，无需订阅。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "LyricVideoMaker 作为 Neural Frames 替代方案免费吗？",
-        "answer": "免费。作为 Neural Frames 替代方案，LyricVideoMaker 免费 —— 注册领免费额度即可导出，无需订阅或信用卡。"
+        "answer": "免费。作为 Neural Frames 替代方案，LyricVideoMaker 免费 —— 注册领免费额度即可导出带水印版本，无需订阅或信用卡。"
       },
       {
         "question": "LyricVideoMaker 和 Neural Frames 有什么不同？",
@@ -306,7 +306,7 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以。你导出的歌词视频完全归你所有，包括变现频道和商业发行。只需确保你拥有这首歌的版权。"
+        "answer": "可以。你导出的歌词视频完全归你所有，包括变现频道和商业发行。免费版导出带水印；需要无水印版本时用付费积分导出。只需确保你拥有这首歌的版权。"
       },
       {
         "question": "从 Neural Frames 切换过来麻烦吗？",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "AI 画面不会淹没歌词。",
-    "description": "上传歌曲，拿到转写好的歌词和情绪驱动的画面，免费导出 — 无需订阅。",
+    "description": "上传歌曲，拿到转写好的歌词和情绪驱动的画面，免费导出带水印版本 — 无需订阅。",
     "button": "免费试用 LyricVideoMaker",
     "upsell": "免费 · 无需订阅 · 无需信用卡"
   }

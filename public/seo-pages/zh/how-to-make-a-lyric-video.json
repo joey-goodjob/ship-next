@@ -29,7 +29,7 @@
   "hero": {
     "badge": "制作歌词视频 — 4 种真实方法对比",
     "h1": "怎么制作歌词视频 —— 4 种方法对比（2026 指南）",
-    "subhead": "最快的方法是上传歌曲或粘贴链接，让 AI 自动从音频转写歌词、逐行同步节拍、预览完整视频，然后免费导出，无需订阅。本页会把这套 AI 流程和 Canva、After Effects、外包 freelancer 放在一起对比，帮你在花几个小时剪辑前先选对路径。",
+    "subhead": "最快的方法是上传歌曲或粘贴链接，让 AI 自动从音频转写歌词、逐行同步节拍、预览完整视频，然后免费导出带水印版本，无需订阅。本页会把这套 AI 流程和 Canva、After Effects、外包 freelancer 放在一起对比，帮你在花几个小时剪辑前先选对路径。",
     "primaryCta": "免费制作歌词视频",
     "secondaryCta": "查看制作流程"
   },
@@ -37,7 +37,7 @@
     "AI 自动转写歌词",
     "对比 AI、Canva、After Effects 和外包",
     "导出 16:9、9:16、1:1 视频",
-    "免费导出，无需订阅或信用卡"
+    "免费导出带水印版本，无需订阅或信用卡"
   ],
   "methodComparison": {
     "title": "制作歌词视频应该选哪种方法？",
@@ -179,7 +179,7 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或粘贴链接。无需注册即可开始，也不需要手动输入歌词。这样你可以先快速看到第一版，再决定是否还需要 Canva、After Effects 或外包。",
+        "description": "拖入 MP3、WAV、FLAC、AAC 或 OGG 文件，或粘贴链接。免费注册即送积分，也不需要手动输入歌词。这样你可以先快速看到第一版，再决定是否还需要 Canva、After Effects 或外包。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -189,7 +189,7 @@
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整歌词视频。16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。可以免费导出，无需订阅。",
+        "description": "发布前先看完整歌词视频。16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。可以免费导出带水印版本，无需订阅。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -221,7 +221,7 @@
     "items": [
       {
         "question": "这个制作歌词视频的方法免费吗？",
-        "answer": "免费。注册即可获得免费额度，创建歌词视频、预览并导出 — 无需订阅，也不需要绑定信用卡。"
+        "answer": "免费。注册即可获得免费额度，创建歌词视频、预览并导出带水印版本 — 无需订阅，也不需要绑定信用卡。"
       },
       {
         "question": "制作一条歌词视频需要多久？",
@@ -241,13 +241,13 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以。导出的视频可以用于发行、社媒、频道和推广活动。请确保你拥有上传音乐和歌词的使用权。"
+        "answer": "可以。导出的视频可以用于发行、社媒、频道和推广活动。请确保你拥有上传音乐和歌词的使用权。免费版导出带水印；需要无水印版本时用付费积分导出。"
       }
     ]
   },
   "bottomCta": {
     "title": "你的歌已经有节拍了。让 AI 把它变成歌词视频。",
-    "description": "上传歌曲，让 AI 转写并同步歌词，预览效果，然后免费导出成品歌词视频，无需订阅。",
+    "description": "上传歌曲，让 AI 转写并同步歌词，预览效果，然后免费导出带水印的成品歌词视频，无需订阅。",
     "button": "开始制作歌词视频",
     "upsell": "免费开始 · 无需订阅 · 无需信用卡"
   },
@@ -262,7 +262,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "免费歌词视频制作工具",
-        "description": "免费制作并导出歌词视频。"
+        "description": "免费制作并导出带水印版本歌词视频。"
       },
       {
         "slug": "tiktok-lyric-video-generator",

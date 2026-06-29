@@ -87,7 +87,7 @@ const PLANS: Array<{
       transcription: "included",
       trimmer: "included",
       watermark: "unavailable",
-      commercial: "unavailable",
+      commercial: "included",
       unlimited_exports: "unavailable",
       premium_models: "unavailable",
       upload_images: "unavailable",

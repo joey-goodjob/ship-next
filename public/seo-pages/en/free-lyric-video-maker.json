@@ -14,8 +14,8 @@
     ]
   },
   "seo": {
-    "title": "Free Lyric Video Maker Online — Auto Lyrics, No Signup",
-    "description": "Free lyric video maker — upload a song, auto-transcribe and sync the lyrics, preview the full result, and export online with free credits. No subscription.",
+    "title": "Free Lyric Video Maker Online — Auto Lyrics, Free Preview",
+    "description": "Free lyric video maker — upload a song, auto-transcribe and sync the lyrics, preview the full result, and export a watermarked video online with free credits. No subscription.",
     "keywords": [
       "free lyric video maker",
       "lyric video creator free",
@@ -35,17 +35,17 @@
     ]
   },
   "hero": {
-    "badge": "Free lyric video maker online — make it, preview it, export it",
-    "h1": "Free Lyric Video Maker — Make & Export, No Subscription",
-    "subhead": "Upload a song — lyrics are transcribed and synced automatically. Preview the full lyric video and export free, no subscription needed.",
+    "badge": "Free lyric video maker online — make it, preview it, export watermarked",
+    "h1": "Free Lyric Video Maker — Make & Export Watermarked, No Subscription",
+    "subhead": "Upload a song — lyrics are transcribed and synced automatically. Preview the full lyric video and export a watermarked video free, no subscription needed.",
     "primaryCta": "Make a Free Lyric Video",
     "secondaryCta": "See How It Works"
   },
   "trust": [
-    "No signup to start",
+    "Free signup, free credits",
     "Lyrics auto-transcribed",
     "Full preview, free",
-    "Export free, no subscription"
+    "Export a watermarked video free — no subscription"
   ],
   "manifesto": {
     "title": "What \"free\" usually means — and what it means here",
@@ -56,19 +56,19 @@
       },
       {
         "myth": "\"Free\" — credit card required to start",
-        "reality": "No card. No trial countdown. Free is free."
+        "reality": "No card to start. Free credits included — no trial countdown."
       },
       {
         "myth": "\"Free\" — but you have to type every lyric line",
         "reality": "Lyrics transcribed from your audio automatically"
       },
       {
-        "myth": "\"Free\" — signup before you can even try",
-        "reality": "Try the full flow first. Sign up to save."
+        "myth": "\"Free\" — then you're rationed to a few seconds",
+        "reality": "Free signup credits cover a full lyric video, through watermarked export."
       },
       {
         "myth": "\"Free\" — then a surprise paywall at export",
-        "reality": "Export on the free plan. No subscription needed."
+        "reality": "Export on the free plan — watermarked. No subscription needed."
       }
     ]
   },
@@ -77,7 +77,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, or FLAC. No account needed to start.",
+        "description": "Drop an MP3, WAV, or FLAC. A free account gives you starter credits.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -99,7 +99,7 @@
   "useCases": [
     {
       "title": "YouTube lyric videos",
-      "description": "Full-length, 16:9 HD — ready to upload and monetize.",
+      "description": "Full-length, 16:9 HD — ready to upload and monetize, with a watermark on the free plan.",
       "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/free-lyric-video-maker/use-case-1.png"
     },
     {
@@ -289,7 +289,7 @@
     "items": [
       {
         "question": "Is this lyric video creator really free?",
-        "answer": "Yes. The free plan lets you make lyric videos, preview the full result, and export — no credit card required, no subscription needed."
+        "answer": "Yes. The free plan lets you make lyric videos, preview the full result, and export a watermarked video — no credit card required, no subscription needed."
       },
       {
         "question": "Do I need to type or paste the lyrics myself?",
@@ -297,15 +297,15 @@
       },
       {
         "question": "Can I make vertical lyric videos for TikTok on the free plan?",
-        "answer": "Yes. Every free video can export in 16:9, 9:16, and 1:1 — one click each."
+        "answer": "Yes. Every free video exports (watermarked) in 16:9, 9:16, and 1:1 — one click each."
       },
       {
         "question": "Can I use free videos commercially?",
-        "answer": "Yes — even on the free plan, your exports are yours to monetize, ad-supported channels included. Just make sure you have the rights to the music you upload."
+        "answer": "Your exports are yours to keep — commercial and monetized use is allowed even on the free plan. Free-plan exports are watermarked; for a watermark-free version, export with paid credits. Either way, make sure you have the rights to the music you upload."
       },
       {
         "question": "What does a subscription add?",
-        "answer": "More credits, all styles including Pro exclusives, and higher priority processing. The free plan already covers making and exporting your lyric video."
+        "answer": "More credits, all styles including Pro exclusives, and higher priority processing. The free plan already covers making and exporting your lyric video (watermarked)."
       },
       {
         "question": "What file formats can I upload?",
@@ -313,11 +313,11 @@
       },
       {
         "question": "Is this a free lyric video generator or a free lyric video maker?",
-        "answer": "Both. LyricVideoMaker is a free AI lyric video maker — or a free AI lyrics video maker — and a free AI lyric video generator in one. Call it a free lyric video generator or a free lyrics video generator: the flow is identical — upload a song, get a synced lyric video, and export free."
+        "answer": "Both. LyricVideoMaker is a free AI lyric video maker — or a free AI lyrics video maker — and a free AI lyric video generator in one. Call it a free lyric video generator or a free lyrics video generator: the flow is identical — upload a song, get a synced lyric video, and export a watermarked video free."
       },
       {
         "question": "What happens when I use up my free credits?",
-        "answer": "Nothing breaks — the videos you already made stay yours to keep and re-export. When you want more, a paid plan adds credits and all styles, but the free plan already lets you make, preview, and export a full lyric video."
+        "answer": "Nothing breaks — the videos you already made stay yours to keep and re-export. When you want more, a paid plan adds credits and all styles, but the free plan already lets you make, preview, and export a full lyric video (watermarked)."
       }
     ]
   },

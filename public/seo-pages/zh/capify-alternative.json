@@ -15,8 +15,8 @@
     ]
   },
   "seo": {
-    "title": "Capify 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 Capify 替代方案？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，免费导出 — 无需订阅。",
+    "title": "Capify 替代方案 — AI 歌词视频制作，免费导出带水印",
+    "description": "在找 Capify 替代方案？LyricVideoMaker 自动转写歌词、同步节拍、生成画面，免费导出带水印版本 — 无需订阅。",
     "keywords": [
       "Capify 替代",
       "Capify 替代方案",
@@ -27,7 +27,7 @@
   "hero": {
     "badge": "Capify 替代方案 — AI 歌词视频，免费",
     "h1": "Capify 替代方案 —— 免费 AI 歌词视频工具",
-    "subhead": "上传歌曲音频，AI 自动转写歌词、逐行同步节拍，并生成匹配歌曲情绪的视觉画面。预览完整歌词视频后导出 — 免费，无需订阅。",
+    "subhead": "上传歌曲音频，AI 自动转写歌词、逐行同步节拍，并生成匹配歌曲情绪的视觉画面。预览完整歌词视频后导出带水印版本 — 免费，无需订阅。",
     "primaryCta": "免费做同款视频",
     "secondaryCta": "查看制作流程"
   },
@@ -35,7 +35,7 @@
     "AI 自动转写歌词",
     "16:9、9:16、1:1 多格式导出",
     "AI 情绪驱动画面生成",
-    "免费导出，无需订阅或信用卡"
+    "免费导出带水印版本，无需订阅或信用卡"
   ],
   "comparisonTable": {
     "title": "Capify 和 LyricVideoMaker 做歌词视频怎么比",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。无需注册即可开始，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。",
+        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。免费注册即送积分，也不需要手动输入歌词。用你在 Capify 里用过的同一首歌试试，对比效果。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "description": "发布前先看完整预览。对比预览质量、歌词准确度和视觉效果。导出时选择 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出带水印版本，无需订阅。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "LyricVideoMaker 作为 Capify 替代方案免费吗？",
-        "answer": "免费。作为 Capify 替代方案，LyricVideoMaker 免费可用 —— 注册领免费额度即可导出，无需订阅或信用卡。"
+        "answer": "免费。作为 Capify 替代方案，LyricVideoMaker 免费可用 —— 注册领免费额度即可导出带水印版本，无需订阅或信用卡。"
       },
       {
         "question": "LyricVideoMaker 和 Capify 有什么不同？",
@@ -306,7 +306,7 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以。导出的视频归你所有，可商用变现 —— 和你在 Capify 的预期一样。只需确保你拥有上传音乐的版权。"
+        "answer": "可以。导出的视频归你所有，可商用变现 —— 和你在 Capify 的预期一样。免费版导出带水印；需要无水印版本时用付费积分导出。只需确保你拥有上传音乐的版权。"
       },
       {
         "question": "从 Capify 切换过来麻烦吗？",
@@ -316,7 +316,7 @@
   },
   "toolkit": {
     "title": "Capify 替代方案 — 使用场景",
-    "description": "你在 Capify 里做的一切，都可以在 LyricVideoMaker 试试 — 带 AI 转写、节拍同步和免费导出。"
+    "description": "你在 Capify 里做的一切，都可以在 LyricVideoMaker 试试 — 带 AI 转写、节拍同步和免费导出带水印版本。"
   },
   "useCases": [
     {
@@ -351,7 +351,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "免费歌词视频制作工具",
-        "description": "免费制作并导出歌词视频。"
+        "description": "免费制作并导出带水印版本歌词视频。"
       },
       {
         "slug": "tiktok-lyric-video-generator",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "同一首歌，不同结果。免费试试。",
-    "description": "上传你在 Capify 里用过的那首歌，AI 搞定歌词和画面 — 免费导出，无需订阅。",
+    "description": "上传你在 Capify 里用过的那首歌，AI 搞定歌词和画面 — 免费导出带水印版本，无需订阅。",
     "button": "免费试用 LyricVideoMaker",
     "upsell": "免费 · 无需订阅 · 无需信用卡"
   }

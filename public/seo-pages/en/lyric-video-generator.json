@@ -35,10 +35,10 @@
     "secondaryCta": "See How It Works"
   },
   "trust": [
-    "No signup to start",
+    "Free signup, free credits",
     "Lyrics auto-detected from your audio",
     "Beat-accurate sync",
-    "Export free, no subscription"
+    "Export a watermarked video free — no subscription"
   ],
   "manifesto": {
     "title": "Stop fighting your video editor",
@@ -92,7 +92,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drag in an audio file — MP3, WAV, FLAC, AAC, or OGG — or paste a link. No account needed to start, and no manual lyric typing required.",
+        "description": "Drag in an audio file — MP3, WAV, FLAC, AAC, or OGG — or paste a link. A free account gives you starter credits, and no manual lyric typing is required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -112,7 +112,7 @@
     "items": [
       {
         "question": "Is this AI lyric video generator free?",
-        "answer": "Yes. Sign up, get free credits, and export your lyric video — no subscription required and no credit card needed. This is a free AI lyric video generator you can use end to end, and one of the best AI lyric video generator options if you want to create lyric video projects from audio without manual timing."
+        "answer": "Yes. Sign up, get free credits, and export your lyric video (watermarked) — no subscription required and no credit card needed. This is a free AI lyric video generator you can use end to end, and one of the best AI lyric video generator options if you want to create lyric video projects from audio without manual timing."
       },
       {
         "question": "What's the difference between this and a subtitle generator?",
@@ -136,7 +136,7 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Just make sure you have the rights to the music you upload."
+        "answer": "Yes — your exports are yours, including for monetized channels and paid releases. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the music you upload."
       }
     ]
   },
@@ -170,7 +170,7 @@
     "title": "Your lyric video is one upload away.",
     "description": "Upload your track, let AI handle the lyrics and visuals, and export a finished lyric video — no subscription needed.",
     "button": "Generate My Lyric Video",
-    "upsell": "No signup · No subscription · No credit card"
+    "upsell": "Free preview · No subscription · No credit card"
   },
   "relatedTools": {
     "title": "Related Lyric Video Tools",
@@ -178,7 +178,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "Free Lyric Video Maker",
-        "description": "Make and export lyric videos free."
+        "description": "Make and export watermarked lyric videos free."
       },
       {
         "slug": "tiktok-lyric-video-generator",
@@ -304,7 +304,7 @@
           ],
           [
             "Getting started",
-            "Free credits, no signup to start, no credit card"
+            "Free credits on signup, no credit card"
           ]
         ]
       },

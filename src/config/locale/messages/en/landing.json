@@ -32,7 +32,7 @@
     "badge": "AI Lyric Video Maker",
     "headline_start": "AI Lyric Video Maker — turn any song into",
     "headline_accent": "a lyric video.",
-    "subheadline": "Upload your song or paste a link. AI transcribes lyrics from the audio automatically, syncs every line to the beat, generates mood-driven visuals, and lets you preview before you export — free, no subscription needed.",
+    "subheadline": "Upload your song or paste a link. AI transcribes lyrics from the audio automatically, syncs every line to the beat, generates mood-driven visuals, and lets you preview before you export — free (watermarked), no subscription needed.",
     "upload_title": "Upload your song to generate a lyric video",
     "cta": "Upload Your Song",
     "secondary_cta": "See How It Works",
@@ -56,8 +56,8 @@
         "description": "Create lyric videos for 16:9, 9:16, and 1:1 publishing."
       },
       "secure_private": {
-        "title": "Free export, no subscription",
-        "description": "Start with free credits and export without a subscription."
+        "title": "Export a watermarked video free — no subscription",
+        "description": "Start with free credits and export a watermarked video without a subscription."
       }
     },
     "loved_by": "Loved by creators, musicians, and marketers worldwide."
@@ -259,7 +259,7 @@
     "description": "Best for finishing a single project. Plans are more cost-effective for ongoing creation.",
     "expiry": "One-time credits are intended for project work and are valid for 1 year after purchase.",
     "number_label": "Number of credits",
-    "included": "Watermark-free exports and commercial use included for paid credits.",
+    "included": "Watermark-free exports included with paid credits. Watermarked exports on the free plan can be used commercially.",
     "creator_features": "One-time credits unlock Creator-level export features.",
     "plan_features": "If you also have Pro or Ultra active, your one-time credits follow that plan's feature access.",
     "purchase_title": "One-time purchase",
@@ -464,7 +464,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. No account needed to start, and no manual lyric typing required. LyricVideoMaker starts from your real audio, not a blank timeline."
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. A free account gives you starter credits, and no manual lyric typing is required. LyricVideoMaker starts from your real audio, not a blank timeline."
       },
       {
         "title": "AI transcribes and syncs",
@@ -472,7 +472,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Preview the full lyric video with your own lyrics and chosen style. Export for YouTube, TikTok, Reels, Shorts, or feed posts — free, no subscription required."
+        "description": "Preview the full lyric video with your own lyrics and chosen style. Export a watermarked version for YouTube, TikTok, Reels, Shorts, or feed posts — free, no subscription required."
       }
     ]
   },
@@ -665,7 +665,7 @@
     "description": "Everything you need to know before making your first AI lyric video.",
     "free": {
       "question": "Is this AI lyric video maker free?",
-      "answer": "Yes. You can start without an account — upload your song and preview free. Create a free account to get free credits, save projects, and export. No subscription, no credit card."
+      "answer": "Yes. Create a free account to get free credits for AI generation, then upload your song, preview the full result, and export a watermarked video for free. Watermark-free exports use paid credits. Save your projects anytime — no subscription, no credit card."
     },
     "lyrics": {
       "question": "Do I need to type the lyrics myself?",
@@ -685,7 +685,7 @@
     },
     "commercial": {
       "question": "Can I use exported lyric videos commercially?",
-      "answer": "Yes, your exports are yours to use. Make sure you have the rights to the music you upload."
+      "answer": "Yes — your exports are yours, including for monetized and commercial use. Free exports are watermarked; for a watermark-free version, export with paid credits. Make sure you have the rights to the music you upload."
     },
     "accuracy": {
       "question": "How accurate is the lyric transcription?",
@@ -697,7 +697,7 @@
     },
     "account": {
       "question": "Do I need an account for free export?",
-      "answer": "Yes. Create a free account and you'll get free credits you can use to generate and export a lyric video, with no subscription or credit card required."
+      "answer": "Yes, a free account is required. You'll get free credits for AI generation, and you can export for free — free exports include a small watermark, while watermark-free exports are included with paid credits. No subscription or credit card required to start."
     },
     "phone": {
       "question": "Does it work on my phone?",
@@ -705,11 +705,11 @@
     },
     "free_preview": {
       "question": "Can I preview my lyric video before paying?",
-      "answer": "Yes. Upload a song, review the AI-synced lyrics, and preview the full lyric video before you spend any credits. You only use credits when you export."
+      "answer": "Yes. Upload a song, review the AI-synced lyrics, and preview the full lyric video for free before you spend any credits. Credits are used for AI generation — exporting a watermarked video is free."
     },
     "credits": {
       "question": "How do credits work?",
-      "answer": "Credits are used when you generate and export a video. The free plan includes 150 one-time credits; Creator, Pro, and Ultra refill credits every month, and you can buy one-time credit packs anytime."
+      "answer": "Credits are used for AI generation. The free plan includes 150 one-time credits; Creator, Pro, and Ultra refill credits every month, and you can buy one-time credit packs anytime. Exporting itself is free — free exports are watermarked, and watermark-free exports use paid credits."
     },
     "static_video": {
       "question": "Do simpler videos cost fewer credits?",
@@ -721,7 +721,7 @@
     },
     "rights": {
       "question": "Can I use exported videos commercially?",
-      "answer": "Yes. Your exports are yours to use commercially — monetized channels and paid releases included — as long as you have the rights to the music you upload."
+      "answer": "Yes. Your exports are yours to use commercially — monetized channels and paid releases included. Free exports are watermarked; for a watermark-free version, export with paid credits. Just make sure you have the rights to the music you upload."
     }
   },
   "cta": {
@@ -729,7 +729,7 @@
     "line2": "Now give it a video.",
     "line3": "Create your lyric video now:",
     "button": "Upload Your Song",
-    "note": "Free export. No subscription. No credit card required."
+    "note": "Export a watermarked video free. No subscription. No credit card required."
   },
   "footer": {
     "tagline": "Made by musicians for musicians.",

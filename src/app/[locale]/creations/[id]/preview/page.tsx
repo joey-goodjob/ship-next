@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { envConfigs } from "@/config";
 import { PreviewWorkbench } from "@/components/lyric-videos/preview-workbench";
+
+// Private user workspace — keep it out of the search index.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function CreationPreviewPage({
   params,

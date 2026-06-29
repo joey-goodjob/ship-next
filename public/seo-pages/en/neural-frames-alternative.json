@@ -27,7 +27,7 @@
   "hero": {
     "badge": "Neural Frames alternative — AI lyric video maker, free",
     "h1": "Neural Frames Alternative — AI Visuals That Keep Lyrics Readable",
-    "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export free, no subscription needed.",
+    "subhead": "Neural Frames generates AI visuals from music, but lyrics often get lost in the process. LyricVideoMaker is built for lyric videos: upload your song, AI transcribes and syncs the lyrics, generates mood-driven visuals, and keeps the words readable. Export a watermarked video free — no subscription needed.",
     "primaryCta": "Make a Readable Lyric Video Free",
     "secondaryCta": "See How It Works"
   },
@@ -35,7 +35,7 @@
     "AI auto-transcribes lyrics",
     "Lyrics stay readable on screen",
     "16:9, 9:16, and 1:1 export",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "comparisonTable": {
     "title": "Neural Frames vs LyricVideoMaker for Lyric Videos",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits, and no manual lyric typing is required. The project begins with lyrics and timing, so AI visuals support the words instead of taking over the whole screen.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and readable, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a Neural Frames alternative?",
-        "answer": "Yes. LyricVideoMaker is free as a Neural Frames alternative — free credits to start and export, no subscription or card."
+        "answer": "Yes. LyricVideoMaker is free as a Neural Frames alternative — free credits to start and export a watermarked video, no subscription or card."
       },
       {
         "question": "How is LyricVideoMaker different from Neural Frames?",
@@ -306,7 +306,7 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes. The lyric videos you export are fully yours — monetized channels and commercial releases included. Just make sure you have the rights to the track."
+        "answer": "Yes. The lyric videos you export are fully yours — monetized channels and commercial releases included. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the track."
       },
       {
         "question": "How hard is it to switch from Neural Frames?",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "AI visuals that don't bury the lyrics.",
-    "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export free — no subscription needed.",
+    "description": "Upload your song, get transcribed lyrics with mood-driven visuals, and export a watermarked video free — no subscription needed.",
     "button": "Try LyricVideoMaker Free",
     "upsell": "Free · No subscription · No credit card"
   }

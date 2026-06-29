@@ -29,7 +29,7 @@
   "hero": {
     "badge": "How to make a lyric video — 4 real methods compared",
     "h1": "How to Make a Lyric Video — 4 Methods Compared (2026 Guide)",
-    "subhead": "The fastest way is to upload your song or paste a link, let AI transcribe lyrics from the audio automatically, sync every line to the beat, preview the full video, and export free, no subscription needed. This guide compares that AI workflow with Canva, After Effects, and hiring a freelancer so you can pick the right path before you spend hours editing.",
+    "subhead": "The fastest way is to upload your song or paste a link, let AI transcribe lyrics from the audio automatically, sync every line to the beat, preview the full video, and export a watermarked video free, no subscription needed. This guide compares that AI workflow with Canva, After Effects, and hiring a freelancer so you can pick the right path before you spend hours editing.",
     "primaryCta": "Make a Free Lyric Video",
     "secondaryCta": "See How It Works"
   },
@@ -37,7 +37,7 @@
     "AI auto-transcribes lyrics",
     "Compare AI, Canva, After Effects, and freelancers",
     "Export 16:9, 9:16, and 1:1 videos",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "methodComparison": {
     "title": "How to Make a Lyric Video: Which Method Should You Choose?",
@@ -179,7 +179,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. No account is needed to start, and no manual lyric typing is required. This gives you a quick first draft before you decide whether you need Canva, After Effects, or a freelancer.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, or OGG file, or paste a link. A free account gives you starter credits, and no manual lyric typing is required. This gives you a quick first draft before you decide whether you need Canva, After Effects, or a freelancer.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -189,7 +189,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. You can export free, no subscription required.",
+        "description": "Watch the full lyric video before publishing. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. You can export a watermarked video free, no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -221,7 +221,7 @@
     "items": [
       {
         "question": "Is this how to make a lyric video method free?",
-        "answer": "Yes. Sign up, get free credits, create a lyric video, preview it, and export — no subscription required and no credit card needed."
+        "answer": "Yes. Sign up, get free credits, create a lyric video, preview it, and export a watermarked video — no subscription required and no credit card needed."
       },
       {
         "question": "How long does it take to make a lyric video?",
@@ -241,7 +241,7 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes. Your exports are yours to use for releases, social posts, channels, and campaigns. Make sure you have the rights to the music and lyrics you upload."
+        "answer": "Yes. Your exports are yours to use for releases, social posts, channels, and campaigns. Free exports include a watermark — export with paid credits for a watermark-free version. Make sure you have the rights to the music and lyrics you upload."
       },
       {
         "question": "How to make a lyric video for a song you did not write?",
@@ -251,7 +251,7 @@
   },
   "bottomCta": {
     "title": "Your song already knows the timing. Let AI turn it into a lyric video.",
-    "description": "Upload your track, let AI transcribe and sync the lyrics, preview the result, and export a finished lyric video free, no subscription needed.",
+    "description": "Upload your track, let AI transcribe and sync the lyrics, preview the result, and export a finished, watermarked lyric video free, no subscription needed.",
     "button": "Make My Lyric Video",
     "upsell": "Free to start · No subscription · No credit card"
   },
@@ -266,7 +266,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "Free Lyric Video Maker",
-        "description": "Make and export lyric videos free."
+        "description": "Make and export watermarked lyric videos free."
       },
       {
         "slug": "tiktok-lyric-video-generator",

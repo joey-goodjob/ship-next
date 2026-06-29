@@ -29,7 +29,7 @@
   "hero": {
     "badge": "Automatic lyrics transcription from any song or video",
     "h1": "Automatic Lyrics Transcription — AI Song-to-Text Tool",
-    "subhead": "Get accurate, timestamped lyrics from any uploaded song audio. Upload audio, AI transcribes lyrics automatically, syncs every line to the beat, then lets you preview and export as TXT, LRC, or SRT — free, no subscription needed.",
+    "subhead": "Get accurate, timestamped lyrics from any uploaded song audio. Upload audio, AI transcribes lyrics automatically, syncs every line to the beat, then lets you preview and export as TXT, LRC, or SRT — free (watermarked), no subscription needed.",
     "primaryCta": "Transcribe My Song — Free",
     "secondaryCta": "See How It Works"
   },
@@ -37,14 +37,14 @@
     "AI auto-transcribes lyrics",
     "TXT, LRC, and SRT export",
     "Audio-first lyric extraction",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "howItWorks": {
     "title": "How Automatic Lyrics Transcription Works",
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A audio file (up to 100MB). No account needed to start, and no manual lyric typing required. The AI listens to the vocal performance and does the transcription for you.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A audio file (up to 100MB). A free account gives you starter credits, and no manual lyric typing is required. The AI listens to the vocal performance and does the transcription for you.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -54,7 +54,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Review the full transcript with beat-synced timing. Download TXT, LRC, or SRT for captions, descriptions, streaming lyrics, or subtitles — or click through to preview the same synced lyrics as a lyric video. Free to export, no subscription required.",
+        "description": "Review the full transcript with beat-synced timing. Download TXT, LRC, or SRT for captions, descriptions, streaming lyrics, or subtitles — or click through to preview the same synced lyrics as a lyric video. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -289,7 +289,7 @@
       },
       {
         "question": "Can I use exported lyrics or videos commercially?",
-        "answer": "Yes — your exported lyrics and videos are yours to use. Make sure you have the rights to the music you upload."
+        "answer": "Yes — your exported lyrics and videos are yours to use. Free exports include a watermark — export with paid credits for a watermark-free version. Make sure you have the rights to the music you upload."
       },
       {
         "question": "Can I turn the transcription into a lyric video?",
@@ -350,7 +350,7 @@
   },
   "bottomCta": {
     "title": "The lyrics are already in the song. Let AI write them down.",
-    "description": "Upload your track, get beat-synced lyrics in seconds, and export or continue into a lyric video — free, no subscription needed.",
+    "description": "Upload your track, get beat-synced lyrics in seconds, and export or continue into a lyric video — free (watermarked) (watermarked), no subscription needed.",
     "button": "Transcribe My Song",
     "upsell": "Need visuals too? Turn the synced transcript into a lyric video in one click."
   }

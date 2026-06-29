@@ -27,7 +27,7 @@
   "hero": {
     "badge": "VEED alternative — AI lyric video maker, free",
     "h1": "VEED Alternative for Lyric Videos — Start From the Song",
-    "subhead": "VEED is a general video editor — great for subtitles and talking heads, but lyric videos still mean manual text placement and timeline work. LyricVideoMaker starts from the song: upload audio, AI auto-transcribes lyrics, syncs every line to the beat, and generates visuals. Export free, no subscription needed.",
+    "subhead": "VEED is a general video editor — great for subtitles and talking heads, but lyric videos still mean manual text placement and timeline work. LyricVideoMaker starts from the song: upload audio, AI auto-transcribes lyrics, syncs every line to the beat, and generates visuals. Export a watermarked video free — no subscription needed.",
     "primaryCta": "Make a Lyric Video Free",
     "secondaryCta": "See How It Works"
   },
@@ -35,7 +35,7 @@
     "AI auto-transcribes lyrics",
     "No timeline or text placement",
     "16:9, 9:16, and 1:1 export",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "comparisonTable": {
     "title": "VEED vs LyricVideoMaker for Lyric Videos",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits, and no manual lyric typing is required. Unlike VEED, there's no blank timeline — the song drives the workflow from the start.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and timing feels right, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full lyric video before publishing. Confirm lyrics are accurate and timing feels right, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a VEED alternative?",
-        "answer": "Yes. As a VEED alternative, LyricVideoMaker is free — free credits to start, export included, no subscription or credit card."
+        "answer": "Yes. As a VEED alternative, LyricVideoMaker is free — free credits to start, export included (watermarked), no subscription or credit card."
       },
       {
         "question": "How is LyricVideoMaker different from VEED for lyric videos?",
@@ -306,7 +306,7 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes. Your exports are yours for monetized channels and paid releases — the same freedom you'd expect from VEED. Just make sure you have the rights to the music you upload."
+        "answer": "Yes. Your exports are yours for monetized channels and paid releases — the same freedom you'd expect from VEED. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the music you upload."
       },
       {
         "question": "How hard is it to switch from VEED?",
@@ -351,7 +351,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "Free Lyric Video Maker",
-        "description": "Make and export lyric videos free."
+        "description": "Make and export watermarked lyric videos free."
       },
       {
         "slug": "add-lyrics-to-video",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "Skip the timeline. Start from the song.",
-    "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free, no subscription needed.",
+    "description": "Upload your track, let AI handle lyrics and visuals, and export a finished lyric video — free (watermarked), no subscription needed.",
     "button": "Try LyricVideoMaker Free",
     "upsell": "Free · No subscription · No credit card"
   }

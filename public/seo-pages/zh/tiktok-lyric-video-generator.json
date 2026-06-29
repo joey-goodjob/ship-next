@@ -15,7 +15,7 @@
   },
   "seo": {
     "title": "TikTok 歌词视频生成器 — AI 自动生成竖屏歌词视频",
-    "description": "TikTok 歌词视频生成器：上传歌曲，AI 自动转写并同步歌词，竖屏 9:16 预览并避开 TikTok 按钮区域，免费导出，同样适用于 Reels 和 Shorts。",
+    "description": "TikTok 歌词视频生成器：上传歌曲，AI 自动转写并同步歌词，竖屏 9:16 预览并避开 TikTok 按钮区域，免费导出带水印版本，同样适用于 Reels 和 Shorts。",
     "keywords": [
       "tiktok lyric video generator",
       "tiktok lyric video maker",
@@ -26,9 +26,9 @@
     ]
   },
   "hero": {
-    "badge": "TikTok 歌词视频生成器 — 竖屏、AI 驱动、免费积分可导出",
+    "badge": "TikTok 歌词视频生成器 — 竖屏、AI 驱动、免费导出带水印",
     "h1": "TikTok 歌词视频生成器 — 竖屏歌词清晰可读",
-    "subhead": "上传歌曲音频，AI 自动转写歌词并逐行同步节拍。在 9:16 竖屏画面中预览，自动避开 TikTok 按钮区域，用免费积分导出。一次导出同时适用于 TikTok、Reels 和 Shorts。",
+    "subhead": "上传歌曲音频，AI 自动转写歌词并逐行同步节拍。在 9:16 竖屏画面中预览，自动避开 TikTok 按钮区域，免费导出带水印版本。一次导出同时适用于 TikTok、Reels 和 Shorts。",
     "primaryCta": "制作 TikTok 歌词视频",
     "secondaryCta": "查看使用流程"
   },
@@ -36,7 +36,7 @@
     "AI 自动转写歌词",
     "9:16 竖屏导出",
     "Safe zone 避开 TikTok 按钮",
-    "免费积分可用于导出"
+    "免费导出带水印版本"
   ],
   "howItWorks": {
     "title": "TikTok 歌词视频生成器使用流程",
@@ -267,11 +267,11 @@
       },
       {
         "question": "这个 TikTok 歌词视频制作工具免费吗？",
-        "answer": "是的。注册后领取免费积分，制作并导出你的 TikTok 歌词视频——无需订阅，也无需信用卡。"
+        "answer": "是的。注册后领取免费积分，制作并导出你的 TikTok 歌词视频（带水印）——无需订阅，也无需信用卡。"
       },
       {
         "question": "TikTok 歌词视频可以商用吗？",
-        "answer": "可以。你的 TikTok 歌词视频归你所有，包括变现账号和品牌账号。只需确保你拥有上传音乐的版权。"
+        "answer": "可以。你的 TikTok 歌词视频归你所有，包括变现账号和品牌账号。免费版导出带水印；需要无水印版本时用付费积分导出。只需确保你拥有上传音乐的版权。"
       }
     ]
   },
@@ -312,7 +312,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "免费歌词视频制作工具",
-        "description": "免费制作并导出歌词视频。"
+        "description": "免费制作并导出带水印版本歌词视频。"
       },
       {
         "slug": "song-to-lyric-video",
@@ -328,8 +328,8 @@
   },
   "bottomCta": {
     "title": "你的下一首爆款，值得配上画面。",
-    "description": "上传歌曲，让 AI 处理歌词，导出竖屏歌词视频——免费，无需订阅，直接发 TikTok。",
+    "description": "上传歌曲，让 AI 处理歌词，导出带水印的竖屏歌词视频——免费，无需订阅，直接发 TikTok。",
     "button": "免费制作 TikTok 歌词视频",
-    "upsell": "免费导出 · 无需订阅 · 一次渲染通用 TikTok / Reels / Shorts"
+    "upsell": "免费导出带水印 · 无需订阅 · 一次渲染通用 TikTok / Reels / Shorts"
   }
 }

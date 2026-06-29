@@ -30,7 +30,7 @@
   "hero": {
     "badge": "Song to lyric video — upload once, AI does the rest",
     "h1": "Song to Lyric Video — Upload Once, AI Does the Rest",
-    "subhead": "Upload your song audio. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI transcribes every lyric, syncs each line to the beat, and generates visuals driven by the mood of your music. Preview the full lyric video and export for YouTube, TikTok, or Reels — free (watermarked), no subscription needed.",
     "primaryCta": "Turn My Song into a Video",
     "secondaryCta": "See How It Works"
   },
@@ -38,14 +38,14 @@
     "AI auto-transcribes lyrics",
     "Full song or short clip",
     "YouTube, TikTok, Reels export",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "howItWorks": {
     "title": "How Song to Lyric Video Works",
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits. The song lyrics to video AI works from your audio, so you do not need to type a single lyric line. Use the full track for YouTube, or pick a section for TikTok and Reels.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -269,11 +269,11 @@
       },
       {
         "question": "Is this song to lyric video converter free?",
-        "answer": "Yes. Turning your song into a lyric video is free — sign up for free credits and export, no subscription or credit card."
+        "answer": "Yes. Turning your song into a lyric video is free — sign up for free credits and export a watermarked video, no subscription or credit card."
       },
       {
         "question": "Can I use the exported video commercially?",
-        "answer": "Yes. The video you make from your song is yours to monetize and release. Just make sure you have the rights to the song you upload."
+        "answer": "Yes. The video you make from your song is yours to monetize and release. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the song you upload."
       },
       {
         "question": "How to add song lyrics to a video?",
@@ -334,7 +334,7 @@
   },
   "bottomCta": {
     "title": "Your song already has everything it needs.",
-    "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free, no subscription needed.",
+    "description": "Upload it once, let AI handle the lyrics, and export a lyric video ready for any platform — free (watermarked), no subscription needed.",
     "button": "Turn My Song into a Video",
     "upsell": "Free · No subscription · No credit card"
   }

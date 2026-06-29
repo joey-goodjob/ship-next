@@ -42,7 +42,7 @@
     "AI auto-transcribes lyrics from audio",
     "Lyric overlays for existing footage",
     "16:9, 9:16, and 1:1 export",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "howItWorks": {
     "title": "How to Add Lyrics to Video Automatically",
@@ -59,7 +59,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full video with lyrics before publishing. Move the lyric block away from faces, products, or action in the frame, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full video with lyrics before publishing. Move the lyric block away from faces, products, or action in the frame, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -257,7 +257,7 @@
     "items": [
       {
         "question": "Is this add lyrics to video tool free?",
-        "answer": "Yes. Sign up, get free credits, create a lyric video, preview it, and export — no subscription required, no credit card needed."
+        "answer": "Yes. Sign up, get free credits, create a lyric video, preview it, and export a watermarked video — no subscription required, no credit card needed."
       },
       {
         "question": "How do I put lyrics on video without typing them?",
@@ -277,11 +277,11 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes. The videos you add lyrics to are yours to publish — channels, campaigns, and client work included. Just confirm you hold the rights to the footage and the music."
+        "answer": "Yes. The videos you add lyrics to are yours to publish — channels, campaigns, and client work included. Free exports include a watermark — export with paid credits for a watermark-free version. Just confirm you hold the rights to the footage and the music."
       },
       {
         "question": "How to put lyrics on video automatically?",
-        "answer": "Upload your video or audio and AI adds the synced lyric layer for you — no manual timing. You can add lyrics to video automatically online free with free credits, then export in the format you need."
+        "answer": "Upload your video or audio and AI adds the synced lyric layer for you — no manual timing. You can add lyrics to video automatically online with free credits, then export a watermarked video in the format you need."
       }
     ]
   },
@@ -338,8 +338,8 @@
   },
   "bottomCta": {
     "title": "Hours of manual lyric syncing, gone.",
-    "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free, no subscription needed.",
+    "description": "Upload your video or audio, let AI transcribe and sync the lyrics, then export a finished lyric overlay video — free (watermarked), no subscription needed.",
     "button": "Add Lyrics to My Video — Free",
-    "upsell": "Free export · No subscription · No credit card"
+    "upsell": "Free credits · No subscription · No credit card"
   }
 }

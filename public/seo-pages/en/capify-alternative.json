@@ -15,7 +15,7 @@
     ]
   },
   "seo": {
-    "title": "Capify Alternative — AI Lyric Video Maker, Free to Export",
+    "title": "Capify Alternative — AI Lyric Video Maker, Free Watermarked Export",
     "description": "Need a Capify alternative for lyric videos? Upload audio, auto-transcribe lyrics, sync lines to the beat, generate visuals, and export online.",
     "keywords": [
       "capify ai lyric video maker",
@@ -27,7 +27,7 @@
   "hero": {
     "badge": "Capify alternative — AI lyric video maker, free",
     "h1": "Capify Alternative — AI Lyric Video Maker, Free to Try",
-    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates mood-driven visuals. Preview the full lyric video, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates mood-driven visuals. Preview the full lyric video, then export — free (watermarked), no subscription needed.",
     "primaryCta": "Make the Same Video Free",
     "secondaryCta": "See How It Works"
   },
@@ -35,7 +35,7 @@
     "AI auto-transcribes lyrics",
     "16:9, 9:16, and 1:1 export",
     "Mood-driven AI visuals",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "comparisonTable": {
     "title": "Capify vs LyricVideoMaker for Lyric Videos",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Try LyricVideoMaker with the same song you used in Capify and compare the results.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits, and no manual lyric typing is required. Try LyricVideoMaker with the same song you used in Capify and compare the results.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full lyric video before publishing. Compare the preview quality, lyric accuracy, and visual feel against Capify. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full lyric video before publishing. Compare the preview quality, lyric accuracy, and visual feel against Capify. Export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "Is LyricVideoMaker free as a Capify alternative?",
-        "answer": "Yes. LyricVideoMaker is free to use as a Capify alternative — free credits to start, export included, no subscription or credit card."
+        "answer": "Yes. LyricVideoMaker is free to use as a Capify alternative — free credits to start, export included (watermarked), no subscription or credit card."
       },
       {
         "question": "How is LyricVideoMaker different from Capify?",
@@ -306,7 +306,7 @@
       },
       {
         "question": "Can I use exported lyric videos commercially?",
-        "answer": "Yes. Your exports are yours to monetize and release — the same freedom you'd expect from Capify. Just make sure you have the rights to the music you upload."
+        "answer": "Yes. Your exports are yours to monetize and release — the same freedom you'd expect from Capify. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the music you upload."
       },
       {
         "question": "How hard is it to switch from Capify?",
@@ -316,7 +316,7 @@
   },
   "toolkit": {
     "title": "Capify Alternative — Use Cases",
-    "description": "Everything you do in Capify, you can try in LyricVideoMaker — with AI transcription, beat sync, and free export."
+    "description": "Everything you do in Capify, you can try in LyricVideoMaker — with AI transcription, beat sync, and free watermarked export."
   },
   "useCases": [
     {
@@ -351,7 +351,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "Free Lyric Video Maker",
-        "description": "Make and export lyric videos free."
+        "description": "Make and export watermarked lyric videos free."
       },
       {
         "slug": "tiktok-lyric-video-generator",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "Same song, different result. Try it free.",
-    "description": "Upload the same track you used in Capify. AI handles the lyrics and visuals — export free, no subscription.",
+    "description": "Upload the same track you used in Capify. AI handles the lyrics and visuals — export a watermarked video free, no subscription.",
     "button": "Try LyricVideoMaker Free",
     "upsell": "Free · No subscription · No credit card"
   }

@@ -26,9 +26,9 @@
     ]
   },
   "hero": {
-    "badge": "TikTok lyric video generator — vertical, AI-powered, free to export",
+    "badge": "TikTok lyric video generator — vertical, AI-powered, free to export (watermarked)",
     "h1": "TikTok Lyric Video Generator — Vertical Lyrics That Stay Readable",
-    "subhead": "Upload your song audio. AI transcribes the lyrics and syncs every line to the beat. Preview in a vertical 9:16 frame with TikTok safe zones, then export — free, no subscription needed. One render works for TikTok, Reels, and Shorts.",
+    "subhead": "Upload your song audio. AI transcribes the lyrics and syncs every line to the beat. Preview in a vertical 9:16 frame with TikTok safe zones, then export — free (watermarked), no subscription needed. One render works for TikTok, Reels, and Shorts.",
     "primaryCta": "Make a TikTok Lyric Video",
     "secondaryCta": "See How It Works"
   },
@@ -36,14 +36,14 @@
     "AI auto-transcribes lyrics",
     "9:16 vertical export",
     "Safe zones avoid TikTok buttons",
-    "Export free, no subscription"
+    "Export a watermarked video free — no subscription"
   ],
   "howItWorks": {
     "title": "How the TikTok Lyric Video Generator Works",
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits. The TikTok lyric video generator works from audio, so you do not need to type a single lyric line. Pick the 15-to-30-second section that will stop the scroll, or use the full track.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -267,11 +267,11 @@
       },
       {
         "question": "Is this TikTok lyric video maker free?",
-        "answer": "Yes. Sign up, get free credits, and export your TikTok lyric video — no subscription required and no credit card required."
+        "answer": "Yes. Sign up, get free credits, and export your TikTok lyric video (watermarked, free) — no subscription required and no credit card required."
       },
       {
         "question": "Can I use TikTok lyric videos commercially?",
-        "answer": "Yes. Your TikTok lyric videos are yours, including monetized and brand accounts. Just make sure you have the rights to the music you upload."
+        "answer": "Yes. Your TikTok lyric videos are yours, including monetized and brand accounts. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you have the rights to the music you upload."
       }
     ]
   },
@@ -312,7 +312,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "Free Lyric Video Maker",
-        "description": "Make and export lyric videos free."
+        "description": "Make and export watermarked lyric videos free."
       },
       {
         "slug": "song-to-lyric-video",
@@ -328,8 +328,8 @@
   },
   "bottomCta": {
     "title": "Your next viral sound deserves visuals to match.",
-    "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free, no subscription needed.",
+    "description": "Upload your song, let AI handle the lyrics, and export a vertical lyric video ready for TikTok — free (watermarked), no subscription needed.",
     "button": "Make My TikTok Lyric Video",
-    "upsell": "Free export · No subscription · One render for TikTok, Reels & Shorts"
+    "upsell": "Free credits · No subscription · One render for TikTok, Reels & Shorts"
   }
 }

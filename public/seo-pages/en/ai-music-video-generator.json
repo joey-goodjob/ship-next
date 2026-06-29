@@ -29,7 +29,7 @@
   "hero": {
     "badge": "AI music video generator — from lyrics to visuals",
     "h1": "AI Music Video Generator from Lyrics — Turn a Song Into Visuals",
-    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free, no subscription needed.",
+    "subhead": "Upload your song audio. AI auto-transcribes the lyrics, syncs every line to the beat, and generates visuals driven by the song's mood and meaning. Preview the full music video, then export — free (watermarked), no subscription needed.",
     "primaryCta": "Make a Free Music Video",
     "secondaryCta": "See How It Works"
   },
@@ -37,7 +37,7 @@
     "AI auto-transcribes lyrics",
     "Mood-driven AI visuals from lyrics",
     "16:9, 9:16, and 1:1 export",
-    "Export free, no subscription or credit card"
+    "Export a watermarked video free — no subscription or credit card"
   ],
   "comparisonTable": {
     "title": "Lyric Video vs AI Music Video",
@@ -84,7 +84,7 @@
     "steps": [
       {
         "title": "Upload your song",
-        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). No account needed to start, and no manual lyric typing required. Your song's lyrics become the creative source for everything that follows.",
+        "description": "Drop an MP3, WAV, FLAC, AAC, OGG, or M4A file (up to 100MB). A free account gives you starter credits, and no manual lyric typing is required. Your song's lyrics become the creative source for everything that follows.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -94,7 +94,7 @@
       },
       {
         "title": "Preview and export",
-        "description": "Watch the full AI music video before publishing. Confirm the visuals match your song's energy, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export, no subscription required.",
+        "description": "Watch the full AI music video before publishing. Confirm the visuals match your song's energy, then export in 16:9 for YouTube, 9:16 for TikTok, Reels, and Shorts, or 1:1 for feed posts. Free to export (watermarked), no subscription required.",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -292,7 +292,7 @@
     "items": [
       {
         "question": "Is this AI music video generator free?",
-        "answer": "Yes. Sign up, get free credits, and export your AI music video — no subscription required, no credit card needed."
+        "answer": "Yes. Sign up, get free credits, and export your AI music video (watermarked, free) — no subscription required, no credit card needed."
       },
       {
         "question": "How does AI generate music video visuals from lyrics?",
@@ -308,7 +308,7 @@
       },
       {
         "question": "Can I use exported music videos commercially?",
-        "answer": "Yes. The AI music videos you export are yours, monetized channels and paid releases included. Just make sure you own the rights to the song behind them."
+        "answer": "Yes. The AI music videos you export are yours, monetized channels and paid releases included. Free exports include a watermark — export with paid credits for a watermark-free version. Just make sure you own the rights to the song behind them."
       },
       {
         "question": "What formats can I export in?",
@@ -373,8 +373,8 @@
   },
   "bottomCta": {
     "title": "Your lyrics already tell a story. Let AI show it.",
-    "description": "Upload your song, let AI generate visuals from the lyrics, and export your music video — free, no subscription needed.",
+    "description": "Upload your song, let AI generate visuals from the lyrics, and export your music video (watermarked) — free (watermarked), no subscription needed.",
     "button": "Make My Music Video",
-    "upsell": "Free export · No subscription · No credit card"
+    "upsell": "Free credits · No subscription · No credit card"
   }
 }

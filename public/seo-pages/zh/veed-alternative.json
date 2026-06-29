@@ -15,8 +15,8 @@
     ]
   },
   "seo": {
-    "title": "VEED 替代方案 — AI 歌词视频制作，免费导出",
-    "description": "在找 VEED 替代方案做歌词视频？LyricVideoMaker 自动从音频转写歌词、同步节拍、生成画面，免费导出 — 不用时间轴编辑。",
+    "title": "VEED 替代方案 — AI 歌词视频制作，免费导出带水印",
+    "description": "在找 VEED 替代方案做歌词视频？LyricVideoMaker 自动从音频转写歌词、同步节拍、生成画面，免费导出带水印版本 — 不用时间轴编辑。",
     "keywords": [
       "VEED 替代",
       "VEED 替代方案",
@@ -27,7 +27,7 @@
   "hero": {
     "badge": "VEED 替代方案 — AI 歌词视频，免费",
     "h1": "VEED 替代方案 —— 从歌曲开始，不用时间轴",
-    "subhead": "VEED 是通用视频编辑器 — 适合字幕和口播，但做歌词视频仍然要手动摆文字、在时间轴上对齐。LyricVideoMaker 从歌曲出发：上传音频，AI 自动转写歌词、同步节拍、生成画面。免费导出，无需订阅。",
+    "subhead": "VEED 是通用视频编辑器 — 适合字幕和口播，但做歌词视频仍然要手动摆文字、在时间轴上对齐。LyricVideoMaker 从歌曲出发：上传音频，AI 自动转写歌词、同步节拍、生成画面。免费导出带水印版本，无需订阅。",
     "primaryCta": "免费做歌词视频",
     "secondaryCta": "查看制作流程"
   },
@@ -35,7 +35,7 @@
     "AI 自动转写歌词",
     "不用时间轴和文字排版",
     "16:9、9:16、1:1 多格式导出",
-    "免费导出，无需订阅或信用卡"
+    "免费导出带水印版本，无需订阅或信用卡"
   ],
   "comparisonTable": {
     "title": "VEED 和 LyricVideoMaker 做歌词视频有什么不同",
@@ -82,7 +82,7 @@
     "steps": [
       {
         "title": "上传歌曲",
-        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。无需注册即可开始，也不需要手动输入歌词。和 VEED 不同，没有空白时间轴 — 歌曲从一开始就驱动整个流程。",
+        "description": "拖入 MP3、WAV、FLAC、AAC、OGG 或 M4A 音频文件（最大 100MB）。免费注册即送积分，也不需要手动输入歌词。和 VEED 不同，没有空白时间轴 — 歌曲从一开始就驱动整个流程。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-1.webp"
       },
       {
@@ -92,7 +92,7 @@
       },
       {
         "title": "预览并导出",
-        "description": "发布前先看完整预览。确认歌词准确、节拍对齐，然后导出 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出，无需订阅。",
+        "description": "发布前先看完整预览。确认歌词准确、节拍对齐，然后导出 16:9 适配 YouTube，9:16 适配 TikTok、Reels 和 Shorts，1:1 适配信息流。免费导出带水印版本，无需订阅。",
         "image": "/seo-pages/ai-lyric-video-generator/how-to-3.webp"
       }
     ]
@@ -290,7 +290,7 @@
     "items": [
       {
         "question": "LyricVideoMaker 作为 VEED 替代方案免费吗？",
-        "answer": "免费。作为 VEED 替代方案，LyricVideoMaker 免费 —— 注册领免费额度即可导出，无需订阅或信用卡。"
+        "answer": "免费。作为 VEED 替代方案，LyricVideoMaker 免费 —— 注册领免费额度即可导出带水印版本，无需订阅或信用卡。"
       },
       {
         "question": "LyricVideoMaker 和 VEED 做歌词视频有什么不同？",
@@ -306,7 +306,7 @@
       },
       {
         "question": "导出的歌词视频可以商用吗？",
-        "answer": "可以。导出的视频可用于变现频道和付费发行 —— 和你在 VEED 的预期一样。只需确保你拥有上传音乐的版权。"
+        "answer": "可以。导出的视频可用于变现频道和付费发行 —— 和你在 VEED 的预期一样。免费版导出带水印；需要无水印版本时用付费积分导出。只需确保你拥有上传音乐的版权。"
       },
       {
         "question": "从 VEED 切换过来麻烦吗？",
@@ -351,7 +351,7 @@
       {
         "slug": "free-lyric-video-maker",
         "label": "免费歌词视频制作工具",
-        "description": "免费制作并导出歌词视频。"
+        "description": "免费制作并导出带水印版本歌词视频。"
       },
       {
         "slug": "add-lyrics-to-video",
@@ -367,7 +367,7 @@
   },
   "bottomCta": {
     "title": "跳过时间轴，从歌曲开始。",
-    "description": "上传歌曲，让 AI 搞定歌词和画面，免费导出成品歌词视频，无需订阅。",
+    "description": "上传歌曲，让 AI 搞定歌词和画面，免费导出带水印的成品歌词视频，无需订阅。",
     "button": "免费试用 LyricVideoMaker",
     "upsell": "免费 · 无需订阅 · 无需信用卡"
   }

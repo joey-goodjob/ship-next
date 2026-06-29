@@ -6,20 +6,23 @@ import { getAuth } from '@/core/auth';
 import { getAllConfigs } from '@/modules/config/service';
 import { getStorage, isStorageConfigured } from '@/modules/storage/service';
 
-const extFromMime = (mimeType: string) => {
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/jpg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/gif': 'gif',
-    'image/svg+xml': 'svg',
-    'image/avif': 'avif',
-    'image/heic': 'heic',
-    'image/heif': 'heif',
-  };
-  return map[mimeType] || '';
+// Allowlist of raster image types only. SVG is intentionally excluded:
+// SVG can embed <script>/HTML and, if served from our domain, becomes an
+// XSS / social-engineering vector (Safe Browsing risk).
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/avif': 'avif',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
 };
+
+const ALLOWED_IMAGE_TYPES = new Set(Object.keys(MIME_TO_EXT));
+
+const extFromMime = (mimeType: string) => MIME_TO_EXT[mimeType] || '';
 
 export async function POST(req: Request) {
   try {
@@ -38,8 +41,10 @@ export async function POST(req: Request) {
     const uploadResults: Array<{ url: string; key: string; filename: string; deduped: boolean }> = [];
 
     for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        return respErr(`File ${file.name} is not an image`);
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        return respErr(
+          `File ${file.name} has an unsupported image type: ${file.type || 'unknown'}. Allowed: JPG, PNG, WebP, GIF, AVIF, HEIC.`,
+        );
       }
 
       const arrayBuffer = await file.arrayBuffer();
