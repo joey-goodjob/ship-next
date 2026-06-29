@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand-logo";
 import { insertCastMention, parseCastMentionIds, parseCastMentionIdsFromPrompts, removeCastMention } from "@/lib/lyric-video-cast-mentions";
 import { cn } from "@/lib/utils";
-import { calculateSceneVideoCostCredits } from "@/modules/lyric-videos/lyric/costs";
+import { calculateSceneVideoCostCredits, resolveSceneVideoCostDurationSeconds } from "@/modules/lyric-videos/lyric/costs";
 import { useEditor } from "./editor-context";
 import { debugPreviewWorkbench } from "./debug-log";
 import { PanelEmpty } from "./panel-empty";
@@ -41,6 +41,30 @@ type SceneImageViewerState = {
 
 function sceneVideoCreditCost(scene: Pick<LyricScene, "startMs" | "endMs">) {
   return calculateSceneVideoCostCredits({ scenes: [scene] });
+}
+
+function SceneVideoDurationControl({ scene }: { scene: Pick<LyricScene, "startMs" | "endMs"> }) {
+  const durationSeconds = resolveSceneVideoCostDurationSeconds(scene);
+  const minSeconds = 3;
+  const maxSeconds = 12;
+  const position = Math.min(100, Math.max(0, ((durationSeconds - minSeconds) / (maxSeconds - minSeconds)) * 100));
+
+  return (
+    <div
+      className="mb-[10px] flex h-[36px] items-center gap-[10px] rounded-[5px] border border-[var(--editor-line)] bg-[var(--editor-panel)] px-[10px]"
+      aria-label={`Video generation duration ${durationSeconds} seconds`}
+    >
+      <span className="shrink-0 text-[11px] font-[800] text-[var(--editor-muted)]">Duration</span>
+      <div className="relative h-[2px] min-w-[72px] flex-1 rounded-full bg-[var(--editor-line)]">
+        <div className="absolute bottom-0 left-0 top-0 rounded-full bg-[var(--editor-accent)]" style={{ width: `${position}%` }} />
+        <span
+          className="absolute top-1/2 h-[15px] w-[15px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--editor-accent)] bg-[var(--editor-panel-strong)] shadow-[0_0_0_3px_var(--editor-panel)]"
+          style={{ left: `${position}%` }}
+        />
+      </div>
+      <span className="w-[24px] shrink-0 text-right text-[12px] font-[900] text-[var(--editor-text)]">{durationSeconds}s</span>
+    </div>
+  );
 }
 
 function VideoModelSelector({ credits }: { credits: number }) {
@@ -990,6 +1014,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                        </div>
 	                        <div className="grid flex-1 grid-cols-1 gap-[10px] sm:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] sm:items-stretch">
 	                          <div className="relative min-w-0">
+	                            <SceneVideoDurationControl scene={scene} />
 	                            <PromptMentionTextarea
 	                              textareaRef={(node) => {
 	                                textareaRefs.current[textareaRefKey(scene.id, "video")] = node;
@@ -1003,6 +1028,7 @@ function BatchGenerationDialog({ onClose, open }: { onClose: () => void; open: b
 	                              title={generationLocked ? generationLockReason : undefined}
 	                              placeholder="Describe how this image should move - e.g. slow dolly forward as the breeze lifts the curtain..."
 	                              ariaLabel={`Scene ${index + 1} video prompt`}
+	                              compact
 	                            />
 	                            {mentionMenu?.sceneId === scene.id && mentionMenu.field === "video" && mentionOptions.length > 0 ? (
 	                              <div className="absolute left-[8px] top-[36px] z-[3] w-[220px] overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] shadow-[0_12px_30px_rgba(15,23,42,0.18)]">
@@ -1424,6 +1450,7 @@ function SceneVideoCandidateButton({
 function PromptMentionTextarea({
   ariaLabel,
   cast,
+  compact,
   disabled,
   onChange,
   onCursorChange,
@@ -1435,6 +1462,7 @@ function PromptMentionTextarea({
 }: {
   ariaLabel: string;
   cast: LyricCastMember[];
+  compact?: boolean;
   disabled?: boolean;
   onChange: (prompt: string, cursor?: number) => void;
   onCursorChange: (prompt: string, cursor?: number) => void;
@@ -1456,7 +1484,8 @@ function PromptMentionTextarea({
   return (
     <div
       className={cn(
-        "relative h-full min-h-[210px] w-full overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] focus-within:border-[var(--editor-accent)]",
+        "relative w-full overflow-hidden rounded-[6px] border border-[var(--editor-line)] bg-[var(--editor-panel)] focus-within:border-[var(--editor-accent)]",
+        compact ? "h-[174px] min-h-[174px]" : "h-full min-h-[210px]",
         disabled && "bg-[var(--editor-panel-strong)]",
       )}
     >
@@ -1486,7 +1515,10 @@ function PromptMentionTextarea({
         placeholder={placeholder}
         aria-label={ariaLabel}
         spellCheck={false}
-        className="relative z-[1] h-full min-h-[210px] w-full resize-none rounded-[6px] border-0 bg-transparent px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-transparent caret-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] selection:bg-[var(--editor-accent-soft)] selection:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:caret-[var(--editor-muted)]"
+        className={cn(
+          "relative z-[1] w-full resize-none rounded-[6px] border-0 bg-transparent px-[10px] py-[9px] text-[13px] font-[600] leading-[20px] text-transparent caret-[var(--editor-text)] outline-none placeholder:text-[var(--editor-subtle)] selection:bg-[var(--editor-accent-soft)] selection:text-[var(--editor-text)] disabled:cursor-not-allowed disabled:caret-[var(--editor-muted)]",
+          compact ? "h-[174px] min-h-[174px]" : "h-full min-h-[210px]",
+        )}
       />
     </div>
   );

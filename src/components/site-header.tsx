@@ -2,7 +2,7 @@
 
 import { Link } from "@/core/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Mail, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 import { DiscordIcon } from "@/components/discord-icon";
@@ -17,6 +17,7 @@ export interface NavLink {
   href: string;
   label: string;
   external?: boolean;
+  items?: NavLink[];
 }
 
 export type SiteHeaderVariant = "default" | "heroOverlay";
@@ -84,6 +85,68 @@ export function SiteHeader({
     );
   };
 
+  const renderDesktopNavItem = (link: NavLink) => {
+    const linkClassName = cn(
+      "text-sm font-bold transition-colors",
+      isHeroOverlay
+        ? "text-slate-300/80 [@media(hover:hover)]:hover:text-brand-accent"
+        : "text-brand-muted [@media(hover:hover)]:hover:text-brand-accent-hover",
+    );
+
+    if (!link.items?.length) {
+      return renderNavLink(link, linkClassName);
+    }
+
+    return (
+      <div key={link.href} className="group relative -my-3 py-3">
+        <Link
+          href={link.href}
+          aria-haspopup="menu"
+          className={cn(
+            "inline-flex items-center gap-1.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-accent/40",
+            isHeroOverlay
+              ? "group-hover:text-brand-accent group-focus-within:text-brand-accent"
+              : "group-hover:text-brand-accent-hover group-focus-within:text-brand-accent-hover",
+            linkClassName,
+          )}
+        >
+          {link.label}
+          <ChevronDown className="size-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
+        </Link>
+        <div
+          role="menu"
+          className="invisible absolute left-0 top-full z-50 min-w-[152px] translate-y-1 rounded-lg border border-white/10 bg-[#0b0b0f] p-2 text-white opacity-0 shadow-[0_18px_40px_rgba(0,0,0,0.35)] transition-[opacity,transform,visibility] duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"
+        >
+          {link.items.map((item) =>
+            item.external ? (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                role="menuitem"
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold text-white outline-none transition-colors [@media(hover:hover)]:hover:bg-white/10 focus-visible:bg-white/10"
+              >
+                <Mail className="size-4" />
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                role="menuitem"
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-bold text-white outline-none transition-colors [@media(hover:hover)]:hover:bg-white/10 focus-visible:bg-white/10"
+              >
+                <Mail className="size-4" />
+                {item.label}
+              </Link>
+            ),
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <header
       className={cn(
@@ -113,17 +176,7 @@ export function SiteHeader({
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-10 md:flex">
-          {navLinks?.map((link) =>
-            renderNavLink(
-              link,
-              cn(
-                "text-sm font-bold transition-colors",
-                isHeroOverlay
-                  ? "text-slate-300/80 [@media(hover:hover)]:hover:text-brand-accent"
-                  : "text-brand-muted [@media(hover:hover)]:hover:text-brand-accent-hover",
-              ),
-            ),
-          )}
+          {navLinks?.map((link) => renderDesktopNavItem(link))}
         </nav>
 
         {/* Desktop actions */}
@@ -188,18 +241,32 @@ export function SiteHeader({
           )}
         >
           <nav className="flex flex-col gap-2">
-            {navLinks?.map((link) =>
-              renderNavLink(
-                link,
-                cn(
-                  "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
-                  isHeroOverlay
-                    ? "text-slate-200 [@media(hover:hover)]:hover:bg-white/10 [@media(hover:hover)]:hover:text-brand-accent"
-                    : "text-brand-muted [@media(hover:hover)]:hover:bg-brand-accent-soft [@media(hover:hover)]:hover:text-brand-accent-hover",
-                ),
-                () => setMobileOpen(false),
-              ),
-            )}
+            {navLinks?.map((link) => (
+              <div key={link.href} className="flex flex-col gap-1">
+                {renderNavLink(
+                  link,
+                  cn(
+                    "rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+                    isHeroOverlay
+                      ? "text-slate-200 [@media(hover:hover)]:hover:bg-white/10 [@media(hover:hover)]:hover:text-brand-accent"
+                      : "text-brand-muted [@media(hover:hover)]:hover:bg-brand-accent-soft [@media(hover:hover)]:hover:text-brand-accent-hover",
+                  ),
+                  () => setMobileOpen(false),
+                )}
+                {link.items?.map((item) =>
+                  renderNavLink(
+                    item,
+                    cn(
+                      "ml-4 inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+                      isHeroOverlay
+                        ? "text-slate-200 [@media(hover:hover)]:hover:bg-white/10 [@media(hover:hover)]:hover:text-brand-accent"
+                        : "text-brand-muted [@media(hover:hover)]:hover:bg-brand-accent-soft [@media(hover:hover)]:hover:text-brand-accent-hover",
+                    ),
+                    () => setMobileOpen(false),
+                  ),
+                )}
+              </div>
+            ))}
           </nav>
           <div className={cn("mt-3 flex items-center gap-2 border-t pt-3", isHeroOverlay ? "border-white/10" : "border-brand-line")}>
             {discordLink ? (

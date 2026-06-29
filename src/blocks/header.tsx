@@ -13,7 +13,16 @@ export async function Header({
     { href: "/create", label: t("nav.create") },
     { href: "/#create", label: t("nav.tools") },
     { href: "/pricing", label: t("nav.pricing") },
-    { href: "/#faq", label: t("nav.help") },
+    {
+      href: "/#faq",
+      label: t("nav.help"),
+      items: [
+        {
+          href: "/contact",
+          label: t("nav.contact"),
+        },
+      ],
+    },
   ];
   const topBanner = t.raw("top_banner") as TopBannerConfig;
 

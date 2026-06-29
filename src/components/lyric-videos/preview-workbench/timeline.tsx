@@ -5,8 +5,9 @@ import type { PointerEvent } from "react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { usePlayback } from "./playback-context";
+import { buildTimelineRulerTicks } from "./timeline-ruler";
 import type { LyricLine, LyricScene, LyricWord } from "./types";
-import { clamp, formatClock, msToSeconds, resolveSceneMedia } from "./utils";
+import { clamp, msToSeconds, resolveSceneMedia } from "./utils";
 
 export function Timeline({ height }: { height: number }) {
   const { lines, scenes, words, zoom } = useEditor();
@@ -14,8 +15,9 @@ export function Timeline({ height }: { height: number }) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const trackWidth = `${Math.max(100, zoom * 100)}%`;
-  const playheadPct = (currentTime / totalDuration) * 100;
-  const ticks = useMemo(() => Array.from({ length: Math.floor(totalDuration) + 1 }, (_, index) => index), [totalDuration]);
+  const safeTotalDuration = Math.max(1, totalDuration);
+  const playheadPct = (currentTime / safeTotalDuration) * 100;
+  const ticks = useMemo(() => buildTimelineRulerTicks({ totalDurationSeconds: totalDuration, zoom }), [totalDuration, zoom]);
   const rulerHeight = 22;
   const sceneTop = 24;
   const sceneHeight = clamp(Math.round(height * 0.42), 32, 72);
@@ -25,7 +27,7 @@ export function Timeline({ height }: { height: number }) {
   function secondsAt(clientX: number) {
     const rect = timelineRef.current?.getBoundingClientRect();
     if (!rect || rect.width === 0) return 0;
-    return (clamp(clientX - rect.left, 0, rect.width) / rect.width) * totalDuration;
+    return (clamp(clientX - rect.left, 0, rect.width) / rect.width) * safeTotalDuration;
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -61,12 +63,24 @@ export function Timeline({ height }: { height: number }) {
         <div className="absolute left-0 right-0 top-0" style={{ height: rulerHeight }}>
           {ticks.map((tick) => (
             <div
-              key={tick}
-              className="absolute top-0 flex h-[20px] -translate-x-1/2 flex-col items-center"
-              style={{ left: `${(tick / totalDuration) * 100}%` }}
+              key={tick.second}
+              className={cn(
+                "absolute top-0 flex h-[21px] flex-col justify-end",
+                tick.second === 0 ? "translate-x-0 items-start" : "-translate-x-1/2 items-center",
+              )}
+              style={{ left: `${(tick.second / safeTotalDuration) * 100}%` }}
             >
-              <span className="font-mono text-[11px] leading-[13px] text-[var(--editor-subtle)]">{formatClock(tick)}</span>
-              <span className="mt-[2px] h-[4px] w-[1px] bg-[var(--editor-line)]" />
+              {tick.label ? <span className="mb-[2px] font-mono text-[9px] leading-[10px] text-[var(--editor-subtle)]">{tick.label}</span> : null}
+              <span
+                className={cn(
+                  "w-[1px] rounded-full",
+                  tick.strength === "major"
+                    ? "h-[7px] bg-[var(--editor-muted)]/70"
+                    : tick.strength === "medium"
+                      ? "h-[5px] bg-[var(--editor-line)]"
+                      : "h-[3px] bg-[var(--editor-line)]/65",
+                )}
+              />
             </div>
           ))}
         </div>
