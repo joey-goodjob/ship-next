@@ -239,7 +239,7 @@ export class KieProvider implements AIProvider {
       callBackUrl: params.callbackUrl,
       input: {
         aspect_ratio: '16:9',
-        resolution: '480p',
+        resolution: '720p',
         duration: 4,
         fixed_lens: false,
         generate_audio: false,

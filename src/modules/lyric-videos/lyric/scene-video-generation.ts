@@ -16,7 +16,7 @@ import { dedupeSceneVideoCandidates } from './scene-video-candidates';
 
 const SEEDANCE_SCENE_VIDEO_MIN_DURATION = 4;
 const SEEDANCE_SCENE_VIDEO_MAX_DURATION = 12;
-const SEEDANCE_SCENE_VIDEO_RESOLUTION = '480p';
+export const SEEDANCE_SCENE_VIDEO_RESOLUTION = '720p';
 const SCENE_VIDEO_QUEUE_CONCURRENCY = 3;
 
 function sceneRequestedDurationSeconds(scene: any) {
