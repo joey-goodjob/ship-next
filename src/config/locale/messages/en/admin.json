@@ -313,6 +313,11 @@
     "search_placeholder": "Search title, file, user, or email",
     "total": "{count} creations",
     "loading": "Loading creations...",
+    "errors": {
+      "load_failed": "Could not load usage records. Please try again.",
+      "non_json": "Usage records did not return a valid API response. Please refresh and try again.",
+      "timeout": "Usage records took too long to load. Please try again."
+    },
     "empty": "No lyric-video creations yet",
     "previous": "Previous",
     "next": "Next",

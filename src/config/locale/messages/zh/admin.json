@@ -313,6 +313,11 @@
     "search_placeholder": "搜索标题、文件名、用户或邮箱",
     "total": "共 {count} 个作品",
     "loading": "正在加载作品...",
+    "errors": {
+      "load_failed": "使用记录加载失败，请稍后重试。",
+      "non_json": "使用记录接口没有返回有效数据，请刷新后重试。",
+      "timeout": "使用记录加载时间过长，请稍后重试。"
+    },
     "empty": "暂无歌词视频作品",
     "previous": "上一页",
     "next": "下一页",

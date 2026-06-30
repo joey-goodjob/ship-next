@@ -1,12 +1,8 @@
-import { and, count, desc, eq, inArray, isNull, like, or, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, like, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/core/db';
 import {
   lyricVideoExport,
-  lyricVideoGenerationRun,
-  lyricVideoGenerationStep,
-  lyricVideoMediaJob,
   lyricVideoProject,
-  lyricVideoScene,
   user,
 } from '@/config/db/schema';
 
@@ -236,14 +232,31 @@ function getAdminCreationWhere(search?: string | null, view: AdminCreationView =
   return and(...conditions);
 }
 
-async function countAdminCreationsByView(search: string | null | undefined, view: AdminCreationView) {
+function countWhen(condition?: SQL) {
+  if (!condition) return sql<number>`count(*)`;
+  return sql<number>`coalesce(sum(case when ${condition} then 1 else 0 end), 0)`;
+}
+
+async function countAdminCreationsByViews(search: string | null | undefined) {
   const [result] = await db()
-    .select({ count: count() })
+    .select({
+      all: countWhen(),
+      processing: countWhen(getAdminCreationViewCondition('processing')),
+      preview: countWhen(getAdminCreationViewCondition('preview')),
+      rendered: countWhen(getAdminCreationViewCondition('rendered')),
+      failed: countWhen(getAdminCreationViewCondition('failed')),
+    })
     .from(lyricVideoProject)
     .leftJoin(user, eq(user.id, lyricVideoProject.userId))
-    .where(getAdminCreationWhere(search, view));
+    .where(getAdminCreationWhere(search));
 
-  return Number(result?.count || 0);
+  return {
+    all: Number(result?.all || 0),
+    processing: Number(result?.processing || 0),
+    preview: Number(result?.preview || 0),
+    rendered: Number(result?.rendered || 0),
+    failed: Number(result?.failed || 0),
+  };
 }
 
 export async function getAdminCreations(params: {
@@ -260,18 +273,40 @@ export async function getAdminCreations(params: {
 
   const where = getAdminCreationWhere(search, view);
 
-  const [total, allCount, processingCount, previewCount, renderedCount, failedCount] = await Promise.all([
-    countAdminCreationsByView(search, view),
-    countAdminCreationsByView(search, 'all'),
-    countAdminCreationsByView(search, 'processing'),
-    countAdminCreationsByView(search, 'preview'),
-    countAdminCreationsByView(search, 'rendered'),
-    countAdminCreationsByView(search, 'failed'),
-  ]);
+  const viewCounts = await countAdminCreationsByViews(search);
+  const total = viewCounts[view];
 
   const rows = await db()
     .select({
-      project: lyricVideoProject,
+      project: {
+        id: lyricVideoProject.id,
+        userId: lyricVideoProject.userId,
+        title: lyricVideoProject.title,
+        status: lyricVideoProject.status,
+        audioUrl: lyricVideoProject.audioUrl,
+        originalAudioUrl: lyricVideoProject.originalAudioUrl,
+        audioFilename: lyricVideoProject.audioFilename,
+        audioDurationMs: lyricVideoProject.audioDurationMs,
+        audioMimeType: lyricVideoProject.audioMimeType,
+        audioSizeBytes: lyricVideoProject.audioSizeBytes,
+        processedAudioUrl: lyricVideoProject.processedAudioUrl,
+        pipelineStage: lyricVideoProject.pipelineStage,
+        pipelineError: lyricVideoProject.pipelineError,
+        activeRunId: lyricVideoProject.activeRunId,
+        generationStatus: lyricVideoProject.generationStatus,
+        generationProgress: lyricVideoProject.generationProgress,
+        lastGeneratedAt: lyricVideoProject.lastGeneratedAt,
+        language: lyricVideoProject.language,
+        artStyle: lyricVideoProject.artStyle,
+        aspectRatio: lyricVideoProject.aspectRatio,
+        resolution: lyricVideoProject.resolution,
+        lyricsStatus: lyricVideoProject.lyricsStatus,
+        scenesStatus: lyricVideoProject.scenesStatus,
+        renderStatus: lyricVideoProject.renderStatus,
+        renderUrl: lyricVideoProject.renderUrl,
+        createdAt: lyricVideoProject.createdAt,
+        updatedAt: lyricVideoProject.updatedAt,
+      },
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
@@ -291,64 +326,32 @@ export async function getAdminCreations(params: {
       items: [],
       total,
       summary: {
-        total: allCount,
-        completed: renderedCount,
-        processing: processingCount,
-        failed: failedCount,
-        needsAttention: failedCount,
+        total: viewCounts.all,
+        completed: viewCounts.rendered,
+        processing: viewCounts.processing,
+        failed: viewCounts.failed,
+        needsAttention: viewCounts.failed,
         withSourceAudio: 0,
         withProcessedAudio: 0,
         withRenderedVideo: 0,
         consumedCredits: 0,
       },
       viewCounts: {
-        all: allCount,
-        processing: processingCount,
-        preview: previewCount,
-        rendered: renderedCount,
-        failed: failedCount,
+        all: viewCounts.all,
+        processing: viewCounts.processing,
+        preview: viewCounts.preview,
+        rendered: viewCounts.rendered,
+        failed: viewCounts.failed,
       },
     };
   }
 
-  const [runs, steps, scenes, exports, mediaJobs] = await Promise.all([
-    db()
-      .select()
-      .from(lyricVideoGenerationRun)
-      .where(inArray(lyricVideoGenerationRun.projectId, projectIds))
-      .orderBy(desc(lyricVideoGenerationRun.createdAt)),
-    db()
-      .select()
-      .from(lyricVideoGenerationStep)
-      .where(inArray(lyricVideoGenerationStep.projectId, projectIds))
-      .orderBy(lyricVideoGenerationStep.sort),
-    db()
-      .select()
-      .from(lyricVideoScene)
-      .where(inArray(lyricVideoScene.projectId, projectIds))
-      .orderBy(lyricVideoScene.sort),
-    db()
-      .select()
-      .from(lyricVideoExport)
-      .where(inArray(lyricVideoExport.projectId, projectIds))
-      .orderBy(desc(lyricVideoExport.createdAt)),
-    db()
-      .select()
-      .from(lyricVideoMediaJob)
-      .where(inArray(lyricVideoMediaJob.projectId, projectIds))
-      .orderBy(desc(lyricVideoMediaJob.createdAt)),
-  ]);
-
   const items = rows.map((row: any) => {
-    const projectRuns = runs.filter((run: any) => run.projectId === row.project.id);
-    const latestRun =
-      projectRuns.find((run: any) => run.id === row.project.activeRunId) || projectRuns[0] || null;
-    const projectSteps = latestRun
-      ? steps.filter((step: any) => step.runId === latestRun.id)
-      : [];
-    const projectScenes = scenes.filter((scene: any) => scene.projectId === row.project.id);
-    const projectExports = exports.filter((item: any) => item.projectId === row.project.id);
-    const projectMediaJobs = mediaJobs.filter((job: any) => job.projectId === row.project.id);
+    const latestRun: any | null = null;
+    const projectSteps: any[] = [];
+    const projectScenes: any[] = [];
+    const projectExports: any[] = [];
+    const projectMediaJobs: any[] = [];
     const metrics = deriveAdminCreationMetrics({
       scenes: projectScenes,
       exports: projectExports,
@@ -476,18 +479,18 @@ export async function getAdminCreations(params: {
     total,
     summary: {
       ...visibleSummary,
-      total: allCount,
-      completed: renderedCount,
-      processing: processingCount,
-      failed: failedCount,
-      needsAttention: failedCount + visibleSummary.needsAttention - visibleSummary.failed,
+      total: viewCounts.all,
+      completed: viewCounts.rendered,
+      processing: viewCounts.processing,
+      failed: viewCounts.failed,
+      needsAttention: viewCounts.failed + visibleSummary.needsAttention - visibleSummary.failed,
     },
     viewCounts: {
-      all: allCount,
-      processing: processingCount,
-      preview: previewCount,
-      rendered: renderedCount,
-      failed: failedCount,
+      all: viewCounts.all,
+      processing: viewCounts.processing,
+      preview: viewCounts.preview,
+      rendered: viewCounts.rendered,
+      failed: viewCounts.failed,
     },
   };
 }

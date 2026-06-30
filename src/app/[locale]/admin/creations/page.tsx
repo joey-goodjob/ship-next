@@ -524,6 +524,7 @@ export default function AdminCreationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeView, setActiveView] = useState<AdminCreationView>("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -537,16 +538,31 @@ export default function AdminCreationsPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({
-      page: String(page),
-      pageSize: String(PAGE_SIZE),
-    });
-    if (debouncedSearch) params.set("search", debouncedSearch);
-    if (activeView !== "all") params.set("view", activeView);
+    setError("");
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 45000);
 
-    const res = await fetch(`/api/admin/creations?${params}`);
-    const json = await res.json();
-    if (json.code === 0) {
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(PAGE_SIZE),
+      });
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (activeView !== "all") params.set("view", activeView);
+
+      const res = await fetch(`/api/admin/creations?${params}`, {
+        signal: controller.signal,
+      });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(t("errors.non_json"));
+      }
+
+      const json = await res.json();
+      if (json.code !== 0) {
+        throw new Error(json.message || t("errors.load_failed"));
+      }
+
       const nextData = json.data as PageData;
       setData({
         items: nextData.items || [],
@@ -554,13 +570,19 @@ export default function AdminCreationsPage() {
         summary: nextData.summary || emptySummary,
         viewCounts: nextData.viewCounts || emptyViewCounts,
       });
-      setExpandedIds((current) => {
-        if (current.size > 0) return current;
-        return new Set(nextData.items?.[0]?.id ? [nextData.items[0].id] : []);
-      });
+    } catch (err) {
+      const message =
+        err instanceof DOMException && err.name === "AbortError"
+          ? t("errors.timeout")
+          : err instanceof Error && err.message
+            ? err.message
+            : t("errors.load_failed");
+      setError(message);
+    } finally {
+      window.clearTimeout(timeout);
+      setLoading(false);
     }
-    setLoading(false);
-  }, [activeView, debouncedSearch, page]);
+  }, [activeView, debouncedSearch, page, t]);
 
   useEffect(() => {
     void fetchData();
@@ -678,6 +700,15 @@ export default function AdminCreationsPage() {
         ))}
       </div>
 
+      {error ? (
+        <Card className="border-rose-200 bg-rose-50">
+          <CardContent className="flex items-center gap-2 py-4 text-sm text-rose-700">
+            <AlertTriangle className="size-4 shrink-0" />
+            {error}
+          </CardContent>
+        </Card>
+      ) : null}
+
       {loading && data.items.length === 0 ? (
         <Card>
           <CardContent className="flex items-center justify-center gap-2 py-10 text-muted-foreground">
@@ -685,7 +716,7 @@ export default function AdminCreationsPage() {
             {t("loading")}
           </CardContent>
         </Card>
-      ) : data.items.length === 0 ? (
+      ) : error && data.items.length === 0 ? null : data.items.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
             {t("empty")}
