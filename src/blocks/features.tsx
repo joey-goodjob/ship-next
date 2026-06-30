@@ -17,7 +17,7 @@ const CARD_ICONS = {
   export: Clapperboard,
 } as const;
 
-const HOME_FEATURE_IMAGE_BASE = "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/home";
+const HOME_FEATURE_IMAGE_BASE = "https://cdn.lyricvideomaker.app/imgs/seo/home";
 
 const CARD_IMAGES: Record<FeatureCard["icon"], string | undefined> = {
   lyrics: `${HOME_FEATURE_IMAGE_BASE}/feature-lyrics.webp`,

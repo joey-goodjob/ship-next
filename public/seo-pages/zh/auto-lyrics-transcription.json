@@ -305,22 +305,22 @@
     {
       "title": "Video to lyrics",
       "description": "上传歌曲音频，把人声转成可编辑歌词，用于字幕、简介或二次使用。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-1.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
       "title": "音频提取歌词",
       "description": "歌曲文件在本地时，可以上传音频快速得到歌词文本或字幕版本。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-2.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-2.png"
     },
     {
       "title": "歌曲歌词单",
       "description": "导出 TXT，用于 press kit、合作者、翻译、厂牌沟通和发行资料。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-3.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-3.png"
     },
     {
       "title": "同步字幕",
       "description": "导出 LRC 或 SRT，用于音乐播放器、YouTube 字幕或视频剪辑软件。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-4.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
   "relatedTools": {

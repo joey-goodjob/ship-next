@@ -1,4 +1,4 @@
-const STYLE_PREVIEW_BASE_URL = "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/style-previews/lyric-video-styles";
+const STYLE_PREVIEW_BASE_URL = "https://cdn.lyricvideomaker.app/style-previews/lyric-video-styles";
 
 export const STYLE_OPTIONS = [
   {

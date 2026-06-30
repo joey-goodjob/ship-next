@@ -305,22 +305,22 @@
     {
       "title": "Video to lyrics",
       "description": "Upload a song audio file and turn the vocal track into editable lyrics for captions, descriptions, or reuse.",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-1.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-1.png"
     },
     {
       "title": "YouTube lyric extraction",
       "description": "Get lyrics from a YouTube video when the song is already online and you need a quick text or subtitle version.",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-2.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-2.png"
     },
     {
       "title": "Song lyric sheets",
       "description": "Export TXT for press kits, collaborators, translators, labels, and publishing notes.",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-3.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-3.png"
     },
     {
       "title": "Synced captions",
       "description": "Export LRC or SRT when you need timed lyrics for music players, YouTube captions, or video editors.",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/auto-lyrics-transcription/use-case-4.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/auto-lyrics-transcription/use-case-4.png"
     }
   ],
   "relatedTools": {

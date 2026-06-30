@@ -320,22 +320,22 @@
     {
       "title": "YouTube 完整歌词视频",
       "description": "获取适合完整歌曲 16:9 歌词视频的视觉风格，节奏舒适。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-templates/use-case-1.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/lyric-video-templates/use-case-1.png"
     },
     {
       "title": "TikTok 和 Reels 片段",
       "description": "获取竖屏安全的视觉风格，大号可读歌词适合短视频平台。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-templates/use-case-2.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/lyric-video-templates/use-case-2.png"
     },
     {
       "title": "曲风匹配画面",
       "description": "AI 根据曲风匹配视觉风格 — 民谣和嘻哈、流行会得到不同的画面。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-templates/use-case-3.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/lyric-video-templates/use-case-3.png"
     },
     {
       "title": "发歌周内容",
       "description": "从一首单曲生成多个风格一致的歌词视频片段。",
-      "image": "https://pub-64bde3d3ea024866bfbb145e4a8ed3bc.r2.dev/imgs/seo/lyric-video-templates/use-case-4.png"
+      "image": "https://cdn.lyricvideomaker.app/imgs/seo/lyric-video-templates/use-case-4.png"
     }
   ],
   "relatedTools": {

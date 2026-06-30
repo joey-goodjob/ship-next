@@ -2,14 +2,14 @@ import { getTranslations } from "next-intl/server";
 import { TestimonialsWall, type TestimonialWallItem } from "@/components/testimonials-wall";
 
 const AVATAR_SRCS = [
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-0-avatar-b9b05a85132a.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-1-avatar-5c831de4cdde.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-2-avatar-5790e2398517.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-3-avatar-442374c09b67.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-4-avatar-fecafbee45e7.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-5-avatar-1b038c541faa.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-6-avatar-9797752069af.webp",
-  "https://pub-387a24462b7d44e395219fe1c8295ad7.r2.dev/aisongsgenerator/page-sections-testimonials-items-7-avatar-606043eeac58.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-01.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-02.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-03.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-04.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-05.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-06.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-07.webp",
+  "https://cdn.lyricvideomaker.app/imgs/testimonials/avatar-08.webp",
   "/imgs/testimonials/avatar-09.webp",
   "/imgs/testimonials/avatar-10.webp",
   "/imgs/testimonials/avatar-11.webp",
