@@ -23,6 +23,8 @@
     "email_placeholder": "Enter your email",
     "password_title": "Password",
     "password_placeholder": "Enter your password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "confirm_password_title": "Confirm Password",
     "confirm_password_placeholder": "Re-enter your password",
     "password_mismatch": "Passwords do not match",

@@ -23,6 +23,8 @@
     "email_placeholder": "输入邮箱地址",
     "password_title": "密码",
     "password_placeholder": "输入密码",
+    "show_password": "显示密码",
+    "hide_password": "隐藏密码",
     "confirm_password_title": "确认密码",
     "confirm_password_placeholder": "再次输入密码",
     "password_mismatch": "两次输入的密码不一致",
