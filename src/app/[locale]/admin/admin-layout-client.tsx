@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Users, Shield, KeyRound, DollarSign, CreditCard, Coins, FolderOpen, FileText, Settings, Home, Ticket, Film, ChartNoAxesCombined } from "lucide-react";
+import { LayoutDashboard, Users, Shield, KeyRound, DollarSign, CreditCard, Coins, FolderOpen, FileText, Settings, Home, Ticket, Film, ChartNoAxesCombined, Bug } from "lucide-react";
 import { AppLayout } from "@/components/app-layout";
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -25,6 +25,7 @@ export function AdminLayoutClient({
     { href: "/admin/subscriptions", label: t("nav.subscriptions"), icon: CreditCard, group: t("nav.billing") },
     { href: "/admin/credits", label: t("nav.credits"), icon: Coins, group: t("nav.billing") },
     { href: "/admin/analytics", label: t("nav.analytics"), icon: ChartNoAxesCombined, group: t("nav.business") },
+    { href: "/admin/bug-radar", label: t("nav.bug_radar"), icon: Bug, group: t("nav.business") },
     { href: "/admin/creations", label: t("nav.creations"), icon: Film, group: t("nav.business") },
   ];
 

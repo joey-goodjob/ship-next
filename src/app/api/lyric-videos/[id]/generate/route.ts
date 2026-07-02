@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { getAuth } from '@/core/auth';
 import { logLyricStage, logLyricStageError } from '@/lib/lyric-video-log';
 import { respData, respErr } from '@/lib/resp';
+import { recordBugProblemEvent } from '@/modules/bug-radar/service';
 import * as service from '@/modules/lyric-videos/service';
 
 export const runtime = 'nodejs';
@@ -14,6 +15,15 @@ async function getUserId() {
   return session?.user?.id;
 }
 
+function getClientIp(req: Request) {
+  return (
+    req.headers.get('cf-connecting-ip') ||
+    req.headers.get('x-real-ip') ||
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    ''
+  );
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -23,6 +33,8 @@ export async function POST(
 
   const startedAt = Date.now();
   const { id } = await params;
+  const userAgent = req.headers.get('user-agent') || '';
+  const ip = getClientIp(req);
   try {
     const body = await req.json().catch(() => ({}));
     const idempotencyKey = req.headers.get('idempotency-key') || body.idempotencyKey;
@@ -79,6 +91,25 @@ export async function POST(
             projectId: id,
             runId: execution.run.id,
           });
+          await recordBugProblemEvent({
+            eventType: 'generation_failed',
+            severity: 'error',
+            source: 'api',
+            flow: 'lyric_video_generation',
+            action: 'generation_background_failed',
+            pathname: `/api/lyric-videos/${id}/generate`,
+            apiPath: `/api/lyric-videos/${id}/generate`,
+            method: 'POST',
+            statusCode: 500,
+            projectId: id,
+            runId: execution.run.id,
+            message: error?.message || 'Generation background failed',
+            stack: error?.stack || '',
+            userId,
+            userAgent,
+            ip,
+            metadata: { durationMs: Date.now() - backgroundStartedAt },
+          }).catch(() => undefined);
         }
       });
     }
@@ -111,6 +142,24 @@ export async function POST(
       durationMs: Date.now() - startedAt,
       projectId: id,
     });
+    await recordBugProblemEvent({
+      eventType: 'generation_failed',
+      severity: 'error',
+      source: 'api',
+      flow: 'lyric_video_generation',
+      action: 'generation_route_failed',
+      pathname: `/api/lyric-videos/${id}/generate`,
+      apiPath: `/api/lyric-videos/${id}/generate`,
+      method: 'POST',
+      statusCode: 500,
+      projectId: id,
+      message: error?.message || 'Start generation failed',
+      stack: error?.stack || '',
+      userId,
+      userAgent,
+      ip,
+      metadata: { durationMs: Date.now() - startedAt },
+    }).catch(() => undefined);
     return respErr(error?.message || 'Start generation failed');
   }
 }

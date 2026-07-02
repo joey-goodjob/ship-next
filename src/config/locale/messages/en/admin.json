@@ -20,11 +20,62 @@
     "credits": "Credits",
     "invite_codes": "Invite Codes",
     "analytics": "Traffic Analytics",
+    "bug_radar": "Bug Radar",
     "creations": "Usage Records"
   },
   "stats": {
     "total_users": "Total Users",
     "roles": "Roles"
+  },
+  "bug_radar": {
+    "title": "Bug Radar",
+    "description": "Find real upload, generation, API, provider, and frontend blockers from today's user flow.",
+    "refresh": "Refresh",
+    "load_failed": "Failed to load Bug Radar.",
+    "missing_table": "bug_problem_event table is not available yet. Run the database migration before events can be stored.",
+    "show_tests": "Show tests",
+    "hide_tests": "Hide tests",
+    "empty": "No problem events in this window.",
+    "test_created": "Test event recorded",
+    "test_failed": "Failed to create test event",
+    "cards": {
+      "critical": "Critical",
+      "high": "High",
+      "users": "Users",
+      "events": "Events",
+      "tests": "Test Events",
+      "problem_count": "problem groups",
+      "real_users": "affected real users",
+      "real_events": "real events",
+      "test_events": "admin test events"
+    },
+    "test": {
+      "title": "Test Radar Events",
+      "description": "Create safe admin-only test events to verify storage, grouping, and the page view."
+    },
+    "top": {
+      "title": "Top Suspected Problems Today",
+      "description": "Grouped by type, page, flow, action, and normalized error summary."
+    },
+    "table": {
+      "priority": "Priority",
+      "problem": "Problem Type",
+      "page": "Page",
+      "users": "Users",
+      "count": "Count",
+      "browser": "Device / Browser",
+      "last_seen": "Last Seen"
+    },
+    "detail": {
+      "title": "Problem Detail",
+      "flow": "Flow",
+      "action": "Action",
+      "users": "Affected Users",
+      "timeline": "Example Timeline"
+    },
+    "flows": {
+      "title": "Flow Failure Map"
+    }
   },
   "analytics": {
     "title": "Traffic Analytics",

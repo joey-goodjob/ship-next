@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "@/core/i18n/navigation";
 import { DEFAULT_CHARACTER_PRESET_SLUG, getCharacterPreset, type CharacterPreset } from "@/lib/character-presets";
 import { logLyricStage, logLyricStageError } from "@/lib/lyric-video-log";
+import { reportBugEvent } from "@/lib/bug-radar-client";
 
 type ApiResponse<T> = {
   code: number;
@@ -142,6 +143,17 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
     size: file.size,
     type: file.type,
   });
+  reportBugEvent({
+    eventType: "upload_start",
+    severity: "info",
+    flow: "mp3_upload",
+    action: "upload_start",
+    metadata: {
+      filename: file.name,
+      size: file.size,
+      type: file.type,
+    },
+  });
 
   try {
     onProgress?.(0);
@@ -180,9 +192,36 @@ async function uploadAudioFile(file: File, onProgress?: (progress: number) => vo
       checksum: uploaded.checksum,
       deduped: uploaded.deduped,
     });
+    reportBugEvent({
+      eventType: "upload_success",
+      severity: "info",
+      flow: "mp3_upload",
+      action: "upload_success",
+      metadata: {
+        durationMs: Date.now() - startedAt,
+        filename: uploaded.filename,
+        size: uploaded.size,
+        contentType: uploaded.contentType,
+        deduped: uploaded.deduped,
+      },
+    });
     return uploaded;
   } catch (error) {
     logLyricStageError("upload-audio", "fail", error, { durationMs: Date.now() - startedAt });
+    reportBugEvent({
+      eventType: "upload_failed",
+      severity: "error",
+      flow: "mp3_upload",
+      action: "upload_failed",
+      message: error instanceof Error ? error.message : String(error || "Audio upload failed"),
+      stack: error instanceof Error ? error.stack || "" : "",
+      metadata: {
+        durationMs: Date.now() - startedAt,
+        filename: file.name,
+        size: file.size,
+        type: file.type,
+      },
+    });
     throw error;
   }
 }
@@ -267,26 +306,45 @@ export function useLyricVideoCreationFlow() {
         aspectRatio: payload.options.aspectRatio,
         resolution: payload.options.resolution,
       });
-      const project = await requestJson<LyricVideoProject>("/api/lyric-videos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: projectTitle,
-          audioUrl: payload.uploaded.url,
-          audioStorageKey: payload.uploaded.key,
-          originalAudioUrl: payload.uploaded.url,
-          originalAudioStorageKey: payload.uploaded.key,
-          audioFilename: filename,
-          audioDurationMs: originalDurationMs,
-          audioMimeType: payload.fileType || "audio/mpeg",
-          audioSizeBytes: payload.uploaded.size || payload.fileSize,
-          audioChecksum: payload.uploaded.checksum,
-          trimStartMs,
-          trimEndMs,
-          aspectRatio: payload.options.aspectRatio,
-          resolution: payload.options.resolution,
-        }),
-      });
+      let project: LyricVideoProject;
+      try {
+        project = await requestJson<LyricVideoProject>("/api/lyric-videos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: projectTitle,
+            audioUrl: payload.uploaded.url,
+            audioStorageKey: payload.uploaded.key,
+            originalAudioUrl: payload.uploaded.url,
+            originalAudioStorageKey: payload.uploaded.key,
+            audioFilename: filename,
+            audioDurationMs: originalDurationMs,
+            audioMimeType: payload.fileType || "audio/mpeg",
+            audioSizeBytes: payload.uploaded.size || payload.fileSize,
+            audioChecksum: payload.uploaded.checksum,
+            trimStartMs,
+            trimEndMs,
+            aspectRatio: payload.options.aspectRatio,
+            resolution: payload.options.resolution,
+          }),
+        });
+      } catch (error) {
+        reportBugEvent({
+          eventType: "create_task_failed",
+          severity: "error",
+          flow: "lyric_video_generation",
+          action: "create_project_failed",
+          apiPath: "/api/lyric-videos",
+          method: "POST",
+          message: error instanceof Error ? error.message : String(error || "Create lyric video failed"),
+          stack: error instanceof Error ? error.stack || "" : "",
+          metadata: {
+            filename,
+            durationMs: Date.now() - createStartedAt,
+          },
+        });
+        throw error;
+      }
       logLyricStage("create-project", "success", {
         durationMs: Date.now() - createStartedAt,
         projectId: project.id,
@@ -347,12 +405,42 @@ export function useLyricVideoCreationFlow() {
       setStage("generating");
       const generateStartedAt = Date.now();
       logLyricStage("guided-generate", "wait-start", { projectId: project.id });
-      const generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "guided", wait: true }),
+      reportBugEvent({
+        eventType: "generation_start",
+        severity: "info",
+        flow: "lyric_video_generation",
+        action: "generation_start",
+        projectId: project.id,
       });
-      assertPrompt1DirectionReady(generated);
+      let generated: GenerationRunResponse | null = null;
+      try {
+        generated = await requestJson<GenerationRunResponse>(`/api/lyric-videos/${project.id}/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "guided", wait: true }),
+        });
+        assertPrompt1DirectionReady(generated);
+      } catch (error) {
+        reportBugEvent({
+          eventType: "generation_failed",
+          severity: "error",
+          flow: "lyric_video_generation",
+          action: "generation_wait_failed",
+          projectId: project.id,
+          apiPath: `/api/lyric-videos/${project.id}/generate`,
+          method: "POST",
+          message: error instanceof Error ? error.message : String(error || "Generation failed"),
+          stack: error instanceof Error ? error.stack || "" : "",
+          metadata: {
+            durationMs: Date.now() - generateStartedAt,
+            directionReady: generated?.directionReady,
+            stopAfter: generated?.stopAfter,
+            hasStoryPrompt: Boolean(generated?.project?.storyPrompt),
+            storyActsCount: generated?.songAnalysis?.story_acts?.length || 0,
+          },
+        });
+        throw error;
+      }
       logLyricStage("guided-generate", "direction-ready", {
         durationMs: Date.now() - generateStartedAt,
         projectId: project.id,
@@ -372,6 +460,13 @@ export function useLyricVideoCreationFlow() {
 
       clearPendingPayload();
       setStage("redirecting");
+      reportBugEvent({
+        eventType: "preview_opened",
+        severity: "info",
+        flow: "lyric_video_generation",
+        action: "preview_opened",
+        projectId: project.id,
+      });
       router.push(`/creations/${project.id}/preview`);
     },
     [router],
@@ -503,6 +598,14 @@ export function useLyricVideoCreationFlow() {
     } catch (err: any) {
       setStage("failed");
       setError(err?.message || "Failed to create lyric video");
+      reportBugEvent({
+        eventType: "login_resume_failed",
+        severity: "error",
+        flow: "mp3_upload",
+        action: "resume_pending_upload_failed",
+        message: err?.message || "Failed to create lyric video",
+        stack: err?.stack || "",
+      });
       return false;
     }
   }, [createProjectAndGenerate]);

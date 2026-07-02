@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
+import { BugEventReporter } from "@/components/bug-event-reporter";
 import { SiteTrafficTracker } from "@/components/site-traffic-tracker";
 import { buildAnalyticsConfig } from "@/lib/analytics-config";
 import { buildPublicMetadata } from "@/lib/site-metadata";
@@ -113,6 +114,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Suspense fallback={null}>
+            <BugEventReporter />
             <SiteTrafficTracker />
           </Suspense>
           {children}

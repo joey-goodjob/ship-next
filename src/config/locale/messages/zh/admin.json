@@ -20,11 +20,62 @@
     "credits": "积分",
     "invite_codes": "邀请码",
     "analytics": "访问统计",
+    "bug_radar": "Bug Radar",
     "creations": "使用记录"
   },
   "stats": {
     "total_users": "总用户数",
     "roles": "角色数"
+  },
+  "bug_radar": {
+    "title": "Bug Radar",
+    "description": "从真实用户流程里发现上传、生成、API、provider 和前端阻断问题。",
+    "refresh": "刷新",
+    "load_failed": "Bug Radar 加载失败。",
+    "missing_table": "bug_problem_event 表还没有创建。需要先执行数据库迁移，后续问题事件才会被写入。",
+    "show_tests": "显示测试事件",
+    "hide_tests": "隐藏测试事件",
+    "empty": "当前时间窗口内暂无问题事件。",
+    "test_created": "测试事件已记录",
+    "test_failed": "测试事件创建失败",
+    "cards": {
+      "critical": "Critical",
+      "high": "High",
+      "users": "影响用户",
+      "events": "真实事件",
+      "tests": "测试事件",
+      "problem_count": "问题分组",
+      "real_users": "真实受影响用户",
+      "real_events": "真实事件数",
+      "test_events": "Admin 测试事件"
+    },
+    "test": {
+      "title": "测试 Radar 事件",
+      "description": "创建安全的 admin-only 测试事件，用来验证写入、聚合和后台展示效果。"
+    },
+    "top": {
+      "title": "今日疑似问题 Top 列表",
+      "description": "按问题类型、页面、流程、动作和错误摘要分组。"
+    },
+    "table": {
+      "priority": "优先级",
+      "problem": "问题类型",
+      "page": "页面",
+      "users": "用户数",
+      "count": "次数",
+      "browser": "设备 / 浏览器",
+      "last_seen": "最近发生"
+    },
+    "detail": {
+      "title": "问题详情",
+      "flow": "流程",
+      "action": "动作",
+      "users": "影响用户",
+      "timeline": "示例时间线"
+    },
+    "flows": {
+      "title": "流程失败地图"
+    }
   },
   "analytics": {
     "title": "访问统计",

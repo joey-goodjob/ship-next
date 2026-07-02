@@ -430,6 +430,46 @@ export const trafficEvent = table(
   ]
 );
 
+export const bugProblemEvent = table(
+  'bug_problem_event',
+  {
+    id: text('id').primaryKey(),
+    eventType: text('event_type').notNull(),
+    severity: text('severity').notNull().default('info'),
+    source: text('source').notNull().default('client'),
+    flow: text('flow').notNull().default('unknown'),
+    action: text('action').notNull().default('unknown'),
+    pathname: text('pathname').notNull().default('/'),
+    pageTitle: text('page_title'),
+    message: text('message'),
+    stack: text('stack'),
+    component: text('component'),
+    apiPath: text('api_path'),
+    method: text('method'),
+    statusCode: integer('status_code'),
+    projectId: text('project_id'),
+    runId: text('run_id'),
+    visitorId: text('visitor_id').notNull().default(''),
+    sessionId: text('session_id').notNull().default(''),
+    userId: text('user_id').notNull().default(''),
+    userAgent: text('user_agent').notNull().default(''),
+    ipHash: text('ip_hash').notNull().default(''),
+    locale: text('locale').notNull().default(''),
+    metadataJson: text('metadata_json'),
+    isTest: integer('is_test', { mode: 'boolean' }).default(false).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sqliteNowMs)
+      .notNull(),
+  },
+  (table) => [
+    index('idx_bug_problem_event_created_at').on(table.createdAt),
+    index('idx_bug_problem_event_type_created').on(table.eventType, table.createdAt),
+    index('idx_bug_problem_event_flow_created').on(table.flow, table.createdAt),
+    index('idx_bug_problem_event_path_created').on(table.pathname, table.createdAt),
+    index('idx_bug_problem_event_user_created').on(table.userId, table.createdAt),
+  ]
+);
+
 // ─── RBAC ────────────────────────────────────────────────────────────────────
 
 export const role = table(
@@ -1175,3 +1215,5 @@ export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
 export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;
 export type LyricVideoMediaJob = typeof lyricVideoMediaJob.$inferSelect;
 export type NewLyricVideoMediaJob = typeof lyricVideoMediaJob.$inferInsert;
+export type BugProblemEvent = typeof bugProblemEvent.$inferSelect;
+export type NewBugProblemEvent = typeof bugProblemEvent.$inferInsert;

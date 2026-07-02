@@ -385,6 +385,44 @@ export const trafficEvent = table(
   ]
 );
 
+export const bugProblemEvent = table(
+  'bug_problem_event',
+  {
+    id: varchar191('id').primaryKey(),
+    eventType: varchar('event_type', { length: 80 }).notNull(),
+    severity: varchar('severity', { length: 20 }).notNull().default('info'),
+    source: varchar('source', { length: 40 }).notNull().default('client'),
+    flow: varchar('flow', { length: 80 }).notNull().default('unknown'),
+    action: varchar('action', { length: 100 }).notNull().default('unknown'),
+    pathname: varchar('pathname', { length: 500 }).notNull().default('/'),
+    pageTitle: varchar('page_title', { length: 200 }),
+    message: text('message'),
+    stack: longtext('stack'),
+    component: varchar('component', { length: 120 }),
+    apiPath: varchar('api_path', { length: 300 }),
+    method: varchar('method', { length: 12 }),
+    statusCode: int('status_code'),
+    projectId: varchar191('project_id'),
+    runId: varchar191('run_id'),
+    visitorId: varchar191('visitor_id').notNull().default(''),
+    sessionId: varchar191('session_id').notNull().default(''),
+    userId: varchar191('user_id').notNull().default(''),
+    userAgent: text('user_agent').notNull(),
+    ipHash: varchar('ip_hash', { length: 24 }).notNull().default(''),
+    locale: varchar('locale', { length: 24 }).notNull().default(''),
+    metadataJson: longtext('metadata_json'),
+    isTest: boolean('is_test').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_bug_problem_event_created_at').on(table.createdAt),
+    index('idx_bug_problem_event_type_created').on(table.eventType, table.createdAt),
+    index('idx_bug_problem_event_flow_created').on(table.flow, table.createdAt),
+    index('idx_bug_problem_event_path_created').on(table.pathname, table.createdAt),
+    index('idx_bug_problem_event_user_created').on(table.userId, table.createdAt),
+  ]
+);
+
 // ─── RBAC ────────────────────────────────────────────────────────────────────
 
 export const role = table(
@@ -1021,3 +1059,5 @@ export type LyricVideoExport = typeof lyricVideoExport.$inferSelect;
 export type NewLyricVideoExport = typeof lyricVideoExport.$inferInsert;
 export type LyricVideoMediaJob = typeof lyricVideoMediaJob.$inferSelect;
 export type NewLyricVideoMediaJob = typeof lyricVideoMediaJob.$inferInsert;
+export type BugProblemEvent = typeof bugProblemEvent.$inferSelect;
+export type NewBugProblemEvent = typeof bugProblemEvent.$inferInsert;

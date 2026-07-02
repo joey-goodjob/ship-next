@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { reportBugEvent, reportVisibleUserError } from "@/lib/bug-radar-client";
 
 const DEFAULT_MAX_FILE_SIZE = 100 * 1024 * 1024;
 const DEFAULT_FORMATS = ["mp3", "wav", "flac", "aac", "ogg", "m4a"];
@@ -487,6 +488,23 @@ export function AudioUploadTrim({
     return [0, total * 0.25, total * 0.5, total * 0.75, total].map((value) => formatClock(value));
   }, [durationSeconds]);
 
+  function trackUploadEvent(
+    eventType: string,
+    action: string,
+    severity: "info" | "warning" | "error" = "info",
+    metadata?: Record<string, unknown>,
+    message?: string,
+  ) {
+    reportBugEvent({
+      eventType,
+      severity,
+      flow: "mp3_upload",
+      action,
+      message,
+      metadata,
+    });
+  }
+
   useEffect(() => {
     if (!showCredits) {
       setCreditBalance(null);
@@ -598,6 +616,7 @@ export function AudioUploadTrim({
   }
 
   function openAudioPicker() {
+    trackUploadEvent("upload_click", "open_picker");
     if (!enableSunoImport || sunoImportTrigger === "button") {
       audioInputRef.current?.click();
       return;
@@ -616,13 +635,36 @@ export function AudioUploadTrim({
   }
 
   async function selectAudioFile(file?: File | null) {
-    if (!file) return;
+    if (!file) {
+      trackUploadEvent("file_select_cancelled", "select_file");
+      return;
+    }
+    trackUploadEvent("file_selected", "select_file", "info", {
+      filename: file.name,
+      size: file.size,
+      type: file.type,
+    });
     if (!isSupportedAudioFile(file, acceptedFormats)) {
-      toast.error("Please choose an audio file");
+      const message = "Please choose an audio file";
+      trackUploadEvent("file_type_invalid", "validate_file_type", "error", {
+        filename: file.name,
+        size: file.size,
+        type: file.type,
+        acceptedFormats,
+      }, message);
+      reportVisibleUserError(message, { flow: "mp3_upload", action: "validate_file_type" });
+      toast.error(message);
       return;
     }
     if (file.size > maxFileSize) {
-      toast.error(`Audio file exceeds the ${maxFileSizeLabel} limit`);
+      const message = `Audio file exceeds the ${maxFileSizeLabel} limit`;
+      trackUploadEvent("file_size_invalid", "validate_file_size", "error", {
+        filename: file.name,
+        size: file.size,
+        maxFileSize,
+      }, message);
+      reportVisibleUserError(message, { flow: "mp3_upload", action: "validate_file_size" });
+      toast.error(message);
       return;
     }
 
@@ -652,9 +694,20 @@ export function AudioUploadTrim({
       setEndSeconds(Number(decoded.duration.toFixed(3)));
       setCurrentTime(0);
       setDurationStatus("ready");
+      trackUploadEvent("audio_duration_ready", "decode_audio", "info", {
+        filename: file.name,
+        durationSeconds: decoded.duration,
+      });
     } catch {
       setDurationStatus((status) => (status === "ready" ? "ready" : "error"));
-      toast.error("Unable to decode audio waveform");
+      const message = "Unable to decode audio waveform";
+      trackUploadEvent("audio_duration_failed", "decode_audio", "error", {
+        filename: file.name,
+        size: file.size,
+        type: file.type,
+      }, message);
+      reportVisibleUserError(message, { flow: "mp3_upload", action: "decode_audio" });
+      toast.error(message);
     }
   }
 
@@ -690,6 +743,14 @@ export function AudioUploadTrim({
       setImportDialogOpen(false);
     } catch (error: any) {
       setSunoImportError(error?.message || importCopy.errorFallback);
+      reportBugEvent({
+        eventType: "suno_import_failed",
+        severity: "error",
+        flow: "suno_import",
+        action: "import_suno_audio",
+        message: error?.message || importCopy.errorFallback,
+        metadata: { inputUrl },
+      });
     } finally {
       setSunoImportLoading(false);
     }
@@ -762,12 +823,35 @@ export function AudioUploadTrim({
   }
 
   async function generatePreview() {
+    reportBugEvent({
+      eventType: "generate_click",
+      severity: "info",
+      flow: "lyric_video_generation",
+      action: "generate_click",
+      metadata: {
+        hasAudio,
+        hasUploadedAudio: Boolean(uploadedAudio),
+        durationSeconds,
+        useEntireAudio,
+      },
+    });
     if (!hasAudio) {
-      toast.error("Choose an audio file first");
+      const message = "Choose an audio file first";
+      reportVisibleUserError(message, { flow: "mp3_upload", action: "generate_without_audio" });
+      toast.error(message);
       return;
     }
     if (!hasEnoughCredits) {
-      toast.error("Insufficient credits");
+      const message = "Insufficient credits";
+      reportBugEvent({
+        eventType: "generation_blocked",
+        severity: "warning",
+        flow: "lyric_video_generation",
+        action: "insufficient_credits",
+        message,
+      });
+      reportVisibleUserError(message, { flow: "lyric_video_generation", action: "insufficient_credits" });
+      toast.error(message);
       return;
     }
     setGenerateStatus("working");
@@ -785,7 +869,21 @@ export function AudioUploadTrim({
       setGenerateStatus(completionState);
     } catch (error: any) {
       setGenerateStatus("idle");
-      toast.error(error?.message || "Upload failed");
+      const message = error?.message || "Upload failed";
+      reportBugEvent({
+        eventType: "generation_failed",
+        severity: "error",
+        flow: "lyric_video_generation",
+        action: "generate_preview_failed",
+        message,
+        stack: error?.stack || "",
+        metadata: {
+          hasUploadedAudio: Boolean(uploadedAudio),
+          creationStage,
+        },
+      });
+      reportVisibleUserError(message, { flow: "lyric_video_generation", action: "generate_preview_failed" });
+      toast.error(message);
     }
   }
 
@@ -844,6 +942,10 @@ export function AudioUploadTrim({
       onError={() => {
         setAudioDurationMs(0);
         setDurationStatus("error");
+        trackUploadEvent("audio_duration_failed", "audio_metadata_error", "error", {
+          audioName,
+          hasUploadedAudio: Boolean(uploadedAudio),
+        }, "Unable to read duration");
       }}
       onPlay={() => setIsPlaying(true)}
       onPause={() => setIsPlaying(false)}
