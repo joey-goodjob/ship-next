@@ -11,12 +11,33 @@ export type ApiResponse<T> = {
 
 export type LyricPreviewConfig = {
   captionsEnabled?: boolean;
+  captionStyle?: string;
+  showWholeVerse?: boolean;
+  wordsPerGroup?: number;
   fontFamily?: string;
   fontSize?: number;
+  fontWeight?: number;
+  italic?: boolean;
+  underline?: boolean;
   textColor?: string;
+  letterSpacing?: number;
+  lineSpacing?: number;
+  fontCase?: string;
+  alignment?: string;
+  rotation?: number;
+  strokeColor?: string;
+  strokeWidth?: number;
   shadowColor?: string;
+  shadowEnabled?: boolean;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  shadowBlur?: number;
+  shadowOpacity?: number;
+  blendMode?: string;
+  opacity?: number;
   position?: string;
   transition?: string;
+  effect?: string;
 };
 
 export type LyricVideoProject = {

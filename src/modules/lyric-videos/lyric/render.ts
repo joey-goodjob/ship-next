@@ -149,9 +149,10 @@ export function buildAss(params: {
           buildCaptionChunks(params.words || [], {
             rangeStartMs: Number(scene.startMs || 0),
             rangeEndMs: Number(scene.endMs || 0),
+            wordsPerGroup: style.showWholeVerse ? undefined : Number(style.wordsPerGroup) || 3,
           })
         )
-      : buildCaptionChunks(params.words || []);
+      : buildCaptionChunks(params.words || [], { wordsPerGroup: style.showWholeVerse ? undefined : Number(style.wordsPerGroup) || 3 });
   const captionLines =
     wordCaptionChunks.length > 0
       ? wordCaptionChunks.map((chunk) => ({
@@ -165,12 +166,27 @@ export function buildAss(params: {
           text: line.text,
         }));
 
+  const assTextTransform = (text: string) => {
+    if (style.fontCase === 'uppercase') return text.toUpperCase();
+    if (style.fontCase === 'lowercase') return text.toLowerCase();
+    if (style.fontCase === 'capitalize') {
+      return text
+        .toLowerCase()
+        .replace(/\p{L}[\p{L}\p{M}'-]*/gu, (word) => word.charAt(0).toUpperCase() + word.slice(1));
+    }
+    return text;
+  };
   const events = captionLines
     .map(
       (line) =>
-        `Dialogue: 0,${assTime(line.startMs || 0)},${assTime(line.endMs || (line.startMs || 0) + 3500)},Default,,0,0,0,,${escapeAssText(line.text)}`
+        `Dialogue: 0,${assTime(line.startMs || 0)},${assTime(line.endMs || (line.startMs || 0) + 3500)},Default,,0,0,0,,${escapeAssText(assTextTransform(line.text))}`
     )
     .join('\n');
+  const outline = Math.max(0, Math.round(Number(style.strokeWidth) || 0));
+  const shadow = style.shadowEnabled === false ? 0 : Math.max(0, Math.round(Number(style.shadowBlur) || 0) > 0 ? 1 : 0);
+  const italic = style.italic ? -1 : 0;
+  const underline = style.underline ? -1 : 0;
+  const spacing = Math.max(-4, Math.min(12, Math.round(Number(style.letterSpacing) || 0)));
 
   return `[Script Info]
 ScriptType: v4.00+
@@ -179,7 +195,7 @@ PlayResY: ${params.height}
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,${style.fontFamily || 'Inter'},${Number(style.fontSize) || 56},${cssHexToAss(style.textColor, '#ffffff')},&H000000FF,${cssHexToAss(style.shadowColor, '#000000')},&H99000000,-1,0,0,0,100,100,0,0,1,3,1,${alignment},80,80,${marginV},1
+Style: Default,${style.fontFamily || 'Inter'},${Number(style.fontSize) || 56},${cssHexToAss(style.textColor, '#ffffff')},&H000000FF,${cssHexToAss(style.strokeColor || style.shadowColor, '#000000')},&H99000000,-1,${italic},${underline},0,100,100,${spacing},${Number(style.rotation) || 0},1,${outline},${shadow},${alignment},80,80,${marginV},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

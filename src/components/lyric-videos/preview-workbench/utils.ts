@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type {
   GenerationRun,
   GenerationStep,
@@ -10,10 +11,62 @@ import type {
   ProjectDetails,
   RuntimeState,
 } from "./types";
-import { DEFAULT_CAPTION_FONT_SIZE, LYRIC_FRAME_RATE, MAX_CAPTION_FONT_SIZE, MIN_CAPTION_FONT_SIZE } from "./constants";
+import {
+  CAPTION_BLEND_MODE_OPTIONS,
+  CAPTION_EFFECT_OPTIONS,
+  CAPTION_FONT_OPTIONS,
+  CAPTION_STYLE_OPTIONS,
+  DEFAULT_CAPTION_FONT_SIZE,
+  LYRIC_FRAME_RATE,
+  MAX_CAPTION_FONT_SIZE,
+  MIN_CAPTION_FONT_SIZE,
+} from "./constants";
 
 export function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function numericConfigValue(value: unknown, fallback: number, min: number, max: number) {
+  const numeric = Number(value);
+  return Math.round(clamp(Number.isFinite(numeric) ? numeric : fallback, min, max));
+}
+
+function captionJustifyClass(alignment?: string) {
+  if (alignment === "left") return "justify-start";
+  if (alignment === "right") return "justify-end";
+  return "justify-center";
+}
+
+function captionContainerClassName({
+  alignment,
+  bottomClass,
+  centerClass,
+  insetClass,
+  position,
+  topClass,
+}: {
+  alignment?: string;
+  bottomClass: string;
+  centerClass: string;
+  insetClass: string;
+  position?: string;
+  topClass: string;
+}) {
+  const justifyClass = captionJustifyClass(alignment);
+  if (position === "top") return `absolute ${insetClass} ${topClass} flex items-start ${justifyClass}`;
+  if (position === "center") return `absolute ${insetClass} ${centerClass} flex items-center ${justifyClass}`;
+  return `absolute ${insetClass} ${bottomClass} flex items-end ${justifyClass}`;
+}
+
+export function applyCaptionFontCase(text: string, fontCase?: string) {
+  if (fontCase === "uppercase") return text.toUpperCase();
+  if (fontCase === "lowercase") return text.toLowerCase();
+  if (fontCase === "capitalize") {
+    return text
+      .toLowerCase()
+      .replace(/\p{L}[\p{L}\p{M}'-]*/gu, (word) => word.charAt(0).toUpperCase() + word.slice(1));
+  }
+  return text;
 }
 
 export function normalizePreviewConfig(config?: LyricVideoProject["previewConfig"]): LyricPreviewConfig {
@@ -28,14 +81,157 @@ export function normalizePreviewConfig(config?: LyricVideoProject["previewConfig
   const raw = rawConfig && typeof rawConfig === "object" ? (rawConfig as LyricPreviewConfig) : {};
   const numericFontSize = Number(raw.fontSize);
   const fontSize = Number.isFinite(numericFontSize) ? numericFontSize : DEFAULT_CAPTION_FONT_SIZE;
+  const captionStyle = CAPTION_STYLE_OPTIONS.some((option) => option.value === raw.captionStyle) ? raw.captionStyle : "classic";
+  const fontFamily = CAPTION_FONT_OPTIONS.some((option) => option.value === raw.fontFamily) ? raw.fontFamily : "Inter";
+  const effect = CAPTION_EFFECT_OPTIONS.some((option) => option.value === raw.effect)
+    ? raw.effect
+    : CAPTION_EFFECT_OPTIONS.some((option) => option.value === raw.transition)
+      ? raw.transition
+      : "fade";
+  const blendMode = CAPTION_BLEND_MODE_OPTIONS.some((option) => option.value === raw.blendMode) ? raw.blendMode : "normal";
+  const position = ["top", "center", "bottom"].includes(raw.position || "") ? raw.position : "bottom";
+  const alignment = ["left", "center", "right"].includes(raw.alignment || "") ? raw.alignment : "center";
+  const fontCase = ["none", "capitalize", "uppercase", "lowercase"].includes(raw.fontCase || "") ? raw.fontCase : "none";
   return {
     captionsEnabled: raw.captionsEnabled !== false,
-    fontFamily: raw.fontFamily || "Inter",
+    captionStyle,
+    showWholeVerse: Boolean(raw.showWholeVerse),
+    wordsPerGroup: numericConfigValue(raw.wordsPerGroup, 3, 1, 8),
+    fontFamily,
     fontSize: Math.round(clamp(fontSize, MIN_CAPTION_FONT_SIZE, MAX_CAPTION_FONT_SIZE)),
+    fontWeight: numericConfigValue(raw.fontWeight, 850, 400, 950),
+    italic: Boolean(raw.italic),
+    underline: Boolean(raw.underline),
     textColor: raw.textColor || "#ffffff",
+    letterSpacing: numericConfigValue(raw.letterSpacing, 0, -4, 12),
+    lineSpacing: numericConfigValue(raw.lineSpacing, 0, -10, 24),
+    fontCase,
+    alignment,
+    rotation: numericConfigValue(raw.rotation, 0, -45, 45),
+    strokeColor: raw.strokeColor || "#000000",
+    strokeWidth: numericConfigValue(raw.strokeWidth, 0, 0, 12),
     shadowColor: raw.shadowColor || "#000000",
-    position: raw.position || "bottom",
-    transition: raw.transition || "fade",
+    shadowEnabled: raw.shadowEnabled !== false,
+    shadowOffsetX: numericConfigValue(raw.shadowOffsetX, 2, -24, 24),
+    shadowOffsetY: numericConfigValue(raw.shadowOffsetY, 2, -24, 24),
+    shadowBlur: numericConfigValue(raw.shadowBlur, 8, 0, 40),
+    shadowOpacity: numericConfigValue(raw.shadowOpacity, 80, 0, 100),
+    blendMode,
+    opacity: numericConfigValue(raw.opacity, 100, 0, 100),
+    position,
+    transition: effect,
+    effect,
+  };
+}
+
+export function getPreviewCaptionStyle(config: LyricPreviewConfig) {
+  const fontSize = config.fontSize || DEFAULT_CAPTION_FONT_SIZE;
+  const effectClass = config.effect === "none" ? "" : `lyric-caption-motion-${config.effect || "fade"}`;
+  const shadowOpacity = clamp((config.shadowOpacity ?? 80) / 100, 0, 1);
+  const textShadow = config.shadowEnabled
+    ? `${config.shadowOffsetX || 0}px ${config.shadowOffsetY || 0}px ${config.shadowBlur || 0}px color-mix(in srgb, ${config.shadowColor || "#000000"} ${Math.round(
+        shadowOpacity * 100,
+      )}%, transparent)`
+    : "none";
+  const baseTextStyle: CSSProperties = {
+    fontFamily: config.fontFamily,
+    color: config.textColor,
+    fontWeight: config.fontWeight,
+    fontStyle: config.italic ? "italic" : "normal",
+    textDecoration: config.underline ? "underline" : "none",
+    letterSpacing: `${config.letterSpacing || 0}px`,
+    lineHeight: `${1.12 + (config.lineSpacing || 0) / 100}`,
+    textAlign: config.alignment as CSSProperties["textAlign"],
+    textTransform: config.fontCase === "uppercase" ? "uppercase" : config.fontCase === "lowercase" ? "lowercase" : "none",
+    textShadow,
+    WebkitTextStroke: `${config.strokeWidth || 0}px ${config.strokeColor || "#000000"}`,
+    paintOrder: "stroke fill",
+    mixBlendMode: (config.blendMode === "normal" ? "normal" : config.blendMode) as CSSProperties["mixBlendMode"],
+    opacity: clamp((config.opacity ?? 100) / 100, 0, 1),
+    transform: `rotate(${config.rotation || 0}deg)`,
+  };
+  const sizedTextStyle = (vw: string) => ({
+    ...baseTextStyle,
+    fontSize: `clamp(${Math.max(18, Math.round(fontSize * 0.72))}px, ${vw}, ${fontSize}px)`,
+  });
+
+  if (config.captionStyle === "cinematic") {
+    return {
+      containerClassName: captionContainerClassName({
+        alignment: config.alignment,
+        bottomClass: "bottom-[12%]",
+        centerClass: "inset-y-[16%]",
+        insetClass: "inset-x-[36px]",
+        position: config.position,
+        topClass: "top-[12%]",
+      }),
+      textClassName: `${effectClass} max-w-[84%] text-center font-[900] uppercase leading-[1.05] text-white`,
+      textStyle: {
+        ...sizedTextStyle("2.65vw"),
+      },
+    };
+  }
+
+  if (config.captionStyle === "pop") {
+    return {
+      containerClassName: captionContainerClassName({
+        alignment: config.alignment,
+        bottomClass: "bottom-[12%]",
+        centerClass: "inset-y-[18%]",
+        insetClass: "inset-x-[30px]",
+        position: config.position,
+        topClass: "top-[12%]",
+      }),
+      textClassName:
+        `${effectClass || "lyric-caption-motion-pop"} max-w-[86%] rounded-[12px] bg-black/30 px-[22px] py-[12px] text-center font-[950] leading-[1.05] text-white shadow-[0_16px_42px_rgba(0,0,0,0.28)]`,
+      textStyle: sizedTextStyle("3vw"),
+    };
+  }
+
+  if (config.captionStyle === "slide") {
+    return {
+      containerClassName: captionContainerClassName({
+        alignment: config.alignment,
+        bottomClass: "bottom-[14%]",
+        centerClass: "inset-y-[16%]",
+        insetClass: "inset-x-[32px]",
+        position: config.position,
+        topClass: "top-[14%]",
+      }),
+      textClassName:
+        `${effectClass || "lyric-caption-motion-slide"} max-w-[82%] rounded-[10px] bg-black/38 px-[18px] py-[10px] text-center font-[900] leading-[1.1] text-white`,
+      textStyle: sizedTextStyle("2.55vw"),
+    };
+  }
+
+  if (config.captionStyle === "stacked") {
+    return {
+      containerClassName: captionContainerClassName({
+        alignment: config.alignment,
+        bottomClass: "bottom-[9%]",
+        centerClass: "inset-y-[14%]",
+        insetClass: "inset-x-[32px]",
+        position: config.position,
+        topClass: "top-[9%]",
+      }),
+      textClassName:
+        `${effectClass} max-w-[86%] rounded-[14px] bg-black/42 px-[18px] py-[12px] text-center font-[850] leading-[1.12] text-white shadow-[0_14px_34px_rgba(0,0,0,0.26)]`,
+      textStyle: sizedTextStyle("2.35vw"),
+    };
+  }
+
+  return {
+    containerClassName: captionContainerClassName({
+      alignment: config.alignment,
+      bottomClass: "bottom-[10%]",
+      centerClass: "inset-y-[14%]",
+      insetClass: "inset-x-[32px]",
+      position: config.position,
+      topClass: "top-[10%]",
+    }),
+    textClassName:
+      `${effectClass} max-w-[82%] rounded-[8px] bg-black/34 px-[18px] py-[10px] text-center font-[850] leading-[1.12] text-white shadow-[0_12px_30px_rgba(0,0,0,0.2)]`,
+    textStyle: sizedTextStyle("2.5vw"),
   };
 }
 

@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useRef } from "react";
 import { RefreshCcw, Wand2 } from "lucide-react";
 import { findActiveCaptionChunk } from "@/lib/lyric-caption-chunks";
-import { DEFAULT_CAPTION_FONT_SIZE } from "./constants";
+import { cn } from "@/lib/utils";
 import { useEditor } from "./editor-context";
 import { usePlayback } from "./playback-context";
 import { RoadmapGuide } from "./roadmap-guide";
 import {
+  applyCaptionFontCase,
   clamp,
   deriveGenerationProgress,
+  getPreviewCaptionStyle,
   getPreviewStageStyle,
   getSceneVideoPreloadUrls,
   msToSeconds,
@@ -51,15 +53,38 @@ export function VideoPreview() {
     const activeChunk = findActiveCaptionChunk(words, currentMs, {
       rangeStartMs: currentScene?.startMs,
       rangeEndMs: currentScene?.endMs,
+      wordsPerGroup: previewConfig.showWholeVerse ? undefined : previewConfig.wordsPerGroup,
     });
     return resolvePreviewCaptionText({
-      activeChunkText: activeChunk?.text,
+      activeChunkText: previewConfig.showWholeVerse ? undefined : activeChunk?.text,
       currentLine,
       currentTimeMs: currentMs,
       hasLyrics,
       fallbackTitle: project?.title,
     });
-  }, [currentLine, currentScene?.endMs, currentScene?.startMs, currentTime, hasLyrics, project?.title, words]);
+  }, [
+    currentLine,
+    currentScene?.endMs,
+    currentScene?.startMs,
+    currentTime,
+    hasLyrics,
+    previewConfig.showWholeVerse,
+    previewConfig.wordsPerGroup,
+    project?.title,
+    words,
+  ]);
+  const previewCaptionStyle = useMemo(() => getPreviewCaptionStyle(previewConfig), [previewConfig]);
+  const displayCaptionText = useMemo(() => applyCaptionFontCase(captionText, previewConfig.fontCase), [captionText, previewConfig.fontCase]);
+  const stackedCaptionLines = useMemo(
+    () =>
+      resolveStackedCaptionLines({
+        captionText: displayCaptionText,
+        currentLine,
+        fontCase: previewConfig.fontCase,
+        lines,
+      }),
+    [currentLine, displayCaptionText, lines, previewConfig.fontCase],
+  );
 
   useEffect(() => {
     const video = sceneVideoRef.current;
@@ -135,21 +160,35 @@ export function VideoPreview() {
                 tabIndex={-1}
               />
             ))}
-            {previewConfig.captionsEnabled && captionText ? (
-              <div className="absolute inset-x-[32px] bottom-[8%] flex justify-center">
-                <p
-                  className="max-w-[78%] rounded-[5px] bg-black/35 px-[12px] py-[7px] text-center font-[800] leading-[1.18] text-white"
-                  style={{
-                    fontFamily: previewConfig.fontFamily,
-                    fontSize: `clamp(${Math.max(18, Math.round((previewConfig.fontSize || DEFAULT_CAPTION_FONT_SIZE) * 0.72))}px, 2.15vw, ${
-                      previewConfig.fontSize || DEFAULT_CAPTION_FONT_SIZE
-                    }px)`,
-                    color: previewConfig.textColor,
-                    textShadow: `0 1px 3px ${previewConfig.shadowColor || "rgba(0,0,0,0.75)"}`,
-                  }}
-                >
-                  {captionText}
-                </p>
+            {previewConfig.captionsEnabled && displayCaptionText ? (
+              <div className={previewCaptionStyle.containerClassName}>
+                {previewConfig.captionStyle === "stacked" && stackedCaptionLines.length > 1 ? (
+                  <div
+                    key={`${previewConfig.captionStyle}-${displayCaptionText}`}
+                    className={previewCaptionStyle.textClassName}
+                    style={previewCaptionStyle.textStyle}
+                  >
+                    {stackedCaptionLines.map((line) => (
+                      <p
+                        key={`${line.tone}-${line.text}`}
+                        className={cn(
+                          "mx-auto max-w-full truncate",
+                          line.tone === "current" ? "text-[1em] opacity-100" : "text-[0.68em] opacity-55",
+                        )}
+                      >
+                        {line.text}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p
+                    key={`${previewConfig.captionStyle}-${displayCaptionText}`}
+                    className={previewCaptionStyle.textClassName}
+                    style={previewCaptionStyle.textStyle}
+                  >
+                    {displayCaptionText}
+                  </p>
+                )}
               </div>
             ) : null}
           </>
@@ -174,6 +213,34 @@ export function VideoPreview() {
       </div>
     </section>
   );
+}
+
+function resolveStackedCaptionLines({
+  captionText,
+  currentLine,
+  fontCase,
+  lines,
+}: {
+  captionText: string;
+  currentLine?: { id?: string; startMs: number; endMs: number; text: string };
+  fontCase?: string;
+  lines: Array<{ id?: string; startMs: number; endMs: number; text: string }>;
+}) {
+  const currentText = captionText.trim();
+  if (!currentText) return [];
+
+  const currentIndex = lines.findIndex((line) => {
+    if (currentLine?.id && line.id === currentLine.id) return true;
+    return line.startMs === currentLine?.startMs && line.endMs === currentLine?.endMs && line.text === currentLine?.text;
+  });
+
+  if (currentIndex < 0) return [{ tone: "current" as const, text: currentText }];
+
+  return [
+    { tone: "previous" as const, text: applyCaptionFontCase(lines[currentIndex - 1]?.text?.trim() || "", fontCase) },
+    { tone: "current" as const, text: currentText },
+    { tone: "next" as const, text: applyCaptionFontCase(lines[currentIndex + 1]?.text?.trim() || "", fontCase) },
+  ].filter((line) => line.text);
 }
 
 function GenerationProgressBanner({

@@ -313,8 +313,46 @@
     from { opacity: 0; transform: scale(1.015); }
     to { opacity: 1; transform: scale(1); }
   }
+  @keyframes lyric-caption-fade {
+    from { opacity: 0; transform: translate3d(0, 6px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes lyric-caption-slide {
+    from { opacity: 0; transform: translate3d(0, 18px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes lyric-caption-pop {
+    0% { opacity: 0; transform: scale(0.92); }
+    70% { opacity: 1; transform: scale(1.04); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes lyric-caption-zoom {
+    from { opacity: 0; transform: scale(1.12); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes lyric-caption-glitch {
+    0% { opacity: 0; transform: translate3d(-3px, 0, 0); filter: hue-rotate(0deg); }
+    18% { opacity: 1; transform: translate3d(3px, -1px, 0); filter: hue-rotate(18deg); }
+    36% { transform: translate3d(-2px, 1px, 0); filter: hue-rotate(-14deg); }
+    55%, 100% { opacity: 1; transform: translate3d(0, 0, 0); filter: none; }
+  }
+  .lyric-caption-motion-fade {
+    animation: lyric-caption-fade 260ms ease-out both;
+  }
+  .lyric-caption-motion-slide {
+    animation: lyric-caption-slide 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .lyric-caption-motion-pop {
+    animation: lyric-caption-pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .lyric-caption-motion-zoom {
+    animation: lyric-caption-zoom 300ms ease-out both;
+  }
+  .lyric-caption-motion-glitch {
+    animation: lyric-caption-glitch 420ms steps(2, end) both;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .animate-drift-a, .animate-drift-b, .animate-drift-c, .animate-\[style-preview-fade_260ms_ease-out\] { animation: none !important; }
+    .animate-drift-a, .animate-drift-b, .animate-drift-c, .animate-\[style-preview-fade_260ms_ease-out\], .lyric-caption-motion-fade, .lyric-caption-motion-slide, .lyric-caption-motion-pop, .lyric-caption-motion-zoom, .lyric-caption-motion-glitch { animation: none !important; }
     .featured-creators-track, .testimonials-wall-column { animation: none !important; transform: none !important; }
   }
 }
