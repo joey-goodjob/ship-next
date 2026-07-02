@@ -247,3 +247,56 @@ debug fixture 缓存是重要工具，但缓存陈旧时容易误判为代码没
 ```
 
 这一步完成后，整条 pipeline 的测试体验会明显改善。
+
+## P1 - Preview Workbench 编辑器多语言化
+
+### 问题
+
+当前 preview workbench 不是完整多语言界面。外层站点已经有 `en/zh` locale 文件，但编辑器内部仍有不少硬编码英文。
+
+已确认的明显范围：
+
+- `src/components/lyric-videos/preview-workbench/font-panel.tsx`
+  - `Subtitles`
+  - `Display`
+  - `Show Whole Verse`
+  - `Words Per Group`
+  - `Lyrics Style`
+  - `Font Family`
+  - `Font Style`
+  - `Font Case`
+  - `Alignment`
+  - `Anchor`
+  - `Rotation Angle`
+  - `Stroke`
+  - `Drop Shadow`
+  - `Composite`
+  - `Effect`
+- preview workbench 其他面板也需要继续扫：
+  - `Customize`
+  - `Lyrics`
+  - `Cast`
+  - `Scenes`
+  - `Exports`
+  - `Diagnostics`
+  - toast / modal / empty state / error state 文案
+
+如果后期做多语言市场，会出现外层页面已切换语言，但编辑器工具栏仍然是英文的问题。
+
+### 建议修复
+
+先从 `Font` 面板开始做 i18n，避免一次性改太大：
+
+1. 在 `src/config/locale/messages/en/dashboard.json` 增加 `dashboard.workbench.font` 文案。
+2. 在 `src/config/locale/messages/zh/dashboard.json` 增加对应中文文案。
+3. `font-panel.tsx` 使用 `useTranslations("dashboard.workbench.font")`。
+4. 保留字体名、blend mode value、effect id 这类技术值为英文，但 UI label 走翻译。
+5. 后续再按面板逐个迁移 `Customize / Lyrics / Cast / Scenes / Exports / Diagnostics`。
+
+### 验收
+
+- `/en/.../preview` 下 Font 面板显示英文。
+- `/zh/.../preview` 下 Font 面板显示中文。
+- 切换 locale 后，工具栏 tab、面板标题、按钮、helper、placeholder、toast 不再混用英文。
+- TypeScript build 通过。
+- 不改变 `previewConfig` 存储结构，不影响已有项目的字幕样式配置。

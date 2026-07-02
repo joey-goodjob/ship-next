@@ -19,6 +19,7 @@ type CaptionChunkOptions = {
   minDurationMs?: number;
   rangeStartMs?: number;
   rangeEndMs?: number;
+  wordsPerGroup?: number;
 };
 
 const DEFAULT_CAPTION_GAP_MS = 650;
@@ -99,11 +100,15 @@ export function buildCaptionChunks(words: CaptionWord[], options: CaptionChunkOp
 
   for (const word of normalizedWords) {
     const previous = current[current.length - 1];
+    const maxWordsPerGroup = Number.isFinite(Number(options.wordsPerGroup))
+      ? Math.max(1, Math.round(Number(options.wordsPerGroup)))
+      : 0;
     const shouldStartNext =
       previous &&
       (shouldBreakAfterWord(previous.word) ||
         crossesLineBoundary(previous, word) ||
-        word.startMs - previous.endMs > gapMs);
+        word.startMs - previous.endMs > gapMs ||
+        (maxWordsPerGroup > 0 && current.length >= maxWordsPerGroup));
 
     if (shouldStartNext && current.length > 0) {
       rawChunks.push(current);
