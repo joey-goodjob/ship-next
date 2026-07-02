@@ -57,6 +57,7 @@ export function VideoPreview() {
     });
     return resolvePreviewCaptionText({
       activeChunkText: previewConfig.showWholeVerse ? undefined : activeChunk?.text,
+      allowLineFallback: previewConfig.showWholeVerse || words.length === 0,
       currentLine,
       currentTimeMs: currentMs,
       hasLyrics,

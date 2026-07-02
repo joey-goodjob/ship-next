@@ -268,6 +268,17 @@ Each template exports **strong types** for all tables (`User`, `NewUser`, `Order
 **Content:** post, taxonomy, config
 **AI:** aiTask, chat, chatMessage
 
+## Supabase Security
+
+This project uses a server-side Drizzle/Postgres direct connection. Do not expose `public` tables through the Supabase Data API unless a feature explicitly requires it.
+
+When creating or modifying Supabase/Postgres tables:
+- Enable RLS on tables in exposed schemas, especially `public`.
+- Do not grant `anon` or `authenticated` table access by default.
+- If a table must be exposed through the Supabase Data API, add explicit minimal `GRANT` statements and matching RLS policies in the same migration.
+- After schema or privilege changes, run Supabase Security Advisor and confirm there are no `RLS Disabled in Public` or `Sensitive Columns Exposed` errors.
+- Avoid creating production tables directly in the Supabase Dashboard unless grants and RLS are reviewed immediately.
+
 ## Environment Variables
 
 ```env

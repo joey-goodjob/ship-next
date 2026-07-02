@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +32,12 @@ interface User {
   email: string;
   image: string | null;
   createdAt: string;
+  emailVerified: boolean;
+  utmSource: string;
+  ip: string;
+  locale: string;
   credits: number;
+  roles: UserRoleInfo[];
 }
 
 interface RoleInfo {
@@ -46,15 +52,25 @@ interface UserRoleInfo {
   roleTitle: string;
 }
 
+interface SourceStat {
+  utmSource: string;
+  userCount: number;
+}
+
 const PAGE_SIZE = 10;
+const DIRECT_SOURCE_VALUE = "direct";
 
 export default function UsersPage() {
   const t = useTranslations("admin");
   const [users, setUsers] = useState<User[]>([]);
+  const [sourceStats, setSourceStats] = useState<SourceStat[]>([]);
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
 
   // Role management dialog
   const [managingUser, setManagingUser] = useState<User | null>(null);
@@ -76,24 +92,60 @@ export default function UsersPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, sourceFilter]);
 
-  const fetchUsers = useCallback((p: number) => {
+  const fetchUsers = useCallback(async (p: number) => {
     const params = new URLSearchParams({ page: String(p), pageSize: String(PAGE_SIZE) });
     if (debouncedSearch) params.set("search", debouncedSearch);
-    fetch(`/api/admin/users?${params}`)
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.code === 0) {
-          setUsers(res.data.items);
-          setTotal(res.data.total);
-        }
+    if (sourceFilter) params.set("utmSource", sourceFilter);
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15_000);
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/users?${params}`, {
+        signal: controller.signal,
       });
-  }, [debouncedSearch]);
+      const data = await res.json();
+      if (data.code !== 0) throw new Error(data.message || t("users.load_failed"));
+
+      setUsers(data.data.items);
+      setTotal(data.data.total);
+    } catch (err: any) {
+      setUsers([]);
+      setTotal(0);
+      setError(
+        err.name === "AbortError"
+          ? t("users.request_timeout")
+          : err.message || t("users.load_failed")
+      );
+    } finally {
+      window.clearTimeout(timeout);
+      setLoading(false);
+    }
+  }, [debouncedSearch, sourceFilter, t]);
+
+  const fetchSourceStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/users?sourceStatsOnly=1");
+      const data = await res.json();
+      if (data.code === 0) {
+        setSourceStats(normalizeSourceStats(data.data.sourceStats || []));
+      }
+    } catch {
+      setSourceStats([]);
+    }
+  }, []);
 
   useEffect(() => {
     fetchUsers(page);
   }, [page, fetchUsers]);
+
+  useEffect(() => {
+    fetchSourceStats();
+  }, [fetchSourceStats]);
 
   async function openRoleDialog(u: User) {
     setManagingUser(u);
@@ -202,6 +254,50 @@ export default function UsersPage() {
     }
   }
 
+  function normalizeSourceStats(stats: SourceStat[]) {
+    const directCount = stats
+      .filter((s) => !s.utmSource || s.utmSource === "Direct")
+      .reduce((sum, s) => sum + s.userCount, 0);
+    const directStat = directCount
+      ? [{ utmSource: "", userCount: directCount }]
+      : [];
+
+    return [
+      ...directStat,
+      ...stats.filter((s) => s.utmSource && s.utmSource !== "Direct"),
+    ];
+  }
+
+  function formatSourceLabel(source: string) {
+    return !source || source === "Direct"
+      ? t("users.source_direct")
+      : source;
+  }
+
+  const topSourceStats = sourceStats.slice(0, 5);
+  const sourceFilterOptions = sourceStats.map((stat) => ({
+    value: stat.utmSource ? stat.utmSource : DIRECT_SOURCE_VALUE,
+    label: `${formatSourceLabel(stat.utmSource)} (${stat.userCount})`,
+  }));
+
+  const sourceToolbar = (
+    <label className="flex items-center gap-2 text-sm">
+      <span className="text-muted-foreground">{t("users.source_filter_label")}</span>
+      <select
+        value={sourceFilter}
+        onChange={(event) => setSourceFilter(event.target.value)}
+        className="h-9 min-w-44 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+      >
+        <option value="">{t("users.source_filter_all")}</option>
+        {sourceFilterOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
   const columns: Column<User>[] = [
     {
       header: t("users.user_col"),
@@ -219,13 +315,57 @@ export default function UsersPage() {
     },
     {
       header: t("users.email_col"),
-      cell: (u) => u.email,
+      cell: (u) => (
+        <div className="space-y-1">
+          <div>{u.email}</div>
+          <Badge variant="outline" className="text-xs">
+            {u.emailVerified ? t("users.email_verified_yes") : t("users.email_verified_no")}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      header: t("users.roles_col"),
+      cell: (u) => (
+        <div className="flex max-w-40 flex-wrap gap-1">
+          {u.roles.length > 0 ? (
+            u.roles.map((role) => (
+              <Badge key={role.roleId} variant="outline" className="text-xs">
+                {role.roleTitle || role.roleName}
+              </Badge>
+            ))
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
     },
     {
       header: t("users.credits_col"),
       className: "w-[120px]",
       cell: (u) => (
         <span className="font-medium tabular-nums">{u.credits.toLocaleString()}</span>
+      ),
+    },
+    {
+      header: t("users.source_col"),
+      cell: (u) => (
+        <span className="block max-w-44 truncate text-muted-foreground">
+          {formatSourceLabel(u.utmSource)}
+        </span>
+      ),
+    },
+    {
+      header: t("users.locale_col"),
+      className: "w-[90px]",
+      cell: (u) => u.locale || "-",
+    },
+    {
+      header: t("users.ip_col"),
+      cell: (u) => (
+        <span className="block max-w-32 truncate font-mono text-xs text-muted-foreground">
+          {u.ip || "-"}
+        </span>
       ),
     },
     {
@@ -270,6 +410,31 @@ export default function UsersPage() {
         <p className="text-muted-foreground">{t("users.description")}</p>
       </div>
 
+      {error ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
+
+      {topSourceStats.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          <p className="mb-3 text-sm font-medium text-muted-foreground">
+            {t("users.source_stats_title")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {topSourceStats.map((stat) => (
+              <div
+                key={stat.utmSource || DIRECT_SOURCE_VALUE}
+                className="flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm"
+              >
+                <span className="font-medium">{formatSourceLabel(stat.utmSource)}</span>
+                <span className="text-muted-foreground">{stat.userCount}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardContent>
           <DataTable
@@ -280,9 +445,10 @@ export default function UsersPage() {
             pageSize={PAGE_SIZE}
             onPageChange={setPage}
             rowKey={(u) => u.id}
-            emptyText={t("users.no_users")}
+            emptyText={loading ? t("loading") : t("users.no_users")}
             search={search}
             onSearchChange={setSearch}
+            toolbar={sourceToolbar}
             onRefresh={() => fetchUsers(page)}
           />
         </CardContent>

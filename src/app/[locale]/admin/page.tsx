@@ -10,20 +10,45 @@ import {
 } from "@/components/ui/card";
 import { Users, Shield } from "lucide-react";
 
+type AdminStats = {
+  users: number;
+  roles: number;
+};
+
 export default function AdminPage() {
   const t = useTranslations("admin");
-  const [stats, setStats] = useState({ users: 0, roles: 0 });
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/admin/users").then((r) => r.json()),
-      fetch("/api/admin/roles").then((r) => r.json()),
-    ]).then(([usersRes, rolesRes]) => {
-      setStats({
-        users: usersRes.code === 0 ? usersRes.data.total : 0,
-        roles: rolesRes.code === 0 ? rolesRes.data.total : 0,
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
+
+    fetch("/api/admin/overview", { signal: controller.signal })
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.code !== 0) throw new Error(res.message || "Failed to load admin stats");
+
+        setStats({
+          users: Number(res.data?.users || 0),
+          roles: Number(res.data?.roles || 0),
+        });
+      })
+      .catch((err: any) => {
+        setError(
+          err.name === "AbortError"
+            ? "Admin stats request timed out"
+            : err.message || "Failed to load admin stats"
+        );
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
       });
-    });
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
 
   return (
@@ -33,6 +58,12 @@ export default function AdminPage() {
         <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
+      {error ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -40,7 +71,9 @@ export default function AdminPage() {
             <Users className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.users}</div>
+            <div className="text-2xl font-bold">
+              {stats ? stats.users : t("loading")}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -49,7 +82,9 @@ export default function AdminPage() {
             <Shield className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.roles}</div>
+            <div className="text-2xl font-bold">
+              {stats ? stats.roles : t("loading")}
+            </div>
           </CardContent>
         </Card>
       </div>

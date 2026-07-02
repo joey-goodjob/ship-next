@@ -237,6 +237,7 @@ export function getPreviewCaptionStyle(config: LyricPreviewConfig) {
 
 export function resolvePreviewCaptionText(params: {
   activeChunkText?: string | null;
+  allowLineFallback?: boolean;
   currentLine?: Pick<LyricLine, "text" | "startMs" | "endMs">;
   currentTimeMs: number;
   hasLyrics: boolean;
@@ -247,6 +248,7 @@ export function resolvePreviewCaptionText(params: {
 
   const lineText = params.currentLine?.text?.trim();
   if (
+    params.allowLineFallback !== false &&
     lineText &&
     params.currentLine &&
     params.currentTimeMs >= params.currentLine.startMs &&

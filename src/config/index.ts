@@ -121,6 +121,7 @@ export const envConfigs: Record<string, string> = {
   // Analytics
   google_analytics_id: process.env.GOOGLE_ANALYTICS_ID ?? '',
   clarity_id: process.env.CLARITY_ID ?? '',
+  clarity_api_token: process.env.CLARITY_API_TOKEN ?? '',
   plausible_domain: process.env.PLAUSIBLE_DOMAIN ?? '',
   plausible_src: process.env.PLAUSIBLE_SCRIPT_SRC ?? '',
 

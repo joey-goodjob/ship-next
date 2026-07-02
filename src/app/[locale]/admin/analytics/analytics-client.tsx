@@ -523,6 +523,7 @@ export function AdminAnalyticsClient() {
           {locationRows}
         </AnalyticsTable>
       </div>
+
     </div>
   );
 }

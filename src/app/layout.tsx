@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { envConfigs } from "@/config";
 import { BugEventReporter } from "@/components/bug-event-reporter";
 import { SiteTrafficTracker } from "@/components/site-traffic-tracker";
+import { UtmCapture } from "@/components/utm-capture";
 import { buildAnalyticsConfig } from "@/lib/analytics-config";
 import { buildPublicMetadata } from "@/lib/site-metadata";
 import { getAllConfigs } from "@/modules/config/service";
@@ -115,6 +116,7 @@ export default async function RootLayout({
         >
           <Suspense fallback={null}>
             <BugEventReporter />
+            <UtmCapture />
             <SiteTrafficTracker />
           </Suspense>
           {children}
