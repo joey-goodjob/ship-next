@@ -8,6 +8,7 @@ import { Link } from "@/core/i18n/navigation";
 import { DEFAULT_TIMELINE_HEIGHT, SIDE_PANEL_WIDTH_KEY, TIMELINE_HEIGHT_KEY } from "./constants";
 import { useEditor } from "./editor-context";
 import { ExportStatusDialog } from "./export-status-dialog";
+import { usePlayback } from "./playback-context";
 import { HorizontalResizeHandle, VerticalResizeHandle } from "./resize-handles";
 import { PlaybackControls } from "./playback-controls";
 import { SidePanel } from "./side-panel";
@@ -17,8 +18,22 @@ import { TopNavBar } from "./top-nav-bar";
 import { VideoPreview } from "./video-preview";
 import { clamp, defaultSidePanelWidth, readStoredNumber } from "./utils";
 
+function isEditableShortcutTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target instanceof HTMLButtonElement ||
+    target instanceof HTMLAnchorElement ||
+    Boolean(target.closest('button, a, input, textarea, select, [contenteditable="true"], [role="button"], [role="textbox"], [role="slider"], [role="tab"]'))
+  );
+}
+
 export function EditorWorkspace() {
   const { currentExportFingerprint, exportError, exporting, latestExport, loadError, loading, preparingAudio, project, scenes, uploadAndTranscribe } = useEditor();
+  const { audioAvailable, isAudioLoading, togglePlayback } = usePlayback();
   const wasExportingRef = useRef(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [sidePanelWidth, setSidePanelWidth] = useState(() =>
@@ -85,6 +100,28 @@ export function EditorWorkspace() {
   }
 
   const hasAudio = Boolean(project?.originalAudioUrl || project?.audioUrl || project?.processedAudioUrl);
+
+  useEffect(() => {
+    function handlePlaybackShortcut(event: KeyboardEvent) {
+      if (
+        event.defaultPrevented ||
+        event.code !== "Space" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        isEditableShortcutTarget(event.target)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      if (!audioAvailable || isAudioLoading) return;
+      void togglePlayback();
+    }
+
+    window.addEventListener("keydown", handlePlaybackShortcut);
+    return () => window.removeEventListener("keydown", handlePlaybackShortcut);
+  }, [audioAvailable, isAudioLoading, togglePlayback]);
 
   useEffect(() => {
     if (exporting && !wasExportingRef.current) {
