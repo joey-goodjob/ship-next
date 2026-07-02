@@ -242,6 +242,7 @@ export function getSettings(): Setting[] {
 
     // ─── Analytics / Clarity ─────────────────────────────────────────
     { name: 'clarity_id', title: 'Clarity ID', type: 'text', placeholder: 'xxxxxxxxxx', group: 'clarity', tab: 'analytics' },
+    { name: 'clarity_api_token', title: 'Data Export API Token', type: 'password', placeholder: 'Bearer token from Clarity Data Export', group: 'clarity', tab: 'analytics' },
 
     // ─── Analytics / Plausible ───────────────────────────────────────
     { name: 'plausible_domain', title: 'Plausible Domain', type: 'text', placeholder: 'lyricvideomaker.app', group: 'plausible', tab: 'analytics' },

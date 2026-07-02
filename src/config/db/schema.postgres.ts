@@ -441,6 +441,63 @@ export const bugProblemEvent = table(
   ]
 );
 
+export const claritySyncRun = table(
+  'clarity_sync_run',
+  {
+    id: text('id').primaryKey(),
+    days: integer('days').notNull(),
+    profiles: text('profiles').notNull(),
+    status: text('status').notNull(),
+    rowCount: integer('row_count').notNull().default(0),
+    errorMessage: text('error_message'),
+    startedAt: timestamp('started_at').defaultNow().notNull(),
+    fetchedAt: timestamp('fetched_at'),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('idx_clarity_sync_run_status_created').on(table.status, table.createdAt),
+    index('idx_clarity_sync_run_fetched_at').on(table.fetchedAt),
+  ]
+);
+
+export const clarityMetricRow = table(
+  'clarity_metric_row',
+  {
+    id: text('id').primaryKey(),
+    syncRunId: text('sync_run_id')
+      .notNull()
+      .references(() => claritySyncRun.id, { onDelete: 'cascade' }),
+    profile: text('profile').notNull(),
+    metricName: text('metric_name').notNull(),
+    metricLabel: text('metric_label').notNull(),
+    rowLabel: text('row_label').notNull(),
+    url: text('url').notNull().default(''),
+    source: text('source').notNull().default(''),
+    device: text('device').notNull().default(''),
+    channel: text('channel').notNull().default(''),
+    campaign: text('campaign').notNull().default(''),
+    browser: text('browser').notNull().default(''),
+    os: text('os').notNull().default(''),
+    countryRegion: text('country_region').notNull().default(''),
+    pageTitle: text('page_title').notNull().default(''),
+    referrerUrl: text('referrer_url').notNull().default(''),
+    dimensions: text('dimensions').notNull(),
+    metrics: text('metrics').notNull(),
+    primaryMetricName: text('primary_metric_name').notNull().default(''),
+    primaryMetricValue: text('primary_metric_value').notNull().default('0'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_clarity_metric_row_run_profile').on(table.syncRunId, table.profile),
+    index('idx_clarity_metric_row_metric').on(table.metricName),
+    index('idx_clarity_metric_row_url').on(table.url),
+  ]
+);
+
 // ─── RBAC ────────────────────────────────────────────────────────────────────
 
 export const role = table(

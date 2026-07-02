@@ -9,6 +9,7 @@ import { grantForNewUser } from '@/modules/credits/service';
 import { ResendProvider } from '@/core/email/resend';
 import { VerifyEmail } from '@/core/email/templates/verify-email';
 import * as schema from '@/config/db/schema';
+import { buildUserAttributionFromContext } from '@/lib/user-attribution';
 
 const recentVerificationEmailSentAt = new Map<string, number>();
 const VERIFICATION_EMAIL_MIN_INTERVAL_MS = 60_000;
@@ -190,6 +191,26 @@ export function getAuth(configs?: Record<string, string>) {
     databaseHooks: {
       user: {
         create: {
+          before: async (user, ctx) => {
+            try {
+              const attribution = buildUserAttributionFromContext({
+                ctx,
+                appUrl: envConfigs.app_url,
+                fallbackLocale: envConfigs.locale,
+              });
+
+              return {
+                data: {
+                  ...user,
+                  utmSource: user.utmSource || attribution.utmSource,
+                  ip: user.ip || attribution.ip,
+                  locale: user.locale || attribution.locale,
+                },
+              };
+            } catch {
+              return { data: user };
+            }
+          },
           after: async (user) => {
             try {
               const all = await getAllConfigs();

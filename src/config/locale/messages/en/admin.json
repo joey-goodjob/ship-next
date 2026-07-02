@@ -20,6 +20,7 @@
     "credits": "Credits",
     "invite_codes": "Invite Codes",
     "analytics": "Traffic Analytics",
+    "clarity": "Clarity Insights",
     "bug_radar": "Bug Radar",
     "creations": "Usage Records"
   },
@@ -130,6 +131,26 @@
     },
     "empty": {
       "no_data": "No traffic data yet"
+    },
+    "clarity": {
+      "title": "Clarity Insights",
+      "description": "Recent Microsoft Clarity Data Export results in a 1-3 day UTC window.",
+      "load": "Load Clarity Data",
+      "refresh": "Refresh Clarity Data",
+      "loading": "Loading Clarity data...",
+      "fetched_at": "Fetched at {time}",
+      "days": {
+        "one": "Last 24h",
+        "two": "Last 48h",
+        "three": "Last 72h"
+      },
+      "empty": "No Clarity data loaded yet.",
+      "no_rows": "No rows returned by Clarity.",
+      "missing_token": "Add a Clarity Data Export API token in Admin Settings → Analytics → Clarity.",
+      "request_failed": "Clarity request failed{status}.",
+      "invalid_response": "Clarity returned an unreadable response.",
+      "metric": "Metric",
+      "value": "Value"
     }
   },
   "users": {
@@ -138,11 +159,23 @@
     "all_users": "All Users",
     "count": "{count} users registered",
     "no_users": "No users yet",
+    "load_failed": "Failed to load users.",
+    "request_timeout": "User list request timed out.",
     "user_col": "User",
     "email_col": "Email",
+    "roles_col": "Roles",
     "credits_col": "Credits",
+    "source_col": "Source",
+    "locale_col": "Locale",
+    "ip_col": "IP",
     "joined_col": "Joined",
     "actions_col": "Actions",
+    "email_verified_yes": "Verified",
+    "email_verified_no": "Unverified",
+    "source_filter_label": "Source",
+    "source_filter_all": "All sources",
+    "source_direct": "Direct",
+    "source_stats_title": "Users by Channel",
     "manage_roles": "Manage Roles",
     "manage_roles_title": "Manage User Roles",
     "manage_roles_description": "Assign or remove roles for this user",
@@ -160,6 +193,47 @@
     "credits_invalid_amount": "Enter a positive amount",
     "credits_granted": "Credits granted",
     "credits_deducted": "Credits deducted"
+  },
+  "clarity_page": {
+    "title": "Clarity Insights",
+    "description": "Persist Microsoft Clarity UX signals and review problem pages, traffic quality, and device issues.",
+    "sync": "Sync Clarity",
+    "refresh": "Refresh",
+    "loading": "Loading Clarity insights...",
+    "load_failed": "Failed to load Clarity insights.",
+    "sync_failed": "Failed to sync Clarity data.",
+    "missing_token": "Add a Clarity Data Export API token in Admin Settings first.",
+    "missing_table": "Clarity tables are not available yet. Run the database migration before syncing.",
+    "search": "Search metric, URL, source, device...",
+    "days": {
+      "1": "Last 24h",
+      "2": "Last 48h",
+      "3": "Last 72h"
+    },
+    "cards": {
+      "latest_sync": "Latest Sync",
+      "rows": "Stored Rows",
+      "status": "Status"
+    },
+    "status": {
+      "empty": "No sync yet",
+      "synced": "Synced {days}d"
+    },
+    "profiles": {
+      "problem_pages": "Problem Pages",
+      "traffic_quality": "Traffic Quality",
+      "device_issues": "Device Issues",
+      "all": "All"
+    },
+    "table": {
+      "title": "Clarity Data",
+      "description": "Rows are stored from the latest successful sync and sorted by the primary metric value.",
+      "metric": "Metric",
+      "dimension": "Dimension",
+      "value": "Value",
+      "context": "All Metrics",
+      "empty": "No Clarity rows yet"
+    }
   },
   "roles": {
     "title": "Roles",
@@ -608,6 +682,7 @@
       "fal_api_key": "API Key",
       "google_analytics_id": "Google Analytics ID",
       "clarity_id": "Clarity ID",
+      "clarity_api_token": "Clarity Data Export API Token",
       "plausible_domain": "Plausible Domain",
       "plausible_src": "Plausible Script Src"
     },
