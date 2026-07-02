@@ -10,6 +10,20 @@ This is a **headless SaaS engine** — pre-wired business logic (payments, credi
 - **Database:** Drizzle ORM — supports PostgreSQL, MySQL, SQLite, Turso, Cloudflare D1
 - **All code is self-contained** — no external packages for business logic. Payment, email, storage, AI, auth, and utils are inlined in `src/core/` and `src/lib/`.
 
+## Deployment / Runtime Constraints
+
+This project is deployed on **Vercel** and uses **Supabase Postgres** through the server-side Drizzle database layer. Treat these as architectural constraints, not just hosting details.
+
+- **Vercel is serverless.** Do not assume long-running Node.js processes, durable in-memory queues, background `setInterval` loops, or state that survives cold starts.
+- **API routes should return promptly.** Long-running provider polling, media processing, batch sync, rendering, and retry loops should move to an explicit worker, queue, cron, webhook, or user-triggered sync path.
+- **Filesystem writes are not durable on Vercel.** Generated audio, images, videos, exports, and provider outputs must be stored in configured storage such as R2/S3-compatible storage, not relied on from local disk.
+- **Supabase is used as Postgres via Drizzle.** Prefer server-side database access through `@/core/db` and module services. Do not introduce client-side Supabase table reads/writes unless the feature explicitly requires it.
+- **Supabase public exposure is not assumed.** If a table is exposed through Supabase Data API or a public schema, review grants and RLS policies in the same change.
+- **Design for retries and duplicate requests.** Vercel retries, browser refreshes, webhook retries, and provider polling can repeat work; queueing, billing, sync, and media writes must be idempotent.
+- **Users may leave the page.** Critical generation, sync, billing, and export progress should not depend only on an open browser tab unless that tradeoff is explicitly documented.
+- **Name the polling owner.** If a workflow polls, document whether the owner is frontend polling, Vercel Cron, a separate worker, provider webhook fallback, or a manual user action.
+- **For heavy media work, prefer a worker boundary.** Use Next.js API routes for auth, validation, orchestration, and status reads; use a worker/runtime designed for long media tasks when CPU, memory, ffmpeg, provider sync, or bulk upload work is involved.
+
 ## Commands
 
 - `pnpm dev` — Dev server
