@@ -83,6 +83,14 @@ const source = readFileSync("src/components/lyric-videos/preview-workbench/font-
 assert.doesNotMatch(source, /Lyrics Style/, "Font panel should not show lyric style presets while the simplified editor layout is active.");
 assert.doesNotMatch(source, /CAPTION_STYLE_OPTIONS/, "Font panel should not render caption preset cards in the simplified layout.");
 assert.match(source, /Font Family/, "Font panel should expose font family selection.");
+assert.match(source, /caption-font-select-content/, "Font family should open an in-editor styled dropdown, not the browser native menu.");
+assert.doesNotMatch(source, /<select/, "Font family should not use the browser native select.");
+assert.doesNotMatch(source, /@\/components\/ui\/select/, "Font family dropdown should not depend on the shared select popup in the editor panel.");
+assert.match(source, /setFontSelectOpen/, "Font family dropdown should use local open state so click behavior is reliable in the editor panel.");
+assert.match(source, /handleFontSelectKeyDown/, "Font family dropdown should handle keyboard font browsing.");
+assert.match(source, /ArrowDown/, "Font family dropdown should let users browse to the next font with ArrowDown.");
+assert.match(source, /ArrowUp/, "Font family dropdown should let users browse to the previous font with ArrowUp.");
+assert.match(source, /setHighlightedFontIndex/, "Font family dropdown should track the highlighted font option while browsing.");
 assert.match(source, /Underline/, "Font panel should keep the underline control shown in the reference layout.");
 assert.doesNotMatch(source, /Words Per Group/, "Font panel should hide lyric density controls in the simplified layout.");
 assert.doesNotMatch(source, /Stroke/, "Font panel should hide stroke controls in the simplified layout.");

@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
   AlignVerticalJustifyCenter,
   Bold,
+  Check,
+  ChevronDown,
   Italic,
   PanelBottom,
   PanelTop,
@@ -324,23 +326,155 @@ function SelectRow({
   options: ReadonlyArray<{ label: string; sample?: string; value: string }>;
   value: string;
 }) {
+  const [fontSelectOpen, setFontSelectOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((option) => option.value === value),
+  );
+  const [highlightedFontIndex, setHighlightedFontIndex] = useState(selectedIndex);
+  const selectedOption = options.find((option) => option.value === value) || options[0];
+
+  useEffect(() => {
+    setHighlightedFontIndex(selectedIndex);
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (!fontSelectOpen) return;
+    const highlightedOption = rootRef.current?.querySelector(`[data-font-option-index="${highlightedFontIndex}"]`);
+    highlightedOption?.scrollIntoView({ block: "nearest" });
+  }, [fontSelectOpen, highlightedFontIndex]);
+
+  useEffect(() => {
+    if (!fontSelectOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (target instanceof Node && rootRef.current?.contains(target)) return;
+      setFontSelectOpen(false);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setFontSelectOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [fontSelectOpen]);
+
+  function selectFont(nextValue: string) {
+    const nextIndex = options.findIndex((option) => option.value === nextValue);
+    if (nextIndex >= 0) setHighlightedFontIndex(nextIndex);
+    onChange(nextValue);
+    setFontSelectOpen(false);
+  }
+
+  function moveFontSelection(direction: -1 | 1) {
+    if (!options.length) return;
+    setFontSelectOpen(true);
+    setHighlightedFontIndex((currentIndex) => {
+      const baseIndex = currentIndex >= 0 ? currentIndex : selectedIndex;
+      const nextIndex = (baseIndex + direction + options.length) % options.length;
+      const nextOption = options[nextIndex];
+      if (nextOption) onChange(nextOption.value);
+      return nextIndex;
+    });
+  }
+
+  function handleFontSelectKeyDown(event: ReactKeyboardEvent<HTMLButtonElement | HTMLDivElement>) {
+    if (disabled) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveFontSelection(1);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveFontSelection(-1);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (!fontSelectOpen) {
+        setFontSelectOpen(true);
+        return;
+      }
+      const highlightedOption = options[highlightedFontIndex] || selectedOption;
+      if (highlightedOption) selectFont(highlightedOption.value);
+      return;
+    }
+
+    if (event.key === "Escape" && fontSelectOpen) {
+      event.preventDefault();
+      setFontSelectOpen(false);
+    }
+  }
+
   return (
-    <label className="caption-control-row grid min-h-[38px] grid-cols-[108px_minmax(120px,1fr)] items-center gap-[10px]">
+    <div ref={rootRef} className="caption-control-row relative grid min-h-[38px] grid-cols-[108px_minmax(120px,1fr)] items-center gap-[10px]">
       <span className="justify-self-end text-right text-[12px] font-[800] text-[var(--editor-text)]">{label}</span>
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-[36px] min-w-0 rounded-[6px] border border-[var(--editor-line)] bg-[#0b0b0f] px-[10px] text-[12px] font-[850] text-[var(--editor-text)] outline-none focus:border-[var(--editor-accent)] disabled:cursor-not-allowed"
-        aria-label={label}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+      <div className="relative min-w-0">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setFontSelectOpen((current) => !current)}
+          onKeyDown={handleFontSelectKeyDown}
+          aria-label={label}
+          aria-expanded={fontSelectOpen}
+          aria-haspopup="listbox"
+          className="flex h-[36px] w-full items-center justify-between gap-[10px] rounded-[6px] border border-[var(--editor-line)] bg-[#0b0b0f] px-[10px] text-[12px] font-[850] text-[var(--editor-text)] outline-none transition-colors hover:border-[var(--editor-muted)] focus-visible:border-[var(--editor-accent)] disabled:cursor-not-allowed disabled:opacity-55"
+        >
+          <span className="min-w-0 truncate text-left" style={{ fontFamily: selectedOption?.value }}>
+            {selectedOption?.label || value}
+          </span>
+          <ChevronDown
+            aria-hidden="true"
+            className={cn(
+              "h-[14px] w-[14px] shrink-0 text-[var(--editor-muted)] transition-transform",
+              fontSelectOpen && "rotate-180",
+            )}
+          />
+        </button>
+        <div
+          onKeyDown={handleFontSelectKeyDown}
+          className={cn(
+            "caption-font-select-content absolute left-0 right-0 top-[calc(100%+6px)] z-[80] max-h-[320px] overflow-y-auto rounded-[7px] border border-[var(--editor-line)] bg-[#101014] p-[5px] text-[var(--editor-text)] shadow-[0_18px_48px_rgba(0,0,0,0.45)]",
+            fontSelectOpen ? "block" : "hidden",
+          )}
+          role="listbox"
+          aria-label={label}
+        >
+          {options.map((option, index) => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              data-font-option-index={index}
+              aria-selected={option.value === value}
+              onClick={() => selectFont(option.value)}
+              onMouseEnter={() => setHighlightedFontIndex(index)}
+              className={cn(
+                "flex min-h-[34px] w-full cursor-pointer items-center justify-between gap-[10px] rounded-[5px] px-[8px] py-[7px] text-left text-[12px] font-[800] text-[var(--editor-muted)] outline-none transition-colors hover:bg-[var(--editor-panel-strong)] hover:text-[var(--editor-text)] focus-visible:bg-[var(--editor-panel-strong)] focus-visible:text-[var(--editor-text)]",
+                index === highlightedFontIndex && "bg-[var(--editor-panel-strong)] text-[var(--editor-text)]",
+                option.value === value && "bg-[var(--editor-accent-soft)] text-[var(--editor-text)]",
+              )}
+            >
+              <span className="block min-w-0 truncate" style={{ fontFamily: option.value }}>
+                {option.label}
+              </span>
+              {option.value === value ? <Check className="h-[13px] w-[13px] shrink-0 text-[var(--editor-accent)]" aria-hidden="true" /> : null}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
